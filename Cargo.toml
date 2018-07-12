@@ -1,0 +1,8 @@
+[package]
+name = "virtual-dom-rs"
+version = "0.0.1"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+description = "A Virtual DOM diffing and patching implementation"
+keywords = ["virtual", "dom", "html", "yew", "react"]
+
+[dependencies]
