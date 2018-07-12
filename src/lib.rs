@@ -51,21 +51,30 @@ pub fn createElement(node: &VirtualNode) {
     // document.createElement(node.type)
 }
 
-struct ParsedNodeTracker<'a> {
+#[cfg_attr(test, derive(Debug))]
+struct ParsedNode {
+    // TODO: current_node -> node
     current_node: Option<VirtualNode>,
-    parent_node: Option<&'a VirtualNode>,
+    parent: Option<Box<ParsedNode>>,
 }
 
 // TODO: Move to html_macro.rs along w/ tests
 #[macro_export]
 macro_rules! html {
     ($($remaining_html:tt)*) => {{
-        let mut pnt = ParsedNodeTracker {
+        // TODO: Rename to parsed_node
+        let mut pnt = ParsedNode {
             current_node: None,
-            parent_node: None
+            parent: None,
         };
 
         recurse_html! { pnt $($remaining_html)* };
+
+        while (pnt.parent.is_some() && pnt.parent.as_ref().unwrap().current_node.is_some()) {
+            let node = pnt.current_node.take().unwrap();
+            pnt = *pnt.parent.unwrap();
+            pnt.current_node.as_mut().unwrap().children.push(node);
+        };
 
         pnt.current_node.unwrap()
     }};
@@ -78,7 +87,11 @@ macro_rules! recurse_html {
     // <div>
     ($pnt:ident < $start_tag:ident > $($remaining_html:tt)*) => {
         let current_node = VirtualNode::new(stringify!($start_tag));
-        $pnt.current_node = Some(current_node);
+
+        $pnt = ParsedNode {
+            current_node: Some(current_node),
+            parent: Some(Box::new($pnt)),
+        };
 
         recurse_html! { $pnt $($remaining_html)* }
     };
@@ -88,7 +101,11 @@ macro_rules! recurse_html {
     // <div
     ($pnt:ident < $start_tag:ident $($remaining_html:tt)*) => {
         let current_node = VirtualNode::new(stringify!($start_tag));
-        $pnt.current_node = Some(current_node);
+
+        $pnt = ParsedNode {
+            current_node: Some(current_node),
+            parent: Some(Box::new($pnt)),
+        };
 
         recurse_html! { $pnt $($remaining_html)* }
     };
@@ -195,5 +212,27 @@ mod tests {
         node.events.0.get("onclick").unwrap()();
 
         assert_eq!(test_struct.borrow().closure_ran, true);
+    }
+
+
+    #[test]
+    fn child_node() {
+        let mut node = html!{
+        <div><span></span></div>
+        };
+
+        let child = VirtualNode {
+            tag: "span".to_string(),
+            ..VirtualNode::default()
+        };
+        let children = vec![child];
+
+        let expected_node = VirtualNode {
+            tag: "div".to_string(),
+            children,
+            ..VirtualNode::default()
+        };
+
+        assert_eq!(node, expected_node);
     }
 }
