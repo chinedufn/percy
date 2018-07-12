@@ -3,26 +3,24 @@
 use std::collections::HashMap;
 
 #[derive(Debug)]
-#[cfg_attr(test, derive(PartialEq))]
+#[cfg_attr(test, derive(PartialEq, Default))]
 pub struct VirtualNode {
     tag: String,
     props: HashMap<String, String>,
     events: HashMap<String, fn() -> ()>,
     children: Vec<VirtualNode>,
+    /// Some(String) if this is a [text node](https://developer.mozilla.org/en-US/docs/Web/API/Text).
+    /// When patching these into a real DOM these use `document.createTextNode(text)`
+    text: Option<String>,
 }
 
-/// A [Text node](https://developer.mozilla.org/en-US/docs/Web/API/Text).
-/// When patching these into a real DOM these use `document.createTextNode(text)`
-pub struct VirtualText(String);
-
-pub trait VirtualElem {}
-
-impl VirtualElem for VirtualNode {}
-
-impl VirtualElem for VirtualText {}
-
-pub fn createElement(node: impl VirtualElem) {
+pub fn createElement(node: &VirtualNode) {
     // document.createElement(node.type)
+}
+
+struct ParsedNodeTracker<'a> {
+    current_node: Option<&'a VirtualNode>,
+    parent_node: Option<&'a VirtualNode>,
 }
 
 // TODO: Move to html_macro.rs along w/ tests
@@ -30,6 +28,12 @@ pub fn createElement(node: impl VirtualElem) {
 macro_rules! html {
     ($($remaining_html:tt)*) => {{
         let mut parsed_html_stack = vec![];
+
+        let pnt = ParsedNodeTracker {
+            current_node: None,
+            parent_node: None
+        };
+
         recurse_html! { parsed_html_stack $($remaining_html)* }
     }};
 }
@@ -100,9 +104,7 @@ mod tests {
 
         let expected_node = VirtualNode {
             tag: "div".to_string(),
-            props: HashMap::new(),
-            events: HashMap::new(),
-            children: vec![],
+            ..VirtualNode::default()
         };
 
         assert_eq!(node, expected_node);
@@ -119,8 +121,7 @@ mod tests {
         let expected_node = VirtualNode {
             tag: "div".to_string(),
             props,
-            events: HashMap::new(),
-            children: vec![],
+            ..VirtualNode::default()
         };
 
         assert_eq!(node, expected_node);
