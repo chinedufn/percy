@@ -30,49 +30,58 @@ pub fn createElement(node: impl VirtualElem) {
 macro_rules! html {
     ($($remaining_html:tt)*) => {{
         let mut parsed_html_stack = vec![];
-        recurse_html! { parsed_html_stack ($($remaining_html)*) }
+        recurse_html! { parsed_html_stack $($remaining_html)* }
     }};
 }
 
 #[macro_export]
 macro_rules! recurse_html {
+    // The beginning of an element without any attributrs.
+    // For <div></div> this is
+    // <div>
+    ($parsed_html_stack:ident < $start_tag:ident > $($remaining_html:tt)*) => {
+        println!("start of element no attribs");
+
+        recurse_html! { $parsed_html_stack $($remaining_html)* }
+    };
+
     // The beginning of an element.
     // For <div id="10",> this is
     // <div
-    ($parsed_html_stack:ident (< $start_tag:tt : $($remaining_html:tt)*)) => {
+    ($parsed_html_stack:ident < $start_tag:ident $($remaining_html:tt)*) => {
         println!("start of element");
 
-        recurse_html! { $parsed_html_stack ($($remaining_html)*) }
+        recurse_html! { $parsed_html_stack $($remaining_html)* }
     };
 
     // The end of an opening tag.
     // For <div id="10",> this is:
     //  >
-    ($parsed_html_stack:ident (> $($remaining_html:tt)*)) => {
+    ($parsed_html_stack:ident > $($remaining_html:tt)*) => {
         println!("opening tag");
 
-        recurse_html! { $parsed_html_stack ($($remaining_html)*) }
+        recurse_html! { $parsed_html_stack $($remaining_html)* }
     };
 
     // A property
     // For <div id="10",> this is:
-    // id = "10"
-    ($parsed_html_stack:ident ($prop_name:tt = $prop_value:expr, $($remaining_html:tt)*)) => {
+    // id = "10",
+    ($parsed_html_stack:ident $prop_name:tt = $prop_value:expr, $($remaining_html:tt)*) => {
         println!("identifier");
 
-        recurse_html! { $parsed_html_stack ($($remaining_html)*) }
+        recurse_html! { $parsed_html_stack $($remaining_html)* }
     };
 
     // A closing tag for some associated opening tag name
     // For <div id="10",></div> this is:
     // </div>
-    ($parsed_html_stack:ident (< / $end_tag:ident > $($remaining_html:tt)*)) => {
+    ($parsed_html_stack:ident < / $end_tag:ident > $($remaining_html:tt)*) => {
         println!("End of associated tag");
-        recurse_html! { $parsed_html_stack ($($remaining_html)*) }
+        recurse_html! { $parsed_html_stack $($remaining_html)* }
     };
 
     // Done parsing some element's closing tag
-    ($parsed_html_stack:ident ()) => {
+    ($parsed_html_stack:ident) => {
         println!("foo bar");
     };
 
@@ -86,9 +95,8 @@ mod tests {
     #[test]
     fn empty_div() {
         let node = html!{
-        i="hello world",
+        <div></div>
         };
-//        <div></div>
 
         let expected_node = VirtualNode {
             tag: "div".to_string(),
@@ -103,7 +111,7 @@ mod tests {
     #[test]
     fn one_prop() {
         let node = html!{
-        <div id="hello-world",></div>
+        <div i="hello-world",></div>
         };
 
         let mut props = HashMap::new();
