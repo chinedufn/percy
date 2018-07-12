@@ -64,6 +64,9 @@ macro_rules! html {
     ($($remaining_html:tt)*) => {{
         // TODO: Rename to parsed_node
         let mut pnt = ParsedNode {
+        // Probably also need a reference to the sibling so that we can traverse
+        // backwards through siblings in a nested while loop..
+        // push to the list then reverse it..
             current_node: None,
             parent: None,
         };
@@ -82,7 +85,7 @@ macro_rules! html {
 
 #[macro_export]
 macro_rules! recurse_html {
-    // The beginning of an element without any attributrs.
+    // The beginning of an element without any attributes.
     // For <div></div> this is
     // <div>
     ($pnt:ident < $start_tag:ident > $($remaining_html:tt)*) => {
@@ -226,6 +229,31 @@ mod tests {
             ..VirtualNode::default()
         };
         let children = vec![child];
+
+        let expected_node = VirtualNode {
+            tag: "div".to_string(),
+            children,
+            ..VirtualNode::default()
+        };
+
+        assert_eq!(node, expected_node);
+    }
+
+    #[test]
+    fn sibling_child_nodes() {
+        let mut node = html!{
+        <div><span></span><b></b></div>
+        };
+
+        let sibling1 = VirtualNode {
+            tag: "span".to_string(),
+            ..VirtualNode::default()
+        };
+        let sibling2 = VirtualNode {
+            tag: "b".to_string(),
+            ..VirtualNode::default()
+        };
+        let children = vec![sibling1, sibling2];
 
         let expected_node = VirtualNode {
             tag: "div".to_string(),
