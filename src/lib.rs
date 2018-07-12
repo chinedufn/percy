@@ -1,23 +1,42 @@
 //!
 
 use std::collections::HashMap;
+use std::fmt;
 
 #[derive(Debug)]
 #[cfg_attr(test, derive(PartialEq, Default))]
 pub struct VirtualNode {
     tag: String,
     props: HashMap<String, String>,
-    events: HashMap<String, fn() -> ()>,
+    events: Events,
     children: Vec<VirtualNode>,
     /// Some(String) if this is a [text node](https://developer.mozilla.org/en-US/docs/Web/API/Text).
     /// When patching these into a real DOM these use `document.createTextNode(text)`
     text: Option<String>,
 }
 
+#[cfg_attr(test, derive(Default))]
+pub struct Events(HashMap<String, Box<Fn() -> ()>>);
+
+impl PartialEq for Events {
+    // Once you set events on an element you can't change them, so we don't factor them
+    // into our PartialEq
+    fn eq(&self, rhs: &Self) -> bool {
+       true
+    }
+}
+
+impl fmt::Debug for Events {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let events: String = self.0.keys().map(|key| format!("{} ", key)).collect();
+        write!(f, "{}", events)
+    }
+}
+
 impl VirtualNode {
     fn new (tag: &str) -> VirtualNode {
         let props = HashMap::new();
-        let events = HashMap::new();
+        let events = Events(HashMap::new());
         VirtualNode {
             tag: tag.to_string(),
             props,
@@ -78,8 +97,6 @@ macro_rules! recurse_html {
     // For <div id="10",> this is:
     //  >
     ($pnt:ident > $($remaining_html:tt)*) => {
-        println!("opening tag");
-
         recurse_html! { $pnt $($remaining_html)* }
     };
 
@@ -99,9 +116,9 @@ macro_rules! recurse_html {
     // for <div $onclick=|| { do.something(); },></div> ths is:
     //   $onclick=|| { do.something() }
     ($pnt:ident ! $event_name:tt = $callback:expr, $($remaining_html:tt)*) => {
-        $pnt.current_node.as_mut().unwrap().events.insert(
+        $pnt.current_node.as_mut().unwrap().events.0.insert(
             stringify!($event_name).to_string(),
-            $callback
+            Box::new($callback)
         );
 
         recurse_html! { $pnt $($remaining_html)* }
@@ -125,6 +142,8 @@ macro_rules! recurse_html {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::rc::Rc;
+    use std::cell::RefCell;
 
     #[test]
     fn empty_div() {
@@ -159,14 +178,22 @@ mod tests {
 
     #[test]
     fn event() {
-        let mut closure_ran = false;
+        struct TestStruct {
+            closure_ran: bool
+        };
+        // TODO: Rc<>
+        let mut test_struct = Rc::new(RefCell::new(TestStruct { closure_ran: false}));
+        let mut test_struct_clone = Rc::clone(&test_struct);
 
         let node = html!{
-        <div !onclick=|| {closure_ran = true},></div>
+        <div !onclick=move || {test_struct_clone.borrow_mut().closure_ran = true},></div>
         };
 
-        node.events.get("!onclick").unwrap()();
 
-        assert!(closure_ran);
+        assert_eq!(test_struct.borrow().closure_ran, false);
+
+        node.events.0.get("onclick").unwrap()();
+
+        assert_eq!(test_struct.borrow().closure_ran, true);
     }
 }
