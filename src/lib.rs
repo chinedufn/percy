@@ -52,10 +52,10 @@ pub fn createElement(node: &VirtualNode) {
 }
 
 #[cfg_attr(test, derive(Debug))]
-struct ParsedNode {
+struct NodeParser {
     // TODO: current_node -> node
     current_node: Option<VirtualNode>,
-    parent: Option<Box<ParsedNode>>,
+    parent: Option<Box<NodeParser>>,
 }
 
 // TODO: Move to html_macro.rs along w/ tests
@@ -63,7 +63,7 @@ struct ParsedNode {
 macro_rules! html {
     ($($remaining_html:tt)*) => {{
         // TODO: Rename to parsed_node
-        let mut pnt = ParsedNode {
+        let mut pnt = NodeParser {
         // Probably also need a reference to the sibling so that we can traverse
         // backwards through siblings in a nested while loop..
         // push to the list then reverse it..
@@ -91,7 +91,7 @@ macro_rules! recurse_html {
     ($pnt:ident < $start_tag:ident > $($remaining_html:tt)*) => {
         let current_node = VirtualNode::new(stringify!($start_tag));
 
-        $pnt = ParsedNode {
+        $pnt = NodeParser {
             current_node: Some(current_node),
             parent: Some(Box::new($pnt)),
         };
@@ -105,7 +105,7 @@ macro_rules! recurse_html {
     ($pnt:ident < $start_tag:ident $($remaining_html:tt)*) => {
         let current_node = VirtualNode::new(stringify!($start_tag));
 
-        $pnt = ParsedNode {
+        $pnt = NodeParser {
             current_node: Some(current_node),
             parent: Some(Box::new($pnt)),
         };
