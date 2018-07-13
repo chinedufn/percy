@@ -2,6 +2,8 @@
 
 use std::collections::HashMap;
 use std::fmt;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Debug)]
 #[cfg_attr(test, derive(PartialEq, Default))]
@@ -9,7 +11,8 @@ pub struct VirtualNode {
     tag: String,
     props: HashMap<String, String>,
     events: Events,
-    children: Vec<VirtualNode>,
+    children: Vec<Rc<RefCell<VirtualNode>>>,
+    parent: Option<Rc<RefCell<VirtualNode>>>,
     /// Some(String) if this is a [text node](https://developer.mozilla.org/en-US/docs/Web/API/Text).
     /// When patching these into a real DOM these use `document.createTextNode(text)`
     text: Option<String>,
@@ -42,44 +45,30 @@ impl VirtualNode {
             props,
             events,
             children: vec![],
+            parent: None,
             text: None
         }
     }
 }
 
-pub fn createElement(node: &VirtualNode) {
-    // document.createElement(node.type)
-}
-
+#[derive(PartialEq)]
 #[cfg_attr(test, derive(Debug))]
-struct NodeParser {
-    // TODO: current_node -> node
-    current_node: Option<VirtualNode>,
-    parent: Option<Box<NodeParser>>,
+enum TagType {
+    Open,
+    Close
 }
 
 // TODO: Move to html_macro.rs along w/ tests
 #[macro_export]
 macro_rules! html {
     ($($remaining_html:tt)*) => {{
-        // TODO: Rename to parsed_node
-        let mut pnt = NodeParser {
-        // Probably also need a reference to the sibling so that we can traverse
-        // backwards through siblings in a nested while loop..
-        // push to the list then reverse it..
-            current_node: None,
-            parent: None,
-        };
+        let mut active_node: Option<VirtualNode> = None;
+        let prev_tag_type: Option<TagType> = None;
 
-        recurse_html! { pnt $($remaining_html)* };
+        recurse_html! { active_node prev_tag_type $($remaining_html)* };
 
-        while (pnt.parent.is_some() && pnt.parent.as_ref().unwrap().current_node.is_some()) {
-            let node = pnt.current_node.take().unwrap();
-            pnt = *pnt.parent.unwrap();
-            pnt.current_node.as_mut().unwrap().children.push(node);
-        };
-
-        pnt.current_node.unwrap()
+        println!("{:#?}", active_node);
+        active_node.unwrap()
     }};
 }
 
@@ -88,72 +77,69 @@ macro_rules! recurse_html {
     // The beginning of an element without any attributes.
     // For <div></div> this is
     // <div>
-    ($pnt:ident < $start_tag:ident > $($remaining_html:tt)*) => {
-        let current_node = VirtualNode::new(stringify!($start_tag));
+    ($active_node:ident $prev_tag_type:ident < $start_tag:ident > $($remaining_html:tt)*) => {
+        let mut new_node = VirtualNode::new(stringify!($start_tag));
 
-        $pnt = NodeParser {
-            current_node: Some(current_node),
-            parent: Some(Box::new($pnt)),
-        };
+        $active_node = Some(new_node);
 
-        recurse_html! { $pnt $($remaining_html)* }
+        let tag_type = Some(TagType::Open);
+        recurse_html! { $active_node tag_type $($remaining_html)* }
     };
 
     // The beginning of an element.
     // For <div id="10",> this is
     // <div
-    ($pnt:ident < $start_tag:ident $($remaining_html:tt)*) => {
-        let current_node = VirtualNode::new(stringify!($start_tag));
+    ($active_node:ident $prev_tag_type:ident < $start_tag:ident $($remaining_html:tt)*) => {
+        let mut new_node = VirtualNode::new(stringify!($start_tag));
 
-        $pnt = NodeParser {
-            current_node: Some(current_node),
-            parent: Some(Box::new($pnt)),
-        };
+        $active_node = Some(new_node);
 
-        recurse_html! { $pnt $($remaining_html)* }
+        let tag_type = Some(TagType::Open);
+        recurse_html! { $active_node tag_type $($remaining_html)* }
     };
 
     // The end of an opening tag.
     // For <div id="10",> this is:
     //  >
-    ($pnt:ident > $($remaining_html:tt)*) => {
-        recurse_html! { $pnt $($remaining_html)* }
+    ($active_node:ident $prev_tag_type:ident > $($remaining_html:tt)*) => {
+        recurse_html! { $active_node $prev_tag_type $($remaining_html)* }
     };
 
     // A property
     // For <div id="10",> this is:
     // id = "10",
-    ($pnt:ident $prop_name:tt = $prop_value:expr, $($remaining_html:tt)*) => {
-        $pnt.current_node.as_mut().unwrap().props.insert(
+    ($active_node:ident $prev_tag_type:ident $prop_name:tt = $prop_value:expr, $($remaining_html:tt)*) => {
+        $active_node.as_mut().unwrap().props.insert(
             stringify!($prop_name).to_string(),
             $prop_value.to_string()
         );
 
-        recurse_html! { $pnt $($remaining_html)* }
+        recurse_html! { $active_node $prev_tag_type $($remaining_html)* }
     };
 
     // An event
     // for <div $onclick=|| { do.something(); },></div> ths is:
     //   $onclick=|| { do.something() }
-    ($pnt:ident ! $event_name:tt = $callback:expr, $($remaining_html:tt)*) => {
-        $pnt.current_node.as_mut().unwrap().events.0.insert(
+    ($active_node:ident $prev_tag_type:ident ! $event_name:tt = $callback:expr, $($remaining_html:tt)*) => {
+        $active_node.as_mut().unwrap().events.0.insert(
             stringify!($event_name).to_string(),
             Box::new($callback)
         );
 
-        recurse_html! { $pnt $($remaining_html)* }
+        recurse_html! { $active_node $prev_tag_type $($remaining_html)* }
     };
 
 
     // A closing tag for some associated opening tag name
     // For <div id="10",></div> this is:
     // </div>
-    ($pnt:ident < / $end_tag:ident > $($remaining_html:tt)*) => {
-        recurse_html! { $pnt $($remaining_html)* }
+    ($active_node:ident $prev_tag_type:ident < / $end_tag:ident > $($remaining_html:tt)*) => {
+        let tag_type = Some(TagType::Close);
+        recurse_html! { $active_node tag_type $($remaining_html)* }
     };
 
     // No more HTML remaining. We're done!
-    ($pnt:ident) => {
+    ($active_node:ident $prev_tag_type:ident) => {
     };
 
     // TODO: README explains that props must end with commas
@@ -201,7 +187,6 @@ mod tests {
         struct TestStruct {
             closure_ran: bool
         };
-        // TODO: Rc<>
         let mut test_struct = Rc::new(RefCell::new(TestStruct { closure_ran: false}));
         let mut test_struct_clone = Rc::clone(&test_struct);
 
@@ -224,10 +209,10 @@ mod tests {
         <div><span></span></div>
         };
 
-        let child = VirtualNode {
+        let child = Rc::new(RefCell::new(VirtualNode {
             tag: "span".to_string(),
             ..VirtualNode::default()
-        };
+        }));
         let children = vec![child];
 
         let expected_node = VirtualNode {
@@ -245,14 +230,14 @@ mod tests {
         <div><span></span><b></b></div>
         };
 
-        let sibling1 = VirtualNode {
+        let sibling1 = Rc::new(RefCell::new(VirtualNode {
             tag: "span".to_string(),
             ..VirtualNode::default()
-        };
-        let sibling2 = VirtualNode {
+        }));
+        let sibling2 = Rc::new(RefCell::new(VirtualNode {
             tag: "b".to_string(),
             ..VirtualNode::default()
-        };
+        }));
         let children = vec![sibling1, sibling2];
 
         let expected_node = VirtualNode {
