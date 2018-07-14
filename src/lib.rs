@@ -6,6 +6,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::str::FromStr;
 
+#[derive(PartialEq)]
 pub struct VirtualNode {
     tag: String,
     props: HashMap<String, String>,
@@ -31,20 +32,6 @@ impl fmt::Debug for VirtualNode {
         write!(f, "VirtualNode | tag: {}, props: {:#?}, text: {:#?}, children: {:#?} |", self.tag, self.props, self.text, self.children)
     }
 }
-
-impl PartialEq for VirtualNode {
-    fn eq(&self, rhs: &Self) -> bool {
-        self.tag == rhs.tag &&
-            self.props == rhs.props &&
-            self.text == rhs.text
-    }
-}
-
-//impl Drop for VirtualNode {
-//    fn drop(&mut self) {
-//        self.parent = None;
-//    }
-//}
 
 // TODO: No longer need this since we implement partialeq ourselves for VirtualNode
 pub struct Events(HashMap<String, Box<Fn() -> ()>>);
@@ -219,12 +206,6 @@ macro_rules! recurse_html {
     // TODO: README explains that props must end with commas
 }
 
-//macro_rules! append_children_from_block {
-//    ( $( $child:expr )) => {
-//        println!("hi");
-//    }
-//}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -282,15 +263,10 @@ mod tests {
         <div><span></span></div>
         };
 
-        let child = VirtualNode::new("span");
-        let child = wrap(child);
-        let mut child_clone = Rc::clone(&child);
-        let mut children = vec![child];
-        // TODO: Add parent
-
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = children;
-        let expected_node = expected_node;
+        expected_node.children = vec![
+            wrap(VirtualNode::new("span"))
+        ];
 
         assert_eq!(node, expected_node);
         assert_eq!(expected_node.children.len(), 1);
@@ -302,21 +278,14 @@ mod tests {
         <div><span></span><b></b></div>
         };
 
-        let sibling1 = wrap(VirtualNode::new("span"));
-        let sibling2 = wrap(VirtualNode::new("b"));
-
-        let children = vec![sibling1, sibling2];
-
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = children;
-        let expected_node = expected_node;
+        expected_node.children = vec![
+            wrap(VirtualNode::new("span")),
+            wrap(VirtualNode::new("b"))
+        ];
 
         assert_eq!(node, expected_node);
         assert_eq!(node.children.len(), 2);
-
-        for (index, child) in node.children.iter().enumerate() {
-            assert_eq!(child, &expected_node.children[index]);
-        }
     }
 
     #[test]
@@ -325,21 +294,14 @@ mod tests {
         <div><span><b></b></span></div>
         };
 
-        let grandchild = wrap(VirtualNode::new("b"));
         let mut child = VirtualNode::new("span");
-
-        child.children = vec![grandchild];
-        let child = wrap(child);
+        child.children = vec![wrap(VirtualNode::new("b"))];
 
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = vec![child];
-        let expected_node = expected_node;
+        expected_node.children = vec![wrap(child)];
 
         assert_eq!(node, expected_node);
         assert_eq!(node.children.len(), 1, "1 Child");
-
-        let child = &node.children[0];
-        assert_eq!(child.borrow().children.len(), 1, "1 Grandchild");
     }
 
     #[test]
@@ -354,7 +316,6 @@ mod tests {
             wrap(VirtualNode::text("More")),
             wrap(VirtualNode::text("Text")),
         ];
-        let expected_node = expected_node;
 
         assert_eq!(node, expected_node);
         assert_eq!(node.children.len(), 3, "3 text node children");
@@ -365,7 +326,22 @@ mod tests {
         }
     }
 
-    // TODO: test virtual node inside of a html! macro <div>{ VirtualNodeHere }</div>
+    #[test]
+    fn nested_macro() {
+        let child_2 = html! { <b></b> };
+
+        let mut node = html!{
+        <div>{ html! { <span></span> } { child_2 } }</div>
+        };
+
+        let mut expected_node = VirtualNode::new("div");
+        expected_node.children = vec![
+            wrap(VirtualNode::new("span")),
+            wrap(VirtualNode::new("b")),
+        ];
+
+        assert_eq!(node, expected_node);
+    }
 
     fn wrap (v: VirtualNode) -> Rc<RefCell<VirtualNode>> {
         Rc::new(RefCell::new(v))
