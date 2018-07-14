@@ -1,5 +1,7 @@
 //!
 
+extern crate wasm_bindgen;
+
 pub mod virtual_node;
 pub use virtual_node::*;
 

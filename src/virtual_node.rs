@@ -19,7 +19,48 @@ pub struct VirtualNode {
     pub text: Option<String>,
 }
 
+impl VirtualNode {
+    /// Create a new virtual node with a given tag.
+    ///
+    /// These get patched into the DOM using `document.createElement`
+    ///
+    /// ```
+    /// let div = VirtualNode::tag("div");
+    /// ```
+    pub fn new (tag: &str) -> VirtualNode {
+        let props = HashMap::new();
+        let events = Events(HashMap::new());
+        VirtualNode {
+            tag: tag.to_string(),
+            props,
+            events,
+            children: vec![],
+            parent: None,
+            text: None
+        }
+    }
+
+    /// Create a text node.
+    ///
+    /// These get patched into the DOM using `document.createTextNode`
+    ///
+    /// ```
+    /// let div = VirtualNode::text("div");
+    /// ```
+    pub fn text (text: &str) -> VirtualNode {
+        VirtualNode {
+            tag: "".to_string(),
+            props: HashMap::new(),
+            events: Events(HashMap::new()),
+            children: vec![],
+            parent: None,
+            text: Some(text.to_string())
+        }
+    }
+}
+
 impl<'a> From<&'a str> for VirtualNode {
+    // Used by our html! macro to turn "Strings of text" into virtual nodes.
     fn from(text: &'a str) -> Self {
         VirtualNode::text(text)
     }
@@ -43,34 +84,9 @@ impl PartialEq for Events {
 }
 
 impl fmt::Debug for Events {
+    // Print out all of the event names for this VirtualNode
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let events: String = self.0.keys().map(|key| format!("{} ", key)).collect();
         write!(f, "{}", events)
-    }
-}
-
-impl VirtualNode {
-    pub fn new (tag: &str) -> VirtualNode {
-        let props = HashMap::new();
-        let events = Events(HashMap::new());
-        VirtualNode {
-            tag: tag.to_string(),
-            props,
-            events,
-            children: vec![],
-            parent: None,
-            text: None
-        }
-    }
-
-    pub fn text (text: &str) -> VirtualNode {
-        VirtualNode {
-            tag: "".to_string(),
-            props: HashMap::new(),
-            events: Events(HashMap::new()),
-            children: vec![],
-            parent: None,
-            text: Some(text.to_string())
-        }
     }
 }
