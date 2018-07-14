@@ -3,6 +3,7 @@ use std::fmt;
 pub use std::cell::RefCell;
 pub use std::rc::Rc;
 use std::str::FromStr;
+use webapis::*;
 
 #[derive(PartialEq)]
 pub struct VirtualNode {
@@ -56,6 +57,21 @@ impl VirtualNode {
             parent: None,
             text: Some(text.to_string())
         }
+    }
+}
+
+impl VirtualNode {
+    /// Build a DOM element by recursively creating DOM nodes for this element and it's
+    /// children, it's children's children, etc.
+    pub fn create_element(&self) -> Element {
+        let elem = document.create_element(&self.tag);
+
+        self.children.iter().for_each(|child| {
+            let child = child.borrow();
+            elem.append_child(child.create_element())
+        });
+
+        elem
     }
 }
 
