@@ -1,6 +1,3 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
 /// When parsing our HTML we keep track of whether the last tag that we saw was an open or
 /// close tag.
 ///
@@ -48,9 +45,11 @@ pub enum TagType {
 macro_rules! html {
     ($($remaining_html:tt)*) => {{
         let mut root_nodes: Vec<$crate::Rc<$crate::RefCell<$crate::VirtualNode>>> = vec![];
-        let mut active_node: Option<$crate::Rc<$crate::RefCell<$crate::VirtualNode>>> = None;
-        let prev_tag_type: Option<$crate::TagType> = None;
+
         {
+            let mut active_node: Option<$crate::Rc<$crate::RefCell<$crate::VirtualNode>>> = None;
+            let prev_tag_type: Option<$crate::TagType> = None;
+
             recurse_html! { active_node root_nodes prev_tag_type $($remaining_html)* };
         }
 
@@ -67,7 +66,7 @@ macro_rules! recurse_html {
         let mut new_node = $crate::VirtualNode::new(stringify!($start_tag));
         let mut new_node = $crate::Rc::new($crate::RefCell::new(new_node));
 
-        if ($prev_tag_type == None) {
+        if $prev_tag_type == None {
             $root_nodes.push($crate::Rc::clone(&new_node));
         } else {
             $active_node.as_mut().unwrap().borrow_mut().children.push($crate::Rc::clone(&new_node));
@@ -87,7 +86,7 @@ macro_rules! recurse_html {
         let mut new_node = $crate::VirtualNode::new(stringify!($start_tag));
         let mut new_node = $crate::Rc::new($crate::RefCell::new(new_node));
 
-        if ($prev_tag_type == None) {
+        if $prev_tag_type == None {
             $root_nodes.push($crate::Rc::clone(&new_node));
         } else {
             $active_node.as_mut().unwrap().borrow_mut().children.push($crate::Rc::clone(&new_node));
@@ -203,8 +202,8 @@ mod tests {
         struct TestStruct {
             closure_ran: bool
         };
-        let mut test_struct = Rc::new(RefCell::new(TestStruct { closure_ran: false}));
-        let mut test_struct_clone = Rc::clone(&test_struct);
+        let test_struct = Rc::new(RefCell::new(TestStruct { closure_ran: false}));
+        let test_struct_clone = Rc::clone(&test_struct);
 
         let node = html!{
         <div !onclick=move || {test_struct_clone.borrow_mut().closure_ran = true},></div>
@@ -220,7 +219,7 @@ mod tests {
 
     #[test]
     fn child_node() {
-        let mut node = html!{
+        let node = html!{
         <div><span></span></div>
         };
 
@@ -235,7 +234,7 @@ mod tests {
 
     #[test]
     fn sibling_child_nodes() {
-        let mut node = html!{
+        let node = html!{
         <div><span></span><b></b></div>
         };
 
@@ -251,7 +250,7 @@ mod tests {
 
     #[test]
     fn three_nodes_deep () {
-        let mut node = html!{
+        let node = html!{
         <div><span><b></b></span></div>
         };
 
@@ -267,7 +266,7 @@ mod tests {
 
     #[test]
     fn nested_text_node() {
-        let mut node = html!{
+        let node = html!{
         <div>{ "This is a text node" } {"More" "Text"}</div>
         };
 
@@ -291,7 +290,7 @@ mod tests {
     fn nested_macro() {
         let child_2 = html! { <b></b> };
 
-        let mut node = html!{
+        let node = html!{
         <div>{ html! { <span></span> } { child_2 } }</div>
         };
 
