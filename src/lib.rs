@@ -282,6 +282,29 @@ mod tests {
         }
     }
 
+    #[test]
+    fn three_nodes_deep () {
+        let mut node = html!{
+        <div><span><b></b></span></div>
+        };
+
+        let grandchild = wrap(VirtualNode::new("b"));
+        let mut child = VirtualNode::new("span");
+
+        child.children = vec![grandchild];
+        let child = wrap(child);
+
+        let mut expected_node = VirtualNode::new("div");
+        expected_node.children = vec![child];
+        let expected_node = wrap(expected_node);
+
+        assert_eq!(node, expected_node);
+        assert_eq!(node.borrow().children.len(), 1, "1 Child");
+
+        let child = &node.borrow().children[0];
+        assert_eq!(child.borrow().children.len(), 1, "1 Grandchild");
+    }
+
     fn wrap (v: VirtualNode) -> Rc<RefCell<VirtualNode>> {
         Rc::new(RefCell::new(v))
     }
