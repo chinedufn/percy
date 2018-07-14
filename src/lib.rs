@@ -2,25 +2,28 @@
 
 use std::collections::HashMap;
 use std::fmt;
-use std::cell::RefCell;
-use std::rc::Rc;
+pub use std::cell::RefCell;
+pub use std::rc::Rc;
 use std::str::FromStr;
 
-mod html_macro;
+#[macro_use]
+pub mod html_macro;
+pub use html_macro::*;
 
+// TODO: virtual_node.rs module
 #[derive(PartialEq)]
 pub struct VirtualNode {
-    tag: String,
-    props: HashMap<String, String>,
-    events: Events,
-    children: Vec<Rc<RefCell<VirtualNode>>>,
+    pub tag: String,
+    pub props: HashMap<String, String>,
+    pub events: Events,
+    pub children: Vec<Rc<RefCell<VirtualNode>>>,
     /// We keep track of parents during the `html!` macro in order to be able to crawl
     /// up the tree and assign newly found nodes to the proper parent.
     /// By the time an `html!` macro finishes all nodes will have `parent` None
-    parent: Option<Rc<RefCell<VirtualNode>>>,
+    pub parent: Option<Rc<RefCell<VirtualNode>>>,
     /// Some(String) if this is a [text node](https://developer.mozilla.org/en-US/docs/Web/API/Text).
     /// When patching these into a real DOM these use `document.createTextNode(text)`
-    text: Option<String>,
+    pub text: Option<String>,
 }
 
 impl<'a> From<&'a str> for VirtualNode {
@@ -35,12 +38,12 @@ impl fmt::Debug for VirtualNode {
     }
 }
 
-// TODO: No longer need this since we implement partialeq ourselves for VirtualNode
-pub struct Events(HashMap<String, Box<Fn() -> ()>>);
+/// We need a custom implementation of fmt::Debug since Fn() doesn't
+/// implement debug.
+pub struct Events(pub HashMap<String, Box<Fn() -> ()>>);
 
 impl PartialEq for Events {
-    // Once you set events on an element you can't change them, so we don't factor them
-    // into our PartialEq
+    // TODO: What should happen here..? And why?
     fn eq(&self, rhs: &Self) -> bool {
        true
     }
@@ -54,7 +57,7 @@ impl fmt::Debug for Events {
 }
 
 impl VirtualNode {
-    fn new (tag: &str) -> VirtualNode {
+    pub fn new (tag: &str) -> VirtualNode {
         let props = HashMap::new();
         let events = Events(HashMap::new());
         VirtualNode {
@@ -67,7 +70,7 @@ impl VirtualNode {
         }
     }
 
-    fn text (text: &str) -> VirtualNode {
+    pub fn text (text: &str) -> VirtualNode {
         VirtualNode {
             tag: "".to_string(),
             props: HashMap::new(),
@@ -78,4 +81,3 @@ impl VirtualNode {
         }
     }
 }
-
