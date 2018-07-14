@@ -11,6 +11,9 @@ pub struct VirtualNode {
     props: HashMap<String, String>,
     events: Events,
     children: Vec<Rc<RefCell<VirtualNode>>>,
+    /// We keep track of parents during the `html!` macro in order to be able to crawl
+    /// up the tree and assign newly found nodes to the proper parent.
+    /// By the time an `html!` macro finishes all nodes will have `parent` None
     parent: Option<Rc<RefCell<VirtualNode>>>,
     /// Some(String) if this is a [text node](https://developer.mozilla.org/en-US/docs/Web/API/Text).
     /// When patching these into a real DOM these use `document.createTextNode(text)`
@@ -264,7 +267,6 @@ mod tests {
         let node = html!{
         <div !onclick=move || {test_struct_clone.borrow_mut().closure_ran = true},></div>
         };
-
 
         assert_eq!(test_struct.borrow().closure_ran, false);
 
