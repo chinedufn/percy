@@ -87,7 +87,6 @@ macro_rules! html {
             recurse_html! { active_node root_nodes prev_tag_type $($remaining_html)* };
         }
 
-        println!("{:#?}", root_nodes);
         root_nodes.pop().unwrap()
     }};
 }
@@ -105,9 +104,10 @@ macro_rules! recurse_html {
             $root_nodes.push(Rc::clone(&new_node));
         } else {
             $active_node.as_mut().unwrap().borrow_mut().children.push(Rc::clone(&new_node));
+            new_node.borrow_mut().parent = $active_node;
         }
 
-        $active_node = Some(new_node);
+        let mut $active_node = Some(new_node);
 
         let tag_type = Some(TagType::Open);
         recurse_html! { $active_node $root_nodes tag_type $($remaining_html)* }
@@ -120,10 +120,11 @@ macro_rules! recurse_html {
         let mut new_node = VirtualNode::new(stringify!($start_tag));
         let mut new_node = Rc::new(RefCell::new(new_node));
 
-        if $prev_tag_type == Some(TagType::Open) {
-            $active_node.as_mut().unwrap().borrow_mut().children.push(Rc::clone(&new_node));
-        } else if ($prev_tag_type == None) {
+        if ($prev_tag_type == None) {
             $root_nodes.push(Rc::clone(&new_node));
+        } else {
+            $active_node.as_mut().unwrap().borrow_mut().children.push(Rc::clone(&new_node));
+            new_node.borrow_mut().parent = $active_node;
         }
 
         $active_node = Some(new_node);
@@ -170,7 +171,7 @@ macro_rules! recurse_html {
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident < / $end_tag:ident > $($remaining_html:tt)*) => {
         let tag_type = Some(TagType::Close);
 
-        // TODO: Revisit this..
+        // TODO: Revisit this.. Feels like an unnecessary dance but idk
         let mut $active_node = Rc::clone(&$active_node.unwrap());
         let mut $active_node = $active_node.borrow_mut().parent.take();
 
@@ -263,7 +264,6 @@ mod tests {
         let mut node = html!{
         <div><span></span><b></b></div>
         };
-        eprintln!("node = {:#?}", node);
 
         let sibling1 = wrap(VirtualNode::new("span"));
         let sibling2 = wrap(VirtualNode::new("b"));
