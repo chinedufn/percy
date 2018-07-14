@@ -108,7 +108,7 @@ macro_rules! html {
             recurse_html! { active_node root_nodes prev_tag_type $($remaining_html)* };
         }
 
-        root_nodes.pop().unwrap()
+        Rc::try_unwrap(root_nodes.pop().unwrap()).unwrap().into_inner()
     }};
 }
 
@@ -239,7 +239,7 @@ mod tests {
 
         let mut  expected_node = VirtualNode::new("div");
 
-        assert_eq!(node, Rc::new(RefCell::new(expected_node)));
+        assert_eq!(node, expected_node);
     }
 
     #[test]
@@ -253,7 +253,7 @@ mod tests {
         let mut expected_node = VirtualNode::new("div");
         expected_node.props = props;
 
-        assert_eq!(node, Rc::new(RefCell::new(expected_node)));
+        assert_eq!(node, expected_node);
     }
 
     #[test]
@@ -270,7 +270,7 @@ mod tests {
 
         assert_eq!(test_struct.borrow().closure_ran, false);
 
-        node.borrow().events.0.get("onclick").unwrap()();
+        node.events.0.get("onclick").unwrap()();
 
         assert_eq!(test_struct.borrow().closure_ran, true);
     }
@@ -290,12 +290,10 @@ mod tests {
 
         let mut expected_node = VirtualNode::new("div");
         expected_node.children = children;
-        let expected_node = wrap(expected_node);
-
-        child_clone.borrow_mut().parent = Some(Rc::clone(&expected_node));
+        let expected_node = expected_node;
 
         assert_eq!(node, expected_node);
-        assert_eq!(expected_node.borrow().children.len(), 1);
+        assert_eq!(expected_node.children.len(), 1);
     }
 
     #[test]
@@ -311,13 +309,13 @@ mod tests {
 
         let mut expected_node = VirtualNode::new("div");
         expected_node.children = children;
-        let expected_node = wrap(expected_node);
+        let expected_node = expected_node;
 
         assert_eq!(node, expected_node);
-        assert_eq!(node.borrow().children.len(), 2);
+        assert_eq!(node.children.len(), 2);
 
-        for (index, child) in node.borrow().children.iter().enumerate() {
-            assert_eq!(child, &expected_node.borrow().children[index]);
+        for (index, child) in node.children.iter().enumerate() {
+            assert_eq!(child, &expected_node.children[index]);
         }
     }
 
@@ -335,12 +333,12 @@ mod tests {
 
         let mut expected_node = VirtualNode::new("div");
         expected_node.children = vec![child];
-        let expected_node = wrap(expected_node);
+        let expected_node = expected_node;
 
         assert_eq!(node, expected_node);
-        assert_eq!(node.borrow().children.len(), 1, "1 Child");
+        assert_eq!(node.children.len(), 1, "1 Child");
 
-        let child = &node.borrow().children[0];
+        let child = &node.children[0];
         assert_eq!(child.borrow().children.len(), 1, "1 Grandchild");
     }
 
@@ -356,14 +354,14 @@ mod tests {
             wrap(VirtualNode::text("More")),
             wrap(VirtualNode::text("Text")),
         ];
-        let expected_node = wrap(expected_node);
+        let expected_node = expected_node;
 
         assert_eq!(node, expected_node);
-        assert_eq!(node.borrow().children.len(), 3, "3 text node children");
+        assert_eq!(node.children.len(), 3, "3 text node children");
 
         // TODO: assert_same_children(node, expected_node)
-        for (index, child) in node.borrow().children.iter().enumerate() {
-            assert_eq!(child, &expected_node.borrow().children[index]);
+        for (index, child) in node.children.iter().enumerate() {
+            assert_eq!(child, &expected_node.children[index]);
         }
     }
 
