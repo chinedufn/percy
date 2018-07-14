@@ -101,10 +101,10 @@ macro_rules! recurse_html {
         let mut new_node = VirtualNode::new(stringify!($start_tag));
         let mut new_node = Rc::new(RefCell::new(new_node));
 
-        if $prev_tag_type == Some(TagType::Open) {
-            $active_node.as_mut().unwrap().borrow_mut().children.push(Rc::clone(&new_node));
-        } else if ($prev_tag_type == None) {
+        if ($prev_tag_type == None) {
             $root_nodes.push(Rc::clone(&new_node));
+        } else {
+            $active_node.as_mut().unwrap().borrow_mut().children.push(Rc::clone(&new_node));
         }
 
         $active_node = Some(new_node);
@@ -169,6 +169,11 @@ macro_rules! recurse_html {
     // </div>
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident < / $end_tag:ident > $($remaining_html:tt)*) => {
         let tag_type = Some(TagType::Close);
+
+        // TODO: Revisit this..
+        let mut $active_node = Rc::clone(&$active_node.unwrap());
+        let mut $active_node = $active_node.borrow_mut().parent.take();
+
         recurse_html! { $active_node $root_nodes tag_type $($remaining_html)* }
     };
 
