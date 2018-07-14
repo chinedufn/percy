@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::str::FromStr;
 
 pub struct VirtualNode {
     tag: String,
@@ -14,6 +15,12 @@ pub struct VirtualNode {
     /// Some(String) if this is a [text node](https://developer.mozilla.org/en-US/docs/Web/API/Text).
     /// When patching these into a real DOM these use `document.createTextNode(text)`
     text: Option<String>,
+}
+
+impl<'a> From<&'a str> for VirtualNode {
+    fn from(text: &'a str) -> Self {
+        VirtualNode::text(text)
+    }
 }
 
 impl fmt::Debug for VirtualNode {
@@ -65,6 +72,17 @@ impl VirtualNode {
             children: vec![],
             parent: None,
             text: None
+        }
+    }
+
+    fn text (text: &str) -> VirtualNode {
+        VirtualNode {
+            tag: "".to_string(),
+            props: HashMap::new(),
+            events: Events(HashMap::new()),
+            children: vec![],
+            parent: None,
+            text: Some(text.to_string())
         }
     }
 }
@@ -164,6 +182,18 @@ macro_rules! recurse_html {
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
     };
 
+    // A block
+    // for <div>{ Hello world }</div> this is:
+    // "Hello world"
+    ($active_node:ident $root_nodes:ident $prev_tag_type:ident { $($child:expr)* } $($remaining_html:tt)*) => {
+        $(
+            let new_child = VirtualNode::from($child);
+            let new_child = Rc::new(RefCell::new(new_child));
+            $active_node.as_mut().unwrap().borrow_mut().children.push(Rc::clone(&new_child));
+        )*
+
+        recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
+    };
 
     // A closing tag for some associated opening tag name
     // For <div id="10",></div> this is:
@@ -171,7 +201,8 @@ macro_rules! recurse_html {
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident < / $end_tag:ident > $($remaining_html:tt)*) => {
         let tag_type = Some(TagType::Close);
 
-        // TODO: Revisit this.. Feels like an unnecessary dance but idk
+        // Set the active node to the parent of the current active node that we just finished
+        // processing
         let mut $active_node = Rc::clone(&$active_node.unwrap());
         let mut $active_node = $active_node.borrow_mut().parent.take();
 
@@ -184,6 +215,12 @@ macro_rules! recurse_html {
 
     // TODO: README explains that props must end with commas
 }
+
+//macro_rules! append_children_from_block {
+//    ( $( $child:expr )) => {
+//        println!("hi");
+//    }
+//}
 
 #[cfg(test)]
 mod tests {
@@ -304,6 +341,31 @@ mod tests {
         let child = &node.borrow().children[0];
         assert_eq!(child.borrow().children.len(), 1, "1 Grandchild");
     }
+
+    #[test]
+    fn nested_text_node() {
+        let mut node = html!{
+        <div>{ "This is a text node" } {"More" "Text"}</div>
+        };
+
+        let mut expected_node = VirtualNode::new("div");
+        expected_node.children = vec![
+            wrap(VirtualNode::text("This is a text node")),
+            wrap(VirtualNode::text("More")),
+            wrap(VirtualNode::text("Text")),
+        ];
+        let expected_node = wrap(expected_node);
+
+        assert_eq!(node, expected_node);
+        assert_eq!(node.borrow().children.len(), 3, "3 text node children");
+
+        // TODO: assert_same_children(node, expected_node)
+        for (index, child) in node.borrow().children.iter().enumerate() {
+            assert_eq!(child, &expected_node.borrow().children[index]);
+        }
+    }
+
+    // TODO: test virtual node inside of a html! macro <div>{ VirtualNodeHere }</div>
 
     fn wrap (v: VirtualNode) -> Rc<RefCell<VirtualNode>> {
         Rc::new(RefCell::new(v))
