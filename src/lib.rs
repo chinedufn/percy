@@ -5,8 +5,6 @@ use std::fmt;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-#[derive(Debug)]
-#[cfg_attr(test, derive(PartialEq, Default))]
 pub struct VirtualNode {
     tag: String,
     props: HashMap<String, String>,
@@ -18,7 +16,27 @@ pub struct VirtualNode {
     text: Option<String>,
 }
 
-#[cfg_attr(test, derive(Default))]
+impl fmt::Debug for VirtualNode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "VirtualNode | tag: {}, props: {:#?}, text: {:#?}, children: {:#?} |", self.tag, self.props, self.text, self.children)
+    }
+}
+
+impl PartialEq for VirtualNode {
+    fn eq(&self, rhs: &Self) -> bool {
+        self.tag == rhs.tag &&
+            self.props == rhs.props &&
+            self.text == rhs.text
+    }
+}
+
+//impl Drop for VirtualNode {
+//    fn drop(&mut self) {
+//        self.parent = None;
+//    }
+//}
+
+// TODO: No longer need this since we implement partialeq ourselves for VirtualNode
 pub struct Events(HashMap<String, Box<Fn() -> ()>>);
 
 impl PartialEq for Events {
@@ -69,7 +87,8 @@ macro_rules! html {
             recurse_html! { active_node root_nodes prev_tag_type $($remaining_html)* };
         }
 
-        active_node.unwrap()
+        println!("{:#?}", root_nodes);
+        root_nodes.pop().unwrap()
     }};
 }
 
@@ -100,6 +119,12 @@ macro_rules! recurse_html {
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident < $start_tag:ident $($remaining_html:tt)*) => {
         let mut new_node = VirtualNode::new(stringify!($start_tag));
         let mut new_node = Rc::new(RefCell::new(new_node));
+
+        if $prev_tag_type == Some(TagType::Open) {
+            $active_node.as_mut().unwrap().borrow_mut().children.push(Rc::clone(&new_node));
+        } else if ($prev_tag_type == None) {
+            $root_nodes.push(Rc::clone(&new_node));
+        }
 
         $active_node = Some(new_node);
 
@@ -166,10 +191,7 @@ mod tests {
         <div></div>
         };
 
-        let expected_node = VirtualNode {
-            tag: "div".to_string(),
-            ..VirtualNode::default()
-        };
+        let mut  expected_node = VirtualNode::new("div");
 
         assert_eq!(node, Rc::new(RefCell::new(expected_node)));
     }
@@ -182,11 +204,8 @@ mod tests {
 
         let mut props = HashMap::new();
         props.insert("id".to_string(), "hello-world".to_string());
-        let expected_node = VirtualNode {
-            tag: "div".to_string(),
-            props,
-            ..VirtualNode::default()
-        };
+        let mut expected_node = VirtualNode::new("div");
+        expected_node.props = props;
 
         assert_eq!(node, Rc::new(RefCell::new(expected_node)));
     }
@@ -218,23 +237,20 @@ mod tests {
         <div><span></span></div>
         };
 
-        let child = Rc::new(RefCell::new(VirtualNode {
-            tag: "span".to_string(),
-            ..VirtualNode::default()
-        }));
+        let child = VirtualNode::new("span");
+        let child = wrap(child);
         let mut child_clone = Rc::clone(&child);
         let mut children = vec![child];
         // TODO: Add parent
 
-        let expected_node = Rc::new(RefCell::new(VirtualNode {
-            tag: "div".to_string(),
-            children,
-            ..VirtualNode::default()
-        }));
+        let mut expected_node = VirtualNode::new("div");
+        expected_node.children = children;
+        let expected_node = wrap(expected_node);
 
         child_clone.borrow_mut().parent = Some(Rc::clone(&expected_node));
 
         assert_eq!(node, expected_node);
+        assert_eq!(expected_node.borrow().children.len(), 1);
     }
 
     #[test]
@@ -242,23 +258,26 @@ mod tests {
         let mut node = html!{
         <div><span></span><b></b></div>
         };
+        eprintln!("node = {:#?}", node);
 
-        let sibling1 = Rc::new(RefCell::new(VirtualNode {
-            tag: "span".to_string(),
-            ..VirtualNode::default()
-        }));
-        let sibling2 = Rc::new(RefCell::new(VirtualNode {
-            tag: "b".to_string(),
-            ..VirtualNode::default()
-        }));
+        let sibling1 = wrap(VirtualNode::new("span"));
+        let sibling2 = wrap(VirtualNode::new("b"));
+
         let children = vec![sibling1, sibling2];
 
-        let expected_node = VirtualNode {
-            tag: "div".to_string(),
-            children,
-            ..VirtualNode::default()
-        };
+        let mut expected_node = VirtualNode::new("div");
+        expected_node.children = children;
+        let expected_node = wrap(expected_node);
 
-        assert_eq!(node, Rc::new(RefCell::new(expected_node)));
+        assert_eq!(node, expected_node);
+        assert_eq!(node.borrow().children.len(), 2);
+
+        for (index, child) in node.borrow().children.iter().enumerate() {
+            assert_eq!(child, &expected_node.borrow().children[index]);
+        }
+    }
+
+    fn wrap (v: VirtualNode) -> Rc<RefCell<VirtualNode>> {
+        Rc::new(RefCell::new(v))
     }
 }
