@@ -13,14 +13,13 @@
 ///
 /// For example, in `<foo><bar></bar><bing></bing>` <bing> is a the child of "</bar>"'s parent since
 /// </bar> is a closing tag. Soo `<bing>`'s parent is `<foo>`
-
 use wasm_bindgen::prelude::Closure;
 
 #[derive(PartialEq)]
 #[cfg_attr(test, derive(Debug))]
 pub enum TagType {
     Open,
-    Close
+    Close,
 }
 
 /// A macro which returns a root `VirtualNode` given some HTML and Rust expressions.
@@ -170,10 +169,10 @@ macro_rules! recurse_html {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::rc::Rc;
     use std::cell::RefCell;
-    use VirtualNode;
     use std::collections::HashMap;
+    use std::rc::Rc;
+    use VirtualNode;
 
     #[test]
     fn empty_div() {
@@ -181,7 +180,7 @@ mod tests {
         <div></div>
         };
 
-        let mut  expected_node = VirtualNode::new("div");
+        let mut expected_node = VirtualNode::new("div");
 
         assert_eq!(node, expected_node);
     }
@@ -203,9 +202,9 @@ mod tests {
     #[test]
     fn event() {
         struct TestStruct {
-            closure_ran: bool
+            closure_ran: bool,
         };
-        let test_struct = Rc::new(RefCell::new(TestStruct { closure_ran: false}));
+        let test_struct = Rc::new(RefCell::new(TestStruct { closure_ran: false }));
         let test_struct_clone = Rc::clone(&test_struct);
 
         let node = html!{
@@ -215,7 +214,6 @@ mod tests {
         assert!(node.events.0.get("onclick").is_some());
     }
 
-
     #[test]
     fn child_node() {
         let node = html!{
@@ -223,9 +221,7 @@ mod tests {
         };
 
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = vec![
-            wrap(VirtualNode::new("span"))
-        ];
+        expected_node.children = vec![wrap(VirtualNode::new("span"))];
 
         assert_eq!(node, expected_node);
         assert_eq!(expected_node.children.len(), 1);
@@ -238,17 +234,14 @@ mod tests {
         };
 
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = vec![
-            wrap(VirtualNode::new("span")),
-            wrap(VirtualNode::new("b"))
-        ];
+        expected_node.children = vec![wrap(VirtualNode::new("span")), wrap(VirtualNode::new("b"))];
 
         assert_eq!(node, expected_node);
         assert_eq!(node.children.len(), 2);
     }
 
     #[test]
-    fn three_nodes_deep () {
+    fn three_nodes_deep() {
         let node = html!{
         <div><span><b></b></span></div>
         };
@@ -294,15 +287,32 @@ mod tests {
         };
 
         let mut expected_node = VirtualNode::new("div");
+        expected_node.children = vec![wrap(VirtualNode::new("span")), wrap(VirtualNode::new("b"))];
+
+        assert_eq!(node, expected_node);
+    }
+
+    #[test]
+    fn strings() {
+        let text = "This is a text node";
+        let text = format!("{}", text);
+
+        let text_ref = &format!("{}", text);
+
+        let node = html!{
+        <div>{ text text_ref }</div>
+        };
+
+        let mut expected_node = VirtualNode::new("div");
         expected_node.children = vec![
-            wrap(VirtualNode::new("span")),
-            wrap(VirtualNode::new("b")),
+            wrap(VirtualNode::text("This is a text node")),
+            wrap(VirtualNode::text("This is a text node")),
         ];
 
         assert_eq!(node, expected_node);
     }
 
-    fn wrap (v: VirtualNode) -> Rc<RefCell<VirtualNode>> {
+    fn wrap(v: VirtualNode) -> Rc<RefCell<VirtualNode>> {
         Rc::new(RefCell::new(v))
     }
 }

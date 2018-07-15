@@ -1,9 +1,9 @@
+pub use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
-pub use std::cell::RefCell;
 pub use std::rc::Rc;
-use webapis::*;
 use wasm_bindgen::prelude::Closure;
+use webapis::*;
 
 #[derive(PartialEq)]
 pub struct VirtualNode {
@@ -28,7 +28,7 @@ impl VirtualNode {
     /// ```
     /// let div = VirtualNode::tag("div");
     /// ```
-    pub fn new (tag: &str) -> VirtualNode {
+    pub fn new(tag: &str) -> VirtualNode {
         let props = HashMap::new();
         let events = Events(HashMap::new());
         VirtualNode {
@@ -37,7 +37,7 @@ impl VirtualNode {
             events,
             children: vec![],
             parent: None,
-            text: None
+            text: None,
         }
     }
 
@@ -48,14 +48,14 @@ impl VirtualNode {
     /// ```
     /// let div = VirtualNode::text("div");
     /// ```
-    pub fn text (text: &str) -> VirtualNode {
+    pub fn text(text: &str) -> VirtualNode {
         VirtualNode {
             tag: "".to_string(),
             props: HashMap::new(),
             events: Events(HashMap::new()),
             children: vec![],
             parent: None,
-            text: Some(text.to_string())
+            text: Some(text.to_string()),
         }
     }
 }
@@ -86,7 +86,7 @@ impl VirtualNode {
                 elem.append_text_child(document.create_text_node(&child.text.as_ref().unwrap()));
             }
 
-            if child.text.is_none () {
+            if child.text.is_none() {
                 elem.append_child(child.create_element());
             }
         });
@@ -95,16 +95,24 @@ impl VirtualNode {
     }
 }
 
+// Used by our html! macro to turn "Strings of text" into virtual nodes.
 impl<'a> From<&'a str> for VirtualNode {
-    // Used by our html! macro to turn "Strings of text" into virtual nodes.
-    fn from(text: &'a str) -> Self {
-        VirtualNode::text(text)
-    }
+    fn from(text: &'a str) -> Self { VirtualNode::text(text) }
+}
+impl From<String> for VirtualNode {
+    fn from(text: String) -> Self { VirtualNode::text(&text) }
+}
+impl<'a> From<&'a String> for VirtualNode {
+    fn from(text: &'a String) -> Self { VirtualNode::text(text) }
 }
 
 impl fmt::Debug for VirtualNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "VirtualNode | tag: {}, props: {:#?}, text: {:#?}, children: {:#?} |", self.tag, self.props, self.text, self.children)
+        write!(
+            f,
+            "VirtualNode | tag: {}, props: {:#?}, text: {:#?}, children: {:#?} |",
+            self.tag, self.props, self.text, self.children
+        )
     }
 }
 
