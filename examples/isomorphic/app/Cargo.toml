@@ -1,0 +1,7 @@
+[package]
+name = "isomorphic-app"
+version = "0.1.0"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+
+[dependencies]
+virtual-dom-rs = { path = "../../../" }

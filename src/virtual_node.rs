@@ -122,16 +122,16 @@ impl fmt::Display for VirtualNode {
         if self.text.is_some() {
             write!(f, "{}", self.text.as_ref().unwrap())
         } else {
-            write!(f, "<{}", self.tag);
+            write!(f, "<{}", self.tag).unwrap();
 
             for (prop, value) in self.props.iter() {
-                write!(f, r#" {}="{}""#, prop, value);
+                write!(f, r#" {}="{}""#, prop, value)?;
             }
 
             write!(f, ">");
 
             for child in self.children.iter() {
-                write!(f, "{}", child.borrow().to_string());
+                write!(f, "{}", child.borrow().to_string())?;
             }
             write!(f, "</{}>", self.tag)
         }

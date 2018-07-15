@@ -11,5 +11,7 @@ wasm-bindgen = { version = "0.2" }
 [workspace]
 members = [
   "tests/jsdom",
-  "examples/isomorphic"
+  "examples/isomorphic/app",
+  "examples/isomorphic/client",
+  "examples/isomorphic/server"
 ]

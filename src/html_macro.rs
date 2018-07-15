@@ -50,6 +50,7 @@ macro_rules! html {
 
         {
             let mut active_node: Option<$crate::Rc<$crate::RefCell<$crate::VirtualNode>>> = None;
+
             let prev_tag_type: Option<$crate::TagType> = None;
 
             recurse_html! { active_node root_nodes prev_tag_type $($remaining_html)* };
@@ -126,7 +127,7 @@ macro_rules! recurse_html {
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident ! $event_name:tt = $callback:expr, $($remaining_html:tt)*) => {
         $active_node.as_mut().unwrap().borrow_mut().events.0.insert(
             stringify!($event_name).to_string(),
-            Some(Closure::new($callback))
+            Some($crate::Closure::new($callback))
         );
 
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
@@ -180,7 +181,7 @@ mod tests {
         <div></div>
         };
 
-        let mut expected_node = VirtualNode::new("div");
+        let expected_node = VirtualNode::new("div");
 
         assert_eq!(node, expected_node);
     }

@@ -1,7 +1,9 @@
 use std::net::TcpListener;
 
-use std::io::Write;
 use std::io::Read;
+use std::io::Write;
+
+use isomorphic_app::App;
 
 pub fn serve() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
@@ -10,7 +12,9 @@ pub fn serve() {
     for stream in listener.incoming() {
         println!("Incoming connection");
 
-        let html = html! { <div> { "Hello world" } </div> };
+        let app = App::new();
+
+        let html = app.render();
         let html = html.to_string();
 
         let mut buffer = [0; 512];

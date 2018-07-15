@@ -5,37 +5,41 @@ use wasm_bindgen::prelude::*;
 
 #[macro_use]
 extern crate virtual_dom_rs;
-use virtual_dom_rs::webapis::*;
 use std::cell::Cell;
 use std::rc::Rc;
+use virtual_dom_rs::webapis::*;
 
 #[wasm_bindgen]
-pub fn nested_divs () -> Element {
+pub fn nested_divs() -> Element {
     let mut div = html! { <div> <div> <div></div> </div> </div> };
     div.create_element()
 }
 
 #[wasm_bindgen]
-pub fn div_with_properties () -> Element {
+pub fn div_with_properties() -> Element {
     let mut div = html! { <div id="id-here", class="two classes",></div> };
     div.create_element()
 }
 
 #[wasm_bindgen]
 pub struct ClickTest {
-    clicked: Rc<Cell<bool>>
+    clicked: Rc<Cell<bool>>,
 }
 
 #[wasm_bindgen]
 impl ClickTest {
     #[wasm_bindgen(constructor)]
-    pub fn new () -> ClickTest {
-        ClickTest { clicked: Rc::new(Cell::new(false))}
+    pub fn new() -> ClickTest {
+        ClickTest {
+            clicked: Rc::new(Cell::new(false)),
+        }
     }
 
-    pub fn get_clicked(&self) -> bool { self.clicked.get() }
+    pub fn get_clicked(&self) -> bool {
+        self.clicked.get()
+    }
 
-    pub fn div_with_click_event (&self) -> Element {
+    pub fn div_with_click_event(&self) -> Element {
         let mut clicked = Rc::clone(&self.clicked);
 
         let mut div = html! { <div
@@ -50,17 +54,16 @@ impl ClickTest {
 }
 
 #[wasm_bindgen]
-pub struct PatchTest {
-}
+pub struct PatchTest {}
 
 #[wasm_bindgen]
 impl PatchTest {
     #[wasm_bindgen(constructor)]
-    pub fn new () -> PatchTest {
+    pub fn new() -> PatchTest {
         PatchTest {}
     }
 
-    pub fn patch_element (&self) {
+    pub fn patch_element(&self) {
         let mut old_elem = html! { <div id="old",> { "Original element" } </div> };
 
         let root_node = old_elem.create_element();
@@ -75,13 +78,10 @@ impl PatchTest {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test() {
-
-    }
+    fn test() {}
 }
