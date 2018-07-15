@@ -108,6 +108,28 @@ impl fmt::Debug for VirtualNode {
     }
 }
 
+impl fmt::Display for VirtualNode {
+    // Turn a VirtualNode and all of it's children (recursively) into an HTML string
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.text.is_some() {
+            write!(f, "{}", self.text.as_ref().unwrap())
+        } else {
+            write!(f, "<{}", self.tag);
+
+            for (prop, value) in self.props.iter() {
+                write!(f, r#" {}="{}""#, prop, value);
+            }
+
+            write!(f, ">");
+
+            for child in self.children.iter() {
+                write!(f, "{}", child.borrow().to_string());
+            }
+            write!(f, "</{}>", self.tag)
+        }
+    }
+}
+
 /// We need a custom implementation of fmt::Debug since Fn() doesn't
 /// implement debug.
 pub struct Events(pub HashMap<String, Option<Closure<Fn() -> ()>>>);
@@ -127,3 +149,21 @@ impl fmt::Debug for Events {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn to_string() {
+        let node = html! {
+        <div id="some-id", !onclick=|| {},>
+            <span>
+                { "Hello world" }
+            </span>
+        </div>
+        };
+        let expected = r#"<div id="some-id"><span>Hello world</span></div>"#;
+
+        assert_eq!(node.to_string(), expected);
+    }
+}
