@@ -14,6 +14,8 @@ use virtual_dom_rs::virtual_node::VirtualNode;
 mod state;
 pub use state::*;
 
+pub use virtual_dom_rs::webapis::*;
+
 pub struct App {
     pub state: Rc<RefCell<State>>,
 }
@@ -22,6 +24,12 @@ impl App {
     pub fn new() -> App {
         App {
             state: Rc::new(RefCell::new(State::new())),
+        }
+    }
+
+    pub fn from_state_json(json: &str) -> App {
+        App {
+            state: Rc::new(RefCell::new(State::from_json(json))),
         }
     }
 }

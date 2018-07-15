@@ -26,43 +26,43 @@ pub fn serve() {
         let mut buffer = [0; 512];
         stream.read(&mut buffer).unwrap();
 
-        //        println!("{}", String::from_utf8_lossy(&buffer));
+        let request_pieces = String::from_utf8_lossy(&buffer);
+        let buffer_words = request_pieces.split("/").collect::<Vec<&str>>();
+        let filename = buffer_words[1];
+
+        let filename = filename.split(" ").collect::<Vec<&str>>();
+        let filename = filename[0];
+
+        println!("{}", ::std::env::current_dir().unwrap().display());
+        let filename = &format!("./examples/isomorphic/client/{}", filename);
+        println!("FILENAME: {}", filename);
 
         let get_home = b"GET / HTTP/1.1\r\n";
-        let wasm = b"GET /078fc2bb27ecd130333c.module.wasm HTTP/1.1\r\n";
-        let bundle0 = b"GET /0.bundle.js HTTP/1.1\r\n";
-        let bundle1 = b"GET /1.bundle.js HTTP/1.1\r\n";
 
         if buffer.starts_with(get_home) {
             let app = App::new();
+            let state = app.state.borrow();
 
             let html = format!("{}", include_str!("./index.html"));
             let html = html.replace("#HTML_INSERTED_HERE_BY_SERVER#", &app.render().to_string());
+            let html = html.replace("#INITIAL_STATE_JSON#", &state.to_json());
 
             let response = format!("HTTP/1.1 200 OK\r\n\r\n{}", html);
 
             stream.write(response.as_bytes()).unwrap();
             stream.flush().unwrap();
-        } else if buffer.starts_with(wasm) {
-            let wasm = include_bytes!("../../client/078fc2bb27ecd130333c.module.wasm");
+        } else if String::from_utf8_lossy(&buffer).contains(".module.wasm") {
+            let mut wasm_file = File::open(filename).expect("Wasm file not found");
+            let mut wasm = [0; 1_000_000];
+            wasm_file.read(&mut wasm).expect("Read wasm file into memory");
 
             let application_wasm = "\r\nContent-Type: application/wasm";
             stream
                 .write(format!("HTTP/1.1 200 OK{}\r\n\r\n", application_wasm).as_bytes())
                 .unwrap();
-            stream.write(wasm).unwrap();
+            stream.write(&wasm).unwrap();
             stream.flush().unwrap();
         } else {
-            let request_pieces = String::from_utf8_lossy(&buffer);
-            let buffer_words = request_pieces.split("/").collect::<Vec<&str>>();
-            let filename = buffer_words[1];
-
-            let filename = filename.split(" ").collect::<Vec<&str>>();
-            let filename = filename[0];
-
-            println!("{}", ::std::env::current_dir().unwrap().display());
-            let filename = &format!("./examples/isomorphic/client/{}", filename);
-            println!("FILENAME: {}", filename);
 
             let mut file = File::open(filename).expect("File not found");
 
