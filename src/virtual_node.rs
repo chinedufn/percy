@@ -81,7 +81,14 @@ impl VirtualNode {
 
         self.children.iter_mut().for_each(|child| {
             let mut child = child.borrow_mut();
-            elem.append_child(child.create_element())
+
+            if child.text.is_some() {
+                elem.append_text_child(document.create_text_node(&child.text.as_ref().unwrap()));
+            }
+
+            if child.text.is_none () {
+                elem.append_child(child.create_element());
+            }
         });
 
         elem

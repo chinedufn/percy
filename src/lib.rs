@@ -13,3 +13,9 @@ pub use html_macro::*;
 
 // TODO: Replace with web-sys crate when it gets released
 pub mod webapis;
+
+mod diff;
+pub use diff::*;
+
+mod patch;
+pub use patch::*;

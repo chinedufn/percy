@@ -49,10 +49,46 @@ impl ClickTest {
     }
 }
 
+#[wasm_bindgen]
+pub struct PatchTest {
+}
+
+#[wasm_bindgen]
+impl PatchTest {
+    #[wasm_bindgen(constructor)]
+    pub fn new () -> PatchTest {
+        PatchTest {}
+    }
+
+    pub fn patch_element (&self) {
+        let mut old_elem = html! { <div id="old",> { "Original element" } </div> };
+        let mut old_elem = html! { <div id="old",></div> };
+
+        let mut wrapper = html! { <div></div> };
+        let wrapper = wrapper.create_element();
+
+        let root_node = old_elem.create_element();
+
+        wrapper.append_child(root_node);
+        document.body().append_child(wrapper);
+
+        let root_node = document.get_element_by_id("old");
+
+        let mut new_elem = html! { <div id="patched",> { "Patched element" } </div> };
+
+        let patches = virtual_dom_rs::diff(&old_elem, &mut new_elem);
+
+        virtual_dom_rs::patch(&root_node, &patches);
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn it_works () {
+    fn test() {
 
     }
 }
