@@ -6,3 +6,6 @@ node_modules
 
 # Generated WebAssembly modules
 tests/jsdom/jsdom_tests*
+examples/isomorphic/client/isomorphic_client*
+examples/isomorphic/client/*bundle.js
+examples/isomorphic/client/*.module.wasm

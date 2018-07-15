@@ -97,13 +97,19 @@ impl VirtualNode {
 
 // Used by our html! macro to turn "Strings of text" into virtual nodes.
 impl<'a> From<&'a str> for VirtualNode {
-    fn from(text: &'a str) -> Self { VirtualNode::text(text) }
+    fn from(text: &'a str) -> Self {
+        VirtualNode::text(text)
+    }
 }
 impl From<String> for VirtualNode {
-    fn from(text: String) -> Self { VirtualNode::text(&text) }
+    fn from(text: String) -> Self {
+        VirtualNode::text(&text)
+    }
 }
 impl<'a> From<&'a String> for VirtualNode {
-    fn from(text: &'a String) -> Self { VirtualNode::text(text) }
+    fn from(text: &'a String) -> Self {
+        VirtualNode::text(text)
+    }
 }
 
 impl fmt::Debug for VirtualNode {
