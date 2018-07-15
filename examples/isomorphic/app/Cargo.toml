@@ -5,3 +5,6 @@ authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 
 [dependencies]
 virtual-dom-rs = { path = "../../../" }
+serde = "1"
+serde_derive = "1"
+serde_json = "1"

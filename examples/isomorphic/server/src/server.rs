@@ -4,11 +4,11 @@ use std::io::Read;
 use std::io::Write;
 
 use isomorphic_app::App;
+use std::fs::File;
+use std::io::prelude::*;
 use std::net::TcpStream;
 use std::prelude::v1::Vec;
 use std::string::String;
-use std::io::prelude::*;
-use std::fs::File;
 
 pub fn serve() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
@@ -26,7 +26,7 @@ pub fn serve() {
         let mut buffer = [0; 512];
         stream.read(&mut buffer).unwrap();
 
-//        println!("{}", String::from_utf8_lossy(&buffer));
+        //        println!("{}", String::from_utf8_lossy(&buffer));
 
         let get_home = b"GET / HTTP/1.1\r\n";
         let wasm = b"GET /078fc2bb27ecd130333c.module.wasm HTTP/1.1\r\n";
@@ -47,7 +47,9 @@ pub fn serve() {
             let wasm = include_bytes!("../../client/078fc2bb27ecd130333c.module.wasm");
 
             let application_wasm = "\r\nContent-Type: application/wasm";
-            stream.write(format!("HTTP/1.1 200 OK{}\r\n\r\n", application_wasm).as_bytes()).unwrap();
+            stream
+                .write(format!("HTTP/1.1 200 OK{}\r\n\r\n", application_wasm).as_bytes())
+                .unwrap();
             stream.write(wasm).unwrap();
             stream.flush().unwrap();
         } else {

@@ -1,10 +1,18 @@
 #[macro_use]
 extern crate virtual_dom_rs;
 
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
+
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::rc::Rc;
 use virtual_dom_rs::virtual_node::VirtualNode;
+
+mod state;
+pub use state::*;
 
 pub struct App {
     pub state: Rc<RefCell<State>>,
@@ -35,40 +43,6 @@ impl App {
     }
 }
 
-pub struct State {
-    click_count: Rc<Cell<u32>>,
-}
-
-impl State {
-    pub fn new() -> State {
-        State {
-            click_count: Rc::new(Cell::new(0)),
-        }
-    }
-}
-
-pub enum Msg {
-    Click,
-}
-
-impl State {
-    pub fn msg(&mut self, msg: Msg) {
-        match msg {
-            Msg::Click => self.increment_click(),
-        }
-    }
-
-    pub fn click_count(&self) -> u32 {
-        self.click_count.get()
-    }
-}
-
-impl State {
-    fn increment_click(&mut self) {
-        self.click_count.set(self.click_count.get() + 1);
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -81,4 +55,7 @@ mod tests {
         app.state.borrow_mut().msg(Msg::Click);
         assert_eq!(app.state.borrow().click_count(), 1);
     }
+
+    #[test]
+    fn serialize_deserialize() {}
 }
