@@ -1,6 +1,12 @@
 [package]
-name = "jsdom"
+name = "jsdom-tests"
 version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+private = true
+
+[lib]
+crate-type = ["cdylib"]
 
 [dependencies]
+wasm-bindgen = "0.2"
+virtual-dom-rs = { path = "../../" }

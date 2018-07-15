@@ -2,3 +2,7 @@
 **/*.rs.bk
 Cargo.lock
 .idea
+node_modules
+
+# Generated WebAssembly modules
+tests/jsdom/jsdom_tests*

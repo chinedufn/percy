@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::fmt;
 pub use std::cell::RefCell;
 pub use std::rc::Rc;
-use std::str::FromStr;
 use webapis::*;
 
 #[derive(PartialEq)]
@@ -94,7 +93,7 @@ pub struct Events(pub HashMap<String, Box<Fn() -> ()>>);
 
 impl PartialEq for Events {
     // TODO: What should happen here..? And why?
-    fn eq(&self, rhs: &Self) -> bool {
+    fn eq(&self, _rhs: &Self) -> bool {
         true
     }
 }

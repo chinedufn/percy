@@ -1,0 +1,26 @@
+{
+  "name": "virtual-dom-rs",
+  "version": "0.0.1",
+  "description": "",
+  "main": "tests/jsdom/",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "standard tests/jsdom/**/*.js && node tests/jsdom/tests/**/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chinedufn/virtual-dom-rs.git"
+  },
+  "author": "Chinedu Francis Nwafili <frankie.nwafili@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chinedufn/virtual-dom-rs/issues"
+  },
+  "homepage": "https://github.com/chinedufn/virtual-dom-rs#readme",
+  "devDependencies": {
+    "jsdom": "^11.11.0",
+    "tape": "^4.9.1"
+  }
+}
