@@ -65,6 +65,10 @@ impl VirtualNode {
     pub fn create_element(&self) -> Element {
         let elem = document.create_element(&self.tag);
 
+        self.props.iter().for_each(|(name, value)| {
+            elem.set_attribute(name, value);
+        });
+
         self.children.iter().for_each(|child| {
             let child = child.borrow();
             elem.append_child(child.create_element())

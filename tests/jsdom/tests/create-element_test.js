@@ -1,5 +1,3 @@
-const fs = require('fs')
-const path = require('path')
 const test = require('tape')
 
 const testUtils = require('./test-utils')
@@ -13,8 +11,6 @@ test('Creating DOM elements from virtual nodes', t => {
 })
 
 const testNestedDivs = t => {
-  const div = rust.nested_divs()
-
   const nestedDivs = rust.nested_divs()
 
   t.equal(nestedDivs.innerHTML, '<div><div></div></div>')
@@ -23,5 +19,10 @@ const testNestedDivs = t => {
 }
 
 const testElementProps = t => {
+  const divsWithProps = rust.div_with_properties()
+
+  t.equal(divsWithProps.id, "id-here")
+  t.deepEqual(divsWithProps.classList, ['two', 'classes']);
+
   t.end()
 }

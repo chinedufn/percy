@@ -23,5 +23,8 @@ extern "C" {
     #[wasm_bindgen(method, js_name = appendChild)]
     pub fn append_child(this: &Element, other: Element);
 
+    #[wasm_bindgen(method, js_name = setAttribute)]
+    pub fn set_attribute(this: &Element, attrib: &str, value: &str);
+
     pub type HTMLCanvasElement;
 }
