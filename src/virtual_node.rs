@@ -3,6 +3,7 @@ use std::fmt;
 pub use std::cell::RefCell;
 pub use std::rc::Rc;
 use webapis::*;
+use wasm_bindgen::prelude::Closure;
 
 #[derive(PartialEq)]
 pub struct VirtualNode {
@@ -62,15 +63,24 @@ impl VirtualNode {
 impl VirtualNode {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
-    pub fn create_element(&self) -> Element {
+    pub fn create_element(&mut self) -> Element {
         let elem = document.create_element(&self.tag);
 
         self.props.iter().for_each(|(name, value)| {
             elem.set_attribute(name, value);
         });
 
-        self.children.iter().for_each(|child| {
-            let child = child.borrow();
+        self.events.0.iter_mut().for_each(|(onevent, callback)| {
+            // onclick -> click
+            let event = &onevent[2..];
+
+            let callback = callback.take().unwrap();
+            elem.add_event_listener(event, &callback);
+            callback.forget();
+        });
+
+        self.children.iter_mut().for_each(|child| {
+            let mut child = child.borrow_mut();
             elem.append_child(child.create_element())
         });
 
@@ -93,7 +103,7 @@ impl fmt::Debug for VirtualNode {
 
 /// We need a custom implementation of fmt::Debug since Fn() doesn't
 /// implement debug.
-pub struct Events(pub HashMap<String, Box<Fn() -> ()>>);
+pub struct Events(pub HashMap<String, Option<Closure<Fn() -> ()>>>);
 
 impl PartialEq for Events {
     // TODO: What should happen here..? And why?
@@ -109,3 +119,4 @@ impl fmt::Debug for Events {
         write!(f, "{}", events)
     }
 }
+

@@ -9,5 +9,6 @@ function initDOM () {
   const dom = new JSDOM('<!DOCTYPE html><body></body></html>')
   global.HTMLDocument = dom.window.HTMLDocument
   global.Element = dom.window.Element
+  global.window = dom.window
   global.document = dom.window.document
 }

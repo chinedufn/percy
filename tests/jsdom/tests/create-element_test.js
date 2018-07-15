@@ -8,6 +8,7 @@ const rust = require('../jsdom_tests.js')
 test('Creating DOM elements from virtual nodes', t => {
   t.test('Nested divs', testNestedDivs)
   t.test('Sets element properties', testElementProps)
+  t.test('Click event', testClickEvent)
 })
 
 const testNestedDivs = t => {
@@ -23,6 +24,22 @@ const testElementProps = t => {
 
   t.equal(divsWithProps.id, "id-here")
   t.deepEqual(divsWithProps.classList, ['two', 'classes']);
+
+  t.end()
+}
+
+const testClickEvent = t => {
+  const clickTest = new rust.ClickTest()
+
+  const div = clickTest.div_with_click_event();
+
+  const clickEvent = new window.Event("click")
+
+  t.equal(clickTest.get_clicked(), false);
+
+  div.dispatchEvent(clickEvent)
+
+  t.equal(clickTest.get_clicked(), true);
 
   t.end()
 }

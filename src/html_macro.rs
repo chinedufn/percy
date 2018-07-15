@@ -13,6 +13,9 @@
 ///
 /// For example, in `<foo><bar></bar><bing></bing>` <bing> is a the child of "</bar>"'s parent since
 /// </bar> is a closing tag. Soo `<bing>`'s parent is `<foo>`
+
+use wasm_bindgen::prelude::Closure;
+
 #[derive(PartialEq)]
 #[cfg_attr(test, derive(Debug))]
 pub enum TagType {
@@ -124,7 +127,7 @@ macro_rules! recurse_html {
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident ! $event_name:tt = $callback:expr, $($remaining_html:tt)*) => {
         $active_node.as_mut().unwrap().borrow_mut().events.0.insert(
             stringify!($event_name).to_string(),
-            Box::new($callback)
+            Some(Closure::new($callback))
         );
 
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
@@ -209,11 +212,7 @@ mod tests {
         <div !onclick=move || {test_struct_clone.borrow_mut().closure_ran = true},></div>
         };
 
-        assert_eq!(test_struct.borrow().closure_ran, false);
-
-        node.events.0.get("onclick").unwrap()();
-
-        assert_eq!(test_struct.borrow().closure_ran, true);
+        assert!(node.events.0.get("onclick").is_some());
     }
 
 
