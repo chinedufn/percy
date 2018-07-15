@@ -42,7 +42,24 @@ pub enum TagType {
 ///  </div>
 /// };
 /// # }
+///
+/// # TODO
+///
+/// Create a separate macro that works with anything that implements `VNode`
+///
+/// ```ignore
+/// struct MyCustomVirtualNode;
+/// impl VNode for MyCustomVirtualNode {
+///   ...
+/// }
+///
+/// html_generic ! { MyCustomVirtualNode <div> <span></span> </div> };
 /// ```
+///
+/// Then make `html! <div></div>` call `html_generic! $crate::VirtualNode <div></div>`.
+///
+/// This would allow anyone to use the `html_generic!` macro to power their own virtual dom
+/// implementation!
 #[macro_export]
 macro_rules! html {
     ($($remaining_html:tt)*) => {{
