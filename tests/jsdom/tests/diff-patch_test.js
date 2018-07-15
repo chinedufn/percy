@@ -14,7 +14,6 @@ const testPatchRootNode = t => {
 
   patchTest.patch_element();
 
-
   let patchedElem = document.getElementById('patched');
   t.equal(patchedElem.innerHTML, 'Patched element')
 
