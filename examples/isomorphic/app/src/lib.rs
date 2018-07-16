@@ -18,18 +18,22 @@ pub use virtual_dom_rs::webapis::*;
 
 pub struct App {
     pub state: Rc<RefCell<State>>,
+    previous_vdom: Option<VirtualNode>
 }
 
 impl App {
     pub fn new() -> App {
         App {
             state: Rc::new(RefCell::new(State::new())),
+            previous_vdom: None
         }
     }
 
+    // TODO: Just use `new(config: AppConfig)` and pass in state json Option
     pub fn from_state_json(json: &str) -> App {
         App {
             state: Rc::new(RefCell::new(State::from_json(json))),
+            previous_vdom: None
         }
     }
 }
@@ -50,8 +54,15 @@ impl App {
         }
     }
 
-    pub fn update_dom (&self) {
-        println!("hi");
+    pub fn update_dom (&mut self, root_node: &Element) {
+        let mut new_vdom = self.render();
+
+        if let Some(ref previous_vdom) = self.previous_vdom {
+            let patches = virtual_dom_rs::diff(&previous_vdom, &mut new_vdom);
+            virtual_dom_rs::patch(&root_node, &patches);
+        }
+
+        self.previous_vdom = Some(new_vdom);
     }
 }
 

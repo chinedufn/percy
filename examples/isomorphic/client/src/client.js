@@ -1,10 +1,12 @@
 import { Client } from '../isomorphic_client'
 
 console.log('ok')
-const rootNode = document.getElementById('isomorphic-rust-web-app').children[0]
-console.log(rootNode)
 
-const client = new Client(window.initialState, rootNode);
+const client = new Client(window.initialState);
+
+let rootNode = document.getElementById('isomorphic-rust-web-app').children[0]
+rootNode.parentElement.replaceChild(client.render(), rootNode)
+rootNode = document.getElementById('isomorphic-rust-web-app').children[0]
 
 let updateScheduled = false
 
@@ -12,7 +14,12 @@ export function update() {
   console.log('UPDATE called!')
   if (!updateScheduled) {
     requestAnimationFrame(() => {
+      let rootNode = document.getElementById('isomorphic-rust-web-app').children[0]
+
+      client.set_root_node(rootNode);
+
       client.update_dom()
+
       updateScheduled = false
     })
   }
@@ -20,7 +27,4 @@ export function update() {
   updateScheduled = true
 }
 
-console.log('start')
-  let element = client.render()
-  document.body.appendChild(element)
 

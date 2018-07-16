@@ -15,13 +15,13 @@ extern "C" {
 #[wasm_bindgen]
 pub struct Client {
     app: App,
-    root_node: Element
+    root_node: Option<Element>
 }
 
 #[wasm_bindgen]
 impl Client {
     #[wasm_bindgen(constructor)]
-    pub fn new(initial_state: &str, root_node: Element) -> Client {
+    pub fn new(initial_state: &str) -> Client {
         let mut app = App::from_state_json(initial_state);
 
         // TODO: Try using a wasm-bindgen closure and an extern request_animation_frame
@@ -32,26 +32,19 @@ impl Client {
 
         Client {
             app,
-            root_node
+            root_node: None
         }
+    }
+
+    pub fn set_root_node (&mut self, root_node: Element) {
+        self.root_node = Some(root_node);
     }
 
     pub fn render(&self) -> Element {
         self.app.render().create_element()
     }
 
-    pub fn update_dom (&self) {
-        println!("hi");
-//        let mut old_elem = html! { <div id="old",> { "Original element" } </div> };
-//
-//        let root_node = old_elem.create_element();
-//        document.body().append_child(root_node);
-//        let root_node = document.get_element_by_id("old");
-//
-//        let mut new_elem = html! { <div id="patched",> { "Patched element" } </div> };
-//
-//        let patches = virtual_dom_rs::diff(&old_elem, &mut new_elem);
-//
-//        virtual_dom_rs::patch(&root_node, &patches);
+    pub fn update_dom (&mut self) {
+        self.app.update_dom(&self.root_node.as_ref().unwrap())
     }
 }
