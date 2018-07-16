@@ -53,7 +53,7 @@ pub fn serve() {
         let get_home = b"GET / HTTP/1.1\r\n";
 
         if buffer.starts_with(get_home) {
-            let app = App::new();
+            let app = App::new(1001);
             let state = app.state.borrow();
 
             let html = format!("{}", include_str!("./index.html"));

@@ -17,9 +17,9 @@ pub struct State {
 
 
 impl State {
-    pub fn new() -> State {
+    pub fn new(count: u32) -> State {
         State {
-            click_count: Rc::new(Cell::new(0)),
+            click_count: Rc::new(Cell::new(count)),
             listeners: vec![]
         }
     }

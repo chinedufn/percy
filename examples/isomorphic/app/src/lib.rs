@@ -22,9 +22,9 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> App {
+    pub fn new(count: u32) -> App {
         App {
-            state: Rc::new(RefCell::new(State::new())),
+            state: Rc::new(RefCell::new(State::new(count))),
             previous_vdom: None
         }
     }
@@ -80,7 +80,4 @@ mod tests {
         app.state.borrow_mut().msg(Msg::Click);
         assert_eq!(app.state.borrow().click_count(), 1);
     }
-
-    #[test]
-    fn serialize_deserialize() {}
 }
