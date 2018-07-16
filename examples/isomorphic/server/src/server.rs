@@ -28,6 +28,19 @@ pub fn serve() {
 
         let request_pieces = String::from_utf8_lossy(&buffer);
         let buffer_words = request_pieces.split("/").collect::<Vec<&str>>();
+
+        // Not sure what this request is but it's breaking stuff... so we ignore it..
+        // Worry about this later..
+        if buffer.len() < 5 {
+            let response = format!("HTTP/1.1 404 NOT FOUND\r\n\r\n");
+            stream.write(response.as_bytes()).unwrap();
+            stream.flush().unwrap();
+
+            return;
+        }
+
+        println!("{}", String::from_utf8_lossy(&buffer));
+
         let filename = buffer_words[1];
 
         let filename = filename.split(" ").collect::<Vec<&str>>();
