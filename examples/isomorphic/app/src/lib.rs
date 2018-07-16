@@ -50,9 +50,9 @@ impl App {
         }
     }
 
-//    pub fn update_dom () {
-//        virtual_dom_rs::dif
-//    }
+    pub fn update_dom (&self) {
+        println!("hi");
+    }
 }
 
 #[cfg(test)]

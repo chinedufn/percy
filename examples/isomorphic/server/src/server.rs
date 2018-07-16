@@ -53,7 +53,7 @@ pub fn serve() {
             stream.flush().unwrap();
         } else if String::from_utf8_lossy(&buffer).contains(".module.wasm") {
             let mut wasm_file = File::open(filename).expect("Wasm file not found");
-            let mut wasm = [0; 1_000_000];
+            let mut wasm = [0; 2_000_000];
             wasm_file.read(&mut wasm).expect("Read wasm file into memory");
 
             let application_wasm = "\r\nContent-Type: application/wasm";

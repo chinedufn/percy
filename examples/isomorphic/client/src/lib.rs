@@ -7,7 +7,7 @@ extern crate isomorphic_app;
 use isomorphic_app::App;
 use isomorphic_app::Element;
 
-#[wasm_bindgen]
+#[wasm_bindgen(module = "./src/client.js")]
 extern "C" {
     pub fn update();
 }
@@ -22,15 +22,26 @@ pub struct Client {
 impl Client {
     #[wasm_bindgen(constructor)]
     pub fn new(initial_state: &str, root_node: Element) -> Client {
+        let mut app = App::from_state_json(initial_state);
+
+        // TODO: Try using a wasm-bindgen closure and an extern request_animation_frame
+        // instead of using this `update()` method for request animation frame
+        app.state.borrow_mut().subscribe(Box::new(|| {
+            update();
+        }));
+
         Client {
-            app: App::from_state_json(initial_state),
+            app,
             root_node
         }
     }
 
     pub fn render(&self) -> Element {
         self.app.render().create_element()
+    }
 
+    pub fn update_dom (&self) {
+        println!("hi");
 //        let mut old_elem = html! { <div id="old",> { "Original element" } </div> };
 //
 //        let root_node = old_elem.create_element();
