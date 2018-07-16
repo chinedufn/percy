@@ -49,6 +49,10 @@ impl App {
         </div>
         }
     }
+
+//    pub fn update_dom () {
+//        virtual_dom_rs::dif
+//    }
 }
 
 #[cfg(test)]
