@@ -8,6 +8,11 @@ use isomorphic_app::App;
 use isomorphic_app::Element;
 
 #[wasm_bindgen]
+extern "C" {
+    pub fn update();
+}
+
+#[wasm_bindgen]
 pub struct Client {
     app: App,
     root_node: Element
