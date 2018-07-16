@@ -5,13 +5,11 @@ authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A modular toolkit for building client side web ui's with server side rendering in Rust."
 keywords = ["virtual", "dom", "wasm", "css", "webassembly"]
 
-[dependencies]
-wasm-bindgen = { version = "0.2" }
-
 [workspace]
 members = [
   "tests/jsdom",
   "examples/isomorphic/app",
   "examples/isomorphic/client",
-  "examples/isomorphic/server"
+  "examples/isomorphic/server",
+  "virtual-dom-rs"
 ]

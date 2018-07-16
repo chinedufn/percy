@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 
 [dependencies]
-virtual-dom-rs = { path = "../../../" }
+virtual-dom-rs = { path = "../../../virtual-dom-rs" }
 serde = "1"
 serde_derive = "1"
 serde_json = "1"

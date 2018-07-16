@@ -26,7 +26,9 @@ impl VirtualNode {
     /// These get patched into the DOM using `document.createElement`
     ///
     /// ```
-    /// let div = VirtualNode::tag("div");
+    /// use virtual_dom_rs::VirtualNode;
+    ///
+    /// let div = VirtualNode::new("div");
     /// ```
     pub fn new(tag: &str) -> VirtualNode {
         let props = HashMap::new();
@@ -46,6 +48,8 @@ impl VirtualNode {
     /// These get patched into the DOM using `document.createTextNode`
     ///
     /// ```
+    /// use virtual_dom_rs::VirtualNode;
+    ///
     /// let div = VirtualNode::text("div");
     /// ```
     pub fn text(text: &str) -> VirtualNode {

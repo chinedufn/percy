@@ -74,10 +74,10 @@ mod tests {
 
     #[test]
     fn click_msg() {
-        let mut app = App::new();
+        let mut app = App::new(5);
 
-        assert_eq!(app.state.borrow().click_count(), 0);
+        assert_eq!(app.state.borrow().click_count(), 5);
         app.state.borrow_mut().msg(Msg::Click);
-        assert_eq!(app.state.borrow().click_count(), 1);
+        assert_eq!(app.state.borrow().click_count(), 6);
     }
 }

@@ -9,4 +9,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 wasm-bindgen = "0.2"
-virtual-dom-rs = { path = "../../" }
+virtual-dom-rs = { path = "../../virtual-dom-rs" }
