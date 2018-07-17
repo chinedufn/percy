@@ -10,6 +10,15 @@ pub struct VirtualNode {
     pub tag: String,
     pub props: HashMap<String, String>,
     pub events: Events,
+    /// TODO: This should just be `Vec<VirtualNode>`.. Need to plan out how to do this on paper
+    /// since it would mean tweaking the parser a bit.
+    /// ORRR we can just have a ParsedVirtualNode that looks like this... then
+    /// VirtualNode::from(ParsedVirtualNode).. All this would do is recursively traverse
+    /// the children of the ParsedVirtualNode and add them to our VirtualNode.. Just need
+    /// to plan on paper if this extra tree traversal is worth it vs. just keep this as
+    /// Rc<RefCell<VirtualNode>>... If the extra traversal is negligible then removing
+    /// the Rc<RefCell would be nice because it makes the API that much simpler.
+    /// I guess my takeaway here is that we need some benchmarks!
     pub children: Vec<Rc<RefCell<VirtualNode>>>,
     /// We keep track of parents during the `html!` macro in order to be able to crawl
     /// up the tree and assign newly found nodes to the proper parent.
