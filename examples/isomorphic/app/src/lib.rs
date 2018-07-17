@@ -18,14 +18,14 @@ pub use virtual_dom_rs::webapis::*;
 
 pub struct App {
     pub state: Rc<RefCell<State>>,
-    previous_vdom: Option<VirtualNode>
+    previous_vdom: Option<VirtualNode>,
 }
 
 impl App {
     pub fn new(count: u32) -> App {
         App {
             state: Rc::new(RefCell::new(State::new(count))),
-            previous_vdom: None
+            previous_vdom: None,
         }
     }
 
@@ -33,7 +33,7 @@ impl App {
     pub fn from_state_json(json: &str) -> App {
         App {
             state: Rc::new(RefCell::new(State::from_json(json))),
-            previous_vdom: None
+            previous_vdom: None,
         }
     }
 }
@@ -56,7 +56,7 @@ impl App {
         }
     }
 
-    pub fn update_dom (&mut self, root_node: &Element) {
+    pub fn update_dom(&mut self, root_node: &Element) {
         let mut new_vdom = self.render();
 
         if let Some(ref previous_vdom) = self.previous_vdom {

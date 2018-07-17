@@ -10,23 +10,73 @@ pub struct VirtualNode {
     pub tag: String,
     pub props: HashMap<String, String>,
     pub events: Events,
-    /// TODO: This should just be `Vec<VirtualNode>`.. Need to plan out how to do this on paper
-    /// since it would mean tweaking the parser a bit.
-    /// ORRR we can just have a ParsedVirtualNode that looks like this... then
-    /// VirtualNode::from(ParsedVirtualNode).. All this would do is recursively traverse
-    /// the children of the ParsedVirtualNode and add them to our VirtualNode.. Just need
-    /// to plan on paper if this extra tree traversal is worth it vs. just keep this as
-    /// Rc<RefCell<VirtualNode>>... If the extra traversal is negligible then removing
-    /// the Rc<RefCell would be nice because it makes the API that much simpler.
-    /// I guess my takeaway here is that we need some benchmarks!
-    pub children: Vec<Rc<RefCell<VirtualNode>>>,
-    /// We keep track of parents during the `html!` macro in order to be able to crawl
-    /// up the tree and assign newly found nodes to the proper parent.
-    /// By the time an `html!` macro finishes all nodes will have `parent` None
-    pub parent: Option<Rc<RefCell<VirtualNode>>>,
+    pub children: Option<Vec<VirtualNode>>,
     /// Some(String) if this is a [text node](https://developer.mozilla.org/en-US/docs/Web/API/Text).
     /// When patching these into a real DOM these use `document.createTextNode(text)`
     pub text: Option<String>,
+}
+
+// TODO: Is this complexity really necessary? Doubt it... Map this all out on paper... shouldn't need
+// two nearly identical structs
+#[derive(PartialEq)]
+pub struct ParsedVirtualNode {
+    pub tag: String,
+    pub props: HashMap<String, String>,
+    pub events: Events,
+    // TODO: Don't think this needs to be an option
+    pub children: Option<Vec<Rc<RefCell<ParsedVirtualNode>>>>,
+    pub parent: Option<Rc<RefCell<ParsedVirtualNode>>>,
+    pub text: Option<String>,
+}
+
+impl ParsedVirtualNode {
+    pub fn new(tag: &str) -> ParsedVirtualNode {
+        let props = HashMap::new();
+        let events = Events(HashMap::new());
+        ParsedVirtualNode {
+            tag: tag.to_string(),
+            props,
+            events,
+            children: Some(vec![]),
+            parent: None,
+            text: None,
+        }
+    }
+
+    pub fn text(text: &str) -> ParsedVirtualNode {
+        ParsedVirtualNode {
+            tag: "".to_string(),
+            props: HashMap::new(),
+            events: Events(HashMap::new()),
+            children: Some(vec![]),
+            parent: None,
+            text: Some(text.to_string()),
+        }
+    }
+
+    pub fn take_children(&mut self) -> Vec<VirtualNode> {
+        self.children
+            .take()
+            .unwrap()
+            .into_iter()
+            .map(|child| VirtualNode::from(
+                Rc::try_unwrap(child).unwrap().into_inner()
+            ))
+            .collect()
+    }
+}
+
+impl From<ParsedVirtualNode> for VirtualNode {
+    fn from(mut parsed_node: ParsedVirtualNode) -> Self {
+        let children = Some(parsed_node.take_children());
+        VirtualNode {
+            tag: parsed_node.tag,
+            props: parsed_node.props,
+            events: parsed_node.events,
+            children,
+            text: parsed_node.text
+        }
+    }
 }
 
 impl VirtualNode {
@@ -46,8 +96,7 @@ impl VirtualNode {
             tag: tag.to_string(),
             props,
             events,
-            children: vec![],
-            parent: None,
+            children: Some(vec![]),
             text: None,
         }
     }
@@ -66,8 +115,7 @@ impl VirtualNode {
             tag: "".to_string(),
             props: HashMap::new(),
             events: Events(HashMap::new()),
-            children: vec![],
-            parent: None,
+            children: Some(vec![]),
             text: Some(text.to_string()),
         }
     }
@@ -92,9 +140,7 @@ impl VirtualNode {
             callback.forget();
         });
 
-        self.children.iter_mut().for_each(|child| {
-            let mut child = child.borrow_mut();
-
+        self.children.as_mut().unwrap().iter_mut().for_each(|child| {
             if child.text.is_some() {
                 elem.append_text_child(document.create_text_node(&child.text.as_ref().unwrap()));
             }
@@ -109,23 +155,57 @@ impl VirtualNode {
 }
 
 // Used by our html! macro to turn "Strings of text" into virtual nodes.
-impl<'a> From<&'a str> for VirtualNode {
+impl<'a> From<&'a str> for ParsedVirtualNode {
     fn from(text: &'a str) -> Self {
-        VirtualNode::text(text)
+        ParsedVirtualNode::text(text)
     }
 }
-impl From<String> for VirtualNode {
+impl From<String> for ParsedVirtualNode {
     fn from(text: String) -> Self {
-        VirtualNode::text(&text)
+        ParsedVirtualNode::text(&text)
     }
 }
-impl<'a> From<&'a String> for VirtualNode {
+impl<'a> From<&'a String> for ParsedVirtualNode {
     fn from(text: &'a String) -> Self {
-        VirtualNode::text(text)
+        ParsedVirtualNode::text(text)
+    }
+}
+impl From<VirtualNode> for ParsedVirtualNode {
+    fn from(mut node: VirtualNode) -> Self {
+        let children = Some(node.wrap_children());
+
+        ParsedVirtualNode {
+            tag: node.tag,
+            props: node.props,
+            events: node.events,
+            children,
+            parent: None,
+            text: node.text,
+        }
     }
 }
 
+impl VirtualNode {
+    fn wrap_children (&mut self) -> Vec<Rc<RefCell<ParsedVirtualNode>>> {
+        self.children.take().unwrap().into_iter().map(|child| wrap(child)).collect()
+    }
+}
+
+fn wrap(v: VirtualNode) -> Rc<RefCell<ParsedVirtualNode>> {
+    Rc::new(RefCell::new(ParsedVirtualNode::from(v)))
+}
+
 impl fmt::Debug for VirtualNode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "VirtualNode | tag: {}, props: {:#?}, text: {:#?}, children: {:#?} |",
+            self.tag, self.props, self.text, self.children
+        )
+    }
+}
+
+impl fmt::Debug for ParsedVirtualNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -149,8 +229,8 @@ impl fmt::Display for VirtualNode {
 
             write!(f, ">");
 
-            for child in self.children.iter() {
-                write!(f, "{}", child.borrow().to_string())?;
+            for child in self.children.as_ref().unwrap().iter() {
+                write!(f, "{}", child.to_string())?;
             }
             write!(f, "</{}>", self.tag)
         }

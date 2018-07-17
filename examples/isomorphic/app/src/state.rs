@@ -12,31 +12,30 @@ pub struct State {
     #[serde(deserialize_with = "deserialize_rc_cell", serialize_with = "serialize_rc_cell")]
     click_count: Rc<Cell<u32>>,
     #[serde(skip)]
-    listeners: Vec<Box<Fn() -> ()>>
+    listeners: Vec<Box<Fn() -> ()>>,
 }
-
 
 impl State {
     pub fn new(count: u32) -> State {
         State {
             click_count: Rc::new(Cell::new(count)),
-            listeners: vec![]
+            listeners: vec![],
         }
     }
 
-    pub fn from_json (state_json: &str) -> State {
+    pub fn from_json(state_json: &str) -> State {
         serde_json::from_str(state_json).unwrap()
     }
 }
 
 impl State {
-    pub fn to_json (&self) -> String {
+    pub fn to_json(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
 }
 
 impl State {
-    pub fn subscribe (&mut self, callback: Box<Fn() -> ()>) {
+    pub fn subscribe(&mut self, callback: Box<Fn() -> ()>) {
         self.listeners.push(callback)
     }
 }

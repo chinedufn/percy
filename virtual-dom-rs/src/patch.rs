@@ -1,6 +1,6 @@
+use std::collections::HashMap;
 use virtual_node::VirtualNode;
 use webapis::*;
-use std::collections::HashMap;
 
 /// A `Patch` encodes an operation that modifies our real root DOM element.
 ///
@@ -48,7 +48,7 @@ pub enum Patch<'a> {
     RemoveNode(u32),
     ReplaceNode(u32, &'a VirtualNode),
     AddAttributes(u32, HashMap<&'a str, &'a str>),
-    RemoveAttributes(u32, Vec<&'a str>)
+    RemoveAttributes(u32, Vec<&'a str>),
 }
 
 /// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently

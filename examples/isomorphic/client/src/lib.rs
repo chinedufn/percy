@@ -15,7 +15,7 @@ extern "C" {
 #[wasm_bindgen]
 pub struct Client {
     app: App,
-    root_node: Option<Element>
+    root_node: Option<Element>,
 }
 
 #[wasm_bindgen]
@@ -32,11 +32,11 @@ impl Client {
 
         Client {
             app,
-            root_node: None
+            root_node: None,
         }
     }
 
-    pub fn set_root_node (&mut self, root_node: Element) {
+    pub fn set_root_node(&mut self, root_node: Element) {
         self.root_node = Some(root_node);
     }
 
@@ -44,7 +44,7 @@ impl Client {
         self.app.render().create_element()
     }
 
-    pub fn update_dom (&mut self) {
+    pub fn update_dom(&mut self) {
         self.app.update_dom(&self.root_node.as_ref().unwrap())
     }
 }

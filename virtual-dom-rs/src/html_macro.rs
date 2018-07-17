@@ -64,17 +64,17 @@ pub enum TagType {
 #[macro_export]
 macro_rules! html {
     ($($remaining_html:tt)*) => {{
-        let mut root_nodes: Vec<$crate::Rc<$crate::RefCell<$crate::VirtualNode>>> = vec![];
+        let mut root_nodes: Vec<$crate::Rc<$crate::RefCell<$crate::ParsedVirtualNode>>> = vec![];
 
         {
-            let mut active_node: Option<$crate::Rc<$crate::RefCell<$crate::VirtualNode>>> = None;
+            let mut active_node: Option<$crate::Rc<$crate::RefCell<$crate::ParsedVirtualNode>>> = None;
 
             let prev_tag_type: Option<$crate::TagType> = None;
 
             recurse_html! { active_node root_nodes prev_tag_type $($remaining_html)* };
         }
 
-        $crate::Rc::try_unwrap(root_nodes.pop().unwrap()).unwrap().into_inner()
+        VirtualNode::from($crate::Rc::try_unwrap(root_nodes.pop().unwrap()).unwrap().into_inner())
     }};
 }
 
@@ -84,13 +84,13 @@ macro_rules! recurse_html {
     // For <div></div> this is
     // <div>
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident < $start_tag:ident > $($remaining_html:tt)*) => {
-        let mut new_node = $crate::VirtualNode::new(stringify!($start_tag));
+        let mut new_node = $crate::ParsedVirtualNode::new(stringify!($start_tag));
         let mut new_node = $crate::Rc::new($crate::RefCell::new(new_node));
 
         if $prev_tag_type == None {
             $root_nodes.push($crate::Rc::clone(&new_node));
         } else {
-            $active_node.as_mut().unwrap().borrow_mut().children.push($crate::Rc::clone(&new_node));
+            $active_node.as_mut().unwrap().borrow_mut().children.as_mut().unwrap().push($crate::Rc::clone(&new_node));
             new_node.borrow_mut().parent = $active_node;
         }
 
@@ -104,13 +104,13 @@ macro_rules! recurse_html {
     // For <div id="10",> this is
     // <div
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident < $start_tag:ident $($remaining_html:tt)*) => {
-        let mut new_node = $crate::VirtualNode::new(stringify!($start_tag));
+        let mut new_node = $crate::ParsedVirtualNode::new(stringify!($start_tag));
         let mut new_node = $crate::Rc::new($crate::RefCell::new(new_node));
 
         if $prev_tag_type == None {
             $root_nodes.push($crate::Rc::clone(&new_node));
         } else {
-            $active_node.as_mut().unwrap().borrow_mut().children.push($crate::Rc::clone(&new_node));
+            $active_node.as_mut().unwrap().borrow_mut().children.as_mut().unwrap().push($crate::Rc::clone(&new_node));
             new_node.borrow_mut().parent = $active_node;
         }
 
@@ -156,9 +156,9 @@ macro_rules! recurse_html {
     // "Hello world"
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident { $($child:expr)* } $($remaining_html:tt)*) => {
         $(
-            let new_child = $crate::VirtualNode::from($child);
+            let new_child = $crate::ParsedVirtualNode::from($child);
             let new_child = $crate::Rc::new($crate::RefCell::new(new_child));
-            $active_node.as_mut().unwrap().borrow_mut().children.push($crate::Rc::clone(&new_child));
+            $active_node.as_mut().unwrap().borrow_mut().children.as_mut().unwrap().push($crate::Rc::clone(&new_child));
         )*
 
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
@@ -242,10 +242,10 @@ mod tests {
         };
 
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = vec![wrap(VirtualNode::new("span"))];
+        expected_node.children = Some(vec![VirtualNode::new("span")]);
 
         assert_eq!(node, expected_node);
-        assert_eq!(expected_node.children.len(), 1);
+        assert_eq!(expected_node.children.unwrap().len(), 1);
     }
 
     #[test]
@@ -255,10 +255,10 @@ mod tests {
         };
 
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = vec![wrap(VirtualNode::new("span")), wrap(VirtualNode::new("b"))];
+        expected_node.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
 
         assert_eq!(node, expected_node);
-        assert_eq!(node.children.len(), 2);
+        assert_eq!(node.children.unwrap().len(), 2);
     }
 
     #[test]
@@ -268,13 +268,13 @@ mod tests {
         };
 
         let mut child = VirtualNode::new("span");
-        child.children = vec![wrap(VirtualNode::new("b"))];
+        child.children = Some(vec![VirtualNode::new("b")]);
 
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = vec![wrap(child)];
+        expected_node.children = Some(vec![child]);
 
         assert_eq!(node, expected_node);
-        assert_eq!(node.children.len(), 1, "1 Child");
+        assert_eq!(node.children.unwrap().len(), 1, "1 Child");
     }
 
     #[test]
@@ -284,18 +284,18 @@ mod tests {
         };
 
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = vec![
-            wrap(VirtualNode::text("This is a text node")),
-            wrap(VirtualNode::text("More")),
-            wrap(VirtualNode::text("Text")),
-        ];
+        expected_node.children = Some(vec![
+            VirtualNode::text("This is a text node"),
+            VirtualNode::text("More"),
+            VirtualNode::text("Text"),
+        ]);
 
         assert_eq!(node, expected_node);
-        assert_eq!(node.children.len(), 3, "3 text node children");
+        assert_eq!(node.children.as_ref().unwrap().len(), 3, "3 text node children");
 
         // TODO: assert_same_children(node, expected_node)
-        for (index, child) in node.children.iter().enumerate() {
-            assert_eq!(child, &expected_node.children[index]);
+        for (index, child) in node.children.as_ref().unwrap().iter().enumerate() {
+            assert_eq!(child, &expected_node.children.as_ref().unwrap()[index]);
         }
     }
 
@@ -308,7 +308,7 @@ mod tests {
         };
 
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = vec![wrap(VirtualNode::new("span")), wrap(VirtualNode::new("b"))];
+        expected_node.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
 
         assert_eq!(node, expected_node);
     }
@@ -325,15 +325,11 @@ mod tests {
         };
 
         let mut expected_node = VirtualNode::new("div");
-        expected_node.children = vec![
-            wrap(VirtualNode::text("This is a text node")),
-            wrap(VirtualNode::text("This is a text node")),
-        ];
+        expected_node.children = Some(vec![
+            VirtualNode::text("This is a text node"),
+            VirtualNode::text("This is a text node"),
+        ]);
 
         assert_eq!(node, expected_node);
-    }
-
-    fn wrap(v: VirtualNode) -> Rc<RefCell<VirtualNode>> {
-        Rc::new(RefCell::new(v))
     }
 }
