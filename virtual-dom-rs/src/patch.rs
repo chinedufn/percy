@@ -1,5 +1,55 @@
 use virtual_node::VirtualNode;
 use webapis::*;
+use std::collections::HashMap;
+
+/// A `Patch` encodes an operation that modifies our real root DOM element.
+///
+/// To update the real DOM that a user sees you'll want to first diff your
+/// old virtual dom and new virtual dom.
+///
+/// This diff operation will generate `Vec<Patch>` with zero or more patches that, when
+/// applied to your real DOM, will make your real DOM look like your new virtual dom.
+///
+/// Each `Patch` has a u32 node index that helps us identify the real DOM node that it applies to.
+///
+/// Our old virtual dom's nodes are indexed depth first, as shown in this illustration
+/// (0 being the root node, 1 being it's first child, 4 being it's second child).
+///
+///             .─.
+///            ( 0 )
+///             `┬'
+///         ┌────┴──────┐
+///         │           │
+///         ▼           ▼
+///        .─.         .─.
+///       ( 1 )       ( 4 )
+///        `┬'         `─'
+///    ┌────┴───┐       │
+///    │        │       │
+///    ▼        ▼       ▼
+///   .─.      .─.     .─.
+///  ( 2 )    ( 3 )   ( 5 )
+///   `─'      `─'     `─'
+///
+/// Indexing depth first allows us to say:
+///
+/// - Hmm.. Our patch operation applies to Node 5. Let's start from our root node 0 and look
+/// at its children.
+///
+/// - node 0 has children 1 and 4. 5 is bigger than 4 so we can completely ignore node 1!
+///
+/// - Ok now let's look at node 4's children. Node 4 has a child Node 5. Perfect, let's patch it!
+///
+/// Had we used breadth first indexing in our example above
+/// (parent 0, first child 1, second child 2) we'd need to traverse all of node 1's children
+/// to see if Node 5 was there. Good thing we don't do that!
+pub enum Patch<'a> {
+    AddNodes(u32, Vec<&'a VirtualNode>),
+    RemoveNode(u32),
+    ReplaceNode(u32, &'a VirtualNode),
+    AddAttributes(u32, HashMap<&'a str, &'a str>),
+    RemoveAttributes(u32, Vec<&'a str>)
+}
 
 /// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
 ///  patches the root node. Right now we just end up overwriting the root node.
