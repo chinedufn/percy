@@ -185,6 +185,8 @@ macro_rules! recurse_html {
     // TODO: README explains that props must end with commas
 }
 
+// TODO: Add test for html { <div> vec![Two elements in here] </div> } for both references
+// and owned vectors... #[test]fn vector_children()
 #[cfg(test)]
 mod tests {
     use super::*;
