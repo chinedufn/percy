@@ -44,7 +44,7 @@ use std::collections::HashMap;
 /// (parent 0, first child 1, second child 2) we'd need to traverse all of node 1's children
 /// to see if Node 5 was there. Good thing we don't do that!
 pub enum Patch<'a> {
-    AddNodes(u32, Vec<&'a VirtualNode>),
+    AppendNodes(u32, Vec<&'a VirtualNode>),
     RemoveNode(u32),
     ReplaceNode(u32, &'a VirtualNode),
     AddAttributes(u32, HashMap<&'a str, &'a str>),
