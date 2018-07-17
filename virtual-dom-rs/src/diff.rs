@@ -2,14 +2,15 @@ use virtual_node::VirtualNode;
 use webapis::*;
 use Patch;
 
-pub fn diff<'a>(old_root: &VirtualNode, new_root: &'a mut VirtualNode) -> Vec<Patch<'a>> {
+pub fn diff<'a>(old_root: &VirtualNode, new_root: &'a VirtualNode) -> Vec<Patch<'a>> {
     let mut patches = vec![];
 
     let old_root_child_count = old_root.children.as_ref().unwrap().len();
     let new_root_child_count = new_root.children.as_ref().unwrap().len();
 
     if old_root_child_count < new_root_child_count {
-        let append_patch: Vec<&'a VirtualNode> = new_root.children.as_ref().unwrap()[old_root_child_count..]
+        let append_patch: Vec<&'a VirtualNode> = new_root.children.as_ref().unwrap()
+            [old_root_child_count..]
             .iter()
             .collect();
         patches.push(Patch::AppendNodes(0, append_patch))
@@ -42,17 +43,17 @@ mod tests {
         <div> <b></b> </div>
         };
 
-        let mut new = html! {
+        let new = html! {
         <div> <b></b> <new></new> </div>
         };
 
-        let patches = diff(&old, &mut new);
+        let patches = diff(&old, &new);
 
-//        let new_node = &new.children[1];
-//
-//        let expected_patch = Patch::AppendNodes(0, vec![&new_node]);
-//
-//        assert_eq!(patches.len(), 1);
-        //        assert_eq!(patches[0], Patch::Ad)
+        let new_node = &new.children.as_ref().unwrap()[1];
+
+        let expected_patch = Patch::AppendNodes(0, vec![&new_node]);
+
+        assert_eq!(patches.len(), 1);
+        assert_eq!(patches[0], expected_patch)
     }
 }

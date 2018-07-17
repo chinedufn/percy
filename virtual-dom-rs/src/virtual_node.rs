@@ -59,9 +59,7 @@ impl ParsedVirtualNode {
             .take()
             .unwrap()
             .into_iter()
-            .map(|child| VirtualNode::from(
-                Rc::try_unwrap(child).unwrap().into_inner()
-            ))
+            .map(|child| VirtualNode::from(Rc::try_unwrap(child).unwrap().into_inner()))
             .collect()
     }
 }
@@ -74,7 +72,7 @@ impl From<ParsedVirtualNode> for VirtualNode {
             props: parsed_node.props,
             events: parsed_node.events,
             children,
-            text: parsed_node.text
+            text: parsed_node.text,
         }
     }
 }
@@ -140,15 +138,21 @@ impl VirtualNode {
             callback.forget();
         });
 
-        self.children.as_mut().unwrap().iter_mut().for_each(|child| {
-            if child.text.is_some() {
-                elem.append_text_child(document.create_text_node(&child.text.as_ref().unwrap()));
-            }
+        self.children
+            .as_mut()
+            .unwrap()
+            .iter_mut()
+            .for_each(|child| {
+                if child.text.is_some() {
+                    elem.append_text_child(
+                        document.create_text_node(&child.text.as_ref().unwrap()),
+                    );
+                }
 
-            if child.text.is_none() {
-                elem.append_child(child.create_element());
-            }
-        });
+                if child.text.is_none() {
+                    elem.append_child(child.create_element());
+                }
+            });
 
         elem
     }
@@ -186,8 +190,13 @@ impl From<VirtualNode> for ParsedVirtualNode {
 }
 
 impl VirtualNode {
-    fn wrap_children (&mut self) -> Vec<Rc<RefCell<ParsedVirtualNode>>> {
-        self.children.take().unwrap().into_iter().map(|child| wrap(child)).collect()
+    fn wrap_children(&mut self) -> Vec<Rc<RefCell<ParsedVirtualNode>>> {
+        self.children
+            .take()
+            .unwrap()
+            .into_iter()
+            .map(|child| wrap(child))
+            .collect()
     }
 }
 

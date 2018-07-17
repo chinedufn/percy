@@ -291,7 +291,11 @@ mod tests {
         ]);
 
         assert_eq!(node, expected_node);
-        assert_eq!(node.children.as_ref().unwrap().len(), 3, "3 text node children");
+        assert_eq!(
+            node.children.as_ref().unwrap().len(),
+            3,
+            "3 text node children"
+        );
 
         // TODO: assert_same_children(node, expected_node)
         for (index, child) in node.children.as_ref().unwrap().iter().enumerate() {

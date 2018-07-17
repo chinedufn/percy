@@ -43,6 +43,7 @@ use webapis::*;
 /// Had we used breadth first indexing in our example above
 /// (parent 0, first child 1, second child 2) we'd need to traverse all of node 1's children
 /// to see if Node 5 was there. Good thing we don't do that!
+#[derive(Debug, PartialEq)]
 pub enum Patch<'a> {
     AppendNodes(u32, Vec<&'a VirtualNode>),
     RemoveNode(u32),
