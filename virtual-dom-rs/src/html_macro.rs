@@ -38,7 +38,11 @@ pub enum TagType {
 ///   <b> { "How are" "you?" } </b>
 ///
 ///   { html! { <strong> { "nested macro call!" } </strong> } }
+///
 ///   { some_component }
+///
+///   // You can have
+///   /*  comments in your html! */
 ///  </div>
 /// };
 /// # }

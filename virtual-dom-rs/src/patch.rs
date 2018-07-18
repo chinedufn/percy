@@ -14,22 +14,22 @@ use webapis::*;
 ///
 /// Our old virtual dom's nodes are indexed depth first, as shown in this illustration
 /// (0 being the root node, 1 being it's first child, 4 being it's second child).
-///
-///             .─.
-///            ( 0 )
-///             `┬'
-///         ┌────┴──────┐
-///         │           │
-///         ▼           ▼
-///        .─.         .─.
-///       ( 1 )       ( 4 )
-///        `┬'         `─'
-///    ┌────┴───┐       │
-///    │        │       │
-///    ▼        ▼       ▼
-///   .─.      .─.     .─.
-///  ( 2 )    ( 3 )   ( 5 )
-///   `─'      `─'     `─'
+///               .─.
+///              ( 0 )
+///               `┬'
+///           ┌────┴──────┐
+///           │           │
+///           ▼           ▼
+///          .─.         .─.
+///         ( 1 )       ( 4 )
+///          `┬'         `─'
+///      ┌────┴───┐       │
+///      │        │       ├─────┬─────┐
+///      ▼        ▼       │     │     │
+///     .─.      .─.      ▼     ▼     ▼
+///    ( 2 )    ( 3 )    .─.   .─.   .─.
+///     `─'      `─'    ( 5 ) ( 6 ) ( 7 )
+///                      `─'   `─'   `─'
 ///
 /// Indexing depth first allows us to say:
 ///
@@ -45,12 +45,15 @@ use webapis::*;
 /// to see if Node 5 was there. Good thing we don't do that!
 #[derive(Debug, PartialEq)]
 pub enum Patch<'a> {
-    AppendNodes(u32, Vec<&'a VirtualNode>),
-    RemoveNode(u32),
-    ReplaceNode(u32, &'a VirtualNode),
-    AddAttributes(u32, HashMap<&'a str, &'a str>),
-    RemoveAttributes(u32, Vec<&'a str>),
+    /// Append a vector of child nodes to a parent node id.
+    AppendChildren(node_id, Vec<&'a VirtualNode>),
+    /// For a `node_i32`, remove all children besides the first `len`
+    TruncateChildren(node_id, usize),
+    Replace(node_id, &'a VirtualNode),
+    AddAttributes(node_id, HashMap<&'a str, &'a str>),
+    RemoveAttributes(node_id, Vec<&'a str>),
 }
+type node_id = usize;
 
 /// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
 ///  patches the root node. Right now we just end up overwriting the root node.
