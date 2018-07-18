@@ -19,7 +19,9 @@ fn diff_recursive<'a, 'b>(old: &'a VirtualNode, new: &'a VirtualNode, cur_node_i
     }
 
     let mut add_attributes: HashMap<&str, &str> = HashMap::new();
+    let mut remove_attributes: Vec<&str> = vec![];
 
+    // TODO: -> split out into func
     for (new_prop_name, new_prop_val) in new.props.iter() {
         match old.props.get(new_prop_name) {
             Some(ref old_prop_val) => {
@@ -33,7 +35,7 @@ fn diff_recursive<'a, 'b>(old: &'a VirtualNode, new: &'a VirtualNode, cur_node_i
         };
     }
 
-    let mut remove_attributes: Vec<&str> = vec![];
+    // TODO: -> split out into func
     for (old_prop_name, old_prop_val) in old.props.iter() {
         match new.props.get(old_prop_name) {
             Some(ref new_prop_val) => {

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use virtual_node::VirtualNode;
 use webapis::*;
 
-/// A `Patch` encodes an operation that modifies our real root DOM element.
+/// A `Patch` encodes an operation that modifies a real DOM element.
 ///
 /// To update the real DOM that a user sees you'll want to first diff your
 /// old virtual dom and new virtual dom.
@@ -49,11 +49,25 @@ pub enum Patch<'a> {
     AppendChildren(node_id, Vec<&'a VirtualNode>),
     /// For a `node_i32`, remove all children besides the first `len`
     TruncateChildren(node_id, usize),
+    /// Replace a node with another node. This typically happens when a node's tag changes.
+    /// ex: <div> becomes <span>
     Replace(node_id, &'a VirtualNode),
+    /// Add attributes that the new node has that the old node does not
     AddAttributes(node_id, HashMap<&'a str, &'a str>),
+    /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(node_id, Vec<&'a str>),
+    /// If children have a `key="...",` property we'll compare the keys of the old and new children
+    /// to see if any nodes were simply moved. This allows us to just re-append then in the
+    /// correct place instead of needing to remove and then re-insert them.
+    RearrangeChildren(node_id, Vec<BeforeAfterNthChild(usize, usize)>)
+    // This will allow us to support for  `key="..."` property for efficiently re-ordering lists
 }
 type node_id = usize;
+
+/// Move a node's child from one location to another within it's siblings.
+/// so BeforeAfterNthChild(0, 5) would move the 0th child to become the 5th child instead.
+/// This is only supported if children have `key="...",` set
+pub struct BeforeAfterNthChild(usize, usize);
 
 /// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
 ///  patches the root node. Right now we just end up overwriting the root node.
