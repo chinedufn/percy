@@ -6,11 +6,11 @@ use std::collections::HashMap;
 
 static START_INDEX: usize = 0;
 
-pub fn diff<'a>(old: &VirtualNode, new: &'a VirtualNode) -> Vec<Patch<'a>> {
+pub fn diff<'a>(old: &'a VirtualNode, new: &'a VirtualNode) -> Vec<Patch<'a>> {
     diff_recursive(&old, &new, &mut 0)
 }
 
-fn diff_recursive<'a, 'b>(old: &VirtualNode, new: &'a VirtualNode, cur_node_idx: &'b mut usize) -> Vec<Patch<'a>> {
+fn diff_recursive<'a, 'b>(old: &'a VirtualNode, new: &'a VirtualNode, cur_node_idx: &'b mut usize) -> Vec<Patch<'a>> {
     let mut patches = vec![];
 
     if old.tag != new.tag {
@@ -33,8 +33,25 @@ fn diff_recursive<'a, 'b>(old: &VirtualNode, new: &'a VirtualNode, cur_node_idx:
         };
     }
 
+    let mut remove_attributes: Vec<&str> = vec![];
+    for (old_prop_name, old_prop_val) in old.props.iter() {
+        match new.props.get(old_prop_name) {
+            Some(ref new_prop_val) => {
+                if new_prop_val != &old_prop_val {
+                    remove_attributes.push(old_prop_name);
+                }
+            }
+            None => {
+                remove_attributes.push(old_prop_name);
+            }
+        };
+    }
+
     if add_attributes.len() > 0 {
         patches.push(Patch::AddAttributes(*cur_node_idx, add_attributes));
+    }
+    if remove_attributes.len() > 0 {
+        patches.push(Patch::RemoveAttributes(*cur_node_idx, remove_attributes));
     }
 
     let old_children = old.children.as_ref().unwrap();
@@ -136,7 +153,24 @@ mod tests {
         test(DiffTestCase {
             old: html! { <div> </div> },
             new: html! { <div id="hello", },
+            expected: vec![Patch::AddAttributes(0, attributes.clone())],
+            description: "Add attributes"
+        });
+
+        test(DiffTestCase {
+            old: html! { <div id="foobar",> </div> },
+            new: html! { <div id="hello", },
             expected: vec![Patch::AddAttributes(0, attributes)],
+            description: "Change attribute"
+        });
+    }
+
+    #[test]
+    fn remove_attributes() {
+        test(DiffTestCase {
+            old: html! { <div id="hey-there", },
+            new: html! { <div> </div> },
+            expected: vec![Patch::RemoveAttributes(0, vec!["id"])],
             description: "Add attributes"
         })
     }
