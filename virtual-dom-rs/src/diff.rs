@@ -5,6 +5,10 @@ use Patch;
 pub fn diff<'a>(old_root: &VirtualNode, new_root: &'a VirtualNode) -> Vec<Patch<'a>> {
     let mut patches = vec![];
 
+    if old_root.tag != new_root.tag {
+        patches.push(Patch::ReplaceNode(0, &new_root));
+    }
+
     let old_root_child_count = old_root.children.as_ref().unwrap().len();
     let new_root_child_count = new_root.children.as_ref().unwrap().len();
 
@@ -24,36 +28,36 @@ pub fn diff<'a>(old_root: &VirtualNode, new_root: &'a VirtualNode) -> Vec<Patch<
 mod tests {
     use super::*;
 
+    struct DiffTestCase<'a> {
+        old: VirtualNode,
+        new: VirtualNode,
+        expected: Vec<Patch<'a>>,
+        description: &'static str,
+    }
+
     #[test]
     fn replace_root_node() {
-        let old = html! {
-        <div> </div>
-        };
-
-        let mut new = html! {
-        <span> </span>
-        };
-
-        panic!();
+        test(DiffTestCase {
+            old: html! { <div> </div> },
+            new: html! { <span> </span> },
+            expected: vec![Patch::ReplaceNode(0, &html! { <span></span> })],
+            description: "Added a new node to the root node",
+        });
     }
 
     #[test]
     fn add_nodes() {
-        let old = html! {
-        <div> <b></b> </div>
-        };
+        test(DiffTestCase {
+            old: html! { <div> <b></b> </div> },
+            new: html! { <div> <b></b> <new></new> </div> },
+            expected: vec![Patch::AppendNodes(0, vec![&html! { <new></new> }])],
+            description: "Added a new node to the root node",
+        });
+    }
 
-        let new = html! {
-        <div> <b></b> <new></new> </div>
-        };
+    fn test(test_case: DiffTestCase) {
+        let patches = diff(&test_case.old, &test_case.new);
 
-        let patches = diff(&old, &new);
-
-        let new_node = &new.children.as_ref().unwrap()[1];
-
-        let expected_patch = Patch::AppendNodes(0, vec![&new_node]);
-
-        assert_eq!(patches.len(), 1);
-        assert_eq!(patches[0], expected_patch)
+        assert_eq!(patches, test_case.expected, "{}", test_case.description);
     }
 }
