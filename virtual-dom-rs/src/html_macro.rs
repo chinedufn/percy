@@ -13,6 +13,7 @@
 ///
 /// For example, in `<foo><bar></bar><bing></bing>` <bing> is a the child of "</bar>"'s parent since
 /// </bar> is a closing tag. Soo `<bing>`'s parent is `<foo>`
+
 use wasm_bindgen::prelude::Closure;
 
 #[derive(PartialEq)]

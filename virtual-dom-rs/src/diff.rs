@@ -2,6 +2,7 @@ use virtual_node::VirtualNode;
 use webapis::*;
 use Patch;
 use std::cmp::min;
+use std::collections::HashMap;
 
 static START_INDEX: usize = 0;
 
@@ -14,6 +15,26 @@ fn diff_recursive<'a, 'b>(old: &VirtualNode, new: &'a VirtualNode, cur_node_idx:
 
     if old.tag != new.tag {
         patches.push(Patch::Replace(0, &new));
+        return patches;
+    }
+
+    let mut add_attributes: HashMap<&str, &str> = HashMap::new();
+
+    for (new_prop_name, new_prop_val) in new.props.iter() {
+        match old.props.get(new_prop_name) {
+            Some(ref old_prop_val) => {
+                if old_prop_val != &new_prop_val {
+                    add_attributes.insert(new_prop_name, new_prop_val);
+                }
+            }
+            None => {
+                add_attributes.insert(new_prop_name, new_prop_val);
+            }
+        };
+    }
+
+    if add_attributes.len() > 0 {
+        patches.push(Patch::AddAttributes(*cur_node_idx, add_attributes));
     }
 
     let old_children = old.children.as_ref().unwrap();
@@ -48,6 +69,7 @@ fn diff_recursive<'a, 'b>(old: &VirtualNode, new: &'a VirtualNode, cur_node_idx:
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
 
     struct DiffTestCase<'a> {
         old: VirtualNode,
@@ -67,7 +89,7 @@ mod tests {
     }
 
     #[test]
-    fn add_nodes() {
+    fn add_children() {
         test(DiffTestCase {
             old: html! { <div> <b></b> </div> },
             new: html! { <div> <b></b> <new></new> </div> },
@@ -104,6 +126,19 @@ mod tests {
             expected: vec![Patch::TruncateChildren(0, 1), Patch::TruncateChildren(1, 1)],
             description: "Remove a child and a grandchild node",
         });
+    }
+
+    #[test]
+    fn add_attributes() {
+        let mut attributes = HashMap::new();
+        attributes.insert("id", "hello");
+
+        test(DiffTestCase {
+            old: html! { <div> </div> },
+            new: html! { <div id="hello", },
+            expected: vec![Patch::AddAttributes(0, attributes)],
+            description: "Add attributes"
+        })
     }
 
     fn test(test_case: DiffTestCase) {
