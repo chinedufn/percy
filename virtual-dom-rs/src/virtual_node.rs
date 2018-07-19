@@ -188,6 +188,19 @@ impl From<VirtualNode> for ParsedVirtualNode {
         }
     }
 }
+impl From<Vec<VirtualNode>> for ParsedVirtualNode {
+    fn from(mut nodes: Vec<VirtualNode>) -> Self {
+        let parsed_nodes: Vec<Rc<RefCell<ParsedVirtualNode>>> = nodes
+            .into_iter()
+            .map(|node| Rc::new(RefCell::new(ParsedVirtualNode::from(node))))
+            .collect();
+
+        let mut wrapper = ParsedVirtualNode::new("__VEC_OF_CHILDREN__");
+        wrapper.children = Some(parsed_nodes);
+
+        wrapper
+    }
+}
 
 impl VirtualNode {
     fn wrap_children(&mut self) -> Vec<Rc<RefCell<ParsedVirtualNode>>> {

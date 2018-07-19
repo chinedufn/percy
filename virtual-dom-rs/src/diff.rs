@@ -1,8 +1,8 @@
+use std::cmp::min;
+use std::collections::HashMap;
 use virtual_node::VirtualNode;
 use webapis::*;
 use Patch;
-use std::cmp::min;
-use std::collections::HashMap;
 
 static START_INDEX: usize = 0;
 
@@ -10,7 +10,11 @@ pub fn diff<'a>(old: &'a VirtualNode, new: &'a VirtualNode) -> Vec<Patch<'a>> {
     diff_recursive(&old, &new, &mut 0)
 }
 
-fn diff_recursive<'a, 'b>(old: &'a VirtualNode, new: &'a VirtualNode, cur_node_idx: &'b mut usize) -> Vec<Patch<'a>> {
+fn diff_recursive<'a, 'b>(
+    old: &'a VirtualNode,
+    new: &'a VirtualNode,
+    cur_node_idx: &'b mut usize,
+) -> Vec<Patch<'a>> {
     let mut patches = vec![];
 
     if old.tag != new.tag {
@@ -63,10 +67,7 @@ fn diff_recursive<'a, 'b>(old: &'a VirtualNode, new: &'a VirtualNode, cur_node_i
     let new_child_count = new_children.len();
 
     if new_child_count > old_child_count {
-        let append_patch: Vec<&'a VirtualNode> = new_children
-            [old_child_count..]
-            .iter()
-            .collect();
+        let append_patch: Vec<&'a VirtualNode> = new_children[old_child_count..].iter().collect();
         patches.push(Patch::AppendChildren(*cur_node_idx, append_patch))
     }
 
@@ -88,6 +89,7 @@ fn diff_recursive<'a, 'b>(old: &'a VirtualNode, new: &'a VirtualNode, cur_node_i
 #[cfg(test)]
 mod tests {
     use super::*;
+    use patch::BeforeAfterNthChild;
     use std::collections::HashMap;
 
     struct DiffTestCase<'a> {
@@ -127,21 +129,21 @@ mod tests {
         });
         test(DiffTestCase {
             old: html! {
-             <div>
-              <span>
-                <b></b>
-                // This `i` tag will get removed
-                <i></i>
-              </span>
-              // This `strong` tag will get removed
-              <strong></strong>
-             </div> },
-            new: html! {
-             <div>
-              <span>
+            <div>
+             <span>
                <b></b>
-              </span>
-             </div> },
+               // This `i` tag will get removed
+               <i></i>
+             </span>
+             // This `strong` tag will get removed
+             <strong></strong>
+            </div> },
+            new: html! {
+            <div>
+             <span>
+              <b></b>
+             </span>
+            </div> },
             expected: vec![Patch::TruncateChildren(0, 1), Patch::TruncateChildren(1, 1)],
             description: "Remove a child and a grandchild node",
         });
@@ -156,24 +158,47 @@ mod tests {
             old: html! { <div> </div> },
             new: html! { <div id="hello", },
             expected: vec![Patch::AddAttributes(0, attributes.clone())],
-            description: "Add attributes"
+            description: "Add attributes",
         });
 
         test(DiffTestCase {
             old: html! { <div id="foobar",> </div> },
             new: html! { <div id="hello", },
             expected: vec![Patch::AddAttributes(0, attributes)],
-            description: "Change attribute"
+            description: "Change attribute",
         });
     }
 
     #[test]
     fn remove_attributes() {
         test(DiffTestCase {
-            old: html! { <div id="hey-there", },
+            old: html! { <div id="hey-there",></div> },
             new: html! { <div> </div> },
             expected: vec![Patch::RemoveAttributes(0, vec!["id"])],
-            description: "Add attributes"
+            description: "Add attributes",
+        })
+    }
+
+    #[test]
+    fn reorder_chldren() {
+        let old_children = vec![
+            html! { <div key="hello",></div> },
+            html! { <div key="world",></div>},
+        ];
+
+        let new_children = vec![
+            html! { <div key="world",></div> },
+            html! { <div key="hello",></div>},
+        ];
+
+        test(DiffTestCase {
+            old: html! { <div> { old_children } </div> },
+            new: html! { <div> { new_children } </div> },
+            expected: vec![Patch::RearrangeChildren(
+                0,
+                vec![BeforeAfterNthChild(0, 1), BeforeAfterNthChild(1, 0)],
+            )],
+            description: "Add attributes",
         })
     }
 

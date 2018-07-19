@@ -13,7 +13,6 @@
 ///
 /// For example, in `<foo><bar></bar><bing></bing>` <bing> is a the child of "</bar>"'s parent since
 /// </bar> is a closing tag. Soo `<bing>`'s parent is `<foo>`
-
 use wasm_bindgen::prelude::Closure;
 
 #[derive(PartialEq)]
@@ -33,6 +32,17 @@ pub enum TagType {
 /// let click_message = "I was clicked!";
 /// let some_component = html! { <div !onclick=move || { println!("{}", click_message); },></div> };
 ///
+/// // Create lists of nodes from data!
+/// let list: Vec<VirtualNode> = [0, 1, 2].iter().map(|index| {
+///   html! {
+///     <div key="unique-key-{index}",>
+///       <h1>This is node number {index} </h1>
+///       <strong> Keys in lists help performance </strong>
+///       <em> But they're optional </em>
+///     </div>
+///   }
+/// }).collect();
+///
 /// let root_node = html! {
 ///  <div id="my-app", !onmouseenter=||{},>
 ///   <span> { "Hello world" } </span>
@@ -41,6 +51,8 @@ pub enum TagType {
 ///   { html! { <strong> { "nested macro call!" } </strong> } }
 ///
 ///   { some_component }
+///
+///   { list }
 ///
 ///   // You can have
 ///   /*  comments in your html! */
@@ -77,6 +89,8 @@ macro_rules! html {
             let prev_tag_type: Option<$crate::TagType> = None;
 
             recurse_html! { active_node root_nodes prev_tag_type $($remaining_html)* };
+            drop(&active_node);
+            drop(&prev_tag_type);
         }
 
         VirtualNode::from($crate::Rc::try_unwrap(root_nodes.pop().unwrap()).unwrap().into_inner())
@@ -89,7 +103,9 @@ macro_rules! recurse_html {
     // For <div></div> this is
     // <div>
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident < $start_tag:ident > $($remaining_html:tt)*) => {
+        #[allow(unused_mut)]
         let mut new_node = $crate::ParsedVirtualNode::new(stringify!($start_tag));
+        #[allow(unused_mut)]
         let mut new_node = $crate::Rc::new($crate::RefCell::new(new_node));
 
         if $prev_tag_type == None {
@@ -99,8 +115,10 @@ macro_rules! recurse_html {
             new_node.borrow_mut().parent = $active_node;
         }
 
+        #[allow(unused_mut)]
         let mut $active_node = Some(new_node);
 
+        #[allow(unused)]
         let tag_type = Some($crate::TagType::Open);
         recurse_html! { $active_node $root_nodes tag_type $($remaining_html)* }
     };
@@ -109,7 +127,9 @@ macro_rules! recurse_html {
     // For <div id="10",> this is
     // <div
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident < $start_tag:ident $($remaining_html:tt)*) => {
+        #[allow(unused_mut)]
         let mut new_node = $crate::ParsedVirtualNode::new(stringify!($start_tag));
+        #[allow(unused_mut)]
         let mut new_node = $crate::Rc::new($crate::RefCell::new(new_node));
 
         if $prev_tag_type == None {
@@ -121,6 +141,7 @@ macro_rules! recurse_html {
 
         $active_node = Some(new_node);
 
+        #[allow(unused)]
         let tag_type = Some($crate::TagType::Open);
         recurse_html! { $active_node $root_nodes tag_type $($remaining_html)* }
     };
@@ -161,9 +182,26 @@ macro_rules! recurse_html {
     // "Hello world"
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident { $($child:expr)* } $($remaining_html:tt)*) => {
         $(
+            // A user can pass in different types. A string.. a node.. a vector of nodes.. So we
+            // convert whatever they passed in into a ParsedVirtualNode.
             let new_child = $crate::ParsedVirtualNode::from($child);
-            let new_child = $crate::Rc::new($crate::RefCell::new(new_child));
-            $active_node.as_mut().unwrap().borrow_mut().children.as_mut().unwrap().push($crate::Rc::clone(&new_child));
+
+            // If the user passed in a vector of nodes we converted it into a ParsedVirtualNode
+            // that has a special tag that let's us know that what we really want is to iterate over
+            // the vector of nodes that they passed in.
+            // So.. in short.. we stored the vector of nodes that they passed in as children of
+            // some temporary ParsedVirtualNode, and now we're pulling them out and appending them
+            // to their rightful parent.
+            if new_child.tag == "__VEC_OF_CHILDREN__".to_string() {
+                for node_from_vec in new_child.children.unwrap() {
+                    $active_node.as_mut().unwrap().borrow_mut().children.as_mut().unwrap().push(
+                      $crate::Rc::clone(&node_from_vec)
+                    );
+                }
+            } else {
+               let new_child = $crate::Rc::new($crate::RefCell::new(new_child));
+               $active_node.as_mut().unwrap().borrow_mut().children.as_mut().unwrap().push($crate::Rc::clone(&new_child));
+            }
         )*
 
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
@@ -173,11 +211,14 @@ macro_rules! recurse_html {
     // For <div id="10",></div> this is:
     // </div>
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident < / $end_tag:ident > $($remaining_html:tt)*) => {
+        #[allow(unused)]
         let tag_type = Some($crate::TagType::Close);
 
         // Set the active node to the parent of the current active node that we just finished
         // processing
+        #[allow(unused_mut)]
         let mut $active_node = $crate::Rc::clone(&$active_node.unwrap());
+        #[allow(unused_mut)]
         let mut $active_node = $active_node.borrow_mut().parent.take();
 
         recurse_html! { $active_node $root_nodes tag_type $($remaining_html)* }
@@ -338,6 +379,19 @@ mod tests {
             VirtualNode::text("This is a text node"),
             VirtualNode::text("This is a text node"),
         ]);
+
+        assert_eq!(node, expected_node);
+    }
+
+    #[test]
+    fn vec_of_nodes() {
+        let children = vec![html! { <div> </div>}, html! { <strong> </strong>}];
+        let node = html!{
+        <div> { children } </div>
+        };
+
+        let mut expected_node = VirtualNode::new("div");
+        expected_node.children = Some(vec![VirtualNode::new("div"), VirtualNode::new("strong")]);
 
         assert_eq!(node, expected_node);
     }

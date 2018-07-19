@@ -59,15 +59,15 @@ pub enum Patch<'a> {
     /// If children have a `key="...",` property we'll compare the keys of the old and new children
     /// to see if any nodes were simply moved. This allows us to just re-append then in the
     /// correct place instead of needing to remove and then re-insert them.
-    RearrangeChildren(node_id, Vec<BeforeAfterNthChild(usize, usize)>)
-    // This will allow us to support for  `key="..."` property for efficiently re-ordering lists
+    RearrangeChildren(node_id, Vec<BeforeAfterNthChild>), // This will allow us to support for  `key="..."` property for efficiently re-ordering lists
 }
 type node_id = usize;
 
 /// Move a node's child from one location to another within it's siblings.
 /// so BeforeAfterNthChild(0, 5) would move the 0th child to become the 5th child instead.
 /// This is only supported if children have `key="...",` set
-pub struct BeforeAfterNthChild(usize, usize);
+#[derive(Debug, PartialEq)]
+pub struct BeforeAfterNthChild(pub usize, pub usize);
 
 /// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
 ///  patches the root node. Right now we just end up overwriting the root node.
