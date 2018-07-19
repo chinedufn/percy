@@ -171,7 +171,7 @@ macro_rules! recurse_html {
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident ! $event_name:tt = $callback:expr, $($remaining_html:tt)*) => {
         $active_node.as_mut().unwrap().borrow_mut().events.0.insert(
             stringify!($event_name).to_string(),
-            Some($crate::Closure::new($callback))
+            $crate::RefCell::new(Some($crate::Closure::new($callback)))
         );
 
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }

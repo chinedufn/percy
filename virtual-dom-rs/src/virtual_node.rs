@@ -122,26 +122,27 @@ impl VirtualNode {
 impl VirtualNode {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
-    pub fn create_element(&mut self) -> Element {
+    pub fn create_element(&self) -> Element {
         let elem = document.create_element(&self.tag);
 
         self.props.iter().for_each(|(name, value)| {
             elem.set_attribute(name, value);
         });
 
-        self.events.0.iter_mut().for_each(|(onevent, callback)| {
+        self.events.0.iter().for_each(|(onevent, callback)| {
             // onclick -> click
             let event = &onevent[2..];
 
+            let mut callback = callback.borrow_mut();
             let callback = callback.take().unwrap();
             elem.add_event_listener(event, &callback);
             callback.forget();
         });
 
         self.children
-            .as_mut()
+            .as_ref()
             .unwrap()
-            .iter_mut()
+            .iter()
             .for_each(|child| {
                 if child.text.is_some() {
                     elem.append_text_child(
@@ -261,7 +262,7 @@ impl fmt::Display for VirtualNode {
 
 /// We need a custom implementation of fmt::Debug since Fn() doesn't
 /// implement debug.
-pub struct Events(pub HashMap<String, Option<Closure<Fn() -> ()>>>);
+pub struct Events(pub HashMap<String, RefCell<Option<Closure<Fn() -> ()>>>>);
 
 impl PartialEq for Events {
     // TODO: What should happen here..? And why?

@@ -93,7 +93,6 @@ fn diff_recursive<'a, 'b>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use patch::BeforeAfterNthChild;
     use std::collections::HashMap;
 
     struct DiffTestCase<'a> {
@@ -206,11 +205,11 @@ mod tests {
             // old node 0
             html! { <div key="hello", id="same-id", style="",></div> },
             // removed
-            html! { <div key="gets-removed"> { "This node gets removed"} </div>},
+            html! { <div key="gets-removed",> { "This node gets removed"} </div>},
             // old node 2
             html! { <div key="world", class="changed-class",></div>},
             // removed
-            html! { <div key="this-got-removed"> { "This node gets removed"} </div>}
+            html! { <div key="this-got-removed",> { "This node gets removed"} </div>}
         ];
 
         let new_children = vec![
