@@ -41,6 +41,10 @@ fn diff_recursive<'a, 'b>(
 
     // TODO: -> split out into func
     for (old_prop_name, old_prop_val) in old.props.iter() {
+        if add_attributes.get(&old_prop_name[..]).is_some() {
+            continue;
+        };
+
         match new.props.get(old_prop_name) {
             Some(ref new_prop_val) => {
                 if new_prop_val != &old_prop_val {
@@ -175,6 +179,19 @@ mod tests {
             old: html! { <div id="hey-there",></div> },
             new: html! { <div> </div> },
             expected: vec![Patch::RemoveAttributes(0, vec!["id"])],
+            description: "Add attributes",
+        })
+    }
+
+    #[test]
+    fn change_attribute() {
+        let mut attributes = HashMap::new();
+        attributes.insert("id", "changed");
+
+        test(DiffTestCase {
+            old: html! { <div id="hey-there",></div> },
+            new: html! { <div id="changed",> </div> },
+            expected: vec![Patch::AddAttributes(0, attributes)],
             description: "Add attributes",
         })
     }
