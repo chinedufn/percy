@@ -56,18 +56,8 @@ pub enum Patch<'a> {
     AddAttributes(node_id, HashMap<&'a str, &'a str>),
     /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(node_id, Vec<&'a str>),
-    /// If children have a `key="...",` property we'll compare the keys of the old and new children
-    /// to see if any nodes were simply moved. This allows us to just re-append then in the
-    /// correct place instead of needing to remove and then re-insert them.
-    RearrangeChildren(node_id, Vec<BeforeAfterNthChild>), // This will allow us to support for  `key="..."` property for efficiently re-ordering lists
 }
 type node_id = usize;
-
-/// Move a node's child from one location to another within it's siblings.
-/// so BeforeAfterNthChild(0, 5) would move the 0th child to become the 5th child instead.
-/// This is only supported if children have `key="...",` set
-#[derive(Debug, PartialEq)]
-pub struct BeforeAfterNthChild(pub usize, pub usize);
 
 /// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
 ///  patches the root node. Right now we just end up overwriting the root node.

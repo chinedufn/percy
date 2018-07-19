@@ -203,12 +203,19 @@ mod tests {
         attributes.insert("class", "foo");
 
         let old_children = vec![
-            html! { <div key="hello", id="same-id",></div> },
+            // old node 0
+            html! { <div key="hello", id="same-id", style="",></div> },
+            // removed
+            html! { <div key="gets-removed"> { "This node gets removed"} </div>},
+            // old node 2
             html! { <div key="world", class="changed-class",></div>},
+            // removed
+            html! { <div key="this-got-removed"> { "This node gets removed"} </div>}
         ];
 
         let new_children = vec![
             html! { <div key="world", class="foo",></div> },
+            html! { <div key="new",> </div>},
             html! { <div key="hello", id="same-id",></div>},
         ];
 
@@ -216,11 +223,8 @@ mod tests {
             old: html! { <div> { old_children } </div> },
             new: html! { <div> { new_children } </div> },
             expected: vec![
-                Patch::RearrangeChildren(
-                    0,
-                    vec![BeforeAfterNthChild(0, 1), BeforeAfterNthChild(1, 0)],
-                ),
-                Patch::AddAttributes(2, attributes),
+                // TODO: Come up with the patch structure for keyed nodes..
+                // keying should only work if all children have keys..
             ],
             description: "Add attributes",
         })
