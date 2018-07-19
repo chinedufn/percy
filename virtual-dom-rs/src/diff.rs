@@ -196,25 +196,32 @@ mod tests {
         })
     }
 
+    // TODO: Key support
     #[test]
     fn reorder_chldren() {
+        let mut attributes = HashMap::new();
+        attributes.insert("class", "foo");
+
         let old_children = vec![
-            html! { <div key="hello",></div> },
-            html! { <div key="world",></div>},
+            html! { <div key="hello", id="same-id",></div> },
+            html! { <div key="world", class="changed-class",></div>},
         ];
 
         let new_children = vec![
-            html! { <div key="world",></div> },
-            html! { <div key="hello",></div>},
+            html! { <div key="world", class="foo",></div> },
+            html! { <div key="hello", id="same-id",></div>},
         ];
 
         test(DiffTestCase {
             old: html! { <div> { old_children } </div> },
             new: html! { <div> { new_children } </div> },
-            expected: vec![Patch::RearrangeChildren(
-                0,
-                vec![BeforeAfterNthChild(0, 1), BeforeAfterNthChild(1, 0)],
-            )],
+            expected: vec![
+                Patch::RearrangeChildren(
+                    0,
+                    vec![BeforeAfterNthChild(0, 1), BeforeAfterNthChild(1, 0)],
+                ),
+                Patch::AddAttributes(2, attributes),
+            ],
             description: "Add attributes",
         })
     }
