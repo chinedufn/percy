@@ -46,22 +46,45 @@ use webapis::*;
 #[derive(Debug, PartialEq)]
 pub enum Patch<'a> {
     /// Append a vector of child nodes to a parent node id.
-    AppendChildren(node_id, Vec<&'a VirtualNode>),
+    AppendChildren(node_idx, Vec<&'a VirtualNode>),
     /// For a `node_i32`, remove all children besides the first `len`
-    TruncateChildren(node_id, usize),
+    TruncateChildren(node_idx, usize),
     /// Replace a node with another node. This typically happens when a node's tag changes.
     /// ex: <div> becomes <span>
-    Replace(node_id, &'a VirtualNode),
+    Replace(node_idx, &'a VirtualNode),
     /// Add attributes that the new node has that the old node does not
-    AddAttributes(node_id, HashMap<&'a str, &'a str>),
+    AddAttributes(node_idx, HashMap<&'a str, &'a str>),
     /// Remove attributes that the old node had that the new node doesn't
-    RemoveAttributes(node_id, Vec<&'a str>),
+    RemoveAttributes(node_idx, Vec<&'a str>),
 }
-type node_id = usize;
+type node_idx = usize;
 
 /// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
 ///  patches the root node. Right now we just end up overwriting the root node.
 pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
-//    let parent = root_node.parent_element();
-//    parent.replace_child(patches, root_node);
+    let mut cur_node_idx = 0;
+    let cur_node = root_node;
+
+    for patch in patches {
+        match patch {
+            Patch::AddAttributes(node_idx, attributes) => {
+                if *node_idx == cur_node_idx {
+                    for (attrib_name, attrib_val) in attributes.iter() {
+                        cur_node.set_attribute(attrib_name, attrib_val);
+                    }
+                }
+            }
+            Patch::Replace(node_idx, new_node) => {
+                if *node_idx == cur_node_idx {
+                    // TODO: We might already have a reference to the parent element from
+                    // a previous iteration so in the future when we optimiz take advantage
+                    // of that. After we have some benchmarks in place..
+                    let parent = cur_node.parent_element();
+                    parent.replace_child(&new_node.create_element(), &cur_node);
+                }
+            }
+            _ => {}
+        }
+    }
+
 }

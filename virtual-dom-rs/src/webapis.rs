@@ -38,6 +38,9 @@ extern "C" {
     #[wasm_bindgen(method, js_name = setAttribute)]
     pub fn set_attribute(this: &Element, attrib: &str, value: &str);
 
+    #[wasm_bindgen(method, js_name = removeAttribute)]
+    pub fn remove_attribute(this: &Element, attrib: &str);
+
     #[wasm_bindgen(method, js_name = addEventListener)]
     pub fn add_event_listener(this: &Element, event: &str, cb: &Closure<Fn()>);
 
