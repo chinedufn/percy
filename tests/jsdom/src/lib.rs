@@ -9,6 +9,10 @@ use std::cell::Cell;
 use std::rc::Rc;
 use virtual_dom_rs::webapis::*;
 
+macro_rules! clog {
+    ($($t:tt)*) => (log(&format!($($t)*)))
+}
+
 #[wasm_bindgen]
 pub fn nested_divs() -> Element {
     let mut div = html! { <div> <div> <div></div> </div> </div> };
@@ -40,7 +44,7 @@ impl ClickTest {
     }
 
     pub fn div_with_click_event(&self) -> Element {
-        let mut clicked = Rc::clone(&self.clicked);
+        let clicked = Rc::clone(&self.clicked);
 
         let mut div = html! { <div
          !onclick=move || {
@@ -72,7 +76,8 @@ impl PatchTest {
 
         let mut new_elem = html! { <div id="patched",> { "Patched element" } </div> };
 
-        let patches = virtual_dom_rs::diff(&old_elem, &mut new_elem);
+        let mut patches = virtual_dom_rs::diff(&old_elem, &new_elem);
+        clog!("{:#?}", patches);
 
         virtual_dom_rs::patch(&root_node, &patches);
     }

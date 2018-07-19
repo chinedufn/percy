@@ -93,7 +93,7 @@ macro_rules! html {
             drop(&prev_tag_type);
         }
 
-        VirtualNode::from($crate::Rc::try_unwrap(root_nodes.pop().unwrap()).unwrap().into_inner())
+        $crate::VirtualNode::from($crate::Rc::try_unwrap(root_nodes.pop().unwrap()).unwrap().into_inner())
     }};
 }
 

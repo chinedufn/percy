@@ -4,6 +4,9 @@ use wasm_bindgen::prelude::*;
 extern "C" {
     pub type HTMLDocument;
 
+    #[wasm_bindgen(js_namespace = console)]
+    pub fn log(msg: &str);
+
     pub static document: HTMLDocument;
 
     #[wasm_bindgen(method, js_name = createElement)]
