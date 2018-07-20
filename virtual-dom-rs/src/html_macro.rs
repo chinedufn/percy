@@ -200,7 +200,14 @@ macro_rules! recurse_html {
                 }
             } else {
                let new_child = $crate::Rc::new($crate::RefCell::new(new_child));
-               $active_node.as_mut().unwrap().borrow_mut().children.as_mut().unwrap().push($crate::Rc::clone(&new_child));
+
+               if $root_nodes.len() == 1 {
+                   $active_node.as_mut().unwrap().borrow_mut().children.as_mut().unwrap().push($crate::Rc::clone(&new_child));
+               } else {
+                   // This handles the case when the root node is inside of a block
+                   $root_nodes.push($crate::Rc::clone(&new_child));
+                   $active_node = Some(new_child);
+               }
             }
         )*
 
@@ -231,8 +238,6 @@ macro_rules! recurse_html {
     // TODO: README explains that props must end with commas
 }
 
-// TODO: Add test for html { <div> vec![Two elements in here] </div> } for both references
-// and owned vectors... #[test]fn vector_children()
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -377,13 +382,25 @@ mod tests {
         let children = vec![html! { <div> </div>}, html! { <strong> </strong>}];
 
         let mut expected = VirtualNode::new("div");
-        expected.children = Some(vec![VirtualNode::new("div"), VirtualNode::new("strong")]);
+        expected.children = Some(vec![
+            VirtualNode::new("div"),
+            VirtualNode::new("strong"),
+        ]);
 
         test(HTMLMacroTest {
             generated: html!{ <div> { children } </div> },
             expected,
             desc: "Vec of nodes"
         });
+    }
+
+    #[test]
+    fn text_root_node() {
+        test(HTMLMacroTest {
+            generated: html! { { "some text" } },
+            expected: VirtualNode::text("some text"),
+            desc: "Text as root node"
+        })
     }
 
     fn test(macro_test: HTMLMacroTest) {
@@ -409,8 +426,4 @@ mod tests {
             );
         }
     }
-
-    // TODO: Test text node `html! { { "hello world" } } `
-
-    // TODO: Make a re-usable test case struct for these tests
 }
