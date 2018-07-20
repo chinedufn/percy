@@ -241,29 +241,33 @@ mod tests {
     use std::rc::Rc;
     use VirtualNode;
 
+    struct HTMLMacroTest {
+        generated: VirtualNode,
+        expected: VirtualNode,
+        desc: &'static str,
+    }
+
     #[test]
     fn empty_div() {
-        let node = html!{
-        <div></div>
-        };
-
-        let expected_node = VirtualNode::new("div");
-
-        assert_eq!(node, expected_node);
+        test(HTMLMacroTest {
+            generated: html!{ <div></div> },
+            expected: VirtualNode::new("div"),
+            desc: "Empty div"
+        })
     }
 
     #[test]
     fn one_prop() {
-        let node = html!{
-        <div id="hello-world",></div>
-        };
-
         let mut props = HashMap::new();
         props.insert("id".to_string(), "hello-world".to_string());
-        let mut expected_node = VirtualNode::new("div");
-        expected_node.props = props;
+        let mut expected = VirtualNode::new("div");
+        expected.props = props;
 
-        assert_eq!(node, expected_node);
+        test(HTMLMacroTest {
+            generated: html!{ <div id="hello-world",></div> },
+            expected,
+            desc: "One property"
+        });
     }
 
     #[test]
@@ -283,116 +287,130 @@ mod tests {
 
     #[test]
     fn child_node() {
-        let node = html!{
-        <div><span></span></div>
-        };
+        let mut expected = VirtualNode::new("div");
+        expected.children = Some(vec![VirtualNode::new("span")]);
 
-        let mut expected_node = VirtualNode::new("div");
-        expected_node.children = Some(vec![VirtualNode::new("span")]);
-
-        assert_eq!(node, expected_node);
-        assert_eq!(expected_node.children.unwrap().len(), 1);
+        test(HTMLMacroTest {
+            generated: html!{ <div><span></span></div> },
+            expected,
+            desc: "Child node"
+        })
     }
 
     #[test]
     fn sibling_child_nodes() {
-        let node = html!{
-        <div><span></span><b></b></div>
-        };
+        let mut expected = VirtualNode::new("div");
+        expected.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
 
-        let mut expected_node = VirtualNode::new("div");
-        expected_node.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
-
-        assert_eq!(node, expected_node);
-        assert_eq!(node.children.unwrap().len(), 2);
+        test(HTMLMacroTest {
+            generated: html! { <div><span></span><b></b></div> },
+            expected,
+            desc: "Sibling child nodes"
+        })
     }
 
     #[test]
     fn three_nodes_deep() {
-        let node = html!{
-        <div><span><b></b></span></div>
-        };
-
         let mut child = VirtualNode::new("span");
         child.children = Some(vec![VirtualNode::new("b")]);
 
-        let mut expected_node = VirtualNode::new("div");
-        expected_node.children = Some(vec![child]);
+        let mut expected = VirtualNode::new("div");
+        expected.children = Some(vec![child]);
 
-        assert_eq!(node, expected_node);
-        assert_eq!(node.children.unwrap().len(), 1, "1 Child");
+        test(HTMLMacroTest {
+            generated: html! { <div><span><b></b></span></div> },
+            expected,
+            desc: "Nested 3 nodes deep"
+        })
     }
 
     #[test]
     fn nested_text_node() {
-        let node = html!{
-        <div>{ "This is a text node" } {"More" "Text"}</div>
-        };
-
-        let mut expected_node = VirtualNode::new("div");
-        expected_node.children = Some(vec![
+        let mut expected = VirtualNode::new("div");
+        expected.children = Some(vec![
             VirtualNode::text("This is a text node"),
             VirtualNode::text("More"),
             VirtualNode::text("Text"),
         ]);
 
-        assert_eq!(node, expected_node);
-        assert_eq!(
-            node.children.as_ref().unwrap().len(),
-            3,
-            "3 text node children"
-        );
-
-        // TODO: assert_same_children(node, expected_node)
-        for (index, child) in node.children.as_ref().unwrap().iter().enumerate() {
-            assert_eq!(child, &expected_node.children.as_ref().unwrap()[index]);
-        }
+        test(HTMLMacroTest {
+            generated: html! { <div>{ "This is a text node" } {"More" "Text"}</div> },
+            expected,
+            desc: "Nested text nide"
+        });
     }
 
     #[test]
     fn nested_macro() {
         let child_2 = html! { <b></b> };
 
-        let node = html!{
-        <div>{ html! { <span></span> } { child_2 } }</div>
-        };
+        let mut expected = VirtualNode::new("div");
+        expected.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
 
-        let mut expected_node = VirtualNode::new("div");
-        expected_node.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
-
-        assert_eq!(node, expected_node);
+        test(HTMLMacroTest {
+            generated: html! { <div>{ html! { <span></span> } { child_2 } }</div> },
+            expected,
+            desc: "Nested macros"
+        });
     }
 
     #[test]
     fn strings() {
-        let text = "This is a text node";
-        let text = format!("{}", text);
+        let text1 = "This is a text node";
+        let text2 = text1.clone();
 
-        let text_ref = &format!("{}", text);
-
-        let node = html!{
-        <div>{ text text_ref }</div>
-        };
-
-        let mut expected_node = VirtualNode::new("div");
-        expected_node.children = Some(vec![
+        let mut expected = VirtualNode::new("div");
+        expected.children = Some(vec![
             VirtualNode::text("This is a text node"),
             VirtualNode::text("This is a text node"),
         ]);
 
-        assert_eq!(node, expected_node);
+        test(HTMLMacroTest {
+            generated: html! { <div>{ text1 text2 }</div> },
+            expected,
+            desc: "Creates text nodes"
+        });
     }
 
     #[test]
     fn vec_of_nodes() {
         let children = vec![html! { <div> </div>}, html! { <strong> </strong>}];
-        let node = html!{
-        <div> { children } </div>
-        };
 
-        let mut expected_node = VirtualNode::new("div");
-        expected_node.children = Some(vec![VirtualNode::new("div"), VirtualNode::new("strong")]);
+        let mut expected = VirtualNode::new("div");
+        expected.children = Some(vec![VirtualNode::new("div"), VirtualNode::new("strong")]);
 
-        assert_eq!(node, expected_node);
+        test(HTMLMacroTest {
+            generated: html!{ <div> { children } </div> },
+            expected,
+            desc: "Vec of nodes"
+        });
     }
+
+    fn test(macro_test: HTMLMacroTest) {
+        assert_eq!(
+            macro_test.generated, macro_test.expected,
+            "{}",
+            macro_test.desc
+        );
+
+        for (index, child) in macro_test
+            .expected
+            .children
+            .as_ref()
+            .unwrap()
+            .iter()
+            .enumerate()
+        {
+            assert_eq!(
+                child,
+                &macro_test.generated.children.as_ref().unwrap()[index],
+                "{}",
+                macro_test.desc
+            );
+        }
+    }
+
+    // TODO: Test text node `html! { { "hello world" } } `
+
+    // TODO: Make a re-usable test case struct for these tests
 }
