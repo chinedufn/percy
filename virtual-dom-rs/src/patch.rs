@@ -57,15 +57,45 @@ pub enum Patch<'a> {
     /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(node_idx, Vec<&'a str>),
 }
+
+impl<'a> Patch<'a> {
+    pub fn node_idx(&self) -> usize {
+        match self {
+            Patch::AppendChildren(node_idx, _) => *node_idx,
+            Patch::TruncateChildren(node_idx, _) => *node_idx,
+            Patch::Replace(node_idx, _) => *node_idx,
+            Patch::AddAttributes(node_idx, _) => *node_idx,
+            Patch::RemoveAttributes(node_idx, _) => *node_idx,
+        }
+    }
+}
+
 type node_idx = usize;
+
+// TODO: Remove
+macro_rules! clog {
+    ($($t:tt)*) => (log(&format!($($t)*)))
+}
 
 /// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
 ///  patches the root node. Right now we just end up overwriting the root node.
 pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
     let mut cur_node_idx = 0;
-    let cur_node = root_node;
+    let mut cur_node = root_node;
+
+    let mut child_node_count = cur_node.child_nodes().length() as usize;
+//    cur_node.child_nodes().item(0).replace_with(&new_node.create_element());
 
     for patch in patches {
+        let patch_node_idx = patch.node_idx();
+        if cur_node_idx != patch_node_idx {
+            let patch_node_idx_distance = patch_node_idx - cur_node_idx ;
+            if patch_node_idx_distance < child_node_count {
+                cur_node = cur_node.child_nodes().item(patch_node_idx_distance - 1);
+            }
+        }
+        clog!("NODE INDEX {}", patch.node_idx());
+
         match patch {
             Patch::AddAttributes(node_idx, attributes) => {
                 if *node_idx == cur_node_idx {
@@ -79,12 +109,10 @@ pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
                     // TODO: We might already have a reference to the parent element from
                     // a previous iteration so in the future when we optimiz take advantage
                     // of that. After we have some benchmarks in place..
-                    let parent = cur_node.parent_element();
-                    parent.replace_child(&new_node.create_element(), &cur_node);
+                    cur_node.replace_with(&new_node.create_element());
                 }
             }
             _ => {}
         }
     }
-
 }

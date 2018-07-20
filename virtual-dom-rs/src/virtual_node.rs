@@ -139,21 +139,15 @@ impl VirtualNode {
             callback.forget();
         });
 
-        self.children
-            .as_ref()
-            .unwrap()
-            .iter()
-            .for_each(|child| {
-                if child.text.is_some() {
-                    elem.append_text_child(
-                        document.create_text_node(&child.text.as_ref().unwrap()),
-                    );
-                }
+        self.children.as_ref().unwrap().iter().for_each(|child| {
+            if child.text.is_some() {
+                elem.append_text_child(document.create_text_node(&child.text.as_ref().unwrap()));
+            }
 
-                if child.text.is_none() {
-                    elem.append_child(child.create_element());
-                }
-            });
+            if child.text.is_none() {
+                elem.append_child(&child.create_element());
+            }
+        });
 
         elem
     }

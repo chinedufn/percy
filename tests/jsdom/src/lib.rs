@@ -7,6 +7,7 @@ use wasm_bindgen::prelude::*;
 extern crate virtual_dom_rs;
 use std::cell::Cell;
 use std::rc::Rc;
+use virtual_dom_rs::virtual_node::VirtualNode;
 use virtual_dom_rs::webapis::*;
 
 macro_rules! clog {
@@ -60,6 +61,12 @@ impl ClickTest {
 #[wasm_bindgen]
 pub struct PatchTest {}
 
+struct PatchTestCase {
+    old: VirtualNode,
+    new: VirtualNode,
+    desc: &'static str
+}
+
 #[wasm_bindgen]
 impl PatchTest {
     #[wasm_bindgen(constructor)]
@@ -67,19 +74,54 @@ impl PatchTest {
         PatchTest {}
     }
 
-    pub fn patch_element(&self) {
-        let mut old_elem = html! { <div id="old",> { "Original element" } </div> };
+    pub fn run_tests (&self) {
+        self.replace_child();
+    }
+}
 
-        let root_node = old_elem.create_element();
-        document.body().append_child(root_node);
-        let root_node = document.get_element_by_id("old");
+impl PatchTest {
+    fn replace_child(&self) {
+        test_patch(PatchTestCase {
+            old: html! {
+             <div id="old",>
+               { "Original element" }
+             </div>
+            },
+            new: html! { <div id="patched",> { "Patched element" }</div> },
+            desc: "Replace a root node attribute attribute and a child text node"
+        })
+    }
+}
 
-        let mut new_elem = html! { <div id="patched",> { "Patched element" } </div> };
+fn test_patch(test_case: PatchTestCase) {
+    let root_node = test_case.old.create_element();
 
-        let mut patches = virtual_dom_rs::diff(&old_elem, &new_elem);
-        clog!("{:#?}", patches);
+    document.body().append_child(&root_node);
 
-        virtual_dom_rs::patch(&root_node, &patches);
+    let patches = virtual_dom_rs::diff(&test_case.old, &test_case.new);
+    clog!("{:#?}", patches);
+
+    virtual_dom_rs::patch(&root_node, &patches);
+
+    let new_root_node_id = test_case.new.props.get("id").unwrap();
+
+    let new_root_node = document.get_element_by_id(new_root_node_id);
+    let new_root_node = new_root_node.outer_html();
+
+    let expected_new_root_node = test_case.new.to_string();
+
+    if new_root_node == expected_new_root_node {
+        // TODO: Print the necessary information
+        clog!("PASSED {}", test_case.desc);
+    } else {
+        // TODO: Print the necessary information
+        clog!(
+            "\nFailed diff/patch operation\nActual: {}\nExpected: {}\nMessage: {}\n",
+            new_root_node,
+            expected_new_root_node,
+            test_case.desc
+        );
+        panic!("Failure");
     }
 }
 

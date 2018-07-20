@@ -18,7 +18,7 @@ fn diff_recursive<'a, 'b>(
     let mut patches = vec![];
 
     if old.tag != new.tag {
-        patches.push(Patch::Replace(0, &new));
+        patches.push(Patch::Replace(*cur_node_idx, &new));
         return patches;
     }
 
@@ -109,6 +109,12 @@ mod tests {
             new: html! { <span> </span> },
             expected: vec![Patch::Replace(0, &html! { <span></span> })],
             description: "Replace the root if the tag changed",
+        });
+        test(DiffTestCase {
+            old: html! { <div> <b></b> </div> },
+            new: html! { <div> <strong></strong> </div> },
+            expected: vec![Patch::Replace(1, &html! { <strong></strong> })],
+            description: "Replace a child node",
         });
     }
 
@@ -209,7 +215,7 @@ mod tests {
             // old node 2
             html! { <div key="world", class="changed-class",></div>},
             // removed
-            html! { <div key="this-got-removed",> { "This node gets removed"} </div>}
+            html! { <div key="this-got-removed",> { "This node gets removed"} </div>},
         ];
 
         let new_children = vec![

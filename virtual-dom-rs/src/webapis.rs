@@ -30,7 +30,7 @@ extern "C" {
     pub type Element;
 
     #[wasm_bindgen(method, js_name = appendChild)]
-    pub fn append_child(this: &Element, other: Element);
+    pub fn append_child(this: &Element, other: &Element);
 
     #[wasm_bindgen(method, js_name = appendChild)]
     pub fn append_text_child(this: &Element, other: Text);
@@ -50,7 +50,41 @@ extern "C" {
     #[wasm_bindgen(method, js_name = replaceChild)]
     pub fn replace_child(this: &Element, new_child: &Element, old_child: &Element);
 
+    #[wasm_bindgen(method, getter)]
+    pub fn children(this: &Element) -> HTMLCollection;
+
+    #[wasm_bindgen(method, getter, js_name = childNodes)]
+    pub fn child_nodes(this: &Element) -> NodeList;
+
+    #[wasm_bindgen(method, js_name = replaceWith)]
+    pub fn replace_with(this: &Element, replace_with: &Element);
+
+    #[wasm_bindgen(method, getter, js_name = outerHTML)]
+    pub fn outer_html(this: &Element) -> String;
+
     pub type HTMLCanvasElement;
+}
+
+#[wasm_bindgen]
+extern "C" {
+    pub type HTMLCollection;
+
+    #[wasm_bindgen(method)]
+    pub fn item(this: &HTMLCollection, idx: u32) -> Element;
+
+    #[wasm_bindgen(method, getter)]
+    pub fn length(this: &HTMLCollection) -> u32;
+}
+
+#[wasm_bindgen]
+extern "C" {
+    pub type NodeList;
+
+    #[wasm_bindgen(method)]
+    pub fn item(this: &NodeList, idx: usize) -> Element;
+
+    #[wasm_bindgen(method, getter)]
+    pub fn length(this: &NodeList) -> u32;
 }
 
 #[wasm_bindgen]

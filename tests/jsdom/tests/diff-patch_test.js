@@ -12,10 +12,7 @@ test('Creating DOM elements from virtual nodes', t => {
 const testPatchRootNode = t => {
   const patchTest = new rust.PatchTest()
 
-  patchTest.patch_element();
-
-  let patchedElem = document.getElementById('patched');
-  t.equal(patchedElem.innerHTML, 'Patched element')
+  patchTest.run_tests();
 
   t.end()
 }
