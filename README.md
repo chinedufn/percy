@@ -1,7 +1,7 @@
 Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)](https://travis-ci.org/chinedufn/percy) [![docs](https://docs.rs/percy/badge.svg)](https://docs.rs/percy)
 ===============
 
-> A modular toolkit for building client side web applications in Rust. Server side rendering is supported out of the box.
+> A modular toolkit for building isomorphic web apps with Rust + WebAssembly
 
 [percy cargo documentation](https://docs.rs/percy)
 
