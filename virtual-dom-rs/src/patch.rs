@@ -93,15 +93,12 @@ pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
         nodes_to_find.insert(patch.node_idx());
     }
 
-    clog!("nodes_to_find = {:#?}", nodes_to_find);
     find_nodes(
         &root_node,
         &mut cur_node_idx,
         &mut nodes_to_find,
         &mut nodes_to_patch,
     );
-    clog!("nodes_to_find = {:#?}", nodes_to_find);
-    clog!("nodes_to_patch.keys() = {:#?}", nodes_to_patch.keys());
 
     for patch in patches {
         let patch_node_idx = patch.node_idx();
