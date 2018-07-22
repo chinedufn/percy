@@ -14,5 +14,7 @@ const testPatchRootNode = t => {
 
   patchTest.run_tests();
 
+  t.pass("If we made it here then none of our Rust tests panicked!")
+
   t.end()
 }

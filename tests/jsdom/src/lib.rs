@@ -77,6 +77,7 @@ impl PatchTest {
     pub fn run_tests(&self) {
         self.replace_child();
         self.truncate_children();
+        self.remove_attributes();
     }
 }
 
@@ -101,11 +102,20 @@ impl PatchTest {
              </div>
             },
             new: html! {
-             <div id="old",>
+             <div id="new",>
                <div> <div> <b></b> </div> </div>
              </div>
             },
             desc: "Truncates extra children",
+        })
+    }
+
+    fn remove_attributes (&self) {
+        test_patch(PatchTestCase {
+            old: html! { <div id="remove-attrib", style="",> </div>
+            },
+            new: html! { <div id="new-root",></div> },
+            desc: "Removes attributes",
         })
     }
 }
@@ -116,10 +126,11 @@ fn test_patch(test_case: PatchTestCase) {
     document.body().append_child(&root_node);
 
     let patches = virtual_dom_rs::diff(&test_case.old, &test_case.new);
-//    clog!("{:#?}", patches);
+    clog!("{:#?}", patches);
 
     virtual_dom_rs::patch(root_node.clone(), &test_case.old, &patches);
 
+    // TODO: Print an error if the new test case doesn't have an id set...
     let new_root_node_id = test_case.new.props.get("id").unwrap();
 
     let new_root_node = document.get_element_by_id(new_root_node_id);

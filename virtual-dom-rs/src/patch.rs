@@ -138,11 +138,17 @@ fn find_nodes(root_node: &Element, cur_node_idx: &mut usize, nodes_to_find: &mut
 }
 
 fn apply_patch(node: &Element, patch: &Patch) {
+    clog!("PATCH {:#?}", patch);
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
                 for (attrib_name, attrib_val) in attributes.iter() {
                     node.set_attribute(attrib_name, attrib_val);
                 }
+        }
+        Patch::RemoveAttributes(_node_idx, attributes) => {
+            for attrib_name in attributes.iter() {
+                node.remove_attribute(attrib_name);
+            }
         }
         Patch::Replace(_node_idx, new_node) => {
             // TODO: We might already have a reference to the parent element from
