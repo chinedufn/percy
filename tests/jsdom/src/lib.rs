@@ -78,6 +78,7 @@ impl PatchTest {
         self.replace_child();
         self.truncate_children();
         self.remove_attributes();
+        self.append_children();
     }
 }
 
@@ -116,6 +117,15 @@ impl PatchTest {
             },
             new: html! { <div id="new-root",></div> },
             desc: "Removes attributes",
+        })
+    }
+
+    fn append_children (&self) {
+        test_patch(PatchTestCase {
+            old: html! { <div id="foo",> </div>
+            },
+            new: html! { <div id="bar",> <span></span> </div> },
+            desc: "Append a child node",
         })
     }
 }

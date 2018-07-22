@@ -167,6 +167,10 @@ fn apply_patch(node: &Element, patch: &Patch) {
         Patch::ChangeText(_node_idx, new_node) => {
             node.set_node_value(&new_node.text.as_ref().unwrap());
         }
-        _ => {}
+        Patch::AppendChildren(_node_idx, new_nodes) => {
+            for new_node in new_nodes {
+                node.append_child(&new_node.create_element());
+            }
+        }
     }
 }
