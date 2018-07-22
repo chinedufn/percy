@@ -161,10 +161,3 @@ fn test_patch(test_case: PatchTestCase) {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test() {}
-}

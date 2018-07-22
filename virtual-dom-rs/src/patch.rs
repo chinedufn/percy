@@ -138,7 +138,6 @@ fn find_nodes(root_node: &Element, cur_node_idx: &mut usize, nodes_to_find: &mut
 }
 
 fn apply_patch(node: &Element, patch: &Patch) {
-    clog!("PATCH {:#?}", patch);
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
                 for (attrib_name, attrib_val) in attributes.iter() {
@@ -151,11 +150,6 @@ fn apply_patch(node: &Element, patch: &Patch) {
             }
         }
         Patch::Replace(_node_idx, new_node) => {
-            // TODO: We might already have a reference to the parent element from
-            // a previous iteration so in the future when we optimiz take advantage
-            // of that. After we have some benchmarks in place..
-
-            // TODO -breadcrumb: Check if this is a text node and if so &new_node.create_text_node()
             node.replace_with(&new_node.create_element());
         }
         Patch::TruncateChildren(_node_idx, len) => {
