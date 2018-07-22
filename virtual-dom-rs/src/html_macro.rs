@@ -257,7 +257,7 @@ mod tests {
         test(HTMLMacroTest {
             generated: html!{ <div></div> },
             expected: VirtualNode::new("div"),
-            desc: "Empty div"
+            desc: "Empty div",
         })
     }
 
@@ -271,7 +271,7 @@ mod tests {
         test(HTMLMacroTest {
             generated: html!{ <div id="hello-world",></div> },
             expected,
-            desc: "One property"
+            desc: "One property",
         });
     }
 
@@ -298,7 +298,7 @@ mod tests {
         test(HTMLMacroTest {
             generated: html!{ <div><span></span></div> },
             expected,
-            desc: "Child node"
+            desc: "Child node",
         })
     }
 
@@ -310,7 +310,7 @@ mod tests {
         test(HTMLMacroTest {
             generated: html! { <div><span></span><b></b></div> },
             expected,
-            desc: "Sibling child nodes"
+            desc: "Sibling child nodes",
         })
     }
 
@@ -325,7 +325,7 @@ mod tests {
         test(HTMLMacroTest {
             generated: html! { <div><span><b></b></span></div> },
             expected,
-            desc: "Nested 3 nodes deep"
+            desc: "Nested 3 nodes deep",
         })
     }
 
@@ -341,7 +341,7 @@ mod tests {
         test(HTMLMacroTest {
             generated: html! { <div>{ "This is a text node" } {"More" "Text"}</div> },
             expected,
-            desc: "Nested text nide"
+            desc: "Nested text nide",
         });
     }
 
@@ -355,7 +355,7 @@ mod tests {
         test(HTMLMacroTest {
             generated: html! { <div>{ html! { <span></span> } { child_2 } }</div> },
             expected,
-            desc: "Nested macros"
+            desc: "Nested macros",
         });
     }
 
@@ -373,7 +373,7 @@ mod tests {
         test(HTMLMacroTest {
             generated: html! { <div>{ text1 text2 }</div> },
             expected,
-            desc: "Creates text nodes"
+            desc: "Creates text nodes",
         });
     }
 
@@ -382,15 +382,12 @@ mod tests {
         let children = vec![html! { <div> </div>}, html! { <strong> </strong>}];
 
         let mut expected = VirtualNode::new("div");
-        expected.children = Some(vec![
-            VirtualNode::new("div"),
-            VirtualNode::new("strong"),
-        ]);
+        expected.children = Some(vec![VirtualNode::new("div"), VirtualNode::new("strong")]);
 
         test(HTMLMacroTest {
             generated: html!{ <div> { children } </div> },
             expected,
-            desc: "Vec of nodes"
+            desc: "Vec of nodes",
         });
     }
 
@@ -399,7 +396,7 @@ mod tests {
         test(HTMLMacroTest {
             generated: html! { { "some text" } },
             expected: VirtualNode::text("some text"),
-            desc: "Text as root node"
+            desc: "Text as root node",
         })
     }
 

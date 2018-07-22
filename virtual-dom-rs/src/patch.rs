@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use virtual_node::VirtualNode;
 use webapis::*;
+use std::collections::HashSet;
 
 /// A `Patch` encodes an operation that modifies a real DOM element.
 ///
@@ -56,6 +57,7 @@ pub enum Patch<'a> {
     AddAttributes(node_idx, HashMap<&'a str, &'a str>),
     /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(node_idx, Vec<&'a str>),
+    ChangeText(node_idx, &'a VirtualNode),
 }
 
 impl<'a> Patch<'a> {
@@ -66,6 +68,7 @@ impl<'a> Patch<'a> {
             Patch::Replace(node_idx, _) => *node_idx,
             Patch::AddAttributes(node_idx, _) => *node_idx,
             Patch::RemoveAttributes(node_idx, _) => *node_idx,
+            Patch::ChangeText(node_idx, _) => *node_idx,
         }
     }
 }
@@ -79,40 +82,79 @@ macro_rules! clog {
 
 /// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
 ///  patches the root node. Right now we just end up overwriting the root node.
-pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
+pub fn patch(root_node: Element, old_virtual_node: &VirtualNode, patches: &Vec<Patch>) {
     let mut cur_node_idx = 0;
-    let mut cur_node = root_node;
+    let mut cur_node = root_node.clone();
+
+    let mut nodes_to_find = HashSet::new();
+    let mut nodes_to_patch = HashMap::new();
+
+    for patch in patches {
+        nodes_to_find.insert(patch.node_idx());
+    }
+
+    find_nodes(&root_node, &mut cur_node_idx, &mut nodes_to_find, &mut nodes_to_patch);
+
+    let mut cur_patch = 0;
+
+    let mut remaining_patches = patches.iter();
 
     let mut child_node_count = cur_node.child_nodes().length() as usize;
-//    cur_node.child_nodes().item(0).replace_with(&new_node.create_element());
+    //    cur_node.child_nodes().item(0).replace_with(&new_node.create_element());
+
+    let mut old_virtual_node = old_virtual_node;
+    let mut root_node = root_node;
 
     for patch in patches {
         let patch_node_idx = patch.node_idx();
-        if cur_node_idx != patch_node_idx {
-            let patch_node_idx_distance = patch_node_idx - cur_node_idx ;
-            if patch_node_idx_distance < child_node_count {
-                cur_node = cur_node.child_nodes().item(patch_node_idx_distance - 1);
-            }
-        }
-        clog!("NODE INDEX {}", patch.node_idx());
 
-        match patch {
-            Patch::AddAttributes(node_idx, attributes) => {
-                if *node_idx == cur_node_idx {
-                    for (attrib_name, attrib_val) in attributes.iter() {
-                        cur_node.set_attribute(attrib_name, attrib_val);
-                    }
-                }
-            }
-            Patch::Replace(node_idx, new_node) => {
-                if *node_idx == cur_node_idx {
-                    // TODO: We might already have a reference to the parent element from
-                    // a previous iteration so in the future when we optimiz take advantage
-                    // of that. After we have some benchmarks in place..
-                    cur_node.replace_with(&new_node.create_element());
-                }
-            }
-            _ => {}
+        let node = nodes_to_patch.get(&patch_node_idx).unwrap();
+
+        apply_patch(&node, &patch);
+    }
+}
+
+fn find_nodes(root_node: &Element, cur_node_idx: &mut usize, nodes_to_find: &mut HashSet<usize>, nodes_to_patch: &mut HashMap<usize, Element>) {
+    let mut root_node = root_node;
+
+    while nodes_to_find.len() > 0 {
+        if nodes_to_find.get(&cur_node_idx).is_some() {
+            nodes_to_patch.insert(*cur_node_idx, root_node.clone());
+            nodes_to_find.remove(&cur_node_idx);
         }
+
+        if nodes_to_find.len() > 0 {
+            *cur_node_idx += 1;
+
+            let mut child_node_count = root_node.child_nodes().length() as usize;
+
+            for i in 0..child_node_count {
+                let node = root_node.child_nodes().item(0);
+                find_nodes(&node, cur_node_idx, nodes_to_find, nodes_to_patch);
+            }
+        }
+    }
+
+}
+
+fn apply_patch(node: &Element, patch: &Patch) {
+    match patch {
+        Patch::AddAttributes(node_idx, attributes) => {
+                for (attrib_name, attrib_val) in attributes.iter() {
+                    node.set_attribute(attrib_name, attrib_val);
+                }
+        }
+        Patch::Replace(node_idx, new_node) => {
+            // TODO: We might already have a reference to the parent element from
+            // a previous iteration so in the future when we optimiz take advantage
+            // of that. After we have some benchmarks in place..
+
+            // TODO -breadcrumb: Check if this is a text node and if so &new_node.create_text_node()
+            node.replace_with(&new_node.create_element());
+        }
+        Patch::ChangeText(node_idx, new_node) => {
+            node.set_node_value(&new_node.text.as_ref().unwrap());
+        }
+        _ => {}
     }
 }

@@ -64,7 +64,7 @@ pub struct PatchTest {}
 struct PatchTestCase {
     old: VirtualNode,
     new: VirtualNode,
-    desc: &'static str
+    desc: &'static str,
 }
 
 #[wasm_bindgen]
@@ -74,7 +74,7 @@ impl PatchTest {
         PatchTest {}
     }
 
-    pub fn run_tests (&self) {
+    pub fn run_tests(&self) {
         self.replace_child();
     }
 }
@@ -88,7 +88,7 @@ impl PatchTest {
              </div>
             },
             new: html! { <div id="patched",> { "Patched element" }</div> },
-            desc: "Replace a root node attribute attribute and a child text node"
+            desc: "Replace a root node attribute attribute and a child text node",
         })
     }
 }
@@ -101,7 +101,7 @@ fn test_patch(test_case: PatchTestCase) {
     let patches = virtual_dom_rs::diff(&test_case.old, &test_case.new);
     clog!("{:#?}", patches);
 
-    virtual_dom_rs::patch(&root_node, &patches);
+    virtual_dom_rs::patch(root_node.clone(), &test_case.old, &patches);
 
     let new_root_node_id = test_case.new.props.get("id").unwrap();
 

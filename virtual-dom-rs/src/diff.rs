@@ -22,6 +22,13 @@ fn diff_recursive<'a, 'b>(
         return patches;
     }
 
+    // TODO: Change this patch to `ChangeText`
+    // which in our patcher calls elem.nodeValue = "new text"
+    if old.text != new.text {
+        patches.push(Patch::ChangeText(*cur_node_idx, &new));
+        return patches;
+    }
+
     let mut add_attributes: HashMap<&str, &str> = HashMap::new();
     let mut remove_attributes: Vec<&str> = vec![];
 
@@ -232,6 +239,16 @@ mod tests {
                 // keying should only work if all children have keys..
             ],
             description: "Add attributes",
+        })
+    }
+
+    #[test]
+    fn replace_text_node() {
+        test(DiffTestCase {
+            old: html! { { "Old" } },
+            new: html! { { "New" } },
+            expected: vec![Patch::ChangeText(0, &html! { { "New" } })],
+            description: "Replace text node",
         })
     }
 

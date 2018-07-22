@@ -151,6 +151,10 @@ impl VirtualNode {
 
         elem
     }
+
+    pub fn create_text_node(&self) -> Text {
+        document.create_text_node(&self.text.as_ref().unwrap())
+    }
 }
 
 // Used by our html! macro to turn "Strings of text" into virtual nodes.

@@ -25,8 +25,17 @@ extern "C" {
     pub fn body(this: &HTMLDocument) -> Element;
 }
 
+impl Clone for Element {
+    fn clone(&self) -> Element {
+        Element {
+            obj: self.obj.clone(),
+        }
+    }
+}
+
 #[wasm_bindgen]
 extern "C" {
+    #[derive(Clone)]
     pub type Element;
 
     #[wasm_bindgen(method, js_name = appendChild)]
@@ -61,6 +70,9 @@ extern "C" {
 
     #[wasm_bindgen(method, getter, js_name = outerHTML)]
     pub fn outer_html(this: &Element) -> String;
+
+    #[wasm_bindgen(method, setter = nodeValue)]
+    pub fn set_node_value(this: &Element, value: &str);
 
     pub type HTMLCanvasElement;
 }
