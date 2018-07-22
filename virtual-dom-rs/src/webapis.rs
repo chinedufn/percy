@@ -59,6 +59,12 @@ extern "C" {
     #[wasm_bindgen(method, js_name = replaceChild)]
     pub fn replace_child(this: &Element, new_child: &Element, old_child: &Element);
 
+    #[wasm_bindgen(method, js_name = removeChild)]
+    pub fn remove_child(this: &Element, remove: &Element);
+
+    #[wasm_bindgen(method, getter, js_name = lastChild)]
+    pub fn last_child(this: &Element) -> Element;
+
     #[wasm_bindgen(method, getter)]
     pub fn children(this: &Element) -> HTMLCollection;
 

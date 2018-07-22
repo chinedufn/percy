@@ -47,7 +47,7 @@ impl ClickTest {
     pub fn div_with_click_event(&self) -> Element {
         let clicked = Rc::clone(&self.clicked);
 
-        let mut div = html! { <div
+        let div = html! { <div
          !onclick=move || {
            clicked.set(true);
          },
@@ -76,6 +76,7 @@ impl PatchTest {
 
     pub fn run_tests(&self) {
         self.replace_child();
+        self.truncate_children();
     }
 }
 
@@ -91,6 +92,22 @@ impl PatchTest {
             desc: "Replace a root node attribute attribute and a child text node",
         })
     }
+
+    fn truncate_children(&self) {
+        test_patch(PatchTestCase {
+            old: html! {
+             <div id="old",>
+               <div> <div> <b></b> <em></em> </div> </div>
+             </div>
+            },
+            new: html! {
+             <div id="old",>
+               <div> <div> <b></b> </div> </div>
+             </div>
+            },
+            desc: "Truncates extra children",
+        })
+    }
 }
 
 fn test_patch(test_case: PatchTestCase) {
@@ -99,7 +116,7 @@ fn test_patch(test_case: PatchTestCase) {
     document.body().append_child(&root_node);
 
     let patches = virtual_dom_rs::diff(&test_case.old, &test_case.new);
-    clog!("{:#?}", patches);
+//    clog!("{:#?}", patches);
 
     virtual_dom_rs::patch(root_node.clone(), &test_case.old, &patches);
 
@@ -111,10 +128,8 @@ fn test_patch(test_case: PatchTestCase) {
     let expected_new_root_node = test_case.new.to_string();
 
     if new_root_node == expected_new_root_node {
-        // TODO: Print the necessary information
         clog!("PASSED {}", test_case.desc);
     } else {
-        // TODO: Print the necessary information
         clog!(
             "\nFailed diff/patch operation\nActual: {}\nExpected: {}\nMessage: {}\n",
             new_root_node,

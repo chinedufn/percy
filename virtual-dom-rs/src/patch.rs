@@ -139,12 +139,12 @@ fn find_nodes(root_node: &Element, cur_node_idx: &mut usize, nodes_to_find: &mut
 
 fn apply_patch(node: &Element, patch: &Patch) {
     match patch {
-        Patch::AddAttributes(node_idx, attributes) => {
+        Patch::AddAttributes(_node_idx, attributes) => {
                 for (attrib_name, attrib_val) in attributes.iter() {
                     node.set_attribute(attrib_name, attrib_val);
                 }
         }
-        Patch::Replace(node_idx, new_node) => {
+        Patch::Replace(_node_idx, new_node) => {
             // TODO: We might already have a reference to the parent element from
             // a previous iteration so in the future when we optimiz take advantage
             // of that. After we have some benchmarks in place..
@@ -152,7 +152,13 @@ fn apply_patch(node: &Element, patch: &Patch) {
             // TODO -breadcrumb: Check if this is a text node and if so &new_node.create_text_node()
             node.replace_with(&new_node.create_element());
         }
-        Patch::ChangeText(node_idx, new_node) => {
+        Patch::TruncateChildren(_node_idx, len) => {
+            let count = node.child_nodes().length();
+            for _ in *len as u32..count {
+                node.remove_child(&node.last_child());
+            }
+        }
+        Patch::ChangeText(_node_idx, new_node) => {
             node.set_node_value(&new_node.text.as_ref().unwrap());
         }
         _ => {}
