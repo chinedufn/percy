@@ -132,6 +132,7 @@ impl PatchTest {
 
     // This was failing due to us accidentally not using `i` in a for loop. We were always
     // using a hard coded `0`
+    // see commit: d602c12
     fn text_node_siblings(&self) {
         let old = html! {
         <div id="before",>
