@@ -79,6 +79,7 @@ impl PatchTest {
         self.truncate_children();
         self.remove_attributes();
         self.append_children();
+        self.text_node_siblings();
     }
 }
 
@@ -111,7 +112,7 @@ impl PatchTest {
         })
     }
 
-    fn remove_attributes (&self) {
+    fn remove_attributes(&self) {
         test_patch(PatchTestCase {
             old: html! { <div id="remove-attrib", style="",> </div>
             },
@@ -120,12 +121,32 @@ impl PatchTest {
         })
     }
 
-    fn append_children (&self) {
+    fn append_children(&self) {
         test_patch(PatchTestCase {
             old: html! { <div id="foo",> </div>
             },
             new: html! { <div id="bar",> <span></span> </div> },
             desc: "Append a child node",
+        })
+    }
+
+    // This was failing due to us accidentally not using `i` in a for loop. We were always
+    // using a hard coded `0`
+    fn text_node_siblings(&self) {
+        let old = html! {
+        <div id="before",>
+            <span> { "The button has been clicked: "  "hello"} </span>
+        </div>};
+
+        let new = html! {
+        <div id="after",>
+            <span> { "The button has been clicked: "  "world"} </span>
+        </div>};
+
+        test_patch(PatchTestCase {
+            old,
+            new,
+            desc: "A test against a patch that was failing in our isomorphic example app..",
         })
     }
 }
@@ -138,7 +159,7 @@ fn test_patch(test_case: PatchTestCase) {
     let patches = virtual_dom_rs::diff(&test_case.old, &test_case.new);
     clog!("{:#?}", patches);
 
-    virtual_dom_rs::patch(root_node.clone(), &test_case.old, &patches);
+    virtual_dom_rs::patch(&root_node, &patches);
 
     // TODO: Print an error if the new test case doesn't have an id set...
     let new_root_node_id = test_case.new.props.get("id").unwrap();
@@ -160,4 +181,3 @@ fn test_patch(test_case: PatchTestCase) {
         panic!("Failure");
     }
 }
-

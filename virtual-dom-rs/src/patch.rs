@@ -1,7 +1,7 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 use virtual_node::VirtualNode;
 use webapis::*;
-use std::collections::HashSet;
 
 /// A `Patch` encodes an operation that modifies a real DOM element.
 ///
@@ -82,7 +82,7 @@ macro_rules! clog {
 
 /// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
 ///  patches the root node. Right now we just end up overwriting the root node.
-pub fn patch(root_node: Element, old_virtual_node: &VirtualNode, patches: &Vec<Patch>) {
+pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
     let mut cur_node_idx = 0;
     let mut cur_node = root_node.clone();
 
@@ -93,17 +93,15 @@ pub fn patch(root_node: Element, old_virtual_node: &VirtualNode, patches: &Vec<P
         nodes_to_find.insert(patch.node_idx());
     }
 
-    find_nodes(&root_node, &mut cur_node_idx, &mut nodes_to_find, &mut nodes_to_patch);
-
-    let mut cur_patch = 0;
-
-    let mut remaining_patches = patches.iter();
-
-    let mut child_node_count = cur_node.child_nodes().length() as usize;
-    //    cur_node.child_nodes().item(0).replace_with(&new_node.create_element());
-
-    let mut old_virtual_node = old_virtual_node;
-    let mut root_node = root_node;
+    clog!("nodes_to_find = {:#?}", nodes_to_find);
+    find_nodes(
+        &root_node,
+        &mut cur_node_idx,
+        &mut nodes_to_find,
+        &mut nodes_to_patch,
+    );
+    clog!("nodes_to_find = {:#?}", nodes_to_find);
+    clog!("nodes_to_patch.keys() = {:#?}", nodes_to_patch.keys());
 
     for patch in patches {
         let patch_node_idx = patch.node_idx();
@@ -114,35 +112,37 @@ pub fn patch(root_node: Element, old_virtual_node: &VirtualNode, patches: &Vec<P
     }
 }
 
-fn find_nodes(root_node: &Element, cur_node_idx: &mut usize, nodes_to_find: &mut HashSet<usize>, nodes_to_patch: &mut HashMap<usize, Element>) {
-    let mut root_node = root_node;
-
-    while nodes_to_find.len() > 0 {
-        if nodes_to_find.get(&cur_node_idx).is_some() {
-            nodes_to_patch.insert(*cur_node_idx, root_node.clone());
-            nodes_to_find.remove(&cur_node_idx);
-        }
-
-        if nodes_to_find.len() > 0 {
-            *cur_node_idx += 1;
-
-            let mut child_node_count = root_node.child_nodes().length() as usize;
-
-            for i in 0..child_node_count {
-                let node = root_node.child_nodes().item(0);
-                find_nodes(&node, cur_node_idx, nodes_to_find, nodes_to_patch);
-            }
-        }
+fn find_nodes(
+    root_node: &Element,
+    cur_node_idx: &mut usize,
+    nodes_to_find: &mut HashSet<usize>,
+    nodes_to_patch: &mut HashMap<usize, Element>,
+) {
+    if nodes_to_find.len() == 0 {
+        return;
     }
 
+    if nodes_to_find.get(&cur_node_idx).is_some() {
+        nodes_to_patch.insert(*cur_node_idx, root_node.clone());
+        nodes_to_find.remove(&cur_node_idx);
+    }
+
+        *cur_node_idx += 1;
+
+        let child_node_count = root_node.child_nodes().length() as usize;
+
+        for i in 0..child_node_count {
+            let node = root_node.child_nodes().item(i);
+            find_nodes(&node, cur_node_idx, nodes_to_find, nodes_to_patch);
+        }
 }
 
 fn apply_patch(node: &Element, patch: &Patch) {
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
-                for (attrib_name, attrib_val) in attributes.iter() {
-                    node.set_attribute(attrib_name, attrib_val);
-                }
+            for (attrib_name, attrib_val) in attributes.iter() {
+                node.set_attribute(attrib_name, attrib_val);
+            }
         }
         Patch::RemoveAttributes(_node_idx, attributes) => {
             for attrib_name in attributes.iter() {
