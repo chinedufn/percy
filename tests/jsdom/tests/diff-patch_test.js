@@ -5,8 +5,8 @@ testUtils.initDOM()
 
 const rust = require('../jsdom_tests.js')
 
-test('Creating DOM elements from virtual nodes', t => {
-  t.test('Patch root node', testPatchRootNode)
+test('Diffing and patching virtual nodes', t => {
+  t.test('Correctly applies patches', testPatchRootNode)
 })
 
 const testPatchRootNode = t => {

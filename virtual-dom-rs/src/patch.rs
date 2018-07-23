@@ -32,18 +32,7 @@ use webapis::*;
 ///     `─'      `─'    ( 5 ) ( 6 ) ( 7 )
 ///                      `─'   `─'   `─'
 ///
-/// Indexing depth first allows us to say:
-///
-/// - Hmm.. Our patch operation applies to Node 5. Let's start from our root node 0 and look
-/// at its children.
-///
-/// - node 0 has children 1 and 4. 5 is bigger than 4 so we can completely ignore node 1!
-///
-/// - Ok now let's look at node 4's children. Node 4 has a child Node 5. Perfect, let's patch it!
-///
-/// Had we used breadth first indexing in our example above
-/// (parent 0, first child 1, second child 2) we'd need to traverse all of node 1's children
-/// to see if Node 5 was there. Good thing we don't do that!
+/// We'll revisit our indexing in the future when we optimize our diff/patch process.
 #[derive(Debug, PartialEq)]
 pub enum Patch<'a> {
     /// Append a vector of child nodes to a parent node id.
