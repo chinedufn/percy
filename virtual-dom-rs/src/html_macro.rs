@@ -27,18 +27,21 @@ pub enum TagType {
 /// # Examples
 ///
 /// ```
-/// # #[macro_use] extern crate virtual_dom_rs; fn main() {
+/// # #[macro_use] extern crate virtual_dom_rs;  fn main() {
+///
+/// use virtual_dom_rs::VirtualNode;
 ///
 /// let click_message = "I was clicked!";
 /// let some_component = html! { <div !onclick=move || { println!("{}", click_message); },></div> };
 ///
 /// // Create lists of nodes from data!
 /// let list: Vec<VirtualNode> = [0, 1, 2].iter().map(|index| {
+///   let index = index.to_string();
 ///   html! {
 ///     <div key="unique-key-{index}",>
-///       <h1>This is node number {index} </h1>
-///       <strong> Keys in lists help performance </strong>
-///       <em> But they're optional </em>
+///       <h1> {"This is node number"} {index} </h1>
+///       <strong> {"Keys in lists help performance"} </strong>
+///       <em> { "But they're optional" } </em>
 ///     </div>
 ///   }
 /// }).collect();
