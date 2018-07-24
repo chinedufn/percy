@@ -3,7 +3,7 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 > A modular toolkit for building isomorphic web apps with Rust + WebAssembly
 
-[percy cargo documentation](https://docs.rs/percy)
+[percy cargo documentation](https://docs.rs/percy) <--- TODO... publish
 
 ## Initial Background / Motivation
 
