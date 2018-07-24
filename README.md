@@ -33,6 +33,8 @@ Also feel free to open issues and PRs with any questions / thoughts that you hav
 
 ## To test
 
+TODO... make this a script so that we can run the JSDOM tests also
+
 ```sh
 cargo test --all
 ```
