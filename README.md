@@ -7,14 +7,23 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 ## Initial Background / Motivation
 
+TODO...
+
 ## Getting Started
+
+TODO...
+
+link to mdbook...
 
 ## Running the example isomorphic web app locally
 
 ```
 git clone https://github.com/chinedufn/percy
-# todo...
+cd percy
+./examples/isomorphic/start.sh
 ```
+
+Now visit `http://127.0.0.1:7878` !
 
 ## Contributing
 
