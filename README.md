@@ -23,9 +23,31 @@ So I decided to make a cargo workspace with the tools that I needed to build iso
 
 ## Getting Started
 
-TODO...
+For an example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic)
 
-link to mdbook...
+```rust
+#[macro_use]
+extern crate virtual_dom_rs;
+
+fn main () {
+  let count = Rc::new(Cell::new(0));
+
+  let count_clone = Rc::clone(count);
+
+  let html = html! {
+    <div id="hello-world",>
+      <button
+        !onclick=|| { count_clone.set(count_clone.get() + 1); }
+      >
+        Click Me!
+      </button>
+      { "This becomes a text node" }
+    </div>
+  };
+
+  println!("{}", html.to_string());
+}
+```
 
 ## Running the example isomorphic web app locally
 
