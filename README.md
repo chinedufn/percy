@@ -45,6 +45,8 @@ cargo test --all
 
 - [How to write your own Virtual DOM](https://medium.com/@deathmood/how-to-write-your-own-virtual-dom-ee74acc13060) - helped me better understand how a virtual-dom works.
 
+- [Sheetify](https://github.com/stackcss/sheetify) inspired the css! macro
+
 ## License
 
 MIT
