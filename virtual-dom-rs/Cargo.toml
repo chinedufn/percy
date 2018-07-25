@@ -7,5 +7,5 @@ keywords = ["virtual", "dom", "wasm", "web assembly", "webassembly"]
 license = "MIT"
 
 [dependencies]
-wasm-bindgen = { version = "0.2" }
-percy-webapis = { path = "../percy-webapis" }
+wasm-bindgen = { version = "0.2.14" }
+percy-webapis = { path = "../percy-webapis", version = "0.0.1" }
