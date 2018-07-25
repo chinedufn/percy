@@ -12,5 +12,6 @@ members = [
   "examples/isomorphic/app",
   "examples/isomorphic/client",
   "examples/isomorphic/server",
-  "virtual-dom-rs"
+  "virtual-dom-rs",
+  "percy-webapis"
 ]

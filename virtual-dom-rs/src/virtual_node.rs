@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::fmt;
 pub use std::rc::Rc;
 use wasm_bindgen::prelude::Closure;
-use webapis::*;
+use percy_webapis::*;
 
 #[derive(PartialEq)]
 pub struct VirtualNode {

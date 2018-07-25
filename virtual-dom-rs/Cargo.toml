@@ -8,3 +8,4 @@ license = "MIT"
 
 [dependencies]
 wasm-bindgen = { version = "0.2" }
+percy-webapis = { path = "../percy-webapis" }

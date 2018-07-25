@@ -1,7 +1,6 @@
 use std::cmp::min;
 use std::collections::HashMap;
 use virtual_node::VirtualNode;
-use webapis::*;
 use Patch;
 
 static START_INDEX: usize = 0;
@@ -22,8 +21,6 @@ fn diff_recursive<'a, 'b>(
         return patches;
     }
 
-    // TODO: Change this patch to `ChangeText`
-    // which in our patcher calls elem.nodeValue = "new text"
     if old.text != new.text {
         patches.push(Patch::ChangeText(*cur_node_idx, &new));
         return patches;

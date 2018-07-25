@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use virtual_node::VirtualNode;
-use webapis::*;
+use percy_webapis::*;
 
 /// A `Patch` encodes an operation that modifies a real DOM element.
 ///

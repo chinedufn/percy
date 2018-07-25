@@ -1,0 +1,10 @@
+[package]
+name = "percy-webapis"
+version = "0.0.1"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+description = "Replace this with web-sys when it is releaased."
+keywords = ["webapis"]
+license = "MIT"
+
+[dependencies]
+wasm-bindgen = { version = "0.2" }
