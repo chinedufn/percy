@@ -3,11 +3,21 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 > A modular toolkit for building isomorphic web apps with Rust + WebAssembly
 
-[virtual-dom-rs](https://docs.rs/virtual-dom-rs) <--- TODO... publish
+[virtual-dom-rs](https://docs.rs/virtual_dom_rs)
+
+[inline-stylesheets] <- WIP
 
 ## Initial Background / Motivation
 
-TODO...
+I started using Rust in January 2018 and quickly got to the stage of "I REALLY want to use this for everything, even if it isn't the best tool for the job."
+
+I need to make a website for a game that I'm working on, but the Rust ecosystem for frontend web apps with server side rendering is still very immature.
+
+So I started working on a standalone virtual-dom implementation that could render to an HTML string on the server side and to a DOM element in the browser.
+
+But then I realized that I wanted something similar to [sheetify](https://github.com/stackcss/sheetify).. And probably a couple other base web dev primitives too..
+
+So I decided to make a cargo workspace with the tools that I needed to build isomorphic web apps in Rust. And here we are!
 
 ## Getting Started
 
