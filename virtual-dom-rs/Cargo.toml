@@ -2,7 +2,7 @@
 name = "virtual-dom-rs"
 version = "0.0.1"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
-description = "A Virtual DOM diffing and patching implementation"
+description = "A standalone Virtual DOM creation, diffing and patching implementation"
 keywords = ["virtual", "dom", "wasm", "web assembly", "webassembly"]
 
 [dependencies]
