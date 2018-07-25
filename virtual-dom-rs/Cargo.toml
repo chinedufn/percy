@@ -4,6 +4,7 @@ version = "0.0.1"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A standalone Virtual DOM creation, diffing and patching implementation"
 keywords = ["virtual", "dom", "wasm", "web assembly", "webassembly"]
+license = "MIT"
 
 [dependencies]
 wasm-bindgen = { version = "0.2" }
