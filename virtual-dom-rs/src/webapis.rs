@@ -35,7 +35,6 @@ impl Clone for Element {
 
 #[wasm_bindgen]
 extern "C" {
-    #[derive(Clone)]
     pub type Element;
 
     #[wasm_bindgen(method, js_name = appendChild)]
@@ -65,9 +64,6 @@ extern "C" {
     #[wasm_bindgen(method, getter, js_name = lastChild)]
     pub fn last_child(this: &Element) -> Element;
 
-    #[wasm_bindgen(method, getter)]
-    pub fn children(this: &Element) -> HTMLCollection;
-
     #[wasm_bindgen(method, getter, js_name = childNodes)]
     pub fn child_nodes(this: &Element) -> NodeList;
 
@@ -81,17 +77,6 @@ extern "C" {
     pub fn set_node_value(this: &Element, value: &str);
 
     pub type HTMLCanvasElement;
-}
-
-#[wasm_bindgen]
-extern "C" {
-    pub type HTMLCollection;
-
-    #[wasm_bindgen(method)]
-    pub fn item(this: &HTMLCollection, idx: u32) -> Element;
-
-    #[wasm_bindgen(method, getter)]
-    pub fn length(this: &HTMLCollection) -> u32;
 }
 
 #[wasm_bindgen]
