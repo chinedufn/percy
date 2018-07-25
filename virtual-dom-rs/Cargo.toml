@@ -6,6 +6,7 @@ description = "A standalone Virtual DOM creation, diffing and patching implement
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
 license = "MIT"
 repository = "https://github.com/chinedufn/percy"
+documentation = "https://docs.rs/virtual-dom-rs"
 
 [dependencies]
 wasm-bindgen = { version = "0.2.14" }

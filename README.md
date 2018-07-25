@@ -5,9 +5,9 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 _The tools:_
 
-[virtual-dom-rs](https://docs.rs/virtual_dom_rs)
+- virtual-dom-rs
 
-[inline-stylesheets] <- WIP
+- inline-stylesheets <- WIP
 
 ## Initial Background / Motivation
 
@@ -24,6 +24,8 @@ So I decided to make a cargo workspace with the tools that I needed to build iso
 ## Getting Started
 
 For an example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic)
+
+For more on the `html!` macro see [html macro](virtual-dom-rs/src/html_macro.rs)
 
 ```rust
 #[macro_use]
