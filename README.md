@@ -39,7 +39,7 @@ fn main () {
   let html = html! {
     <div id="hello-world",>
       <button
-        !onclick=|| { count_clone.set(count_clone.get() + 1); }
+        !onclick=|| { count_clone.set(count_clone.get() + 1); },
       >
         Click Me!
       </button>
