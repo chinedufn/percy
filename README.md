@@ -53,7 +53,15 @@ fn main () {
 
 ## Running the example isomorphic web app locally
 
+Install the WASM compiler, if you haven't already. See [Setup WASM target](https://www.hellorust.com/setup/wasm-target/) for more information:
+
+```sh
+rustup target add wasm32-unknown-unknown --toolchain nightly
 ```
+
+Then clone the source and run:
+
+```sh
 git clone https://github.com/chinedufn/percy
 cd percy
 ./examples/isomorphic/start.sh
