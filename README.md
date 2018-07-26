@@ -77,11 +77,14 @@ Also feel free to open issues and PRs with any questions / thoughts that you hav
 
 ## To test
 
-TODO... make this a script so that we can run the JSDOM tests also
+To run all of the Rust unit tests, Rust integration tests, and Node.js + WebAssembly tests run:
 
 ```sh
-cargo test --all
+npm install
+./test.sh
 ```
+
+You'll need to be on Node.js 10+
 
 ## See Also
 
