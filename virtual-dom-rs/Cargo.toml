@@ -9,5 +9,5 @@ repository = "https://github.com/chinedufn/percy"
 documentation = "https://docs.rs/virtual-dom-rs"
 
 [dependencies]
-wasm-bindgen = { version = "0.2.14" }
+wasm-bindgen = { version = "0.2.15" }
 percy-webapis = { path = "../percy-webapis", version = "0.0.1" }

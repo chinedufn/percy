@@ -8,4 +8,4 @@ license = "MIT"
 repository = "https://github.com/chinedufn/percy"
 
 [dependencies]
-wasm-bindgen = { version = "0.2.14" }
+wasm-bindgen = { version = "0.2.15" }

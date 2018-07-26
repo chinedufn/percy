@@ -6,7 +6,7 @@ extern crate wasm_bindgen;
 pub use wasm_bindgen::prelude::Closure;
 
 // TODO: Replace with web-sys crate when it gets released
-extern crate percy_webapis;
+pub extern crate percy_webapis;
 
 #[macro_use]
 pub mod html_macro;

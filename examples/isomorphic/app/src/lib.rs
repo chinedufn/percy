@@ -14,7 +14,7 @@ use virtual_dom_rs::virtual_node::VirtualNode;
 mod state;
 pub use state::*;
 
-pub use virtual_dom_rs::webapis::*;
+pub use virtual_dom_rs::percy_webapis::*;
 
 pub struct App {
     pub state: Rc<RefCell<State>>,
