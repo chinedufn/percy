@@ -84,7 +84,7 @@ npm install
 ./test.sh
 ```
 
-You'll need to be on Node.js 10+
+You'll need to be on Node.js 10.5+
 
 ## See Also
 

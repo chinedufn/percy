@@ -1,0 +1,58 @@
+language: rust
+sudo: false
+
+INSTALL_NODE_VIA_NVM: &INSTALL_NODE_VIA_NVM
+  - rustup target add wasm32-unknown-unknown
+  - curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
+  - source ~/.nvm/nvm.sh
+  - nvm install v10.5
+
+matrix:
+  include:
+    # Tests pass on nightly
+    - rust: nightly
+      env: JOB=test-bindgen
+      before_install: *INSTALL_NODE_VIA_NVM
+      install:
+        - npm ci --verbose
+      script:
+        - .test.sh
+      if: branch = master
+
+    # The `web-sys` crate's tests pass on nightly.
+    - rust: nightly
+      env: JOB=test-web-sys
+      before_install: *INSTALL_NODE_VIA_NVM
+      install:
+        - npm ci --verbose
+      script: cargo test --manifest-path crates/web-sys/Cargo.toml
+      if: branch = master
+
+      # Here's how we can test our future CLI's on stable / nightly
+      # https://github.com/rustwasm/wasm-bindgen/blob/f893e3475cc4b9d4641b290f1c2c74d752b7d368/.travis.yml#L127-L136
+
+    # Build documentation for the gh-pages branch
+    - rust: nightly
+      env: JOB=book-build-and-deploy
+      cache:
+        directories:
+          - $HOME/.cargo
+      before_script:
+        - (test -x $HOME/.cargo/bin/cargo-install-update || cargo install cargo-update)
+        - (test -x $HOME/.cargo/bin/mdbook || cargo install --vers "^0.1" mdbook)
+        - cargo install-update -a
+      script:
+        - (cd book && mdbook build)
+        - cargo doc --no-deps -p virtual-dom-rs # -p inline-stylesheet
+        - mv target/doc book/book/api
+      deploy:
+        provider: pages
+        skip-cleanup: true
+        github-token: $GITHUB_TOKEN  # Set in travis-ci.org dashboard, marked secure
+        local-dir: book/book
+        keep-history: false
+      if: branch = master
+
+notifications:
+  email:
+    on_success: never
