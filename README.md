@@ -3,6 +3,8 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 > A modular toolkit for building isomorphic web apps with Rust + WebAssembly
 
+[The Percy book](https://chinedufn.github.io/percy/)
+
 _The tools:_
 
 - virtual-dom-rs
