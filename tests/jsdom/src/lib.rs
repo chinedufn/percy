@@ -1,4 +1,4 @@
-#![feature(proc_macro, wasm_custom_section, wasm_import_module)]
+#![feature(use_extern_macros)]
 
 extern crate wasm_bindgen;
 use wasm_bindgen::prelude::*;
@@ -8,7 +8,7 @@ extern crate virtual_dom_rs;
 use std::cell::Cell;
 use std::rc::Rc;
 use virtual_dom_rs::virtual_node::VirtualNode;
-use virtual_dom_rs::webapis::*;
+use virtual_dom_rs::percy_webapis::*;
 
 macro_rules! clog {
     ($($t:tt)*) => (log(&format!($($t)*)))

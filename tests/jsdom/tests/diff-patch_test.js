@@ -12,9 +12,9 @@ test('Diffing and patching virtual nodes', t => {
 const testPatchRootNode = t => {
   const patchTest = new rust.PatchTest()
 
-  patchTest.run_tests();
+  patchTest.run_tests()
 
-  t.pass("If we made it here then none of our Rust tests panicked!")
+  t.pass('If we made it here then none of our Rust tests panicked!')
 
   t.end()
 }

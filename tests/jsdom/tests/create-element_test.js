@@ -22,8 +22,8 @@ const testNestedDivs = t => {
 const testElementProps = t => {
   const divsWithProps = rust.div_with_properties()
 
-  t.equal(divsWithProps.id, "id-here")
-  t.deepEqual(divsWithProps.classList, ['two', 'classes']);
+  t.equal(divsWithProps.id, 'id-here')
+  t.deepEqual(divsWithProps.classList, ['two', 'classes'])
 
   t.end()
 }
@@ -31,15 +31,15 @@ const testElementProps = t => {
 const testClickEvent = t => {
   const clickTest = new rust.ClickTest()
 
-  const div = clickTest.div_with_click_event();
+  const div = clickTest.div_with_click_event()
 
-  const clickEvent = new window.Event("click")
+  const clickEvent = new window.Event('click')
 
-  t.equal(clickTest.get_clicked(), false);
+  t.equal(clickTest.get_clicked(), false)
 
   div.dispatchEvent(clickEvent)
 
-  t.equal(clickTest.get_clicked(), true);
+  t.equal(clickTest.get_clicked(), true)
 
   t.end()
 }
