@@ -4,4 +4,4 @@
 
 ---
 
-- [My first simple program](./simple-program.md)
+- [A simple program](./simple-program.md)
