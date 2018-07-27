@@ -5,6 +5,10 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 [The Percy book](https://chinedufn.github.io/percy/)
 
+---
+
+**API Docs:**
+
 - [virtual-dom-rs API docs](https://chinedufn.github.io/percy/api/virtual_dom_rs/macro.html.html)
 
 - inline-stylesheets <- WIP
