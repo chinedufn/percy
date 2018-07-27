@@ -15,7 +15,7 @@ pub fn serve() {
     println!("Listening on port 7878");
 
     for stream in listener.incoming() {
-        println!("Incoming connection");
+        println!("Incoming connection\n\n");
 
         let stream = stream.unwrap();
 
@@ -23,15 +23,18 @@ pub fn serve() {
     }
 
     fn handle_connection(mut stream: TcpStream) {
+        eprintln!("handling connection = ");
         let mut buffer = [0; 512];
         stream.read(&mut buffer).unwrap();
 
         let request_pieces = String::from_utf8_lossy(&buffer);
         let buffer_words = request_pieces.split("/").collect::<Vec<&str>>();
 
+        println!("REQUEST BUFFER: {}\n\n", String::from_utf8_lossy(&buffer));
+
         // Not sure what this request is but it's breaking stuff... so we ignore it..
         // Worry about this later..
-        if buffer.len() < 5 {
+        if buffer.len() < 5 || buffer_words.len() < 2 {
             let response = format!("HTTP/1.1 404 NOT FOUND\r\n\r\n");
             stream.write(response.as_bytes()).unwrap();
             stream.flush().unwrap();
@@ -39,16 +42,13 @@ pub fn serve() {
             return;
         }
 
-        println!("{}", String::from_utf8_lossy(&buffer));
-
         let filename = buffer_words[1];
 
         let filename = filename.split(" ").collect::<Vec<&str>>();
         let filename = filename[0];
 
-        println!("{}", ::std::env::current_dir().unwrap().display());
         let filename = &format!("./examples/isomorphic/client/{}", filename);
-        println!("FILENAME: {}", filename);
+        println!("FILENAME: {}\n\n", filename);
 
         let get_home = b"GET / HTTP/1.1\r\n";
 
