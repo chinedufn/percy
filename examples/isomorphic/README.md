@@ -1,12 +1,36 @@
 # isomorphic web app example
 
-To run locally:
+## Running Locally
+
+[Install rustup if you haven't already](https://rustup.rs/)
+
+```
+# Make sure you have Rust nightly
+rustup install nightly
+rustup update nightly
+```
 
 ```sh
+# Install wasm-bindgen
+rustup target add wasm32-unknown-unknown
+cargo +nightly install wasm-bindgen-cli
+```
+
+```sh
+# Clone the Percy repository
+git clone https://github.com/chinedufn/percy
+cd percy
+./examples/isomorphic/start.sh
+```
+
+```sh
+# Build the WebAssembly module and start the server
 ./start.sh
 ```
 
 ---
+
+## Structure
 
 Percy powered isomorphic web applications use three crates in a cargo workspace.
 
