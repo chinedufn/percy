@@ -20,12 +20,11 @@ cargo +nightly install wasm-bindgen-cli
 # Clone the Percy repository
 git clone https://github.com/chinedufn/percy
 cd percy
-./examples/isomorphic/start.sh
 ```
 
 ```sh
 # Build the WebAssembly module and start the server
-./start.sh
+./examples/isomorphic/start.sh
 ```
 
 ---
