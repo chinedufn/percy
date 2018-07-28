@@ -15,7 +15,7 @@ matrix:
       env: JOB=test-everything
       before_install: *INSTALL_NODE_VIA_NVM
       install:
-        - npm ci --verbose
+        - npm install
       script:
         - ./test.sh
       if: branch = master
