@@ -1,0 +1,7 @@
+[package]
+name = "test-css-rs"
+version = "0.1.0"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+
+[dependencies]
+css-rs-macro = { path = "../../crates/css-rs-macro" }

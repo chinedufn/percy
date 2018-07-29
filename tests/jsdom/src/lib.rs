@@ -7,8 +7,8 @@ use wasm_bindgen::prelude::*;
 extern crate virtual_dom_rs;
 use std::cell::Cell;
 use std::rc::Rc;
-use virtual_dom_rs::virtual_node::VirtualNode;
 use virtual_dom_rs::percy_webapis::*;
+use virtual_dom_rs::virtual_node::VirtualNode;
 
 macro_rules! clog {
     ($($t:tt)*) => (log(&format!($($t)*)))

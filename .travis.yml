@@ -16,7 +16,7 @@ matrix:
       env: JOB=test-everything
       before_install: *INSTALL_NODE_VIA_NVM
       install:
-        - npm ci --verbose
+        - npm install
       script:
         - ./test.sh
       if: branch = master
@@ -35,7 +35,7 @@ matrix:
         - cargo install-update -a
       script:
         - (cd book && mdbook build)
-        - cargo doc --no-deps -p virtual-dom-rs # -p inline-stylesheet
+        - cargo doc --no-deps -p virtual-dom-rs -p css-rs-macro
         - mv target/doc book/book/api
       deploy:
         provider: pages

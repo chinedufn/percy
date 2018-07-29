@@ -9,10 +9,14 @@ repository = "https://github.com/chinedufn/percy"
 
 [workspace]
 members = [
-  "tests/jsdom",
+  "crates/css-rs-macro",
   "examples/isomorphic/app",
   "examples/isomorphic/client",
   "examples/isomorphic/server",
+  "examples/css-in-rust",
+  "percy-webapis",
+  "tests/jsdom",
+  "tests/test-css-rs",
+  "tests/test-css-rs-fixture",
   "virtual-dom-rs",
-  "percy-webapis"
 ]

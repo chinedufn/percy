@@ -1,7 +1,7 @@
+use percy_webapis::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use virtual_node::VirtualNode;
-use percy_webapis::*;
 
 /// A `Patch` encodes an operation that modifies a real DOM element.
 ///
@@ -64,13 +64,6 @@ impl<'a> Patch<'a> {
 
 type node_idx = usize;
 
-// TODO: Remove
-macro_rules! clog {
-    ($($t:tt)*) => (log(&format!($($t)*)))
-}
-
-/// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
-///  patches the root node. Right now we just end up overwriting the root node.
 pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
     let mut cur_node_idx = 0;
     let mut cur_node = root_node.clone();
@@ -113,14 +106,14 @@ fn find_nodes(
         nodes_to_find.remove(&cur_node_idx);
     }
 
-        *cur_node_idx += 1;
+    *cur_node_idx += 1;
 
-        let child_node_count = root_node.child_nodes().length() as usize;
+    let child_node_count = root_node.child_nodes().length() as usize;
 
-        for i in 0..child_node_count {
-            let node = root_node.child_nodes().item(i);
-            find_nodes(&node, cur_node_idx, nodes_to_find, nodes_to_patch);
-        }
+    for i in 0..child_node_count {
+        let node = root_node.child_nodes().item(i);
+        find_nodes(&node, cur_node_idx, nodes_to_find, nodes_to_patch);
+    }
 }
 
 fn apply_patch(node: &Element, patch: &Patch) {

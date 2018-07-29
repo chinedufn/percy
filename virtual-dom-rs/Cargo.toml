@@ -4,9 +4,9 @@ version = "0.0.1"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A standalone Virtual DOM creation, diffing and patching implementation"
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
-license = "MIT"
+license = "MIT/Apache-2.0"
 repository = "https://github.com/chinedufn/percy"
-documentation = "https://docs.rs/virtual-dom-rs"
+documentation = "https://chinedufn.github.io/percy/api/virtual_dom_rs/"
 
 [dependencies]
 wasm-bindgen = { version = "0.2.15" }

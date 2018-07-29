@@ -1,0 +1,17 @@
+[package]
+name = "css-rs-macro"
+version = "0.1.0"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+description = "A macro for writing your CSS next to your views"
+keywords = ["css", "style", "stylesheet", "percy", "sheet"]
+documentation = "https://chinedufn.github.io/percy/api/css_rs_macro"
+repository = "https://github.com/chinedufn/percy"
+license = "MIT/Apache-2.0"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = '0.14', features = ['full']  }
+quote = '0.6'
+lazy_static = "1.0"
