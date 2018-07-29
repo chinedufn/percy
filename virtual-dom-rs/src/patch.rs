@@ -64,13 +64,6 @@ impl<'a> Patch<'a> {
 
 type node_idx = usize;
 
-// TODO: Remove
-macro_rules! clog {
-    ($($t:tt)*) => (log(&format!($($t)*)))
-}
-
-/// TODO: not implemented yet. This should use Vec<Patches> so that we can efficiently
-///  patches the root node. Right now we just end up overwriting the root node.
 pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
     let mut cur_node_idx = 0;
     let mut cur_node = root_node.clone();
