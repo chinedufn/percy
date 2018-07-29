@@ -54,6 +54,9 @@ mod tests {
             color: red;
             background-color: blue;
         }
+        ._iss_1 {
+            display: flex;
+        }
         "#.replace(" ", "")
                 .replace("\n", "")
         );

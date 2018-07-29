@@ -15,4 +15,10 @@ fn main() {
      background-color: blue;
     }
     "#};
+
+    css!{"
+    :host {
+        display: flex;
+    }
+    "};
 }
