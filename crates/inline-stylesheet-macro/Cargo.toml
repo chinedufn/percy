@@ -1,0 +1,12 @@
+[package]
+name = "inline-stylesheet-macro"
+version = "0.1.0"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = '0.14', features = ['full']  }
+quote = '0.6'
+lazy_static = "1.0"
