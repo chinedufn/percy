@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A macro for writing your CSS next to your views"
 keywords = ["css", "style", "stylesheet", "percy", "sheet"]
-documentation = "https://docs.rs/virtual-dom-rs"
+documentation = "https://chinedufn.github.io/percy/api/css_rs_macro"
 repository = "https://github.com/chinedufn/percy"
 license = "MIT/Apache-2.0"
 
