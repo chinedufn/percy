@@ -1,8 +1,8 @@
 [package]
-name = "inline-css"
+name = "css-in-rust"
 version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 
 [dependencies]
-inline-stylesheet-macro = { path = "../../crates/inline-stylesheet-macro" }
+css-rs-macro = { path = "../../crates/css-rs-macro" }
 virtual-dom-rs = { path = "../../virtual-dom-rs" }

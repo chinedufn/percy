@@ -1,7 +1,7 @@
 [package]
-name = "test-stylesheet-fixture"
+name = "test-css-rs"
 version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 
 [dependencies]
-inline-stylesheet-macro = { path = "../../crates/inline-stylesheet-macro" }
+css-rs-macro = { path = "../../crates/css-rs-macro" }

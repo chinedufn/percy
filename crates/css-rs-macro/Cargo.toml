@@ -1,5 +1,5 @@
 [package]
-name = "inline-stylesheet-macro"
+name = "css-rs-macro"
 version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 

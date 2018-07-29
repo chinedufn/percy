@@ -1,9 +1,9 @@
 #![feature(use_extern_macros)]
 #![feature(proc_macro_non_items)]
 
-extern crate inline_stylesheet_macro;
+extern crate css_rs_macro;
 
-use inline_stylesheet_macro::css;
+use css_rs_macro::css;
 
 #[cfg(test)]
 mod tests {
@@ -38,7 +38,7 @@ mod tests {
         Command::new("cargo")
             .env("OUTPUT_CSS", "/tmp/percy-test-css.css")
             .arg("run")
-            .args(&["-p", "test-stylesheet-fixture"])
+            .args(&["-p", "test-css-rs-fixture"])
             .spawn()
             .unwrap()
             .wait();

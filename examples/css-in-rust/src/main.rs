@@ -1,8 +1,8 @@
 #![feature(use_extern_macros)]
 #![feature(proc_macro_non_items)]
 
-extern crate inline_stylesheet_macro;
-use inline_stylesheet_macro::css;
+extern crate css_rs_macro;
+use css_rs_macro::css;
 use std::net::TcpListener;
 use std::io::Read;
 use std::io::Write;
