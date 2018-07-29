@@ -15,7 +15,6 @@ pub use html_macro::*;
 pub mod virtual_node;
 pub use virtual_node::*;
 
-
 mod diff;
 pub use diff::*;
 

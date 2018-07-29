@@ -1,0 +1,8 @@
+[package]
+name = "inline-css"
+version = "0.1.0"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+
+[dependencies]
+inline-stylesheet-macro = { path = "../../crates/inline-stylesheet-macro" }
+virtual-dom-rs = { path = "../../virtual-dom-rs" }

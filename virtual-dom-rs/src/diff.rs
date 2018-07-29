@@ -205,39 +205,39 @@ mod tests {
         })
     }
 
-//    // TODO: Key support
-//    #[test]
-//    fn reorder_chldren() {
-//        let mut attributes = HashMap::new();
-//        attributes.insert("class", "foo");
-//
-//        let old_children = vec![
-//            // old node 0
-//            html! { <div key="hello", id="same-id", style="",></div> },
-//            // removed
-//            html! { <div key="gets-removed",> { "This node gets removed"} </div>},
-//            // old node 2
-//            html! { <div key="world", class="changed-class",></div>},
-//            // removed
-//            html! { <div key="this-got-removed",> { "This node gets removed"} </div>},
-//        ];
-//
-//        let new_children = vec![
-//            html! { <div key="world", class="foo",></div> },
-//            html! { <div key="new",> </div>},
-//            html! { <div key="hello", id="same-id",></div>},
-//        ];
-//
-//        test(DiffTestCase {
-//            old: html! { <div> { old_children } </div> },
-//            new: html! { <div> { new_children } </div> },
-//            expected: vec![
-//                // TODO: Come up with the patch structure for keyed nodes..
-//                // keying should only work if all children have keys..
-//            ],
-//            description: "Add attributes",
-//        })
-//    }
+    //    // TODO: Key support
+    //    #[test]
+    //    fn reorder_chldren() {
+    //        let mut attributes = HashMap::new();
+    //        attributes.insert("class", "foo");
+    //
+    //        let old_children = vec![
+    //            // old node 0
+    //            html! { <div key="hello", id="same-id", style="",></div> },
+    //            // removed
+    //            html! { <div key="gets-removed",> { "This node gets removed"} </div>},
+    //            // old node 2
+    //            html! { <div key="world", class="changed-class",></div>},
+    //            // removed
+    //            html! { <div key="this-got-removed",> { "This node gets removed"} </div>},
+    //        ];
+    //
+    //        let new_children = vec![
+    //            html! { <div key="world", class="foo",></div> },
+    //            html! { <div key="new",> </div>},
+    //            html! { <div key="hello", id="same-id",></div>},
+    //        ];
+    //
+    //        test(DiffTestCase {
+    //            old: html! { <div> { old_children } </div> },
+    //            new: html! { <div> { new_children } </div> },
+    //            expected: vec![
+    //                // TODO: Come up with the patch structure for keyed nodes..
+    //                // keying should only work if all children have keys..
+    //            ],
+    //            description: "Add attributes",
+    //        })
+    //    }
 
     #[test]
     fn replace_text_node() {

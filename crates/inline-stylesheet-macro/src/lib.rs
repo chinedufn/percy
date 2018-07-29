@@ -14,11 +14,11 @@ use proc_macro::TokenTree;
 
 use std::env;
 use std::fs;
+use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
 use std::sync::Mutex;
-use std::fs::File;
 
 lazy_static! {
     static ref CSS_COUNTER: Mutex<u32> = Mutex::new(0);
@@ -82,10 +82,7 @@ pub fn css(input: TokenStream) -> TokenStream {
 
             write_css_to_file(&mut css_file, &class, input);
         } else {
-            let mut css_file = OpenOptions::new()
-                .append(true)
-                .open(css_file)
-                .unwrap();
+            let mut css_file = OpenOptions::new().append(true).open(css_file).unwrap();
 
             write_css_to_file(&mut css_file, &class, input);
         }

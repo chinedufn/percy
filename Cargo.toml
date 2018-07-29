@@ -13,6 +13,7 @@ members = [
   "examples/isomorphic/app",
   "examples/isomorphic/client",
   "examples/isomorphic/server",
+  "examples/inline-css",
   "percy-webapis",
   "tests/jsdom",
   "tests/test-inline-stylesheet",

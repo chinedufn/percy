@@ -1,9 +1,9 @@
+use percy_webapis::*;
 pub use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
 pub use std::rc::Rc;
 use wasm_bindgen::prelude::Closure;
-use percy_webapis::*;
 
 #[derive(PartialEq)]
 pub struct VirtualNode {
