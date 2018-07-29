@@ -29,8 +29,8 @@ mod tests {
         :host > div { color: blue; }
         "#};
 
-        assert_eq!(class, "_iss_0");
-        assert_eq!(class2, "_iss_1");
+        assert_eq!(class, "_css_rs_0");
+        assert_eq!(class2, "_css_rs_1");
     }
 
     #[test]
@@ -50,11 +50,11 @@ mod tests {
         assert_eq!(
             css.replace(" ", "").replace("\n", ""),
             r#"
-        ._iss_0 {
+        ._css_rs_0 {
             color: red;
             background-color: blue;
         }
-        ._iss_1 {
+        ._css_rs_1 {
             display: flex;
         }
         "#.replace(" ", "")

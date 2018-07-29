@@ -31,7 +31,7 @@ lazy_static! {
 /// Parses the syntax for writing inline css. Every call to css! will have its class
 /// name incremented by one.
 ///
-/// So your first css! call is class "._iss_0", then "._iss_1", etc.
+/// So your first css! call is class "._css_rs_0", then "._css_rs_1", etc.
 ///
 /// To write your css to a file use:
 ///
@@ -66,15 +66,15 @@ lazy_static! {
 ///         :host { display: flex; }
 ///     "#};
 ///
-///     assert_eq!(class1, "_iss_0".to_string());
-///     assert_eq!(class2, "_iss_1".to_string());
+///     assert_eq!(class1, "_css_rs_0".to_string());
+///     assert_eq!(class2, "_css_rs_1".to_string());
 /// }
 /// ```
 #[proc_macro]
 pub fn css(input: TokenStream) -> TokenStream {
     let mut css_counter = CSS_COUNTER.lock().unwrap();
 
-    let class = format!("_iss_{}", css_counter);
+    let class = format!("_css_rs_{}", css_counter);
 
     let css_file = env::vars().find(|(key, _)| key == "OUTPUT_CSS");
 
