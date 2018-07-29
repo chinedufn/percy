@@ -6,6 +6,7 @@ description = "A macro for writing your CSS next to your views"
 keywords = ["css", "style", "stylesheet", "percy", "sheet"]
 documentation = "https://docs.rs/virtual-dom-rs"
 repository = "https://github.com/chinedufn/percy"
+license = "MIT/Apache-2.0"
 
 [lib]
 proc-macro = true
