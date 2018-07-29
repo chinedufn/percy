@@ -29,7 +29,11 @@ lazy_static! {
 ///
 /// So your first css! call is class "._iss_0", then "._iss_1", etc.
 ///
-/// Set the OUTPUT_CSS=/path/to/my/output.css file to write your application CSS to a file.
+/// To write your css to a file use:
+///
+/// ```ignore
+/// OUTPUT_CSS=/path/to/my/output.css cargo run my-app
+/// ```
 ///
 /// # Examples
 ///
