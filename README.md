@@ -32,8 +32,25 @@ For an example of an isomorphic web app in Rust check out the [isomorphic exampl
 For more on the `html!` macro see [html macro](virtual-dom-rs/src/html_macro.rs)
 
 ```rust
+#![feature(use_extern_macros)]
+#![feature(proc_macro_non_items)]
+
 #[macro_use]
 extern crate virtual_dom_rs;
+
+extern crate css_rs_macro;
+use css_rs_macro::css;
+
+static SOME_COMPONENT_CSS: &'static str = css! {"
+:host {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+:host > span {
+    color: blue;
+}
+"};
 
 fn main () {
   let count = Rc::new(Cell::new(0));
@@ -41,9 +58,13 @@ fn main () {
   let count_clone = Rc::clone(count);
 
   let html = html! {
-    <div id="hello-world",>
+    <div id="hello-world", class=*SOME_COMPONENT_CSS,>
+      <span>Hey :)</span>
       <button
         !onclick=|| { count_clone.set(count_clone.get() + 1); },
+        // CSS in Rust isn't required. You can use regular old
+        /* classes just fine! */
+        class="btn-bs4 btn-bs4-success",
       >
         Click Me!
       </button>
