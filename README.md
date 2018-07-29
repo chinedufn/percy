@@ -7,11 +7,11 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 ---
 
-**API Docs:**
+# API Docs:
 
 - [virtual-dom-rs API docs](https://chinedufn.github.io/percy/api/virtual_dom_rs/macro.html.html)
 
-- inline-stylesheets <- WIP
+- [css-rs-macro API docs](https://chinedufn.github.io/percy/api/css_rs_macro)
 
 ## Initial Background / Motivation
 
