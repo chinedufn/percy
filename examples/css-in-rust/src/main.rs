@@ -3,10 +3,10 @@
 
 extern crate css_rs_macro;
 use css_rs_macro::css;
-use std::net::TcpListener;
+use std::fs::File;
 use std::io::Read;
 use std::io::Write;
-use std::fs::File;
+use std::net::TcpListener;
 
 #[macro_use]
 extern crate virtual_dom_rs;

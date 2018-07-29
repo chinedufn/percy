@@ -1,3 +1,7 @@
+//! css-rs-macro is a procedural macro that allows you to write your CSS next to your Rust views.
+//!
+//! github.com/chinedufn/percy/examples/css-in-rust
+
 #[feature(proc_macro)]
 #[macro_use]
 extern crate syn;
@@ -37,26 +41,34 @@ lazy_static! {
 ///
 /// # Examples
 ///
-/// ```
-/// let class1 = css! {
-///   "
-///   :host {
-///     background-color: red;
-///   }
+/// ```ignore
+/// #![feature(use_extern_macros)]
+/// #![feature(proc_macro_non_items)]
 ///
-///   :host > div {
-///     display: flex;
-///     align-items: center;
-///   }
-///   "
+/// extern crate css_rs_macro;
+/// use css_rs_macro::css;
+///
+/// fn main () {
+///     let class1 = css! {
+///       "
+///       :host {
+///         background-color: red;
+///       }
+///
+///       :host > div {
+///         display: flex;
+///         align-items: center;
+///       }
+///       "
+///     };
+///
+///     let class2 = css! {r#"
+///         :host { display: flex; }
+///     "#};
+///
+///     assert_eq!(class1, "_iss_0".to_string());
+///     assert_eq!(class2, "_iss_1".to_string());
 /// }
-///
-/// let class2 = css! {r#"
-///     :host { display: flex; }
-/// "#}
-///
-/// assert_eq!(class1, "_iss_0".to_string());
-/// assert_eq!(class2, "_iss_1".to_string());
 /// ```
 #[proc_macro]
 pub fn css(input: TokenStream) -> TokenStream {
