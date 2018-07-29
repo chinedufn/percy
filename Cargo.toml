@@ -16,5 +16,6 @@ members = [
   "percy-webapis",
   "tests/jsdom",
   "tests/test-inline-stylesheet",
+  "tests/test-stylesheet-fixture",
   "virtual-dom-rs",
 ]

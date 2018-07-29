@@ -9,7 +9,10 @@ use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
 pub struct State {
-    #[serde(deserialize_with = "deserialize_rc_cell", serialize_with = "serialize_rc_cell")]
+    #[serde(
+        deserialize_with = "deserialize_rc_cell",
+        serialize_with = "serialize_rc_cell"
+    )]
     click_count: Rc<Cell<u32>>,
     #[serde(skip)]
     listeners: Vec<Box<Fn() -> ()>>,
