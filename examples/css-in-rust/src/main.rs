@@ -40,7 +40,7 @@ fn main() {
             stream.write(&(response + &html.to_string()).into_bytes());
         } else if buffer.starts_with(css_req) {
             // Serve our CSS
-            let mut css_file = File::open("examples/inline-css/app.css").unwrap();
+            let mut css_file = File::open("examples/css-in-rust/app.css").unwrap();
             let mut css = String::new();
 
             css_file.read_to_string(&mut css).unwrap();
