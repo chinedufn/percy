@@ -91,6 +91,12 @@ cd percy
 ./examples/isomorphic/start.sh
 ```
 
+## More Examples
+
+- [Isomorphic web app](examples/isomorphic)
+- [CSS in Rust](examples/css-in-rust)
+- [Open an Issue or PR if you have an idea for a useful example!](https://github.com/chinedufn/percy/issues)
+
 Now visit `http://127.0.0.1:7878` !
 
 ## Contributing
