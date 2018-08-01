@@ -78,12 +78,13 @@ pub fn serve() {
             stream.write(&wasm).unwrap();
             stream.flush().unwrap();
         } else {
-            let mut file = File::open(filename).expect("File not found");
-
-            let mut contents = String::new();
-            file.read_to_string(&mut contents).unwrap();
-
-            let response = format!("HTTP/1.1 200 OK\r\n\r\n{}", contents);
+            let response = if let Ok(mut file) = File::open(filename) {
+                let mut contents = String::new();
+                file.read_to_string(&mut contents).unwrap();
+                format!("HTTP/1.1 200 OK\r\n\r\n{}", contents)
+            } else {
+                format!("HTTP/1.1 404 Not Found\r\n\r\n")
+            };
             stream.write(response.as_bytes()).unwrap();
             stream.flush().unwrap();
         }
