@@ -1,11 +1,11 @@
 use std::net::TcpListener;
 
+use std::io;
 use std::io::Read;
 use std::io::Write;
 
 use isomorphic_app::App;
 use std::fs::File;
-use std::io::prelude::*;
 use std::net::TcpStream;
 use std::prelude::v1::Vec;
 use std::string::String;
@@ -66,16 +66,12 @@ pub fn serve() {
             stream.flush().unwrap();
         } else if String::from_utf8_lossy(&buffer).contains(".module.wasm") {
             let mut wasm_file = File::open(filename).expect("Wasm file not found");
-            let mut wasm = [0; 2_000_000];
-            wasm_file
-                .read(&mut wasm)
-                .expect("Read wasm file into memory");
 
             let application_wasm = "\r\nContent-Type: application/wasm";
             stream
                 .write(format!("HTTP/1.1 200 OK{}\r\n\r\n", application_wasm).as_bytes())
                 .unwrap();
-            stream.write(&wasm).unwrap();
+            io::copy(&mut wasm_file, &mut stream).expect("Couldn't pipe wasm file");
             stream.flush().unwrap();
         } else {
             let response = if let Ok(mut file) = File::open(filename) {
