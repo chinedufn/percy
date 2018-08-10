@@ -8,6 +8,9 @@ parts of the `Percy` toolkit with third party implementation that better suit yo
 Isomorphic in the sense that it has out of the box support for server side rendering
 of your single page applications.
 
+`Percy` is not yet ready for production (unless you're incredibly brave), but if you're
+interested in using it for real things you can [watch the development progress.](https://github.com/chinedufn/percy/watchers).
+
 ### A snippet
 
 ```rust
@@ -35,12 +38,15 @@ fn main () {
 `Percy` is very young and going through the early stages of development. Our roadmap is
 is mainly led by Real World Driven Development.
 
-We're using `Percy` to build a real, production website and ironing out the kinks and
-fixing the bugs as we go.
+This means that we're using `Percy` to build a real, production web app and ironing out
+the kinks and fixing the bugs as we go.
 
 Once the tools have stabilized and we've settled into a clean structure for `Percy`
 applications we'll publish a CLI for generating a production-grade starter project with
 everything that you need to get up and running.
+
+Check out the [Percy issue tracker](https://github.com/chinedufn/percy/issues) and
+maybe open a couple of your own!
 
 ### Notable Features
 
