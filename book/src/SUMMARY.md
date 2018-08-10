@@ -4,4 +4,5 @@
 
 ---
 
-- [A simple program](./simple-program.md)
+- [Writing html!](./html-macro.md)
+- [CSS in Rust](./css-in-rust.md)
