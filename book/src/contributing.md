@@ -1,8 +1,10 @@
 # Contributing
 
+## Types of Contributions
+
 There are three main types of contributions to `Percy`, all of which are equally important.
 
-## Documentation / Book Contributions / Examples
+### Documentation / Book Contributions / Examples
 
 Our documentation is the first thing that anyone interested in using `Percy` will see.
 Before installing the tools, running the examples or starting up their own project they'll
@@ -14,12 +16,12 @@ While it's common for projects to dismiss typo fixes as unimportant contribution
 the complete opposite. We strive for getting as close to "perfect documentation" as possible,
 and anything that brings us a step closer matters.
 
-#### Documentation
+##### Documentation
 
 Scroll around the codebase. If you don't instantly understand something then it is poorly
 documented. Open up an issue or PR with your ideas on how it can be better communicated.
 
-#### Book Contributions
+##### Book Contributions
 
 If there's a section that you think is missing from the book, PR the title of that section
 with some placeholder text.
@@ -29,7 +31,7 @@ We're totally fine with not having book contributions fully fleshed out right aw
 Having a placeholder makes it easy for yourself or someone else to feel motivated one day
 and start hitting the keyboard.
 
-#### Examples
+##### Examples
 
 If you can't figure out how exactly to implement something within 5 minutes that might mean
 that you were underserved by the `examples` directory.
@@ -37,7 +39,7 @@ that you were underserved by the `examples` directory.
 Open up an issue with your question or an idea with how to craft an example that would have
 answered it!
 
-## Building Something with Percy
+### Building Something with Percy
 
 When you're building a real application you run into problems, trade-offs and considerations
 that you never could have thought of up front.
@@ -52,6 +54,24 @@ If you have an idea for something that you can build with `Percy` then get start
 free to open up an issue with any questions or thoughts that you might have. Also open
 issues / PRs as you run into problems / annoyances.
 
-## Refactoring Code and Tests
+### Refactoring Code and Tests
 
 lorem ipsum TODO
+
+## Making Changes to the Percy Codebase
+
+1. Rust Nightly.
+
+    ```sh
+    rustup default nightly
+    rustup target add wasm32-unknown-unknown
+    ```
+2. [Install Node.js 10+](https://github.com/creationix/nvm#installation) since some of our tests use Node.js.
+3. Download the project and make sure that you can run the test suite
+
+    ```sh
+    git clone https://github.com/chinedufn/percy
+    cd percy
+    npm install
+    ./test.sh
+    ```
