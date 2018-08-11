@@ -5,6 +5,8 @@ use std::fmt;
 pub use std::rc::Rc;
 use wasm_bindgen::prelude::Closure;
 
+pub mod virtual_node_test_utils;
+
 #[derive(PartialEq)]
 pub struct VirtualNode {
     pub tag: String,

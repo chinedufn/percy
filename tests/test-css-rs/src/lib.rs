@@ -58,7 +58,7 @@ mod tests {
             display: flex;
         }
         "#.replace(" ", "")
-                .replace("\n", "")
+            .replace("\n", "")
         );
 
         fs::remove_file("/tmp/percy-test-css.css");
