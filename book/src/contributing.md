@@ -31,6 +31,11 @@ We're totally fine with not having book contributions fully fleshed out right aw
 Having a placeholder makes it easy for yourself or someone else to feel motivated one day
 and start hitting the keyboard.
 
+```sh
+# To view the book locally as you edit
+cd book && mdbook serve --open
+```
+
 ##### Examples
 
 If you can't figure out how exactly to implement something within 5 minutes that might mean

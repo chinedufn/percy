@@ -5,7 +5,6 @@
 use virtual_node::VirtualNode;
 
 impl VirtualNode {
-
     /// Get a vector of all of the VirtualNode children / grandchildren / etc of
     /// your virtual_node that have a label that matches your filter.
     ///
@@ -44,7 +43,7 @@ impl VirtualNode {
                     if filter(label) {
                         filtered_descendants.push(node);
                     }
-                },
+                }
                 None => {}
             };
         }
@@ -71,10 +70,8 @@ impl VirtualNode {
     /// assert_eq!(hello_nodes.len(), 2);
     /// }
     /// ```
-    pub fn filter_label_equals<'a> (&'a self, label: &str) -> Vec<&'a VirtualNode> {
-        self.filter_label(|node_label| {
-            node_label == label
-        })
+    pub fn filter_label_equals<'a>(&'a self, label: &str) -> Vec<&'a VirtualNode> {
+        self.filter_label(|node_label| node_label == label)
     }
 }
 
