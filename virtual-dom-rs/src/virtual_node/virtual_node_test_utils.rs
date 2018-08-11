@@ -1,6 +1,4 @@
 //! A collection of functions that are useful for unit testing your html! views.
-//!
-//! You can enable these methods via by enabling the `test-utils` feature
 
 use virtual_node::VirtualNode;
 
