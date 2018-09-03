@@ -52,7 +52,7 @@ matrix:
       cache:
         directories:
           - "node_modules"
-      before_deploy: npm install now --no-save
+      before_deploy: npm install -g now --no-save
       deploy:
         - provider: script
           script: now --token $NOW_TOKEN
