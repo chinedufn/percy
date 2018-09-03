@@ -45,6 +45,7 @@ matrix:
         keep-history: false
       if: branch = master
 
+    # Deploy the Percy demo application
     - node_js:
       env: JOB=deploy-demo
       cache:
