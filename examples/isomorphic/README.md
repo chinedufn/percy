@@ -20,6 +20,7 @@ cargo +nightly install wasm-bindgen-cli
 # Clone the Percy repository
 git clone https://github.com/chinedufn/percy
 cd percy
+npm install
 ```
 
 ```sh
@@ -56,14 +57,5 @@ the application with.
 The client crate is a `cdylib` that gets compiled to WebAssembly. This crate is a light
 wrapper around your app crate, allowing you to run your code in the browser.
 
----
-
-While the `client` crate needs to be separate since it's a [cdylib](https://doc.rust-lang.org/reference/linkage.html#linkage) that gets compiled to WebAssembly, you
-could combine the app and server crate if you wanted. I'll have to try that and see which feels better.
-
-This might look like
-
-1. app crate (server module AND a pub app module)
-2. webassembly crate (`cdylib` that depends on your `app` crate pulls in your app module)
-
-Not sure which I like better on paper... need to try both... Please open an issue if you have opinions!
+Seperating the web `client` logic from the `app` makes it easy for you to add other clients in the
+future, such as an `electron` client.

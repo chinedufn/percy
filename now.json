@@ -1,0 +1,5 @@
+{
+  "name": "percy-isomorphic",
+  "alias": "percy.isomorphic",
+  "type": "docker"
+}

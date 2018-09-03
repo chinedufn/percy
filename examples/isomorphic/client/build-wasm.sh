@@ -1,6 +1,8 @@
 #!/bin/bash
 
-cd $(git rev-parse --show-toplevel)
+# cd to the root directory of this repository
+cd $(dirname $0)
+cd ../..
 
 cargo +nightly build -p isomorphic-client --target wasm32-unknown-unknown &&
   wasm-bindgen --no-typescript target/wasm32-unknown-unknown/debug/isomorphic_client.wasm --out-dir ./examples/isomorphic/client &&
