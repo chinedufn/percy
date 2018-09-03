@@ -40,7 +40,6 @@ COPY --from=build /usr/src/target/release/isomorphic-server /
 # At the moment our server expects the files to be in `/examples/isomorphic/client/{filename}`
 # In the future we might conditionally just `include_bytes!` for production builds instead of
 # reading the bundle.js file from disk. We read it from disk atm to avoid recompilation when it changes.
-RUN mkdir -p /examples/isomorphic/client
-COPY --from=build /usr/src/examples/isomorphic/client/* /examples/isomorphic/client/
+COPY --from=build /usr/src/examples /
 
 CMD ["/isomorphic-server"]
