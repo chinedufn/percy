@@ -1,9 +1,19 @@
 # Virtual DOM
 
-At the heart of `Percy` is a virtual dom implementation that allows
-you to write functional front-end applications.
+At the heart of the `Percy` toolkit is `virtual-dom-rs`, a crate that includes a virtual dom
+implementation that allows you to write functional front-end applications.
 
-This same virtual-dom works on the backend without a real DOM,
-allowing you to render your application not only in your browser,
-but on the server side as well. This is commonly referred to as 
-server side rendering.
+This same `virtual-dom-rs` also works on the backend by rendering to a String instead of a DOM element.
+This ability to render on the backend is commonly referred to as server side rendering.
+
+```
+#[macro_use]
+extern crate virtual_dom_rs;
+
+// The most basic example of rendering to a String
+fn main () {
+  let component = html! { <div> {"Hello world"} </div> };
+  println!("{}", component);
+  // <div>Hello world</div>
+}
+```
