@@ -46,7 +46,8 @@ matrix:
       if: branch = master
 
     # Deploy the Percy demo application
-    - node_js:
+    - name: "Deploy Demo"
+      node_js: "10.5.0"
       env: JOB=deploy-demo
       cache:
         directories:

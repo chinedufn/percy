@@ -38,6 +38,6 @@ FROM scratch
 # At the moment our server expects the files to be in `/examples/isomorphic/client/{filename}` so we copy the examples dir
 # In the future we might conditionally just `include_bytes!` for production builds instead of
 # reading the bundle.js file from disk. We read it from disk atm to avoid recompilation when it changes.
-COPY --from=build /usr/src/target/release/isomorphic-server /usr/src/examples  .
+COPY --from=build /usr/src/target/release/isomorphic-server /usr/src/examples ./
 
 CMD ["./isomorphic-server"]
