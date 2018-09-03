@@ -103,7 +103,7 @@ cd percy
 - [Unit Testing View Components](examples/unit-testing-components)
 - [Open an Issue or PR if you have an idea for a useful example!](https://github.com/chinedufn/percy/issues)
 
-Now visit `http://127.0.0.1:7878` !
+Now visit `http://127.0.0.1:3000` !
 
 ## Contributing
 
