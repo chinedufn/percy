@@ -9,7 +9,13 @@ COPY . .
 RUN rustup update nightly
 RUN rustup default nightly
 RUN rustup target add wasm32-unknown-unknown
-RUN cargo +nightly install wasm-bindgen-cli
+
+# Install WASM bindgen CLI
+RUN curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.19/wasm-bindgen-0.2.19-x86_64-unknown-linux-musl.tar.gz
+RUN tar xf wasm-bindgen-0.2.19-x86_64-unknown-linux-musl.tar.gz
+RUN rm wasm-bindgen-0.2.19-x86_64-unknown-linux-musl.tar.gz
+RUN chmod +x wasm-bindgen-0.2.19-x86_64-unknown-linux-musl/wasm-bindgen
+RUN mv wasm-bindgen-0.2.19-x86_64-unknown-linux-musl/wasm-bindgen /usr/local/bin/wasm-bindgen
 
 # Node.js & npm
 RUN curl -sL https://deb.nodesource.com/setup_9.x | bash -
@@ -33,15 +39,24 @@ RUN ./node_modules/webpack-cli/bin/cli.js --mode=development ./examples/isomorph
 RUN cargo +nightly build -p isomorphic-server --release
 
 # Diagnostics to see if things are working..
+RUN pwd
 RUN ls target
 RUN ls target/release
+RUN ls target/release/isomorphic-server
 
 # This gets around the 100Mb limit by ditching our `target` directory
-FROM scratch
+FROM alpine:latest
 
 # At the moment our server expects the files to be in `/examples/isomorphic/client/{filename}` so we copy the examples dir
 # In the future we might conditionally just `include_bytes!` for production builds instead of
 # reading the bundle.js file from disk. We read it from disk atm to avoid recompilation when it changes.
-COPY --from=build /usr/src/target/release/isomorphic-server /usr/src/examples /
+COPY --from=build /usr/src/target/release/isomorphic-server /
+COPY --from=build  /usr/src/examples /examples
 
+
+RUN ls
+RUN pwd
+RUN ls /
+
+RUN chmod +x /isomorphic-server
 CMD ["/isomorphic-server"]
