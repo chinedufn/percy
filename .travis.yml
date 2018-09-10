@@ -19,7 +19,6 @@ matrix:
         - npm install
       script:
         - ./test.sh
-      if: branch = master
       # Here's how we can test our future CLI's on stable / nightly
       # https://github.com/rustwasm/wasm-bindgen/blob/f893e3475cc4b9d4641b290f1c2c74d752b7d368/.travis.yml#L127-L136
 
