@@ -9,19 +9,6 @@ COPY . .
 # Install compilation targets
 RUN rustup default nightly
 RUN rustup target add wasm32-unknown-unknown
-RUN rustup target add x86_64-unknown-linux-musl
-
-# Install cross for cross compilation to alpine linux
-RUN curl -OL https://github.com/rust-embedded/cross/releases/download/v0.1.14/cross-v0.1.14-x86_64-unknown-linux-gnu.tar.gz
-RUN tar xf cross-v0.1.14-x86_64-unknown-linux-gnu.tar.gz
-RUN rm cross-v0.1.14-x86_64-unknown-linux-gnu.tar.gz
-# Make sure it doesn't stay in the developers file system if someone builds this locally
-RUN mv cross /root/
-
-# Build example isomorphic server binary
-RUN /root/cross build -p isomorphic-server --release --target x86_64-unknown-linux-musl
-RUN ls /usr/src/target/release
-RUN ls /usr/src/target/x86_64-unknown-linux-musl
 
 # Install WASM bindgen CLI
 RUN curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.19/wasm-bindgen-0.2.19-x86_64-unknown-linux-musl.tar.gz
