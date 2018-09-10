@@ -54,7 +54,7 @@ matrix:
         directories:
           - "node_modules"
       before_deploy:
-        # Cross compile for `FROM scratch` image in Dockerfile
+        # Cross compile for `FROM scratch` image in Dockerfile since we were having trouble getting clux/muslrust working
         - rustup default nightly
         - rustup target add x86_64-unknown-linux-musl
         - curl -OL https://github.com/rust-embedded/cross/releases/download/v0.1.14/cross-v0.1.14-x86_64-unknown-linux-gnu.tar.gz
