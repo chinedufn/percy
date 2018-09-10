@@ -64,3 +64,15 @@ wrapper around your app crate, allowing you to run your code in the browser.
 
 Seperating the web `client` logic from the `app` makes it easy for you to add other clients in the
 future, such as an `electron` client.
+
+## Changing the now.sh Dockerfile
+
+We use a `Dockerfile` to deploy to `now.sh` (currently stored in the root directory but in the future we might move that)
+
+To run it
+
+```sh
+docker build -t percy-isomorphic .
+docker run -d -p 7878:7878 percy-isomorphic
+# Visit localhost:7878 in your web browser
+```
