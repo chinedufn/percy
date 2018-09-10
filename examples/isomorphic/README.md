@@ -1,5 +1,9 @@
 # isomorphic web app example
 
+## Viewing a live version
+
+[View the example online](https://percy-isomorphic.now.sh/)
+
 ## Running Locally
 
 [Install rustup if you haven't already](https://rustup.rs/)
