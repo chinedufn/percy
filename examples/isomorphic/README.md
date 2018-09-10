@@ -26,7 +26,7 @@ npm install
 ```sh
 # Build the WebAssembly module and start the server
 ./examples/isomorphic/start.sh
-# Now visit http://localhost:3000
+# Now visit http://localhost:7878
 ```
 
 ---
