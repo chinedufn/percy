@@ -46,25 +46,26 @@ matrix:
       if: branch = master
 
     # Deploy the Percy demo application
-    - name: "Deploy Demo"
-      node_js: "10.5.0"
-      env: JOB=deploy-demo
-      cache:
-        directories:
-          - "node_modules"
-      before_deploy: npm install -g now --no-save
-      deploy:
-        - provider: script
-          script: now --token $NOW_TOKEN --public
-          skip_cleanup: true
-          on:
-            all_branches: true
-            master: false
-        - provider: script
-          script: now --token $NOW_TOKEN --public && now alias --token $NOW_TOKEN --public
-          skip_cleanup: true
-          on:
-            master: true
+    # TODO: Commented out while I try the now GitHub integration
+    # - name: "Deploy Demo"
+    #   node_js: "10.5.0"
+    #   env: JOB=deploy-demo
+    #   cache:
+    #     directories:
+    #       - "node_modules"
+    #   before_deploy: npm install -g now --no-save
+    #   deploy:
+    #     - provider: script
+    #       script: now --token $NOW_TOKEN --public --no-verify
+    #       skip_cleanup: true
+    #       on:
+    #         all_branches: true
+    #         master: false
+    #     - provider: script
+    #       script: now --token $NOW_TOKEN --public --no-verify && now alias --token $NOW_TOKEN --public --no-verify
+    #       skip_cleanup: true
+    #       on:
+    #         master: true
 
 notifications:
   email:

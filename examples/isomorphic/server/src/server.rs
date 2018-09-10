@@ -11,7 +11,7 @@ use std::prelude::v1::Vec;
 use std::string::String;
 
 pub fn serve() {
-    let listener = TcpListener::bind("127.0.0.1:3000").unwrap();
+    let listener = TcpListener::bind("0.0.0.0:3000").unwrap();
     println!("Listening on port 3000");
 
     for stream in listener.incoming() {
