@@ -46,26 +46,13 @@ matrix:
       if: branch = master
 
     # Deploy the Percy demo application
-    - rust: nightly
-      name: "Deploy Demo"
+    - name: "Deploy Demo"
       node_js: "10.5.0"
       env: JOB=deploy-demo
       cache:
         directories:
           - "node_modules"
-      before_deploy:
-        # Cross compile for `FROM scratch` image in Dockerfile since we were having trouble getting clux/muslrust working
-        - sudo apt-get install -i docker-ce
-        - sudo systemctl start docker
-        - rustup default nightly
-        - rustup target add x86_64-unknown-linux-musl
-        - curl -OL https://github.com/rust-embedded/cross/releases/download/v0.1.14/cross-v0.1.14-x86_64-unknown-linux-gnu.tar.gz
-        - tar xf cross-v0.1.14-x86_64-unknown-linux-gnu.tar.gz
-        - ./cross build -p isomorphic-server --release --target x86_64-unknown-linux-musl
-        - ls target/release
-        - ls target/x86_64-unknown-linux-musl
-        # Now.sh
-        - npm install -g now --no-save
+      before_deploy: npm install -g now --no-save
       deploy:
         - provider: script
           script: now --token $NOW_TOKEN --public
@@ -77,7 +64,7 @@ matrix:
           script: now --token $NOW_TOKEN --public && now alias --token $NOW_TOKEN --public
           skip_cleanup: true
           on:
-            master: true # TODO: if branch == master
+            master: true
 
 notifications:
   email:
