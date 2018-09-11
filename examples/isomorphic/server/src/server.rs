@@ -9,6 +9,7 @@ use std::fs::File;
 use std::net::TcpStream;
 use std::prelude::v1::Vec;
 use std::string::String;
+use std::fs;
 
 pub fn serve() {
     let listener = TcpListener::bind("0.0.0.0:7878").unwrap();
@@ -23,14 +24,11 @@ pub fn serve() {
     }
 
     fn handle_connection(mut stream: TcpStream) {
-        eprintln!("handling connection = ");
         let mut buffer = [0; 512];
         stream.read(&mut buffer).unwrap();
 
         let request_pieces = String::from_utf8_lossy(&buffer);
         let buffer_words = request_pieces.split("/").collect::<Vec<&str>>();
-
-        println!("REQUEST BUFFER: {}\n\n", String::from_utf8_lossy(&buffer));
 
         // Not sure what this request is but it's breaking stuff... so we ignore it..
         // Worry about this later..
@@ -48,7 +46,6 @@ pub fn serve() {
         let filename = filename[0];
 
         let filename = &format!("./examples/isomorphic/client/{}", filename);
-        println!("FILENAME: {}\n\n", filename);
 
         let get_home = b"GET / HTTP/1.1\r\n";
 
@@ -67,10 +64,17 @@ pub fn serve() {
 
             stream.write(html.as_bytes()).unwrap();
         } else {
-            let file = File::open(filename);
+            let file_metadata = fs::metadata(filename);
 
-            if let Ok(mut file) = file {
+            if let Ok(file_metadata) = file_metadata {
+                let mut file = File::open(filename).unwrap();
+
                 stream.write(b"HTTP/1.1 200 OK").unwrap();
+
+                let content_length = file_metadata.len();
+                let content_length = format!("\r\nContent-Length: {}", content_length);
+                stream.write(content_length.as_bytes()).unwrap();
+
                 if String::from_utf8_lossy(&buffer).contains(".module.wasm") {
                     stream.write(b"\r\nContent-Type: application/wasm").unwrap();
                 }
