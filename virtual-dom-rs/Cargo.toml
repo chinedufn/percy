@@ -12,5 +12,5 @@ documentation = "https://chinedufn.github.io/percy/api/virtual_dom_rs/"
 percy-webapis = { path = "../percy-webapis", version = "0.0.1" }
 
 [dependencies.wasm-bindgen]
-version = "0.2.19"
+version = "=0.2.19"
 features = ["default", "nightly"]

@@ -5,6 +5,8 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 [The Percy book](https://chinedufn.github.io/percy/)
 
+[View the isomorphic web app example live!](https://percy-isomorphic.now.sh/)
+
 ---
 
 # What is an isomorphic web app?
@@ -32,7 +34,8 @@ So I decided to make a cargo workspace with the tools that I needed to build iso
 
 ## Getting Started
 
-For an example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic)
+For an example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic) or
+view [the isomorphic web app example live.](https://percy-isomorphic.now.sh/)
 
 For more on the `html!` macro see [html macro](virtual-dom-rs/src/html_macro.rs)
 

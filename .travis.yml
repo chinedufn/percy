@@ -3,7 +3,7 @@ sudo: false
 
 INSTALL_NODE_VIA_NVM: &INSTALL_NODE_VIA_NVM
   - rustup target add wasm32-unknown-unknown
-  - cargo +nightly install wasm-bindgen-cli
+  - cargo +nightly install --vers "=0.2.19" wasm-bindgen-cli
   - curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
   - source ~/.nvm/nvm.sh
   - nvm install v10.5
@@ -19,7 +19,6 @@ matrix:
         - npm install
       script:
         - ./test.sh
-      if: branch = master
       # Here's how we can test our future CLI's on stable / nightly
       # https://github.com/rustwasm/wasm-bindgen/blob/f893e3475cc4b9d4641b290f1c2c74d752b7d368/.travis.yml#L127-L136
 
@@ -44,6 +43,23 @@ matrix:
         local-dir: book/book
         keep-history: false
       if: branch = master
+
+    # Deploy the Percy demo application on the `master` branch.
+    # Pull request branches are automatically deployed from the `now.sh` GitHub integration
+    # so we only need to use travis for the `master` branch.
+    - name: "Deploy Demo"
+      node_js: "10.5.0"
+      env: JOB=deploy-demo
+      cache:
+        directories:
+          - "node_modules"
+      before_deploy: npm install -g now --no-save
+      deploy:
+        - provider: script
+          script: now --token $NOW_TOKEN --public && now alias --token $NOW_TOKEN --public
+          skip_cleanup: true
+          on:
+            master: true
 
 notifications:
   email:
