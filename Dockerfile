@@ -49,4 +49,6 @@ FROM scratch
 COPY --from=build /usr/src/target/x86_64-unknown-linux-musl/release/isomorphic-server /
 COPY --from=build  /usr/src/examples /examples
 
+EXPOSE 7878/tcp
+
 CMD ["/isomorphic-server"]
