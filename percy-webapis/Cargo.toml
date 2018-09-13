@@ -1,11 +1,12 @@
 [package]
 name = "percy-webapis"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "Replace this with web-sys when it is releaased."
 keywords = ["webapis"]
 license = "MIT"
 repository = "https://github.com/chinedufn/percy"
 
-[dependencies]
-wasm-bindgen = "0.2"
+[dependencies.wasm-bindgen]
+version = "0.2.21"
+featuers = ["default", "nightly"]

@@ -83,7 +83,7 @@ pub fn css(input: TokenStream) -> TokenStream {
 
         if *css_counter == 0 {
             if Path::new(&css_file).exists() {
-                fs::remove_file(&css_file);
+                fs::remove_file(&css_file).unwrap();
             }
 
             let mut css_file = OpenOptions::new()

@@ -33,15 +33,19 @@ mod tests {
         assert_eq!(class2, "_css_rs_1");
     }
 
+    // TODO: Looks like this test will sometimes fail depending on if the test-css-rs-fixture crate
+    // gets rebuild or not. So the first run might pass but then subsequent runs might not..
     #[test]
     fn writes_to_provided_file() {
+
         Command::new("cargo")
             .env("OUTPUT_CSS", "/tmp/percy-test-css.css")
             .arg("run")
             .args(&["-p", "test-css-rs-fixture"])
             .spawn()
             .unwrap()
-            .wait();
+            .wait()
+            .unwrap();
 
         let mut file = File::open("/tmp/percy-test-css.css").unwrap();
         let mut css = String::new();
@@ -58,9 +62,9 @@ mod tests {
             display: flex;
         }
         "#.replace(" ", "")
-            .replace("\n", "")
+                .replace("\n", "")
         );
 
-        fs::remove_file("/tmp/percy-test-css.css");
+        fs::remove_file("/tmp/percy-test-css.css").unwrap();
     }
 }
