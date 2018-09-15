@@ -18,7 +18,6 @@ fn main() {
         display: flex;
     }
     "};
-    eprintln!("\n\nclass1 = {:#?}\n\n", class1);
 
     // We need to use both of these variables so that the compiler doesn't optimize them away.
     // If we didn't do this our test-css-rs integration test that builds this crate a would not
