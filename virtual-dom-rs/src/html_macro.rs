@@ -187,7 +187,7 @@ macro_rules! recurse_html {
     };
 
     // A block
-    // for <div>{ Hello world }</div> this is:
+    // for <div>{ "Hello world" }</div> this is:
     // "Hello world"
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident { $($child:expr)* } $($remaining_html:tt)*) => {
         $(
