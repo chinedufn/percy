@@ -172,10 +172,16 @@ macro_rules! recurse_html {
     // for <div $onclick=|| { do.something(); },></div> ths is:
     //   $onclick=|| { do.something() }
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident ! $event_name:tt = $callback:expr, $($remaining_html:tt)*) => {
-        $active_node.as_mut().unwrap().borrow_mut().events.0.insert(
-            stringify!($event_name).to_string(),
-            $crate::RefCell::new(Some($crate::Closure::new($callback)))
-        );
+
+        // Closure::new only works on wasm32 targets, so we only support events when compiling to
+        // wasm at this time.
+        #[cfg(target_arch = "wasm32")]
+        {
+            $active_node.as_mut().unwrap().borrow_mut().events.0.insert(
+                stringify!($event_name).to_string(),
+                $crate::RefCell::new(Some($crate::Closure::new($callback)))
+            );
+        }
 
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
     };
@@ -280,17 +286,13 @@ mod tests {
 
     #[test]
     fn event() {
-        struct TestStruct {
-            closure_ran: bool,
-        };
-        let test_struct = Rc::new(RefCell::new(TestStruct { closure_ran: false }));
-        let test_struct_clone = Rc::clone(&test_struct);
-
-        let node = html!{
-        <div !onclick=move || {test_struct_clone.borrow_mut().closure_ran = true},></div>
-        };
-
-        assert!(node.events.0.get("onclick").is_some());
+        test(HTMLMacroTest {
+            generated: html!{
+                <div !onclick=|| {},></div>
+            },
+            expected: html!{<div></div>},
+            desc: "Events are ignored in non wasm-32 targets"
+        });
     }
 
     #[test]

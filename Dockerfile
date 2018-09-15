@@ -30,11 +30,11 @@ RUN npm install
 RUN cargo build -p isomorphic-client --release --target wasm32-unknown-unknown
 
 # Install WASM bindgen CLI
-RUN curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.19/wasm-bindgen-0.2.19-x86_64-unknown-linux-musl.tar.gz
-RUN tar xf wasm-bindgen-0.2.19-x86_64-unknown-linux-musl.tar.gz
-RUN rm wasm-bindgen-0.2.19-x86_64-unknown-linux-musl.tar.gz
-RUN chmod +x wasm-bindgen-0.2.19-x86_64-unknown-linux-musl/wasm-bindgen
-RUN mv wasm-bindgen-0.2.19-x86_64-unknown-linux-musl/wasm-bindgen /usr/local/bin/wasm-bindgen
+RUN curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.21/wasm-bindgen-0.2.21-x86_64-unknown-linux-musl.tar.gz
+RUN tar xf wasm-bindgen-0.2.21-x86_64-unknown-linux-musl.tar.gz
+RUN rm wasm-bindgen-0.2.21-x86_64-unknown-linux-musl.tar.gz
+RUN chmod +x wasm-bindgen-0.2.21-x86_64-unknown-linux-musl/wasm-bindgen
+RUN mv wasm-bindgen-0.2.21-x86_64-unknown-linux-musl/wasm-bindgen /usr/local/bin/wasm-bindgen
 
 # Build WASM module
 # TODO: --mode=production . Need to make sure it works locally. If it doesn't try disabling UglifyJS mangling
