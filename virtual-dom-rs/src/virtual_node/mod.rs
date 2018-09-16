@@ -1,11 +1,15 @@
-use percy_webapis::*;
 pub use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
 pub use std::rc::Rc;
-use wasm_bindgen::prelude::Closure;
 
 pub mod virtual_node_test_utils;
+
+use web_sys;
+use web_sys::{Document, Element, Text};
+
+use wasm_bindgen::prelude::Closure;
+use wasm_bindgen::JsCast;
 
 #[derive(PartialEq)]
 pub struct VirtualNode {
@@ -125,7 +129,8 @@ impl VirtualNode {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
     pub fn create_element(&self) -> Element {
-        let elem = document.create_element(&self.tag);
+        let document = web_sys::Window::document().unwrap();
+        let elem = document.create_element(&self.tag).unwrap();
 
         self.props.iter().for_each(|(name, value)| {
             elem.set_attribute(name, value);
@@ -137,17 +142,23 @@ impl VirtualNode {
 
             let mut callback = callback.borrow_mut();
             let callback = callback.take().unwrap();
-            elem.add_event_listener(event, &callback);
+            (elem.as_ref() as &web_sys::EventTarget)
+                .add_event_listener_with_callback(event, callback.as_ref().unchecked_ref());
             callback.forget();
         });
 
         self.children.as_ref().unwrap().iter().for_each(|child| {
             if child.text.is_some() {
-                elem.append_text_child(document.create_text_node(&child.text.as_ref().unwrap()));
+                (elem.as_ref() as &web_sys::Node).append_child(
+                    document
+                        .create_text_node(&child.text.as_ref().unwrap())
+                        .as_ref() as &web_sys::Node,
+                );
             }
 
             if child.text.is_none() {
-                elem.append_child(&child.create_element());
+                (elem.as_ref() as &web_sys::Node)
+                    .append_child(child.create_element().as_ref() as &web_sys::Node);
             }
         });
 
@@ -155,6 +166,7 @@ impl VirtualNode {
     }
 
     pub fn create_text_node(&self) -> Text {
+        let document = web_sys::Window::document().unwrap();
         document.create_text_node(&self.text.as_ref().unwrap())
     }
 }

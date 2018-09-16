@@ -10,5 +10,5 @@ crate-type = ["cdylib"]
 isomorphic-app = { path = "../app" }
 
 [dependencies.wasm-bindgen]
-version = "0.2"
-features = ["default", "spans"]
+git = "https://github.com/rustwasm/wasm-bindgen"
+features = ["default", "nightly"]

@@ -15,7 +15,6 @@ members = [
   "examples/isomorphic/server",
   "examples/unit-testing-components",
   "examples/css-in-rust",
-  "percy-webapis",
   "tests/jsdom",
   "tests/test-css-rs",
   "tests/test-css-rs-fixture",

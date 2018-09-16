@@ -1,7 +1,9 @@
-use percy_webapis::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use virtual_node::VirtualNode;
+
+use web_sys;
+use web_sys::{Element, Node};
 
 /// A `Patch` encodes an operation that modifies a real DOM element.
 ///
@@ -66,7 +68,6 @@ type node_idx = usize;
 
 pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
     let mut cur_node_idx = 0;
-    let mut cur_node = root_node.clone();
 
     let mut nodes_to_find = HashSet::new();
     let mut nodes_to_patch = HashMap::new();
@@ -76,7 +77,7 @@ pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
     }
 
     find_nodes(
-        &root_node,
+        root_node,
         &mut cur_node_idx,
         &mut nodes_to_find,
         &mut nodes_to_patch,
@@ -91,28 +92,32 @@ pub fn patch(root_node: &Element, patches: &Vec<Patch>) {
     }
 }
 
-fn find_nodes(
-    root_node: &Element,
+fn find_nodes<'a>(
+    root_node: &'a Element,
     cur_node_idx: &mut usize,
     nodes_to_find: &mut HashSet<usize>,
-    nodes_to_patch: &mut HashMap<usize, Element>,
+    nodes_to_patch: &mut HashMap<usize, &'a Element>,
 ) {
     if nodes_to_find.len() == 0 {
         return;
     }
 
     if nodes_to_find.get(&cur_node_idx).is_some() {
-        nodes_to_patch.insert(*cur_node_idx, root_node.clone());
+        nodes_to_patch.insert(*cur_node_idx, root_node);
         nodes_to_find.remove(&cur_node_idx);
     }
 
     *cur_node_idx += 1;
 
-    let child_node_count = root_node.child_nodes().length() as usize;
+    let children = root_node.children();
+
+    let child_node_count = children.length() as usize;
 
     for i in 0..child_node_count {
-        let node = root_node.child_nodes().item(i);
-        find_nodes(&node, cur_node_idx, nodes_to_find, nodes_to_patch);
+        let node = children.item(i as u32);
+        let node = node.as_ref().unwrap();
+
+        find_nodes(node, cur_node_idx, nodes_to_find, nodes_to_patch);
     }
 }
 
@@ -129,20 +134,28 @@ fn apply_patch(node: &Element, patch: &Patch) {
             }
         }
         Patch::Replace(_node_idx, new_node) => {
-            node.replace_with(&new_node.create_element());
+            node.replace_with_with_node_1(new_node.create_element().as_ref() as &web_sys::Node);
         }
         Patch::TruncateChildren(_node_idx, len) => {
-            let count = node.child_nodes().length();
-            for _ in *len as u32..count {
-                node.remove_child(&node.last_child());
+            let children = node.children();
+            let count = children.length();
+
+            for index in *len as u32..count {
+                let child_to_remove = children.get_with_index(index).unwrap();
+
+                (node.as_ref() as &web_sys::Node)
+                    .remove_child(child_to_remove.as_ref() as &web_sys::Node);
             }
         }
         Patch::ChangeText(_node_idx, new_node) => {
-            node.set_node_value(&new_node.text.as_ref().unwrap());
+            let text = new_node.text.as_ref().unwrap();
+
+            (node.as_ref() as &web_sys::Node).set_node_value(Some(text.as_str()));
         }
         Patch::AppendChildren(_node_idx, new_nodes) => {
             for new_node in new_nodes {
-                node.append_child(&new_node.create_element());
+                (node.as_ref() as &web_sys::Node)
+                    .append_child(new_node.create_element().as_ref() as &web_sys::Node);
             }
         }
     }
