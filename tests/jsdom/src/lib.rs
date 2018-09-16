@@ -3,16 +3,17 @@
 extern crate wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
+extern crate web_sys;
+use web_sys::console;
+
+extern crate js_sys;
+
 #[macro_use]
 extern crate virtual_dom_rs;
 use std::cell::Cell;
 use std::rc::Rc;
-use virtual_dom_rs::percy_webapis::*;
 use virtual_dom_rs::virtual_node::VirtualNode;
-
-macro_rules! clog {
-    ($($t:tt)*) => (log(&format!($($t)*)))
-}
+use virtual_dom_rs::web_sys::*;
 
 #[wasm_bindgen]
 pub fn nested_divs() -> Element {
@@ -152,33 +153,47 @@ impl PatchTest {
     }
 }
 
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn clog(s: &str);
+}
+
+// TODO: wasm-bindgen-test instead
 fn test_patch(test_case: PatchTestCase) {
+    let document = web_sys::Window::document().unwrap();
     let root_node = test_case.old.create_element();
 
-    document.body().append_child(&root_node);
+    (document.body().unwrap().as_ref() as &web_sys::Node)
+        .append_child(&root_node.as_ref() as &web_sys::Node);
 
     let patches = virtual_dom_rs::diff(&test_case.old, &test_case.new);
-    clog!("{:#?}", patches);
+    let log = &format!("{:#?}", patches);
+    clog(log);
 
-    virtual_dom_rs::patch(&root_node, &patches);
+    virtual_dom_rs::patch(root_node, &patches);
 
     // TODO: Print an error if the new test case doesn't have an id set...
     let new_root_node_id = test_case.new.props.get("id").unwrap();
 
-    let new_root_node = document.get_element_by_id(new_root_node_id);
+    let new_root_node = document.get_element_by_id(new_root_node_id).unwrap();
     let new_root_node = new_root_node.outer_html();
 
     let expected_new_root_node = test_case.new.to_string();
 
     if new_root_node == expected_new_root_node {
-        clog!("PASSED {}", test_case.desc);
+        let log = &format!("PASSED {}", test_case.desc);
+        clog(log);
     } else {
-        clog!(
+        let log = &format!(
             "\nFailed diff/patch operation\nActual: {}\nExpected: {}\nMessage: {}\n",
             new_root_node,
             expected_new_root_node,
             test_case.desc
         );
+        clog(log);
         panic!("Failure");
     }
 }
+

@@ -10,6 +10,10 @@ documentation = "https://chinedufn.github.io/percy/api/virtual_dom_rs/"
 
 [dependencies]
 
+[dependencies.wasm-bindgen]
+git = "https://github.com/rustwasm/wasm-bindgen"
+features = ["default", "nightly"]
+
 [dependencies.web-sys]
 git = "https://github.com/rustwasm/wasm-bindgen"
 features = [
@@ -23,6 +27,3 @@ features = [
     "HtmlCollection",
 ]
 
-[dependencies.wasm-bindgen]
-git = "https://github.com/rustwasm/wasm-bindgen"
-features = ["default", "nightly"]

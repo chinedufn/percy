@@ -8,7 +8,8 @@ extern crate wasm_bindgen;
 // access to `Closure` when creating event handlers.
 pub use wasm_bindgen::prelude::Closure;
 
-extern crate web_sys;
+pub extern crate web_sys;
+pub use web_sys::*;
 
 #[macro_use]
 pub mod html_macro;
