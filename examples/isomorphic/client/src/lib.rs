@@ -1,5 +1,3 @@
-#![feature(use_extern_macros)]
-
 extern crate wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
@@ -22,7 +20,7 @@ pub struct Client {
 impl Client {
     #[wasm_bindgen(constructor)]
     pub fn new(initial_state: &str) -> Client {
-        let mut app = App::from_state_json(initial_state);
+        let app = App::from_state_json(initial_state);
 
         // TODO: Try using a wasm-bindgen closure and an extern request_animation_frame
         // instead of using this `update()` method for request animation frame

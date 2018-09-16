@@ -4,7 +4,6 @@ use serde::Serialize;
 use serde::Serializer;
 use serde_json;
 use std::cell::Cell;
-use std::cell::RefCell;
 use std::rc::Rc;
 
 #[derive(Serialize, Deserialize)]
