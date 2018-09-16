@@ -133,6 +133,8 @@ fn find_nodes(
 
     log(&format!("CHIlD NODE COUNT {}", child_node_count));
 
+    // TODO: jsdom tests are passing. We need out figure out how to handle text Node's vs Elements.
+    // Take a look at how other virtual doms handle text
     for i in 0..child_node_count {
         let node = children.item(i).unwrap().dyn_into::<Element>().ok().unwrap();
 
