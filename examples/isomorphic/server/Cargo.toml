@@ -7,3 +7,4 @@ private = true
 [dependencies]
 virtual-dom-rs = { path = "../../../virtual-dom-rs" }
 isomorphic-app = { path = "../app" }
+actix-web = "0.7"
