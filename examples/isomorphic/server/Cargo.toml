@@ -2,7 +2,7 @@
 name = "isomorphic-server"
 version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
-private = true
+publish = false
 
 [dependencies]
 virtual-dom-rs = { path = "../../../virtual-dom-rs" }

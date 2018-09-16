@@ -2,7 +2,7 @@
 name = "jsdom-tests"
 version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
-private = true
+publish = false
 
 [lib]
 crate-type = ["cdylib"]
