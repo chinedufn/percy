@@ -76,10 +76,10 @@ impl PatchTest {
     }
 
     pub fn run_tests(&self) {
-        self.replace_child();
-        self.truncate_children();
-        self.remove_attributes();
-        self.append_children();
+        //        self.replace_child();
+        //        self.truncate_children();
+        //        self.remove_attributes();
+        //        self.append_children();
         self.text_node_siblings();
     }
 }
@@ -122,6 +122,7 @@ impl PatchTest {
         })
     }
 
+    // FIXME BEFORE MERGE: Append a text node next to the span node and verify that this works
     fn append_children(&self) {
         test_patch(PatchTestCase {
             old: html! { <div id="foo",> </div>
@@ -131,13 +132,6 @@ impl PatchTest {
         })
     }
 
-    // Make sure that the text siblings are patched properly. If not we might need to our virtual-dom to automatically
-    // separate them with comment nodes like React does (but we should look into what other people do)
-    // Wrapping text nodes in comments
-    //  -> https://reactjs.org/blog/2016/04/07/react-v15.html#major-changes
-    //  -> https://github.com/facebook/react/pull/5753
-    //
-    // But if this isn't a problem then we're all good.. Just need to add a test case
     fn text_node_siblings(&self) {
         let old = html! {
         <div id="before",>
@@ -149,11 +143,42 @@ impl PatchTest {
             <span> { "The button has been clicked: "  "world"} </span>
         </div>};
 
-        test_patch(PatchTestCase {
-            old,
-            new,
-            desc: "A test against a patch that was failing in our isomorphic example app..",
-        })
+        let document = web_sys::Window::document().unwrap();
+        let root_node = old.create_element();
+
+        (document.body().unwrap().as_ref() as &web_sys::Node)
+            .append_child(&root_node.as_ref() as &web_sys::Node)
+            .unwrap();
+
+        let patches = virtual_dom_rs::diff(&old, &new);
+        let log = &format!("{:#?}", patches);
+        clog(log);
+
+        virtual_dom_rs::patch(root_node, &patches);
+
+        // TODO: Print an error if the new test case doesn't have an id set...
+        let new_root_node_id = new.props.get("id").unwrap();
+
+        let new_root_node = document.get_element_by_id(new_root_node_id).unwrap();
+        let new_root_node = new_root_node.outer_html();
+
+        // NOTE: Since there are two text nodes next to eachother we expect a `<!--ptns-->` separator in
+        // between them.
+        // @see virtual_node/mod.rs -> create_element() for more information
+        let expected_new_root_node =
+            r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#;
+
+        if new_root_node == expected_new_root_node {
+            let log = &format!("PASSED {}", "Diff patch on text node siblings");
+            clog(log);
+        } else {
+            let log = &format!(
+                "\nFailed diff/patch operation\nActual: {}\nExpected: {}\nMessage: {}\n",
+                new_root_node, expected_new_root_node, "Diff match on text node siblings"
+            );
+            clog(log);
+            panic!("Failure");
+        }
     }
 }
 

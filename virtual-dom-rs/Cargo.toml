@@ -17,13 +17,14 @@ features = ["default", "nightly"]
 [dependencies.web-sys]
 git = "https://github.com/rustwasm/wasm-bindgen"
 features = [
+    "Comment",
     "Document",
     "Element",
     "EventTarget",
+    "HtmlCollection",
     "Node",
     "NodeList",
     "Text",
     "Window",
-    "HtmlCollection",
 ]
 

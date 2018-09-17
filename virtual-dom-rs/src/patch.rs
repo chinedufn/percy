@@ -145,18 +145,47 @@ fn find_nodes(
     log(&format!("CHIlD NODE COUNT {}", child_node_count));
 
     for i in 0..child_node_count {
-        let node = children.item(i).unwrap().dyn_into::<Element>();
+        let node = children.item(i).unwrap();
 
-        if node.is_ok() {
+        log(&format!(
+            "TEXT NODE TYPE {} COMMENT TYPE {}",
+            Node::TEXT_NODE,
+            Node::COMMENT_NODE
+        ));
+        log(&format!("CURRENT TYPE {}", node.node_type()));
+
+        let element = node.dyn_into::<Element>();
+
+        if element.is_ok() {
+            log(&format!("ELEMENT"));
             find_nodes(
-                node.ok().unwrap(),
+                element.ok().unwrap(),
                 cur_node_idx,
                 nodes_to_find,
                 nodes_to_patch,
                 text_nodes_to_patch,
             );
         } else {
-            text_nodes_to_patch.insert(*cur_node_idx, node.err().unwrap());
+            log(&format!("NODE"));
+            // FIXME: Move this to patch function so we know to skip it
+            let text_or_comment_node = element.err().unwrap();
+
+            // At this time we do not support user entered comment nodes, so if we see a comment
+            // then it was a delimiter created by virtual-dom-rs in order to ensure that two
+            // neighboring text nodes did not get merged into one by the browser. So we skip
+            // over this virtual-dom-rs generated comment node.
+            if text_or_comment_node.node_type() == Node::COMMENT_NODE {
+                log(&format!("COMMENT SKIPPED"));
+                continue;
+            }
+
+            if nodes_to_find.get(&cur_node_idx).is_some() {
+                log(&format!("TEXT INSERTED {}", *cur_node_idx));
+                let text_node = text_or_comment_node;
+                text_nodes_to_patch.insert(*cur_node_idx, text_node);
+            }
+
+            *cur_node_idx += 1;
         }
     }
 }

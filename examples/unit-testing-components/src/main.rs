@@ -26,7 +26,10 @@ fn full_water_bottle() -> VirtualNode {
 
 #[allow(unused)]
 fn struggling_water_bottle(percent_full: f32) -> VirtualNode {
-    let message = format!("Please fill me up :( I am only {} percent full :(", percent_full);
+    let message = format!(
+        "Please fill me up :( I am only {} percent full :(",
+        percent_full
+    );
 
     html! {
         <div label="struggle-water",> { message } </div>
@@ -49,7 +52,10 @@ mod tests {
         let struggle_water = water_bottle_view(0.2587);
 
         assert_eq!(
-            struggle_water.children.as_ref().unwrap()[0].text.as_ref().unwrap(),
+            struggle_water.children.as_ref().unwrap()[0]
+                .text
+                .as_ref()
+                .unwrap(),
             "Please fill me up :( I am only 0.2587 percent full :("
         )
     }

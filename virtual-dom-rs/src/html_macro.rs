@@ -291,7 +291,7 @@ mod tests {
                 <div !onclick=|| {},></div>
             },
             expected: html!{<div></div>},
-            desc: "Events are ignored in non wasm-32 targets"
+            desc: "Events are ignored in non wasm-32 targets",
         });
     }
 

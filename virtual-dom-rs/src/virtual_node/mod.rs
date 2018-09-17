@@ -130,10 +130,10 @@ impl VirtualNode {
     /// children, it's children's children, etc.
     pub fn create_element(&self) -> Element {
         let document = web_sys::Window::document().unwrap();
-        let elem = document.create_element(&self.tag).unwrap();
+        let current_elem = document.create_element(&self.tag).unwrap();
 
         self.props.iter().for_each(|(name, value)| {
-            elem.set_attribute(name, value);
+            current_elem.set_attribute(name, value);
         });
 
         self.events.0.iter().for_each(|(onevent, callback)| {
@@ -142,27 +142,52 @@ impl VirtualNode {
 
             let mut callback = callback.borrow_mut();
             let callback = callback.take().unwrap();
-            (elem.as_ref() as &web_sys::EventTarget)
-                .add_event_listener_with_callback(event, callback.as_ref().unchecked_ref());
+            (current_elem.as_ref() as &web_sys::EventTarget)
+                .add_event_listener_with_callback(event, callback.as_ref().unchecked_ref())
+                .unwrap();
             callback.forget();
         });
 
+        let mut previous_node_was_text = false;
+
         self.children.as_ref().unwrap().iter().for_each(|child| {
             if child.text.is_some() {
-                (elem.as_ref() as &web_sys::Node).append_child(
-                    document
-                        .create_text_node(&child.text.as_ref().unwrap())
-                        .as_ref() as &web_sys::Node,
-                );
+                let current_node = current_elem.as_ref() as &web_sys::Node;
+
+                // We ensure that the text siblings are patched by preventing the browser from merging
+                // neighboring text nodes. Inspired by React's work from 2016.
+                //  -> https://reactjs.org/blog/2016/04/07/react-v15.html#major-changes
+                //  -> https://github.com/facebook/react/pull/5753
+                //
+                // `ptns` = Percy text node separator
+                if previous_node_was_text {
+                    let separator = document.create_comment("ptns");
+
+                    current_node
+                        .append_child(separator.as_ref() as &web_sys::Node)
+                        .unwrap();
+                }
+
+                current_node
+                    .append_child(
+                        document
+                            .create_text_node(&child.text.as_ref().unwrap())
+                            .as_ref() as &web_sys::Node,
+                    ).unwrap();
+
+                previous_node_was_text = true;
             }
 
             if child.text.is_none() {
-                (elem.as_ref() as &web_sys::Node)
-                    .append_child(child.create_element().as_ref() as &web_sys::Node);
+                previous_node_was_text = false;
+
+                (current_elem.as_ref() as &web_sys::Node)
+                    .append_child(child.create_element().as_ref() as &web_sys::Node)
+                    .unwrap();
             }
         });
 
-        elem
+        current_elem
     }
 
     pub fn create_text_node(&self) -> Text {
