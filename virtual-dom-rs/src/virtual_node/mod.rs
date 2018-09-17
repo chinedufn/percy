@@ -155,7 +155,7 @@ impl VirtualNode {
                 let current_node = current_elem.as_ref() as &web_sys::Node;
 
                 // We ensure that the text siblings are patched by preventing the browser from merging
-                // neighboring text nodes. Inspired by React's work from 2016.
+                // neighboring text nodes. Originally inspired by some of React's work from 2016.
                 //  -> https://reactjs.org/blog/2016/04/07/react-v15.html#major-changes
                 //  -> https://github.com/facebook/react/pull/5753
                 //

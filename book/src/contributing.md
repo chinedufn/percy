@@ -1,5 +1,23 @@
 # Contributing
 
+## Making Changes to the Percy Codebase
+
+1. Rust Nightly.
+
+    ```sh
+    rustup default nightly
+    rustup target add wasm32-unknown-unknown
+    ```
+2. [Install Node.js 10+](https://github.com/creationix/nvm#installation) since some of our tests use Node.js.
+3. Download the project and make sure that you can run the test suite
+
+    ```sh
+    git clone https://github.com/chinedufn/percy
+    cd percy
+    npm install
+    ./test.sh
+    ```
+
 ## Types of Contributions
 
 There are three main types of contributions to `Percy`, all of which are equally important.
@@ -58,25 +76,3 @@ fix and/or suggest approaches for.
 If you have an idea for something that you can build with `Percy` then get started. Feel
 free to open up an issue with any questions or thoughts that you might have. Also open
 issues / PRs as you run into problems / annoyances.
-
-### Refactoring Code and Tests
-
-lorem ipsum TODO
-
-## Making Changes to the Percy Codebase
-
-1. Rust Nightly.
-
-    ```sh
-    rustup default nightly
-    rustup target add wasm32-unknown-unknown
-    ```
-2. [Install Node.js 10+](https://github.com/creationix/nvm#installation) since some of our tests use Node.js.
-3. Download the project and make sure that you can run the test suite
-
-    ```sh
-    git clone https://github.com/chinedufn/percy
-    cd percy
-    npm install
-    ./test.sh
-    ```
