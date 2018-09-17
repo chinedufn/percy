@@ -5,7 +5,7 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 [The Percy book](https://chinedufn.github.io/percy/)
 
-[View the isomorphic web app example live!](https://percy-isomorphic.now.sh/)
+[View the isomorphic web app example live](https://percy-isomorphic.now.sh/?init=42) with a query string! :wink:
 
 ---
 
