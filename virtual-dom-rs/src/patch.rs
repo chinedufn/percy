@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use virtual_node::VirtualNode;
 
+use wasm_bindgen::JsCast;
 use web_sys;
 use web_sys::{Element, Node};
-use wasm_bindgen::JsCast;
 
 /// A `Patch` encodes an operation that modifies a real DOM element.
 ///
@@ -78,28 +78,36 @@ pub fn patch(root_node: Element, patches: &Vec<Patch>) {
 
     log(&format!("NODEs TO FIND {:#?}", nodes_to_find));
 
-    let mut nodes_to_patch = HashMap::new();
+    let mut elements_to_patch = HashMap::new();
+    let mut text_nodes_to_patch = HashMap::new();
 
     find_nodes(
         root_node,
         &mut cur_node_idx,
         &mut nodes_to_find,
-        &mut nodes_to_patch,
+        &mut elements_to_patch,
+        &mut text_nodes_to_patch,
     );
 
     for patch in patches {
         let patch_node_idx = patch.node_idx();
 
-        log(&format!("{}", patch_node_idx));
-        log(&format!("{:#?}", patch));
+        log(&format!("PATCH!!! {}", patch_node_idx));
+        //        log(&format!("{:#?}", patch));
+        //
+        //        log(&format!("{:#?}", nodes_to_patch.keys()));
 
-        log(&format!("{:#?}", nodes_to_patch.keys()));
+        if let Some(element) = elements_to_patch.get(&patch_node_idx) {
+            apply_element_patch(&element, &patch);
+            continue;
+        }
 
-        let node = nodes_to_patch
-            .get(&patch_node_idx)
-            .expect("Node that we need to patch");
+        if let Some(text_node) = text_nodes_to_patch.get(&patch_node_idx) {
+            apply_text_patch(&text_node, &patch);
+            continue;
+        }
 
-        apply_patch(&node, &patch);
+        unreachable!("Getting here means we didn't find the element or next node that we were supposed to patch.")
     }
 }
 
@@ -110,11 +118,14 @@ extern "C" {
     fn log(s: &str);
 }
 
+// TODO: Due for a refactoring.. Should just return 2 HashMap with all of the elements and
+// nodes that we find.
 fn find_nodes(
     root_node: Element,
     cur_node_idx: &mut usize,
     nodes_to_find: &mut HashSet<usize>,
     nodes_to_patch: &mut HashMap<usize, Element>,
+    text_nodes_to_patch: &mut HashMap<usize, web_sys::Node>,
 ) {
     if nodes_to_find.len() == 0 {
         return;
@@ -133,16 +144,24 @@ fn find_nodes(
 
     log(&format!("CHIlD NODE COUNT {}", child_node_count));
 
-    // TODO: jsdom tests are passing. We need out figure out how to handle text Node's vs Elements.
-    // Take a look at how other virtual doms handle text. For now probably just wrap text in spans tags..
     for i in 0..child_node_count {
-        let node = children.item(i).unwrap().dyn_into::<Element>().ok().unwrap();
+        let node = children.item(i).unwrap().dyn_into::<Element>();
 
-        let children_to_patch = find_nodes(node, cur_node_idx, nodes_to_find, nodes_to_patch);
+        if node.is_ok() {
+            find_nodes(
+                node.ok().unwrap(),
+                cur_node_idx,
+                nodes_to_find,
+                nodes_to_patch,
+                text_nodes_to_patch,
+            );
+        } else {
+            text_nodes_to_patch.insert(*cur_node_idx, node.err().unwrap());
+        }
     }
 }
 
-fn apply_patch(node: &Element, patch: &Patch) {
+fn apply_element_patch(node: &Element, patch: &Patch) {
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
             for (attrib_name, attrib_val) in attributes.iter() {
@@ -171,13 +190,6 @@ fn apply_patch(node: &Element, patch: &Patch) {
                     .expect("Truncated children");
             }
         }
-        Patch::ChangeText(_node_idx, new_node) => {
-            log("UWHWEUHRWUEH     ");
-            log(&format!("{:#?}", new_node.text));
-            let text = new_node.text.as_ref().expect("New text to use");
-
-            (node.as_ref() as &web_sys::Node).set_node_value(Some(text.as_str()));
-        }
         Patch::AppendChildren(_node_idx, new_nodes) => {
             for new_node in new_nodes {
                 (node.as_ref() as &web_sys::Node)
@@ -185,5 +197,21 @@ fn apply_patch(node: &Element, patch: &Patch) {
                     .expect("Appended child element");
             }
         }
+        Patch::ChangeText(_node_idx, new_node) => unreachable!(
+            "Elements should not receive ChangeText patches. Those should go to Node's"
+        ),
+    }
+}
+
+fn apply_text_patch(node: &Node, patch: &Patch) {
+    match patch {
+        Patch::ChangeText(_node_idx, new_node) => {
+            let text = new_node.text.as_ref().expect("New text to use");
+
+            node.set_node_value(Some(text.as_str()));
+        }
+        _ => unreachable!(
+            "Node's should only receive change text patches. All other patches go to Element's"
+        ),
     }
 }

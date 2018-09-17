@@ -131,9 +131,13 @@ impl PatchTest {
         })
     }
 
-    // This was failing due to us accidentally not using `i` in a for loop. We were always
-    // using a hard coded `0`
-    // see commit: d602c12
+    // Make sure that the text siblings are patched properly. If not we might need to our virtual-dom to automatically
+    // separate them with comment nodes like React does (but we should look into what other people do)
+    // Wrapping text nodes in comments
+    //  -> https://reactjs.org/blog/2016/04/07/react-v15.html#major-changes
+    //  -> https://github.com/facebook/react/pull/5753
+    //
+    // But if this isn't a problem then we're all good.. Just need to add a test case
     fn text_node_siblings(&self) {
         let old = html! {
         <div id="before",>
@@ -153,7 +157,6 @@ impl PatchTest {
     }
 }
 
-
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = console, js_name = log)]
@@ -166,7 +169,8 @@ fn test_patch(test_case: PatchTestCase) {
     let root_node = test_case.old.create_element();
 
     (document.body().unwrap().as_ref() as &web_sys::Node)
-        .append_child(&root_node.as_ref() as &web_sys::Node);
+        .append_child(&root_node.as_ref() as &web_sys::Node)
+        .unwrap();
 
     let patches = virtual_dom_rs::diff(&test_case.old, &test_case.new);
     let log = &format!("{:#?}", patches);
@@ -188,12 +192,9 @@ fn test_patch(test_case: PatchTestCase) {
     } else {
         let log = &format!(
             "\nFailed diff/patch operation\nActual: {}\nExpected: {}\nMessage: {}\n",
-            new_root_node,
-            expected_new_root_node,
-            test_case.desc
+            new_root_node, expected_new_root_node, test_case.desc
         );
         clog(log);
         panic!("Failure");
     }
 }
-
