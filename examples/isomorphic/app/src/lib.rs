@@ -6,7 +6,6 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-use std::cell::Cell;
 use std::cell::RefCell;
 use std::rc::Rc;
 use virtual_dom_rs::virtual_node::VirtualNode;
@@ -40,6 +39,7 @@ impl App {
 
 impl App {
     pub fn render(&self) -> VirtualNode {
+        #[allow(unused_variables)] // Compiler doesn't see it inside html macro
         let state = Rc::clone(&self.state);
         let click_count = self.state.borrow().click_count();
 
