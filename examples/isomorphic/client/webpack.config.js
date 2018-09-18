@@ -7,7 +7,7 @@ module.exports = {
   entry: './src', // webpack default
   output: {
     path: path.resolve(__dirname, 'dist'), // webpack default
-    filename: 'bundle.js' // webpack default
+    filename: 'bundle.js'
   },
   devServer: {
     proxy: { '/': { target: 'http://localhost:7878' } }
