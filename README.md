@@ -3,24 +3,24 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 > A modular toolkit for building [isomorphic web apps][isomorphic-web-apps] with Rust + WebAssembly
 
-# The Percy Book
+## The Percy Book
 
 [The Percy book](https://chinedufn.github.io/percy/)
 
-# Live Demo
+## Live Demo
 
 [View the isomorphic web app example live](https://percy-isomorphic.now.sh/?init=42) with a query string! :wink:
 
 ---
 
-# What is an isomorphic web app?
+## What is an isomorphic web app?
 [isomorphic-web-apps]: #isomorphic-web-apps
 
 An isomorphic web application allows the same application code (in our case Rust code) to be run on both the server-side and the client-side (usually a web browser).
 
 In a browser our application renders to an `HtmlElement`, and on the server our application renders to a `String`.
 
-# API Documentation
+## API Documentation
 
 - [virtual-dom-rs API docs](https://chinedufn.github.io/percy/api/virtual_dom_rs/macro.html.html)
 
