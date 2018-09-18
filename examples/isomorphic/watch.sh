@@ -4,6 +4,6 @@ cd $(dirname $0)
 
 cd ./client
 
-./build-wasm.dev.sh &
+./build-wasm.watch.sh &
 systemfd --no-pid -s http::7878 -- cargo +nightly watch -w ../ -x 'run -p isomorphic-server' &
 wait
