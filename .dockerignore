@@ -2,3 +2,6 @@
 target
 node_modules
 book
+Dockerfile
+examples/isomorphic/client/dist
+examples/isomorphic/client/build

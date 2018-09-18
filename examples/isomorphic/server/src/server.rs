@@ -26,10 +26,7 @@ pub fn serve() {
     let server = actix_web::server::new(|| {
         let app = actix_web::App::new();
         let app = app.resource("/", |r| r.f(index));
-        let app = app.handler(
-            "/",
-            fs::StaticFiles::new("./examples/isomorphic/client/").unwrap(),
-        );
+        let app = app.handler("/", fs::StaticFiles::new("./dist").unwrap());
         app
     }).bind("0.0.0.0:7878")
     .unwrap();

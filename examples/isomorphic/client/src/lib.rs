@@ -10,7 +10,7 @@ extern crate isomorphic_app;
 use isomorphic_app::App;
 use isomorphic_app::VirtualNode;
 
-#[wasm_bindgen(module = "./src/client.js")]
+#[wasm_bindgen(module = "../src/client.js")]
 extern "C" {
     pub fn update();
 }

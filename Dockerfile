@@ -27,16 +27,9 @@ RUN npm install
 
 COPY . ./
 
-# Compile to WASM
-RUN cargo build -p isomorphic-client --release --target wasm32-unknown-unknown
+WORKDIR /usr/src/examples/isomorphic
 
-# Build WASM module
-# TODO: --mode=production . Need to make sure it works locally. If it doesn't try disabling UglifyJS mangling
-RUN wasm-bindgen --no-typescript target/wasm32-unknown-unknown/release/isomorphic_client.wasm --out-dir ./examples/isomorphic/client
-RUN ./node_modules/webpack-cli/bin/cli.js --mode=development ./examples/isomorphic/client/client-entry-point.js -o ./examples/isomorphic/client/bundle.js
-
-# Build example isomorphic server binary
-RUN cargo build -p isomorphic-server --release --target x86_64-unknown-linux-musl
+RUN ./build.release.sh
 
 # This gets around the 100Mb limit by re-starting from a tiny image
 # We tried `scratch` and `alpine:rust` but targeting them proved difficult so going the easy route.
@@ -48,4 +41,5 @@ COPY --from=build  /usr/src/examples /examples
 
 EXPOSE 7878/tcp
 
+WORKDIR /examples/isomorphic/client
 ENTRYPOINT ["/isomorphic-server"]
