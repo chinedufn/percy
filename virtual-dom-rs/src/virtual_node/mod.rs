@@ -130,6 +130,7 @@ impl VirtualNode {
     /// children, it's children's children, etc.
     pub fn create_element(&self) -> Element {
         let document = web_sys::Window::document().unwrap();
+
         let current_elem = document.create_element(&self.tag).unwrap();
 
         self.props.iter().for_each(|(name, value)| {
@@ -151,7 +152,7 @@ impl VirtualNode {
         let mut previous_node_was_text = false;
 
         self.children.as_ref().unwrap().iter().for_each(|child| {
-            if child.text.is_some() {
+            if child.is_text_node() {
                 let current_node = current_elem.as_ref() as &web_sys::Node;
 
                 // We ensure that the text siblings are patched by preventing the browser from merging
@@ -176,9 +177,7 @@ impl VirtualNode {
                     ).unwrap();
 
                 previous_node_was_text = true;
-            }
-
-            if child.text.is_none() {
+            } else {
                 previous_node_was_text = false;
 
                 (current_elem.as_ref() as &web_sys::Node)
@@ -193,6 +192,10 @@ impl VirtualNode {
     pub fn create_text_node(&self) -> Text {
         let document = web_sys::Window::document().unwrap();
         document.create_text_node(&self.text.as_ref().unwrap())
+    }
+
+    pub fn is_text_node (&self) -> bool {
+        self.text.is_some()
     }
 }
 
@@ -278,7 +281,7 @@ impl fmt::Debug for ParsedVirtualNode {
 impl fmt::Display for VirtualNode {
     // Turn a VirtualNode and all of it's children (recursively) into an HTML string
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.text.is_some() {
+        if self.is_text_node() {
             write!(f, "{}", self.text.as_ref().unwrap())
         } else {
             write!(f, "<{}", self.tag).unwrap();

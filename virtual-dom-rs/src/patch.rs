@@ -76,8 +76,6 @@ pub fn patch(root_node: Element, patches: &Vec<Patch>) {
         nodes_to_find.insert(patch.node_idx());
     }
 
-    log(&format!("NODEs TO FIND {:#?}", nodes_to_find));
-
     let mut elements_to_patch = HashMap::new();
     let mut text_nodes_to_patch = HashMap::new();
 
@@ -91,11 +89,6 @@ pub fn patch(root_node: Element, patches: &Vec<Patch>) {
 
     for patch in patches {
         let patch_node_idx = patch.node_idx();
-
-        log(&format!("PATCH!!! {}", patch_node_idx));
-        //        log(&format!("{:#?}", patch));
-        //
-        //        log(&format!("{:#?}", nodes_to_patch.keys()));
 
         if let Some(element) = elements_to_patch.get(&patch_node_idx) {
             apply_element_patch(&element, &patch);
@@ -111,15 +104,6 @@ pub fn patch(root_node: Element, patches: &Vec<Patch>) {
     }
 }
 
-use wasm_bindgen::prelude::*;
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
-// TODO: Due for a refactoring.. Should just return 2 HashMap with all of the elements and
-// nodes that we find.
 fn find_nodes(
     root_node: Element,
     cur_node_idx: &mut usize,
@@ -142,22 +126,12 @@ fn find_nodes(
 
     *cur_node_idx += 1;
 
-    log(&format!("CHIlD NODE COUNT {}", child_node_count));
-
     for i in 0..child_node_count {
         let node = children.item(i).unwrap();
-
-        log(&format!(
-            "TEXT NODE TYPE {} COMMENT TYPE {}",
-            Node::TEXT_NODE,
-            Node::COMMENT_NODE
-        ));
-        log(&format!("CURRENT TYPE {}", node.node_type()));
 
         let element = node.dyn_into::<Element>();
 
         if element.is_ok() {
-            log(&format!("ELEMENT"));
             find_nodes(
                 element.ok().unwrap(),
                 cur_node_idx,
@@ -166,8 +140,6 @@ fn find_nodes(
                 text_nodes_to_patch,
             );
         } else {
-            log(&format!("NODE"));
-            // FIXME: Move this to patch function so we know to skip it
             let text_or_comment_node = element.err().unwrap();
 
             // At this time we do not support user entered comment nodes, so if we see a comment
@@ -175,12 +147,10 @@ fn find_nodes(
             // neighboring text nodes did not get merged into one by the browser. So we skip
             // over this virtual-dom-rs generated comment node.
             if text_or_comment_node.node_type() == Node::COMMENT_NODE {
-                log(&format!("COMMENT SKIPPED"));
                 continue;
             }
 
             if nodes_to_find.get(&cur_node_idx).is_some() {
-                log(&format!("TEXT INSERTED {}", *cur_node_idx));
                 let text_node = text_or_comment_node;
                 text_nodes_to_patch.insert(*cur_node_idx, text_node);
             }
@@ -191,6 +161,8 @@ fn find_nodes(
 }
 
 fn apply_element_patch(node: &Element, patch: &Patch) {
+    let document = web_sys::Window::document().unwrap();
+
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
             for (attrib_name, attrib_val) in attributes.iter() {
@@ -207,23 +179,50 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
             node.replace_with_with_node_1(new_node.create_element().as_ref() as &web_sys::Node)
                 .expect("Replaced element");
         }
-        Patch::TruncateChildren(_node_idx, len) => {
+        Patch::TruncateChildren(node_idx, num_children_remaining) => {
             let children = node.children();
-            let count = children.length();
 
-            for index in *len as u32..count {
-                let child_to_remove = children.get_with_index(index).unwrap();
+            // We skip over any separators that we placed between two text nodes
+            //   -> `<!--ptns-->`
+            //  and trim all children that come after our new desired `num_children_remaining`
+            let mut non_separator_children_found = 0;
+
+            for index in 0 as u32..children.length() {
+                let child = children.get_with_index(index).unwrap();
+                let child = child.as_ref() as &web_sys::Node;
+
+                // If this is a comment node then we know that it is a `<!--ptns-->`
+                // text node separator that was created in virtual_node/mod.rs.
+                if child.node_type() == Node::COMMENT_NODE {
+                    continue;
+                }
+
+                non_separator_children_found += 1;
+
+                if non_separator_children_found <= *num_children_remaining as u32 {
+                    continue;
+                }
 
                 (node.as_ref() as &web_sys::Node)
-                    .remove_child(child_to_remove.as_ref() as &web_sys::Node)
+                    .remove_child(child)
                     .expect("Truncated children");
             }
         }
         Patch::AppendChildren(_node_idx, new_nodes) => {
+            let parent = node.as_ref() as &web_sys::Node;
+
             for new_node in new_nodes {
-                (node.as_ref() as &web_sys::Node)
-                    .append_child(new_node.create_element().as_ref() as &web_sys::Node)
-                    .expect("Appended child element");
+                if new_node.is_text_node() {
+                    parent
+                        .append_child(
+                            &document.create_text_node(new_node.text.as_ref().unwrap())
+                                .dyn_into::<web_sys::Node>().ok().unwrap()
+                            ).expect("Append text node");
+                } else {
+                    parent
+                        .append_child(new_node.create_element().as_ref() as &web_sys::Node)
+                        .expect("Appended child element");
+                }
             }
         }
         Patch::ChangeText(_node_idx, new_node) => unreachable!(

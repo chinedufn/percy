@@ -1,4 +1,4 @@
-#![feature(use_extern_macros)]
+/// TODO: Migrate this file to use wasm-bindgen-test and test in chrome and firefox
 
 extern crate wasm_bindgen;
 use wasm_bindgen::prelude::*;
@@ -76,11 +76,13 @@ impl PatchTest {
     }
 
     pub fn run_tests(&self) {
-        //        self.replace_child();
-        //        self.truncate_children();
-        //        self.remove_attributes();
-        //        self.append_children();
+        self.replace_child();
+        self.truncate_children();
+        self.remove_attributes();
+        self.append_children();
         self.text_node_siblings();
+        self.append_text_node();
+        self.append_sibling_text_nodes();
     }
 }
 
@@ -122,7 +124,6 @@ impl PatchTest {
         })
     }
 
-    // FIXME BEFORE MERGE: Append a text node next to the span node and verify that this works
     fn append_children(&self) {
         test_patch(PatchTestCase {
             old: html! { <div id="foo",> </div>
@@ -180,6 +181,22 @@ impl PatchTest {
             panic!("Failure");
         }
     }
+
+    fn append_text_node(&self) {
+        test_patch(PatchTestCase {
+            old: html! { <div id="foo",> </div> },
+            new: html! { <div id="foo",> {"Hello"} </div> },
+            desc: "Append text node",
+        })
+    }
+
+    fn append_sibling_text_nodes(&self) {
+        test_patch(PatchTestCase {
+            old: html! { <div id="bar",> </div> },
+            new: html! { <div id="bang",> {"Hello"} {"World"} </div> },
+            desc: "Append sibling text nodes",
+        })
+    }
 }
 
 #[wasm_bindgen]
@@ -188,7 +205,6 @@ extern "C" {
     fn clog(s: &str);
 }
 
-// TODO: wasm-bindgen-test instead
 fn test_patch(test_case: PatchTestCase) {
     let document = web_sys::Window::document().unwrap();
     let root_node = test_case.old.create_element();
