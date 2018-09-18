@@ -9,8 +9,22 @@ repository = "https://github.com/chinedufn/percy"
 documentation = "https://chinedufn.github.io/percy/api/virtual_dom_rs/"
 
 [dependencies]
-percy-webapis = { path = "../percy-webapis", version = "0.0.2" }
 
 [dependencies.wasm-bindgen]
-version = "0.2.21"
+git = "https://github.com/rustwasm/wasm-bindgen"
 features = ["default", "nightly"]
+
+[dependencies.web-sys]
+git = "https://github.com/rustwasm/wasm-bindgen"
+features = [
+    "Comment",
+    "Document",
+    "Element",
+    "EventTarget",
+    "HtmlCollection",
+    "Node",
+    "NodeList",
+    "Text",
+    "Window",
+]
+

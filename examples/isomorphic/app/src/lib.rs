@@ -8,23 +8,19 @@ extern crate serde_json;
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use virtual_dom_rs::virtual_node::VirtualNode;
+pub use virtual_dom_rs::virtual_node::VirtualNode;
 
 mod state;
 pub use state::*;
 
-pub use virtual_dom_rs::percy_webapis::*;
-
 pub struct App {
     pub state: Rc<RefCell<State>>,
-    previous_vdom: Option<VirtualNode>,
 }
 
 impl App {
     pub fn new(count: u32) -> App {
         App {
             state: Rc::new(RefCell::new(State::new(count))),
-            previous_vdom: None,
         }
     }
 
@@ -32,7 +28,6 @@ impl App {
     pub fn from_state_json(json: &str) -> App {
         App {
             state: Rc::new(RefCell::new(State::from_json(json))),
-            previous_vdom: None,
         }
     }
 }
@@ -54,17 +49,6 @@ impl App {
           <div> { "In this time " click_count " rustaceans have been born." } </div>
         </div>
         }
-    }
-
-    pub fn update_dom(&mut self, root_node: &Element) {
-        let mut new_vdom = self.render();
-
-        if let Some(ref previous_vdom) = self.previous_vdom {
-            let patches = virtual_dom_rs::diff(&previous_vdom, &mut new_vdom);
-            virtual_dom_rs::patch(&root_node, &patches);
-        }
-
-        self.previous_vdom = Some(new_vdom);
     }
 }
 

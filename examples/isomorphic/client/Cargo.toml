@@ -8,7 +8,21 @@ crate-type = ["cdylib"]
 
 [dependencies]
 isomorphic-app = { path = "../app" }
+virtual-dom-rs = { path = "../../../virtual-dom-rs" }
 
 [dependencies.wasm-bindgen]
-version = "0.2"
-features = ["default", "spans"]
+git = "https://github.com/rustwasm/wasm-bindgen"
+features = ["default", "nightly"]
+
+[dependencies.web-sys]
+git = "https://github.com/rustwasm/wasm-bindgen"
+features = [
+    "Document",
+    "Element",
+    "EventTarget",
+    "Node",
+    "NodeList",
+    "Text",
+    "Window",
+    "HtmlCollection",
+]

@@ -37,7 +37,6 @@ mod tests {
     // gets rebuild or not. So the first run might pass but then subsequent runs might not..
     #[test]
     fn writes_to_provided_file() {
-
         Command::new("cargo")
             .env("OUTPUT_CSS", "/tmp/percy-test-css.css")
             .arg("run")
@@ -62,7 +61,7 @@ mod tests {
             display: flex;
         }
         "#.replace(" ", "")
-                .replace("\n", "")
+            .replace("\n", "")
         );
 
         fs::remove_file("/tmp/percy-test-css.css").unwrap();

@@ -3,10 +3,13 @@
 #![feature(use_extern_macros)]
 
 extern crate wasm_bindgen;
+
+// Used so that `html!` calls work when people depend on this crate since `html!` needs
+// access to `Closure` when creating event handlers.
 pub use wasm_bindgen::prelude::Closure;
 
-// TODO: Replace with web-sys crate when it gets released
-pub extern crate percy_webapis;
+pub extern crate web_sys;
+pub use web_sys::*;
 
 #[macro_use]
 pub mod html_macro;

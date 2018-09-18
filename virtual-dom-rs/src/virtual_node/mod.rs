@@ -1,11 +1,15 @@
-use percy_webapis::*;
 pub use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
 pub use std::rc::Rc;
-use wasm_bindgen::prelude::Closure;
 
 pub mod virtual_node_test_utils;
+
+use web_sys;
+use web_sys::{Document, Element, Text};
+
+use wasm_bindgen::prelude::Closure;
+use wasm_bindgen::JsCast;
 
 #[derive(PartialEq)]
 pub struct VirtualNode {
@@ -125,10 +129,12 @@ impl VirtualNode {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
     pub fn create_element(&self) -> Element {
-        let elem = document.create_element(&self.tag);
+        let document = web_sys::Window::document().unwrap();
+
+        let current_elem = document.create_element(&self.tag).unwrap();
 
         self.props.iter().for_each(|(name, value)| {
-            elem.set_attribute(name, value);
+            current_elem.set_attribute(name, value);
         });
 
         self.events.0.iter().for_each(|(onevent, callback)| {
@@ -137,25 +143,59 @@ impl VirtualNode {
 
             let mut callback = callback.borrow_mut();
             let callback = callback.take().unwrap();
-            elem.add_event_listener(event, &callback);
+            (current_elem.as_ref() as &web_sys::EventTarget)
+                .add_event_listener_with_callback(event, callback.as_ref().unchecked_ref())
+                .unwrap();
             callback.forget();
         });
 
-        self.children.as_ref().unwrap().iter().for_each(|child| {
-            if child.text.is_some() {
-                elem.append_text_child(document.create_text_node(&child.text.as_ref().unwrap()));
-            }
+        let mut previous_node_was_text = false;
 
-            if child.text.is_none() {
-                elem.append_child(&child.create_element());
+        self.children.as_ref().unwrap().iter().for_each(|child| {
+            if child.is_text_node() {
+                let current_node = current_elem.as_ref() as &web_sys::Node;
+
+                // We ensure that the text siblings are patched by preventing the browser from merging
+                // neighboring text nodes. Originally inspired by some of React's work from 2016.
+                //  -> https://reactjs.org/blog/2016/04/07/react-v15.html#major-changes
+                //  -> https://github.com/facebook/react/pull/5753
+                //
+                // `ptns` = Percy text node separator
+                if previous_node_was_text {
+                    let separator = document.create_comment("ptns");
+
+                    current_node
+                        .append_child(separator.as_ref() as &web_sys::Node)
+                        .unwrap();
+                }
+
+                current_node
+                    .append_child(
+                        document
+                            .create_text_node(&child.text.as_ref().unwrap())
+                            .as_ref() as &web_sys::Node,
+                    ).unwrap();
+
+                previous_node_was_text = true;
+            } else {
+                previous_node_was_text = false;
+
+                (current_elem.as_ref() as &web_sys::Node)
+                    .append_child(child.create_element().as_ref() as &web_sys::Node)
+                    .unwrap();
             }
         });
 
-        elem
+        current_elem
     }
 
     pub fn create_text_node(&self) -> Text {
+        let document = web_sys::Window::document().unwrap();
         document.create_text_node(&self.text.as_ref().unwrap())
+    }
+
+    pub fn is_text_node (&self) -> bool {
+        self.text.is_some()
     }
 }
 
@@ -241,7 +281,7 @@ impl fmt::Debug for ParsedVirtualNode {
 impl fmt::Display for VirtualNode {
     // Turn a VirtualNode and all of it's children (recursively) into an HTML string
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.text.is_some() {
+        if self.is_text_node() {
             write!(f, "{}", self.text.as_ref().unwrap())
         } else {
             write!(f, "<{}", self.tag).unwrap();
