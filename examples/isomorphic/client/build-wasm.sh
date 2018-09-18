@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# cd to the root directory of this repository
 cd $(dirname $0)
 
 mkdir -p build/

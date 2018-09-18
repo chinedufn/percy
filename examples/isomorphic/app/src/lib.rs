@@ -44,7 +44,7 @@ impl App {
 
         html! {
         <div>
-          <span> { "The button has been clicked: " click_component  " times!"} </span>
+          <span> { "The button has been clicked: " click_component " times!"} </span>
           <button !onclick=move|| { state.borrow_mut().msg(Msg::Click) },>{ "Click me!" }</button>
           <div> { "In this time " click_count " rustaceans have been born." } </div>
         </div>
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn click_msg() {
-        let mut app = App::new(5);
+        let app = App::new(5);
 
         assert_eq!(app.state.borrow().click_count(), 5);
         app.state.borrow_mut().msg(Msg::Click);

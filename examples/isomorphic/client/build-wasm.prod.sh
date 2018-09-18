@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# cd to the root directory of this repository
 cd $(dirname $0)
 
 rm -rf dist/
