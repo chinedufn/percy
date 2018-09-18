@@ -9,6 +9,7 @@
     rustup target add wasm32-unknown-unknown
     ```
 2. [Install Node.js 10+](https://github.com/creationix/nvm#installation) since some of our tests use Node.js.
+
 3. Download the project and make sure that you can run the test suite
 
     ```sh
