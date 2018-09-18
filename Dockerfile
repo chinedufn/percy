@@ -37,9 +37,9 @@ FROM scratch
 
 # At the moment our server expects the files to be in `/examples/isomorphic/client/{filename}` so we copy the examples dir
 COPY --from=build /usr/src/target/x86_64-unknown-linux-musl/release/isomorphic-server /
-COPY --from=build  /usr/src/examples /examples
+COPY --from=build /usr/src/examples/isomorphic/client/dist /dist
 
 EXPOSE 7878/tcp
 
-WORKDIR /examples/isomorphic/client
+WORKDIR /
 ENTRYPOINT ["/isomorphic-server"]
