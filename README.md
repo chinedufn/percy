@@ -79,11 +79,12 @@ fn main () {
 ## Examples
 
 - [Isomorphic web app](examples/isomorphic)
-- [CSS in Rust](examples/css-in-rust)
-- [Unit Testing View Components](examples/unit-testing-components)
-- [Open an Issue or PR if you have an idea for a useful example!](https://github.com/chinedufn/percy/issues)
 
-Now visit `http://127.0.0.1:7878` !
+- [CSS in Rust](examples/css-in-rust)
+
+- [Unit Testing View Components](examples/unit-testing-components)
+
+- [Open an Issue or PR if you have an idea for a useful example!](https://github.com/chinedufn/percy/issues)
 
 ## Contributing
 
