@@ -14,7 +14,7 @@ use virtual_node::VirtualNode;
 /// Each `Patch` has a u32 node index that helps us identify the real DOM node that it applies to.
 ///
 /// Our old virtual dom's nodes are indexed depth first, as shown in this illustration
-/// (0 being the root node, 1 being it's first child, 4 being it's second child).
+/// (0 being the root node, 1 being it's first child, 2 being it's first child's first child).
 ///               .─.
 ///              ( 0 )
 ///               `┬'
