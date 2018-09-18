@@ -3,7 +3,11 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 
 > A modular toolkit for building [isomorphic web apps][isomorphic-web-apps] with Rust + WebAssembly
 
+# The Percy Book
+
 [The Percy book](https://chinedufn.github.io/percy/)
+
+# Live Demo
 
 [View the isomorphic web app example live](https://percy-isomorphic.now.sh/?init=42) with a query string! :wink:
 
@@ -12,25 +16,15 @@ Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)]
 # What is an isomorphic web app?
 [isomorphic-web-apps]: #isomorphic-web-apps
 
-An isomorphic web app is a web application that allows the same application and code (in this case Rust code) to be run on both the server-side and the client-side (that is, in the browser).
+An isomorphic web application allows the same application code (in our case Rust code) to be run on both the server-side and the client-side (usually a web browser).
+
+In a browser our application renders to an `HtmlElement`, and on the server our application renders to a `String`.
 
 # API Documentation
 
 - [virtual-dom-rs API docs](https://chinedufn.github.io/percy/api/virtual_dom_rs/macro.html.html)
 
 - [css-rs-macro API docs](https://chinedufn.github.io/percy/api/css_rs_macro)
-
-## Initial Background / Motivation
-
-I started using Rust in January 2018 and quickly got to the stage of "I REALLY want to use this for everything, even if it isn't the best tool for the job."
-
-I need to make a website for a game that I'm working on, but the Rust ecosystem for frontend web apps with server side rendering is still very immature.
-
-So I started working on a standalone virtual-dom implementation that could render to an HTML string on the server side and to a DOM element in the browser.
-
-But then I realized that I wanted something similar to [sheetify](https://github.com/stackcss/sheetify).. And probably a couple other base web dev primitives too..
-
-So I decided to make a cargo workspace with the tools that I needed to build isomorphic web apps in Rust. And here we are!
 
 ## Getting Started
 
@@ -40,7 +34,6 @@ view [the isomorphic web app example live.](https://percy-isomorphic.now.sh/)
 For more on the `html!` macro see [html macro](virtual-dom-rs/src/html_macro.rs)
 
 ```rust
-#![feature(use_extern_macros)]
 #![feature(proc_macro_non_items)]
 
 #[macro_use]
@@ -83,23 +76,7 @@ fn main () {
 }
 ```
 
-## Running the example isomorphic web app locally
-
-Install the WASM compiler, if you haven't already. See [Setup WASM target](https://www.hellorust.com/setup/wasm-target/) for more information:
-
-```sh
-rustup target add wasm32-unknown-unknown --toolchain nightly
-```
-
-Then clone the source and run:
-
-```sh
-git clone https://github.com/chinedufn/percy
-cd percy
-./examples/isomorphic/start.sh
-```
-
-## More Examples
+## Examples
 
 - [Isomorphic web app](examples/isomorphic)
 - [CSS in Rust](examples/css-in-rust)
@@ -114,12 +91,12 @@ Please open issues / PRs explaining your intended use case and let's see if we s
 
 Also feel free to open issues and PRs with any questions / thoughts that you have!
 
-## To test
+## To Test
 
 To run all of the Rust unit tests, Rust integration tests, and Node.js + WebAssembly tests run:
 
 ```sh
-npm install
+npm install # Only run once
 ./test.sh
 ```
 
