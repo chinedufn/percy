@@ -11,8 +11,9 @@ mod tests {
     use std::fs;
     use std::fs::File;
     use std::io::Read;
-    use std::path::Path;
     use std::process::Command;
+    use std::fs::OpenOptions;
+    use std::io::Write;
 
     #[test]
     fn css_classes_increment() {
@@ -37,9 +38,23 @@ mod tests {
     // gets rebuild or not. So the first run might pass but then subsequent runs might not..
     #[test]
     fn writes_to_provided_file() {
+        // We overwrite the file since at this time it looks like our procedural macro won't
+        // run again if the file hasn't changed or been overwritten.
+        // This fixes a problem where the first time you ran this test it would work but then after
+        // that it would fail because the `css!` procedural macro wasn't getting run again since the file
+        // hadn't changed changed.
+        let fixture = "../test-css-rs-fixture/src/main.rs";
+        let mut css_rs_fixture = File::open(fixture)
+            .unwrap();
+        let mut contents = String::new();
+        css_rs_fixture.read_to_string(&mut contents).unwrap();
+        fs::write(fixture, contents.as_bytes()).unwrap();
+
+        // Run cargo build and verify that our CSS gets extracted
+
         Command::new("cargo")
             .env("OUTPUT_CSS", "/tmp/percy-test-css.css")
-            .arg("run")
+            .arg("build")
             .args(&["-p", "test-css-rs-fixture"])
             .spawn()
             .unwrap()

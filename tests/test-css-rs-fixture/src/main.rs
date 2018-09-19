@@ -1,4 +1,3 @@
-#![feature(use_extern_macros)]
 #![feature(proc_macro_non_items)]
 
 extern crate css_rs_macro;
