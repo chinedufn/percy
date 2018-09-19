@@ -5,10 +5,10 @@ INSTALL_NODE_VIA_NVM: &INSTALL_NODE_VIA_NVM
   - rustup default nightly
   - rustup target add wasm32-unknown-unknown
     # Install WASM bindgen CLI
-  - curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.19/wasm-bindgen-0.2.19-x86_64-unknown-linux-musl.tar.gz
-  - tar xf wasm-bindgen-0.2.19-x86_64-unknown-linux-musl.tar.gz
-  - chmod +x wasm-bindgen-0.2.19-x86_64-unknown-linux-musl/wasm-bindgen
-  - mv wasm-bindgen-0.2.19-x86_64-unknown-linux-musl/wasm-bindgen ~/.bin/cargo/
+  - curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.21/wasm-bindgen-0.2.21-x86_64-unknown-linux-musl.tar.gz
+  - tar xf wasm-bindgen-0.2.21-x86_64-unknown-linux-musl.tar.gz
+  - chmod +x wasm-bindgen-0.2.21-x86_64-unknown-linux-musl/wasm-bindgen
+  - mv wasm-bindgen-0.2.21-x86_64-unknown-linux-musl/wasm-bindgen ~/.bin/cargo/
   # Install Node.js
   - curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
   - source ~/.nvm/nvm.sh
