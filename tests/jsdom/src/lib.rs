@@ -144,7 +144,7 @@ impl PatchTest {
             <span> { "The button has been clicked: "  "world"} </span>
         </div>};
 
-        let document = web_sys::Window::document().unwrap();
+        let document = web_sys::window().unwrap().document().unwrap();
         let root_node = old.create_element();
 
         (document.body().unwrap().as_ref() as &web_sys::Node)
@@ -206,7 +206,7 @@ extern "C" {
 }
 
 fn test_patch(test_case: PatchTestCase) {
-    let document = web_sys::Window::document().unwrap();
+    let document = web_sys::window().unwrap().document().unwrap();
     let root_node = test_case.old.create_element();
 
     (document.body().unwrap().as_ref() as &web_sys::Node)

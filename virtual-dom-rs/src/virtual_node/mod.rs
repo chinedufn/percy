@@ -129,7 +129,7 @@ impl VirtualNode {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
     pub fn create_element(&self) -> Element {
-        let document = web_sys::Window::document().unwrap();
+        let document = web_sys::window().unwrap().document().unwrap();
 
         let current_elem = document.create_element(&self.tag).unwrap();
 
@@ -190,7 +190,7 @@ impl VirtualNode {
     }
 
     pub fn create_text_node(&self) -> Text {
-        let document = web_sys::Window::document().unwrap();
+        let document = web_sys::window().unwrap().document().unwrap();
         document.create_text_node(&self.text.as_ref().unwrap())
     }
 

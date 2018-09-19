@@ -161,7 +161,7 @@ fn find_nodes(
 }
 
 fn apply_element_patch(node: &Element, patch: &Patch) {
-    let document = web_sys::Window::document().unwrap();
+    let document = web_sys::window().unwrap().document().unwrap();
 
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
