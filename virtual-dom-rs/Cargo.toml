@@ -8,6 +8,9 @@ license = "MIT/Apache-2.0"
 repository = "https://github.com/chinedufn/percy"
 documentation = "https://chinedufn.github.io/percy/api/virtual_dom_rs/"
 
+[dev-dependencies]
+wasm-bindgen-test = "0.2"
+
 [dependencies]
 
 [dependencies.wasm-bindgen]
@@ -28,3 +31,6 @@ features = [
     "Window",
 ]
 
+[patch.crates-io]
+wasm-bindgen = { git = 'https://github.com/rustwasm/wasm-bindgen' }
+web-sys = { git = 'https://github.com/rustwasm/wasm-bindgen' }

@@ -14,6 +14,7 @@ function initDOM () {
   global.NodeList = dom.window.NodeList
 
   global.window = dom.window
+  global.Window = dom.window.Window
   global.document = dom.window.document
   global.Document = dom.window.Document
   global.EventTarget = dom.window.EventTarget
