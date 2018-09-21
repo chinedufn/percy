@@ -1,7 +1,5 @@
 import { Client } from '../isomorphic_client'
 
-console.log('ok')
-
 const client = new Client(window.initialState);
 
 let rootNode = document.getElementById('isomorphic-rust-web-app').children[0]
