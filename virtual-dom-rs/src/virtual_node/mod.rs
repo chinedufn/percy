@@ -14,28 +14,55 @@ use web_sys::{Element, Text};
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 
-/// A representation of a DOM element.
+/// When building your views you'll typically use the `html!` macro to generate
+/// `VirtualNode`'s.
+///
+/// html! { <div> <span></span> </div> } really generates a `VirtualNode` with
+/// one child (span).
+///
+/// Later, on the client side, you'll use the `diff` and `patch` modules to
+/// update the real DOM with your latest tree of virtual nodes (virtual dom).
+///
+/// Or on the server side you'll just call `.to_string()` on your root virtual node
+/// in order to recursively render the node and all of its children.
 #[derive(PartialEq)]
 pub struct VirtualNode {
+    /// The HTML tag, such as "div"
     pub tag: String,
+    /// HTML props such as id, class, style, etc
     pub props: HashMap<String, String>,
+    /// Events that will get added to your real DOM element via `.addEventListener`
     pub events: Events,
+    /// The children of this `VirtualNode`. So a <div> <em></em> </div> structure would
+    /// have a parent div and one child, em.
     pub children: Option<Vec<VirtualNode>>,
     /// Some(String) if this is a [text node](https://developer.mozilla.org/en-US/docs/Web/API/Text).
     /// When patching these into a real DOM these use `document.createTextNode(text)`
     pub text: Option<String>,
 }
 
+/// Our html! macro takes in tokens, builds `ParsedVirtualNode`'s from those tokens and then
+/// finally converts that `ParsedVirtualNode` into a `VirtualNode`.
+///
+/// When we next revisit that macro we'll want to revisit whether or not we can build a `VirtualNode`
+/// as we go vs. needing this intermediary data structure.
+///
 /// TODO: Is this complexity really necessary? Doubt it... Map this all out on paper... shouldn't need
 /// two nearly identical structs...?
 #[derive(PartialEq)]
 pub struct ParsedVirtualNode {
+    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
     pub tag: String,
+    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
     pub props: HashMap<String, String>,
+    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
     pub events: Events,
-    // TODO: Don't think this needs to be an option
+    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
+    /// TODO: Don't think this needs to be an option
     pub children: Option<Vec<Rc<RefCell<ParsedVirtualNode>>>>,
+    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
     pub parent: Option<Rc<RefCell<ParsedVirtualNode>>>,
+    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
     pub text: Option<String>,
 }
 
