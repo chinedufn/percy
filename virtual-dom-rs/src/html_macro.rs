@@ -1,3 +1,10 @@
+//! The html_macro module exposes an `html!` macro that is used to generate `VirtualNode`'s
+//! that will eventually get rendered into DOM nodes on the client side, or String's
+//! if you're on the server side.
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::Closure;
+
 /// When parsing our HTML we keep track of whether the last tag that we saw was an open or
 /// close tag.
 ///
@@ -13,12 +20,15 @@
 ///
 /// For example, in `<foo><bar></bar><bing></bing>` <bing> is a the child of "</bar>"'s parent since
 /// </bar> is a closing tag. Soo `<bing>`'s parent is `<foo>`
-use wasm_bindgen::prelude::Closure;
-
 #[derive(PartialEq)]
 #[cfg_attr(test, derive(Debug))]
 pub enum TagType {
+    /// An opening HTML tag
+    ///  ex: "<div" or "<div>"
+    ///
     Open,
+    /// A closing HTML tag
+    ///  ex: "</div>"
     Close,
 }
 

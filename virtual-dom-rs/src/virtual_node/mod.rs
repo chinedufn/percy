@@ -1,3 +1,6 @@
+//! The virtual_node module exposes the `VirtualNode` struct and methods that power our
+//! virtual dom.
+
 pub use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
@@ -6,11 +9,12 @@ pub use std::rc::Rc;
 pub mod virtual_node_test_utils;
 
 use web_sys;
-use web_sys::{Document, Element, Text};
+use web_sys::{Element, Text};
 
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 
+/// A representation of a DOM element.
 #[derive(PartialEq)]
 pub struct VirtualNode {
     pub tag: String,
@@ -22,8 +26,8 @@ pub struct VirtualNode {
     pub text: Option<String>,
 }
 
-// TODO: Is this complexity really necessary? Doubt it... Map this all out on paper... shouldn't need
-// two nearly identical structs
+/// TODO: Is this complexity really necessary? Doubt it... Map this all out on paper... shouldn't need
+/// two nearly identical structs...?
 #[derive(PartialEq)]
 pub struct ParsedVirtualNode {
     pub tag: String,
