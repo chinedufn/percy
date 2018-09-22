@@ -1,6 +1,7 @@
 # Sibling text nodes
 
-If a browser sees two text nodes next to each other it will combine them into one.
+If you render two text nodes next to them the browser will see them as just
+one text node.
 
 For example, when you have a component that looks like this:
 
@@ -8,7 +9,7 @@ For example, when you have a component that looks like this:
 let sibling_text_nodes = html! { <div> {"Hello" "World" } </div> };
 ```
 
-A browser will end up turning it into something like this
+A browser will end up with something like this:
 
 ```html
  <div>Hello World</div>
