@@ -4,6 +4,8 @@ We're working on tooling for view routing. Here's a preview of how it could look
 
 (Note that we're still thinking through the API so this is just a rough draft)
 
+In the meantime definitely share your thoughts in the [Router tracking issue!](https://github.com/chinedufn/percy/issues/28)
+
 ```rust
 #[macro_use]
 extern crate virtual_dom_rs;
