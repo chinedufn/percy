@@ -67,6 +67,7 @@ pub struct ParsedVirtualNode {
 }
 
 impl ParsedVirtualNode {
+    /// Create a virtual node that is meant to represent a DOM element
     pub fn new(tag: &str) -> ParsedVirtualNode {
         let props = HashMap::new();
         let events = Events(HashMap::new());
@@ -80,6 +81,7 @@ impl ParsedVirtualNode {
         }
     }
 
+    /// Create a virtual node that is meant to represent DOM Text
     pub fn text(text: &str) -> ParsedVirtualNode {
         ParsedVirtualNode {
             tag: "".to_string(),
@@ -91,6 +93,8 @@ impl ParsedVirtualNode {
         }
     }
 
+    /// Take off the the `VirtualNode`'s direct descendants (who in turn might have their
+    /// own descendants)
     pub fn take_children(&mut self) -> Vec<VirtualNode> {
         self.children
             .take()
@@ -220,12 +224,15 @@ impl VirtualNode {
         current_elem
     }
 
+    /// Return a `Text` element from a `VirtualNode`, typically right before adding it
+    /// into the DOM.
     pub fn create_text_node(&self) -> Text {
         let document = web_sys::window().unwrap().document().unwrap();
         document.create_text_node(&self.text.as_ref().unwrap())
     }
 
-    pub fn is_text_node (&self) -> bool {
+    /// Whether or not this `VirtualNode` is representing a `Text` node
+    pub fn is_text_node(&self) -> bool {
         self.text.is_some()
     }
 }

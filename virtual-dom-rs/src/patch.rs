@@ -39,20 +39,24 @@ use web_sys::{Element, Node};
 #[derive(Debug, PartialEq)]
 pub enum Patch<'a> {
     /// Append a vector of child nodes to a parent node id.
-    AppendChildren(node_idx, Vec<&'a VirtualNode>),
+    AppendChildren(NodeIdx, Vec<&'a VirtualNode>),
     /// For a `node_i32`, remove all children besides the first `len`
-    TruncateChildren(node_idx, usize),
+    TruncateChildren(NodeIdx, usize),
     /// Replace a node with another node. This typically happens when a node's tag changes.
     /// ex: <div> becomes <span>
-    Replace(node_idx, &'a VirtualNode),
+    Replace(NodeIdx, &'a VirtualNode),
     /// Add attributes that the new node has that the old node does not
-    AddAttributes(node_idx, HashMap<&'a str, &'a str>),
+    AddAttributes(NodeIdx, HashMap<&'a str, &'a str>),
     /// Remove attributes that the old node had that the new node doesn't
-    RemoveAttributes(node_idx, Vec<&'a str>),
-    ChangeText(node_idx, &'a VirtualNode),
+    RemoveAttributes(NodeIdx, Vec<&'a str>),
+    /// Change the text of a Text node.
+    ChangeText(NodeIdx, &'a VirtualNode),
 }
 
 impl<'a> Patch<'a> {
+    /// Every Patch is meant to be applied to a specific node within the DOM. Get the
+    /// index of the DOM node that this patch should apply to. DOM nodes are indexed
+    /// depth first with the root node in the tree having index 0.
     pub fn node_idx(&self) -> usize {
         match self {
             Patch::AppendChildren(node_idx, _) => *node_idx,
@@ -65,8 +69,11 @@ impl<'a> Patch<'a> {
     }
 }
 
-type node_idx = usize;
+type NodeIdx = usize;
 
+/// Apply all of the patches to our old root node in order to create the new root node
+/// that we desire.
+/// This is usually used after diffing two virtual nodes.
 pub fn patch(root_node: Element, patches: &Vec<Patch>) {
     let mut cur_node_idx = 0;
 
@@ -215,9 +222,12 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
                 if new_node.is_text_node() {
                     parent
                         .append_child(
-                            &document.create_text_node(new_node.text.as_ref().unwrap())
-                                .dyn_into::<web_sys::Node>().ok().unwrap()
-                            ).expect("Append text node");
+                            &document
+                                .create_text_node(new_node.text.as_ref().unwrap())
+                                .dyn_into::<web_sys::Node>()
+                                .ok()
+                                .unwrap(),
+                        ).expect("Append text node");
                 } else {
                     parent
                         .append_child(new_node.create_element().as_ref() as &web_sys::Node)

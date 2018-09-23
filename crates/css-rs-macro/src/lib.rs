@@ -2,8 +2,6 @@
 //!
 //! github.com/chinedufn/percy/examples/css-in-rust
 
-#![deny(missing_docs)]
-
 #[feature(proc_macro)]
 #[macro_use]
 extern crate syn;

@@ -10,10 +10,10 @@ mod tests {
     use super::*;
     use std::fs;
     use std::fs::File;
-    use std::io::Read;
-    use std::process::Command;
     use std::fs::OpenOptions;
+    use std::io::Read;
     use std::io::Write;
+    use std::process::Command;
 
     #[test]
     fn css_classes_increment() {
@@ -44,8 +44,7 @@ mod tests {
         // that it would fail because the `css!` procedural macro wasn't getting run again since the file
         // hadn't changed changed.
         let fixture = "../test-css-rs-fixture/src/main.rs";
-        let mut css_rs_fixture = File::open(fixture)
-            .unwrap();
+        let mut css_rs_fixture = File::open(fixture).unwrap();
         let mut contents = String::new();
         css_rs_fixture.read_to_string(&mut contents).unwrap();
         fs::write(fixture, contents.as_bytes()).unwrap();

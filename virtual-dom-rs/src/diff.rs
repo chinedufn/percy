@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use virtual_node::VirtualNode;
 use Patch;
 
-static START_INDEX: usize = 0;
-
+/// Given two VirtualNode's generate Patch's that would turn the old virtual node's
+/// real DOM node equivalent into the new VirtualNode's real DOM node equivalent.
 pub fn diff<'a>(old: &'a VirtualNode, new: &'a VirtualNode) -> Vec<Patch<'a>> {
     diff_recursive(&old, &new, &mut 0)
 }

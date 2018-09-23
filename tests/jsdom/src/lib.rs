@@ -1,5 +1,4 @@
 /// TODO: Migrate this file to use wasm-bindgen-test and test in chrome and firefox
-
 extern crate wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
