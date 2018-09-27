@@ -2,18 +2,21 @@ language: rust
 cache: cargo
 sudo: false
 
-INSTALL_NODE_VIA_NVM: &INSTALL_NODE_VIA_NVM
+INSTALL_DEPS: &INSTALL_DEPS
   - rustup default nightly
   - rustup target add wasm32-unknown-unknown
     # Install WASM bindgen CLI
-  - curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.21/wasm-bindgen-0.2.21-x86_64-unknown-linux-musl.tar.gz
-  - tar xf wasm-bindgen-0.2.21-x86_64-unknown-linux-musl.tar.gz
-  - chmod +x wasm-bindgen-0.2.21-x86_64-unknown-linux-musl/wasm-bindgen
-  - mv wasm-bindgen-0.2.21-x86_64-unknown-linux-musl/wasm-bindgen ~/.cargo/bin/
+  - curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.23/wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz
+  - tar xf wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz
+  - chmod +x wasm-bindgen-0.2.23-x86_64-unknown-linux-musl/wasm-bindgen
+  - mv wasm-bindgen-0.2.23-x86_64-unknown-linux-musl/wasm-bindgen* ~/.cargo/bin/ # wasm-bindgen and wasm-bindgen-test-runner binaries
   # Install Node.js
   - curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
   - source ~/.nvm/nvm.sh
   - nvm install v10.5
+  # Install Geckodriver
+  - curl --retry 5 -LO https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz
+  - tar xf geckodriver-v0.21.0-linux64.tar.gz
 
 matrix:
   include:
@@ -21,13 +24,13 @@ matrix:
     # TODO: Separate job for JSDOM WebAssembly tests and Rust unit tests
     - rust: nightly
       env: JOB=test-everything
-      before_install: *INSTALL_NODE_VIA_NVM
+      before_install: *INSTALL_DEPS
       install:
         - npm install
       script:
-        - ./test.sh
-      # Here's how we can test our future CLI's on stable / nightly
-      # https://github.com/rustwasm/wasm-bindgen/blob/f893e3475cc4b9d4641b290f1c2c74d752b7d368/.travis.yml#L127-L136
+        - GECKODRIVER=$(pwd)/geckodriver ./test.sh
+      addons:
+        firefox: latest
 
     # Build documentation for the gh-pages branch
     - rust: nightly
