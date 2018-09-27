@@ -26,9 +26,10 @@ matrix:
     # TODO: Separate job for JSDOM WebAssembly tests and Rust unit tests
     - rust: nightly
       env: JOB=test-everything
-      install:
+      before_install:
         - *INSTALL_NODE_VIA_NVM
         - *INSTALL_GECKODRIVER
+      install:
         - npm install
       script:
         - GECKODRIVER=$(pwd)/geckodriver ./test.sh
