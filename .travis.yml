@@ -29,6 +29,8 @@ matrix:
         - npm install
       script:
         - GECKODRIVER=$(pwd)/geckodriver ./test.sh
+      addons:
+        firefox: latest
 
     # Build documentation for the gh-pages branch
     - rust: nightly
