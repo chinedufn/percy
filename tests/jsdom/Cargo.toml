@@ -11,15 +11,16 @@ crate-type = ["cdylib"]
 virtual-dom-rs = { path = "../../virtual-dom-rs" }
 
 [dependencies.js-sys]
-git = "https://github.com/rustwasm/wasm-bindgen"
+version = "0.2"
 
 [dependencies.wasm-bindgen]
-git = "https://github.com/rustwasm/wasm-bindgen"
+version = "0.2"
 features = ["default", "nightly"]
 
 [dependencies.web-sys]
-git = "https://github.com/rustwasm/wasm-bindgen"
+version = "0.3"
 features = [
+    "console",
     "Window",
     "Document",
     "HtmlElement",

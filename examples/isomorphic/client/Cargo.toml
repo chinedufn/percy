@@ -11,11 +11,11 @@ isomorphic-app = { path = "../app" }
 virtual-dom-rs = { path = "../../../virtual-dom-rs" }
 
 [dependencies.wasm-bindgen]
-git = "https://github.com/rustwasm/wasm-bindgen"
+version = "0.2"
 features = ["default", "nightly"]
 
 [dependencies.web-sys]
-git = "https://github.com/rustwasm/wasm-bindgen"
+version = "0.3"
 features = [
     "Document",
     "Element",

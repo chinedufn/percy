@@ -14,11 +14,11 @@ wasm-bindgen-test = "0.2"
 [dependencies]
 
 [dependencies.wasm-bindgen]
-git = "https://github.com/rustwasm/wasm-bindgen"
+version = "0.2"
 features = ["default", "nightly"]
 
 [dependencies.web-sys]
-git = "https://github.com/rustwasm/wasm-bindgen"
+version = "0.3"
 features = [
     "Comment",
     "Document",
@@ -31,6 +31,3 @@ features = [
     "Window",
 ]
 
-[patch.crates-io]
-wasm-bindgen = { git = 'https://github.com/rustwasm/wasm-bindgen' }
-web-sys = { git = 'https://github.com/rustwasm/wasm-bindgen' }
