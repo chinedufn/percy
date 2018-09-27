@@ -11,14 +11,6 @@ test('Creating DOM elements from virtual nodes', t => {
   t.test('Click event', testClickEvent)
 })
 
-const testNestedDivs = t => {
-  const nestedDivs = rust.nested_divs()
-
-  t.equal(nestedDivs.innerHTML, '<div><div></div></div>')
-
-  t.end()
-}
-
 const testElementProps = t => {
   const divsWithProps = rust.div_with_properties()
 
