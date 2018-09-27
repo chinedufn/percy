@@ -1,6 +1,3 @@
-//! TODO: After web-sys is released see if this works and then port our
-//! jsdom tests to use wasm-bindgen-test instead
-
 extern crate wasm_bindgen_test;
 extern crate web_sys;
 use std::cell::Cell;
@@ -15,7 +12,7 @@ extern crate virtual_dom_rs;
 wasm_bindgen_test_configure!(run_in_browser);
 
 #[wasm_bindgen_test]
-pub fn nested_divs() {
+fn nested_divs() {
     let div = html! { <div> <div> <div></div> </div> </div> };
     let div = div.create_element();
 
@@ -23,7 +20,7 @@ pub fn nested_divs() {
 }
 
 #[wasm_bindgen_test]
-pub fn div_with_properties() {
+fn div_with_properties() {
     let mut div = html! { <div id="id-here", class="two classes",></div> };
     let div = div.create_element();
 
@@ -36,7 +33,7 @@ pub fn div_with_properties() {
 }
 
 #[wasm_bindgen_test]
-pub fn click_event() {
+fn click_event() {
     let clicked = Rc::new(Cell::new(false));
     let clicked_clone = Rc::clone(&clicked);
 

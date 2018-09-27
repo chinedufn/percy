@@ -23,6 +23,7 @@ features = [
     "Comment",
     "Document",
     "Element",
+    "HtmlElement",
     "EventTarget",
     "HtmlCollection",
     "Node",
@@ -34,15 +35,6 @@ features = [
 [dev-dependencies.web-sys]
 version = "0.3"
 features = [
-    "Comment",
-    "Document",
-    "Element",
     "Event",
-    "EventTarget",
-    "HtmlCollection",
-    "Node",
-    "NodeList",
-    "Text",
-    "Window",
     "DomTokenList"
 ]
