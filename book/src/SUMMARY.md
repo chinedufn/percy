@@ -16,6 +16,8 @@
 
 - [CSS in Rust](./css-in-rust.md)
 
-- [Contributing](./contributing.md)
+- [Contributing](./contributing/README.md)
+  - [Getting Started](./contributing/getting-started.md)
+  - [Types of Contributions](./contributing/ways-to-contribute.md)
   - [Internal Design](./contributing/internal-design/README.md)
     - [Handling text siblings](./contributing/internal-design/sibling-text-nodes.md)
