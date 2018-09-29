@@ -94,14 +94,11 @@ Also feel free to open issues and PRs with any questions / thoughts that you hav
 
 ## To Test
 
-To run all of the Rust unit tests, Rust integration tests, and Node.js + WebAssembly tests run:
+To run all of the unit, integration and browser tests, [grab the dependencies then](https://chinedufn.github.io/percy/contributing/getting-started.html) :
 
 ```sh
-npm install # Only run once
 ./test.sh
 ```
-
-You'll need to be on Node.js 10.5+
 
 ## See Also
 
