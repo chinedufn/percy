@@ -12,11 +12,9 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install -y nodejs 
 
 # Install WASM bindgen CLI
-RUN curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.23/wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz &&\
-  tar xf wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz &&\
-  rm wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz &&\
-  chmod +x wasm-bindgen-0.2.23-x86_64-unknown-linux-musl/wasm-bindgen &&\
-  mv wasm-bindgen-0.2.23-x86_64-unknown-linux-musl/wasm-bindgen /usr/local/bin/wasm-bindgen
+RUN curl -L https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.23/wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz | tar --strip-components=1 --wildcards -xzf - "*/wasm-bindgen" &&\
+  chmod +x wasm-bindgen* &&\
+  mv wasm-bindgen* /usr/local/bin/
 
 WORKDIR /usr/src
 

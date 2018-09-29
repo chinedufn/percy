@@ -6,10 +6,9 @@ INSTALL_DEPS: &INSTALL_DEPS
   - rustup default nightly
   - rustup target add wasm32-unknown-unknown
     # Install WASM bindgen CLI
-  - curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.23/wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz
-  - tar xf wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz
-  - chmod +x wasm-bindgen-0.2.23-x86_64-unknown-linux-musl/wasm-bindgen
-  - mv wasm-bindgen-0.2.23-x86_64-unknown-linux-musl/wasm-bindgen* ~/.cargo/bin/ # wasm-bindgen and wasm-bindgen-test-runner binaries
+  - curl -L https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.23/wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz | tar --strip-components=1 --wildcards -xzf - "*/wasm-bindgen"
+  - chmod +x wasm-bindgen*
+  - mv wasm-bindgen* ~/.cargo/bin/ # wasm-bindgen and wasm-bindgen-test-runner binaries
   # Install Node.js
   - curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
   - source ~/.nvm/nvm.sh
@@ -49,7 +48,7 @@ matrix:
       deploy:
         provider: pages
         skip-cleanup: true
-        github-token: $GITHUB_TOKEN  # Set in travis-ci.org dashboard, marked secure
+        github-token: $GITHUB_TOKEN # Set in travis-ci.org dashboard, marked secure
         local-dir: book/book
         keep-history: false
       if: branch = master
