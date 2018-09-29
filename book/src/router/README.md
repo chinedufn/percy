@@ -119,3 +119,55 @@ impl View for EditPostPage {
   }
 }
 ```
+
+```rust
+fn main () {
+  let mut router = Router::new();
+
+  let mut params = HashMap::new();
+  params.insert("param1", ParamType::U32);
+  params.insert("param2", ParamType::String);
+
+  router.add_route(
+      Route {
+        path: "/endpoint/:param1/info/:param2",
+        params,
+        view_creator: |params| {
+          let param1 = params.get("...") as u32;
+          let param2 = ...;
+          MyPage::from_params(param1, param2)
+        }
+      }
+  );
+
+  router.set_route('/');
+  let view = router.create_view();
+  let view = view.render(Rc::clone(store));
+}
+
+struct Router {
+  routes: Vec<Route>
+}
+
+struct Route<'a> {
+  // /path/:param1/info/:another_param
+  path: &'a str,
+  params: HashMap<String, ParamType>
+  view_creator: Fn(HashMap<String, Param>) -> impl View
+}
+
+impl Router {
+  fn change_to('/') -> VirtualNode
+}
+
+struct MyPage {
+  param1: u32,
+  param2: String
+}
+
+impl MyPage {
+  fn from_params(param1: u32, param2: String) {
+    MyPage { param1, param2 }
+  }
+}
+```
