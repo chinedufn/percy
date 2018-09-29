@@ -8,7 +8,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 isomorphic-app = { path = "../app" }
-virtual-dom-rs = { path = "../../../virtual-dom-rs" }
+virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
 
 [dependencies.wasm-bindgen]
 version = "0.2"

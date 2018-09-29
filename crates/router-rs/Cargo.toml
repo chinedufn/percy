@@ -1,7 +1,8 @@
 [package]
-name = "unit-testing-components"
+name = "router-rs"
 version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+edition = "2018"
 
 [dependencies]
-virtual-dom-rs = { path = "../../crates/virtual-dom-rs" }
+virtual-dom-rs = { path = "../virtual-dom-rs", version = "0.2.2"}

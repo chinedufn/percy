@@ -5,6 +5,6 @@ authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 publish = false
 
 [dependencies]
-virtual-dom-rs = { path = "../../../virtual-dom-rs" }
+virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
 isomorphic-app = { path = "../app" }
 actix-web = "0.7"

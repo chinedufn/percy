@@ -5,4 +5,4 @@ authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 
 [dependencies]
 css-rs-macro = { path = "../../crates/css-rs-macro" }
-virtual-dom-rs = { path = "../../virtual-dom-rs" }
+virtual-dom-rs = { path = "../../crates/virtual-dom-rs" }

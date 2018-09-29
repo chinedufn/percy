@@ -28,3 +28,6 @@ pub use diff::*;
 
 mod patch;
 pub use patch::*;
+
+mod view;
+pub use view::*;
