@@ -8,3 +8,4 @@ publish = false
 virtual-dom-rs = { path = "../../../virtual-dom-rs" }
 isomorphic-app = { path = "../app" }
 actix-web = "0.7"
+listenfd = "0.3"
