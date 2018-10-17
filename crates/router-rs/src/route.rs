@@ -7,7 +7,7 @@ type ViewFn = Box<Fn(HashMap<String, String>) -> Box<View>>;
 /// A route specifies a path to match against. When a match is found a `view_creator` is used
 /// to return an `impl View` that can be used to render the appropriate content for that route.
 pub struct Route<'a> {
-    path_catcher: &'a str,
+    route_definition: &'a str,
     param_types: HashMap<String, ParamType>,
     view_creator: ViewFn,
 }
@@ -24,7 +24,7 @@ impl<'a> Route<'a> {
     /// the path in the browser URL matches your route's path definition.
     pub fn new(path: &str, param_types: HashMap<String, ParamType>, view_creator: ViewFn) -> Route {
         Route {
-            path_catcher: path,
+            route_definition: path,
             param_types,
             view_creator,
         }
@@ -41,17 +41,17 @@ impl<'a> Route<'a> {
     /// ```
     pub fn matches(&self, path: &str) -> bool {
         // ex: [ "", "food", ":food_type" ]
-        let route_segments = self.path_catcher.split("/").collect::<Vec<&str>>();
+        let defined_segments = self.route_definition.split("/").collect::<Vec<&str>>();
 
         // ex: [ "", "food", "tacos" ]
-        let user_segments = path.split("/").collect::<Vec<&str>>();
+        let incoming_segments = path.split("/").collect::<Vec<&str>>();
 
-        for (index, segment) in route_segments.iter().enumerate() {
-            if segment.len() == 0 {
+        for (index, defined_segment) in defined_segments.iter().enumerate() {
+            if defined_segment.len() == 0 {
                 continue;
             }
 
-            let mut chars = segment.chars();
+            let mut chars = defined_segment.chars();
 
             let first_char = chars.next().unwrap();
 
@@ -61,13 +61,13 @@ impl<'a> Route<'a> {
                 // ex: ParamType::String
                 let param_type = self.param_types.get(&param_name).unwrap();
 
-                let user_provided_param = user_segments[index];
+                let incoming_param_value = incoming_segments[index];
 
                 // Make sure that it is possible to convert the String that the user provided
                 // into the parameter type that we expect (u32, u8, i8, etc)
                 match param_type {
                     ParamType::U32 => {
-                        if user_provided_param.parse::<u32>().is_err() {
+                        if incoming_param_value.parse::<u32>().is_err() {
                             return false;
                         }
                     }
@@ -77,6 +77,35 @@ impl<'a> Route<'a> {
 
         true
     }
+
+    /// Given an incoming path, create the `View` that uses that path data.
+    ///
+    /// For example.. if our defined path is `/users/:id`
+    /// and our incoming path is `/users/5`
+    ///
+    /// Our view will end up getting created with `id: 5`
+    pub fn view (&self, incoming_path: &str) -> Box<View> {
+        (self.view_creator)(self.params(incoming_path))
+    }
+
+    fn params(&self, incoming_path: &str) -> HashMap<String, String> {
+        let incoming_path = incoming_path.split("/").collect::<Vec<&str>>();
+
+        self.route_definition
+            .split("/")
+            .collect::<Vec<&str>>()
+            .iter()
+            .enumerate()
+            .filter(|(index, segment)| {
+                if segment.len() == 0 {
+                    return false;
+                }
+
+                segment.chars().next().unwrap() == ':'
+            })
+            .map(|(index, segment)| (segment.to_string(), incoming_path[index].to_string()))
+            .collect::<HashMap<String, String>>()
+    }
 }
 
 #[cfg(test)]
@@ -85,21 +114,40 @@ mod tests {
     use virtual_dom_rs::virtual_node::VirtualNode;
     use virtual_dom_rs::{html, recurse_html};
 
+    struct MyView {
+        id: u32,
+    }
+
+    impl View for MyView {
+        fn render(&self) -> VirtualNode {
+            html! { <div> {self.id.to_string()} </div> }
+        }
+    }
+
     #[test]
     fn match_route() {
-        struct MyView {
-            id: u32,
-        }
+        let route = create_test_route();
 
-        impl View for MyView {
-            fn render(&self) -> VirtualNode {
-                html! { <div> </div> }
-            }
-        }
+        assert!(route.matches("/users/5"), "5 is a u32");
+        assert!(!route.matches("/users/foo"), "'foo' is not a u32");
+    }
 
+    #[test]
+    fn create_view() {
+        let route = create_test_route();
+
+        assert_eq!(
+            create_test_route().view("/users/300").render(),
+            html! {<div> { "300" } </div>},
+            "Creates a view from a provided route"
+        );
+    }
+
+    fn create_test_route() -> Route<'static> {
+        
         let view_creator = |params: HashMap<String, String>| {
             Box::new(MyView {
-                id: params.get("id").unwrap().parse::<u32>().unwrap(),
+                id: params.get(":id").unwrap().parse::<u32>().unwrap(),
             }) as Box<View>
         };
 
@@ -108,7 +156,6 @@ mod tests {
 
         let route = Route::new("/users/:id", param_types, Box::new(view_creator));
 
-        assert!(route.matches("/users/5"), "5 is a u32");
-        assert!(!route.matches("/users/foo"), "'foo' is not a u32");
+        route
     }
 }
