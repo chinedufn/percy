@@ -6,3 +6,6 @@ edition = "2018"
 
 [dependencies]
 virtual-dom-rs = { path = "../virtual-dom-rs", version = "0.2.2"}
+
+[dev-dependencies]
+router-rs-macro = {path = "../router-rs-macro"}

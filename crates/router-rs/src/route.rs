@@ -144,7 +144,6 @@ mod tests {
     }
 
     fn create_test_route() -> Route<'static> {
-        
         let view_creator = |params: HashMap<String, String>| {
             Box::new(MyView {
                 id: params.get(":id").unwrap().parse::<u32>().unwrap(),
@@ -157,5 +156,14 @@ mod tests {
         let route = Route::new("/users/:id", param_types, Box::new(view_creator));
 
         route
+    }
+
+    // TODO:
+    #[test]
+    fn macro_works () {
+//        let route = MyView::route();
+//
+//        assert!(route.matches("/users/5"));
+//        assert!(!route.matches("/users/not_a_u32"));
     }
 }

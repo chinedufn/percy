@@ -11,7 +11,7 @@ repository = "https://github.com/chinedufn/percy"
 members = [
   "crates/css-rs-macro",
   "crates/router-rs",
-  "crates/virtual-dom-rs",
+  "crates/router-rs-macro",
   "examples/isomorphic/app",
   "examples/isomorphic/client",
   "examples/isomorphic/server",
