@@ -36,7 +36,9 @@ impl Client {
     pub fn new(initial_state: &str) -> Client {
         let app = App::from_state_json(initial_state);
 
-        app.state.borrow_mut().subscribe(Box::new(|| {
+        // TODO: Use request animation frame from web_sys
+        // https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Window.html#method.request_animation_frame
+        app.store.borrow_mut().subscribe(Box::new(|| {
             web_sys::console::log_1(&JsValue::from("Updating state"));
             global_js.update();
         }));

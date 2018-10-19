@@ -1,10 +1,10 @@
-use serde::Deserialize;
-use serde::Deserializer;
-use serde::Serialize;
-use serde::Serializer;
 use serde_json;
 use std::cell::Cell;
 use std::rc::Rc;
+
+mod serialize;
+use self::serialize::deserialize_rc_cell;
+use self::serialize::serialize_rc_cell;
 
 #[derive(Serialize, Deserialize)]
 pub struct State {
@@ -47,11 +47,13 @@ pub enum Msg {
 }
 
 impl State {
-    pub fn msg(&mut self, msg: Msg) {
+    pub fn msg(&mut self, msg: &Msg) {
         match msg {
             Msg::Click => self.increment_click(),
         };
 
+        // Whenever we update state we'll let all of our state listeners know that state was
+        // updated
         for callback in self.listeners.iter() {
             callback();
         }
@@ -66,26 +68,6 @@ impl State {
     fn increment_click(&mut self) {
         self.click_count.set(self.click_count.get() + 1);
     }
-}
-// serde does not support serialize / deserialize rc so we use our own deserializer
-fn deserialize_rc_cell<'de, D, T>(deserializer: D) -> Result<Rc<Cell<T>>, D::Error>
-where
-    D: Deserializer<'de>,
-    T: Deserialize<'de> + Copy,
-{
-    Ok(Rc::new(Cell::deserialize(deserializer).unwrap()))
-}
-
-// serde does not support serialize / deserialize rc so we use our own serializer
-fn serialize_rc_cell<T, S>(
-    rc_cell: &Rc<Cell<T>>,
-    serializer: S,
-) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
-where
-    S: Serializer,
-    T: Serialize + Copy,
-{
-    rc_cell.serialize(serializer)
 }
 
 #[cfg(test)]

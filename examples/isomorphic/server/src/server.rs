@@ -16,7 +16,7 @@ fn index(req: &HttpRequest) -> impl Responder {
             .map(|string| string.parse().expect("bad param"))
             .unwrap_or(1001),
     );
-    let state = app.state.borrow();
+    let state = app.store.borrow();
 
     let html = format!("{}", include_str!("./index.html"));
     let html = html.replacen(HTML_PLACEHOLDER, &app.render().to_string(), 1);

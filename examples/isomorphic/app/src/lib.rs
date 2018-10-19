@@ -17,20 +17,24 @@ mod state;
 pub use crate::state::*;
 
 pub struct App {
-    pub state: Rc<RefCell<State>>,
+    pub store: Rc<RefCell<Store>>,
 }
 
 impl App {
     pub fn new(count: u32) -> App {
+        let state = State::new(count);
+
         App {
-            state: Rc::new(RefCell::new(State::new(count))),
+            store: Rc::new(RefCell::new(Store::new(state))),
         }
     }
 
     // TODO: Just use `new(config: AppConfig)` and pass in state json Option
     pub fn from_state_json(json: &str) -> App {
+        let state = State::from_json(json);
+
         App {
-            state: Rc::new(RefCell::new(State::from_json(json))),
+            store: Rc::new(RefCell::new(Store::new(state))),
         }
     }
 }
@@ -38,9 +42,9 @@ impl App {
 impl App {
     pub fn render(&self) -> VirtualNode {
         #[allow(unused_variables)] // Compiler doesn't see it inside html macro
-        let state = Rc::clone(&self.state);
-        let click_count = self.state.borrow().click_count();
+        let store = Rc::clone(&self.store);
 
+        let click_count = self.store.borrow().click_count();
         let click_count = &click_count.to_string();
 
         let click_component = html! { <strong style="font-size: 30px",>{ click_count }</strong> };
@@ -48,7 +52,7 @@ impl App {
         html! {
         <div>
           <span> { "The button has been clicked: " click_component " times!"} </span>
-          <button !onclick=move|| { state.borrow_mut().msg(Msg::Click) },>{ "Click me!" }</button>
+          <button !onclick=move|| { store.borrow_mut().msg(&Msg::Click) },>{ "Click me!" }</button>
           <div> { "In this time " click_count " rustaceans have been born." } </div>
         </div>
         }
@@ -63,8 +67,8 @@ mod tests {
     fn click_msg() {
         let app = App::new(5);
 
-        assert_eq!(app.state.borrow().click_count(), 5);
-        app.state.borrow_mut().msg(Msg::Click);
-        assert_eq!(app.state.borrow().click_count(), 6);
+        assert_eq!(app.store.borrow().click_count(), 5);
+        app.store.borrow_mut().msg(&Msg::Click);
+        assert_eq!(app.store.borrow().click_count(), 6);
     }
 }

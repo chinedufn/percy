@@ -20,6 +20,8 @@ function main () {
 
 let updateScheduled = false
 
+// TODO:
+// https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Window.html#method.request_animation_frame
 window.update = function() {
   if (!updateScheduled) {
     requestAnimationFrame(() => {

@@ -41,7 +41,8 @@ cargo install --force cargo-watch systemfd
 ```
 
 ```sh
-./examples/isomorphic/dev.sh
+./examples/isomorphic/watch.sh
+# Now visit http://localhost:7878
 ```
 
 ---
