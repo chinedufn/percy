@@ -10,6 +10,9 @@ use std::cell::RefCell;
 use std::rc::Rc;
 pub use virtual_dom_rs::virtual_node::VirtualNode;
 
+mod store;
+pub use store::*;
+
 mod state;
 pub use state::*;
 
