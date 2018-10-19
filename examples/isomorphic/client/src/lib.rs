@@ -10,11 +10,6 @@ extern crate isomorphic_app;
 use isomorphic_app::App;
 use isomorphic_app::VirtualNode;
 
-#[wasm_bindgen(module = "../src/client.js")]
-extern "C" {
-    pub fn update();
-}
-
 #[wasm_bindgen]
 pub struct Client {
     app: App,
@@ -31,7 +26,7 @@ impl Client {
         // TODO: Try using a wasm-bindgen closure and an extern request_animation_frame
         // instead of using this `update()` method for request animation frame
         app.state.borrow_mut().subscribe(Box::new(|| {
-            update();
+//            update();
         }));
 
         Client {

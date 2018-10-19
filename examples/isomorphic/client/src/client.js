@@ -1,15 +1,18 @@
-import { Client } from '../build/isomorphic_client'
+const { Client } = window.wasm_bindgen
 
-console.log('ok')
+window.wasm_bindgen(`/isomorphic_client_bg.wasm`).then(main)
 
-const client = new Client(window.initialState)
+function main () {
+  const client = new Client(window.initialState)
 
-let rootNode = document.getElementById('isomorphic-rust-web-app').children[0]
-rootNode.parentElement.replaceChild(client.render(), rootNode)
-rootNode = document.getElementById('isomorphic-rust-web-app').children[0]
+  let rootNode = document.getElementById('isomorphic-rust-web-app').children[0]
+  rootNode.parentElement.replaceChild(client.render(), rootNode)
+  rootNode = document.getElementById('isomorphic-rust-web-app').children[0]
 
-client.set_root_node(rootNode)
-client.update_dom()
+  client.set_root_node(rootNode)
+  client.update_dom()
+
+}
 
 let updateScheduled = false
 

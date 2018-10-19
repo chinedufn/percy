@@ -2,11 +2,12 @@ const path = require('path')
 
 const mode =
   process.env.NODE_ENV === 'production' ? 'production' : 'development'
+
 module.exports = {
   mode,
-  entry: './src', // webpack default
+  entry: './src',
   output: {
-    path: path.resolve(__dirname, 'dist'), // webpack default
+    path: path.resolve(__dirname, 'build'),
     filename: 'bundle.js'
   },
   devServer: {
