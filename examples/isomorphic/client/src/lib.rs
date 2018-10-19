@@ -1,12 +1,12 @@
-extern crate wasm_bindgen;
+use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
-extern crate virtual_dom_rs;
+use virtual_dom_rs;
 
-extern crate web_sys;
+use web_sys;
 use web_sys::Element;
 
-extern crate isomorphic_app;
+use isomorphic_app;
 use isomorphic_app::App;
 use isomorphic_app::VirtualNode;
 
@@ -28,7 +28,6 @@ extern "C" {
     #[wasm_bindgen(method)]
     pub fn update(this: &GlobalJS);
 }
-
 
 #[wasm_bindgen]
 impl Client {

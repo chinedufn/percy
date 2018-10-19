@@ -1,10 +1,12 @@
 #[macro_use]
 extern crate virtual_dom_rs;
 
-extern crate serde;
+use serde;
+
 #[macro_use]
 extern crate serde_derive;
-extern crate serde_json;
+
+use serde_json;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -15,6 +17,8 @@ pub use crate::store::*;
 
 mod state;
 pub use crate::state::*;
+
+mod views;
 
 pub struct App {
     pub store: Rc<RefCell<Store>>,

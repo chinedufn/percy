@@ -31,3 +31,9 @@ pub use patch::*;
 
 mod view;
 pub use view::*;
+
+/// Exports structs and macros that you'll almost always want access to in a virtual-dom
+/// powered application
+pub mod prelude {
+    pub use view::View;
+}
