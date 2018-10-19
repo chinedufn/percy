@@ -1,7 +1,7 @@
+use crate::virtual_node::VirtualNode;
+use crate::Patch;
 use std::cmp::min;
 use std::collections::HashMap;
-use virtual_node::VirtualNode;
-use Patch;
 
 /// Given two VirtualNode's generate Patch's that would turn the old virtual node's
 /// real DOM node equivalent into the new VirtualNode's real DOM node equivalent.

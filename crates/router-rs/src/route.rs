@@ -3,35 +3,42 @@ use std::str::FromStr;
 use virtual_dom_rs::View;
 
 type ViewFn = Box<Fn(HashMap<String, String>) -> Box<View>>;
+type ParamTypes = HashMap<String, ParamType>;
 
 /// A route specifies a path to match against. When a match is found a `view_creator` is used
 /// to return an `impl View` that can be used to render the appropriate content for that route.
-pub struct Route<'a> {
-    route_definition: &'a str,
-    param_types: HashMap<String, ParamType>,
+pub struct Route {
+    route_definition: &'static str,
+    param_types: ParamTypes,
     view_creator: ViewFn,
 }
 
 /// All of the parameters that our routes can have. This is how we would distinguish "id" in
 /// /users/:id
 /// from being a u32, u8, or some other value
+#[cfg_attr(test, derive(PartialEq, Debug))]
 pub enum ParamType {
     U32,
+    U64,
 }
 
-impl<'a> Route<'a> {
+impl Route {
     /// Create a new Route. You'll usually later call route.match(...) in order to see if a given
     /// the path in the browser URL matches your route's path definition.
-    pub fn new(path: &str, param_types: HashMap<String, ParamType>, view_creator: ViewFn) -> Route {
+    pub fn new(
+        route_definition: &'static str,
+        param_types: ParamTypes,
+        view_creator: ViewFn,
+    ) -> Route {
         Route {
-            route_definition: path,
+            route_definition,
             param_types,
             view_creator,
         }
     }
 }
 
-impl<'a> Route<'a> {
+impl Route {
     /// Determine whether or not our route matches a provided path.
     ///
     /// # Example
@@ -45,6 +52,10 @@ impl<'a> Route<'a> {
 
         // ex: [ "", "food", "tacos" ]
         let incoming_segments = path.split("/").collect::<Vec<&str>>();
+
+        if defined_segments.len() != incoming_segments.len() {
+            return false;
+        }
 
         for (index, defined_segment) in defined_segments.iter().enumerate() {
             if defined_segment.len() == 0 {
@@ -68,6 +79,11 @@ impl<'a> Route<'a> {
                 match param_type {
                     ParamType::U32 => {
                         if incoming_param_value.parse::<u32>().is_err() {
+                            return false;
+                        }
+                    }
+                    ParamType::U64 => {
+                        if incoming_param_value.parse::<u64>().is_err() {
                             return false;
                         }
                     }
@@ -130,6 +146,10 @@ mod tests {
 
         assert!(route.matches("/users/5"), "5 is a u32");
         assert!(!route.matches("/users/foo"), "'foo' is not a u32");
+        assert!(
+            !route.matches("/users/5/extra"),
+            "Does not match if there are extra path segments"
+        );
     }
 
     #[test]

@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
+router-rs = { path = "../../../crates/router-rs"}
 serde = "1"
 serde_derive = "1"
 serde_json = "1"

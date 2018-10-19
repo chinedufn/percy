@@ -1,6 +1,6 @@
+use crate::virtual_node::VirtualNode;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use virtual_node::VirtualNode;
 
 use wasm_bindgen::JsCast;
 use web_sys;
@@ -186,7 +186,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
             node.replace_with_with_node_1(new_node.create_element().as_ref() as &web_sys::Node)
                 .expect("Replaced element");
         }
-        Patch::TruncateChildren(node_idx, num_children_remaining) => {
+        Patch::TruncateChildren(_node_idx, num_children_remaining) => {
             let children = node.children();
 
             // We skip over any separators that we placed between two text nodes
@@ -236,7 +236,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
                 }
             }
         }
-        Patch::ChangeText(_node_idx, new_node) => unreachable!(
+        Patch::ChangeText(_node_idx, _new_node) => unreachable!(
             "Elements should not receive ChangeText patches. Those should go to Node's"
         ),
     }

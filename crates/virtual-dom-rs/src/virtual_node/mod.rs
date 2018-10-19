@@ -269,7 +269,7 @@ impl From<VirtualNode> for ParsedVirtualNode {
     }
 }
 impl From<Vec<VirtualNode>> for ParsedVirtualNode {
-    fn from(mut nodes: Vec<VirtualNode>) -> Self {
+    fn from(nodes: Vec<VirtualNode>) -> Self {
         let parsed_nodes: Vec<Rc<RefCell<ParsedVirtualNode>>> = nodes
             .into_iter()
             .map(|node| Rc::new(RefCell::new(ParsedVirtualNode::from(node))))

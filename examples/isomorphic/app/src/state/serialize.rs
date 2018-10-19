@@ -3,8 +3,8 @@ use serde::Deserializer;
 use serde::Serialize;
 use serde::Serializer;
 
-use std::rc::Rc;
 use std::cell::Cell;
+use std::rc::Rc;
 
 // serde does not support serialize / deserialize rc so we use our own deserializer
 pub fn deserialize_rc_cell<'de, D, T>(deserializer: D) -> Result<Rc<Cell<T>>, D::Error>

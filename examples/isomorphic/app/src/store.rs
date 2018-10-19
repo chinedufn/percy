@@ -1,20 +1,20 @@
-use crate::state::State;
 use crate::state::Msg;
+use crate::state::State;
 
 use std::ops::Deref;
 
 pub struct Store {
-    state: StateWrapper
+    state: StateWrapper,
 }
 
 impl Store {
-    pub fn new (state: State) -> Store {
+    pub fn new(state: State) -> Store {
         Store {
-            state: StateWrapper(state)
+            state: StateWrapper(state),
         }
     }
 
-    pub fn msg (&mut self, msg: &Msg) {
+    pub fn msg(&mut self, msg: &Msg) {
         self.state.msg(msg);
     }
 
@@ -42,7 +42,7 @@ impl Deref for StateWrapper {
 }
 
 impl StateWrapper {
-    fn msg (&mut self, msg: &Msg) {
+    fn msg(&mut self, msg: &Msg) {
         self.0.msg(msg)
     }
 

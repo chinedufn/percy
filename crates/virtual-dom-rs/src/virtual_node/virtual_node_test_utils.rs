@@ -1,6 +1,6 @@
 //! A collection of functions that are useful for unit testing your html! views.
 
-use virtual_node::VirtualNode;
+use crate::virtual_node::VirtualNode;
 
 impl VirtualNode {
     /// Get a vector of all of the VirtualNode children / grandchildren / etc of

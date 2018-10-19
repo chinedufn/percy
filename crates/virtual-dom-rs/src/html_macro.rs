@@ -260,10 +260,10 @@ macro_rules! recurse_html {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::VirtualNode;
     use std::cell::RefCell;
     use std::collections::HashMap;
     use std::rc::Rc;
-    use VirtualNode;
 
     struct HTMLMacroTest {
         generated: VirtualNode,

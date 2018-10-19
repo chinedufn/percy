@@ -18,22 +18,24 @@ pub use web_sys::*;
 
 #[macro_use]
 pub mod html_macro;
-pub use html_macro::*;
+pub use crate::html_macro::*;
 
 pub mod virtual_node;
-pub use virtual_node::*;
+pub use crate::virtual_node::*;
 
 mod diff;
-pub use diff::*;
+pub use crate::diff::*;
 
 mod patch;
-pub use patch::*;
+pub use crate::patch::*;
 
 mod view;
-pub use view::*;
+pub use crate::view::*;
 
 /// Exports structs and macros that you'll almost always want access to in a virtual-dom
 /// powered application
 pub mod prelude {
-    pub use view::View;
+    pub use crate::html_macro::*;
+    pub use crate::view::View;
+    pub use crate::virtual_node::VirtualNode;
 }
