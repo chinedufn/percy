@@ -11,10 +11,10 @@ use std::rc::Rc;
 pub use virtual_dom_rs::virtual_node::VirtualNode;
 
 mod store;
-pub use store::*;
+pub use crate::store::*;
 
 mod state;
-pub use state::*;
+pub use crate::state::*;
 
 pub struct App {
     pub state: Rc<RefCell<State>>,
