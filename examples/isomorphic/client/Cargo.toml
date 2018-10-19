@@ -18,6 +18,7 @@ features = ["default", "nightly"]
 [dependencies.web-sys]
 version = "0.3"
 features = [
+    "console",
     "Document",
     "Element",
     "EventTarget",

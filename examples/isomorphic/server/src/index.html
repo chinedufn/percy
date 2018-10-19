@@ -10,6 +10,12 @@
       #HTML_INSERTED_HERE_BY_SERVER#
   </div>
 
+  <script>
+    window.GlobalJS = function () {}
+    window.GlobalJS.prototype.update = function () {
+      window.update()
+    }
+  </script>
   <script src='./isomorphic_client.js'></script>
   <script>window.initialState = '#INITIAL_STATE_JSON#'</script>
   <script src="/bundle.js"></script>

@@ -3,6 +3,7 @@ name = "isomorphic-server"
 version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 publish = false
+edition = "2018"
 
 [dependencies]
 virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }

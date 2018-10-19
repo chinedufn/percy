@@ -1,9 +1,13 @@
 const { Client } = window.wasm_bindgen
 
+window.global_js = new GlobalJS();
+
 window.wasm_bindgen(`/isomorphic_client_bg.wasm`).then(main)
 
+let client
+
 function main () {
-  const client = new Client(window.initialState)
+  client = new Client(window.initialState)
 
   let rootNode = document.getElementById('isomorphic-rust-web-app').children[0]
   rootNode.parentElement.replaceChild(client.render(), rootNode)
@@ -16,8 +20,7 @@ function main () {
 
 let updateScheduled = false
 
-export function update() {
-  console.log('UPDATE called!')
+window.update = function() {
   if (!updateScheduled) {
     requestAnimationFrame(() => {
       let rootNode = document.getElementById('isomorphic-rust-web-app')

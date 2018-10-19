@@ -17,16 +17,28 @@ pub struct Client {
     previous_vdom: Option<VirtualNode>,
 }
 
+// Expose globals from JS for things such as request animation frame
+// that web sys doesn't seem to have yet
+#[wasm_bindgen]
+extern "C" {
+    pub type GlobalJS;
+
+    pub static global_js: GlobalJS;
+
+    #[wasm_bindgen(method)]
+    pub fn update(this: &GlobalJS);
+}
+
+
 #[wasm_bindgen]
 impl Client {
     #[wasm_bindgen(constructor)]
     pub fn new(initial_state: &str) -> Client {
         let app = App::from_state_json(initial_state);
 
-        // TODO: Try using a wasm-bindgen closure and an extern request_animation_frame
-        // instead of using this `update()` method for request animation frame
         app.state.borrow_mut().subscribe(Box::new(|| {
-//            update();
+            web_sys::console::log_1(&JsValue::from("Updating state"));
+            global_js.update();
         }));
 
         Client {
