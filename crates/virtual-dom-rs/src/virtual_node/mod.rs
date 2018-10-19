@@ -209,7 +209,8 @@ impl VirtualNode {
                         document
                             .create_text_node(&child.text.as_ref().unwrap())
                             .as_ref() as &web_sys::Node,
-                    ).unwrap();
+                    )
+                    .unwrap();
 
                 previous_node_was_text = true;
             } else {

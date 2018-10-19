@@ -84,7 +84,7 @@ impl<'a> Route<'a> {
     /// and our incoming path is `/users/5`
     ///
     /// Our view will end up getting created with `id: 5`
-    pub fn view (&self, incoming_path: &str) -> Box<View> {
+    pub fn view(&self, incoming_path: &str) -> Box<View> {
         (self.view_creator)(self.params(incoming_path))
     }
 
@@ -160,10 +160,10 @@ mod tests {
 
     // TODO:
     #[test]
-    fn macro_works () {
-//        let route = MyView::route();
-//
-//        assert!(route.matches("/users/5"));
-//        assert!(!route.matches("/users/not_a_u32"));
+    fn macro_works() {
+        //        let route = MyView::route();
+        //
+        //        assert!(route.matches("/users/5"));
+        //        assert!(!route.matches("/users/not_a_u32"));
     }
 }

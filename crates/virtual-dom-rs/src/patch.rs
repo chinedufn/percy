@@ -227,7 +227,8 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
                                 .dyn_into::<web_sys::Node>()
                                 .ok()
                                 .unwrap(),
-                        ).expect("Append text node");
+                        )
+                        .expect("Append text node");
                 } else {
                     parent
                         .append_child(new_node.create_element().as_ref() as &web_sys::Node)

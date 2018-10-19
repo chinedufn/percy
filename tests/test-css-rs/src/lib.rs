@@ -74,7 +74,8 @@ mod tests {
         ._css_rs_1 {
             display: flex;
         }
-        "#.replace(" ", "")
+        "#
+            .replace(" ", "")
             .replace("\n", "")
         );
 

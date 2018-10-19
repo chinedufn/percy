@@ -28,7 +28,8 @@ fn replace_child() {
         new: html! { <div id="patched",> { "Patched element" }</div> },
         desc: "Replace a root node attribute attribute and a child text node",
         override_expected: None,
-    }.test();
+    }
+    .test();
 }
 
 #[wasm_bindgen_test]
@@ -46,7 +47,8 @@ fn truncate_children() {
         },
         desc: "Truncates extra children",
         override_expected: None,
-    }.test();
+    }
+    .test();
 }
 
 #[wasm_bindgen_test]
@@ -57,7 +59,8 @@ fn remove_attributes() {
         new: html! { <div id="new-root",></div> },
         desc: "Removes attributes",
         override_expected: None,
-    }.test();
+    }
+    .test();
 }
 
 #[wasm_bindgen_test]
@@ -68,7 +71,8 @@ fn append_children() {
         },
         new: html! { <div id="bar",> <span></span> </div> },
         override_expected: None,
-    }.test();
+    }
+    .test();
 }
 
 #[wasm_bindgen_test]
@@ -94,7 +98,8 @@ fn text_node_siblings() {
         </div>
         },
         override_expected,
-    }.test();
+    }
+    .test();
 }
 
 #[wasm_bindgen_test]
@@ -104,7 +109,8 @@ fn append_text_node() {
         old: html! { <div id="foo",> </div> },
         new: html! { <div id="foo",> {"Hello"} </div> },
         override_expected: None,
-    }.test();
+    }
+    .test();
 }
 
 #[wasm_bindgen_test]
@@ -114,7 +120,8 @@ fn append_sibling_text_nodes() {
         old: html! { <div id="bar",> </div> },
         new: html! { <div id="bang",> {"Hello"} {"World"} </div> },
         override_expected: None,
-    }.test();
+    }
+    .test();
 }
 
 impl DiffPatchTest {

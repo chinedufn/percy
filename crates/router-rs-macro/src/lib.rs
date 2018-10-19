@@ -8,30 +8,30 @@ extern crate syn;
 use proc_macro2::*;
 
 use self::proc_macro::TokenStream;
-use syn::{parse_macro_input, DeriveInput};
 use syn::token::Token;
+use syn::{parse_macro_input, DeriveInput};
 
 use std::collections::HashSet;
 
-use syn::parse::{Parse, ParseStream, Result as SynResult, Error};
-use syn::punctuated::Punctuated;
-use syn::{Expr, Ident, ItemFn, Local, Pat, Stmt};
 use quote::{ToTokens, TokenStreamExt};
+use syn::parse::{Error, Parse, ParseStream, Result as SynResult};
+use syn::punctuated::Punctuated;
+use syn::{Expr, Field, Fields, Ident, ItemFn, Local, Pat, Stmt};
 
 /// Parsed attributes from a `#[route(..)]`.
 #[derive(Default, Debug)]
 struct RouteAttrs {
-    attrs: Vec<RouteAttr>
+    attrs: Vec<RouteAttr>,
 }
-
 
 impl Parse for RouteAttrs {
     fn parse(input: ParseStream) -> SynResult<Self> {
         if input.is_empty() {
-            return Ok(RouteAttrs { attrs: vec![]})
+            return Ok(RouteAttrs { attrs: vec![] });
         }
 
         let opts = syn::punctuated::Punctuated::<_, syn::token::Comma>::parse_terminated(input)?;
+
         Ok(RouteAttrs {
             attrs: opts.into_iter().collect(),
         })
@@ -40,7 +40,7 @@ impl Parse for RouteAttrs {
 
 #[derive(Debug, PartialEq, Eq)]
 enum RouteAttr {
-    Path
+    Path,
 }
 
 impl Parse for RouteAttr {
@@ -51,7 +51,7 @@ impl Parse for RouteAttr {
 
         if attr == "path" {
             println!("WORKED");
-            return Ok(RouteAttr::Path)
+            return Ok(RouteAttr::Path);
         }
 
         println!("NO WORK");
@@ -62,8 +62,7 @@ impl Parse for RouteAttr {
 
 #[proc_macro_attribute]
 pub fn route(args: TokenStream, input: TokenStream) -> TokenStream {
-//    let input = parse_macro_input!(input as Token![struct]);
-
+    //    let input = parse_macro_input!(input as Token![struct]);
 
     let mut args = parse_macro_input!(args as RouteAttrs);
 
@@ -71,8 +70,7 @@ pub fn route(args: TokenStream, input: TokenStream) -> TokenStream {
 
     eprintln!("args = {:#?}", args);
 
-    TokenStream::from(quote!(
-    ))
+    TokenStream::from(quote!())
 }
 
 #[cfg(test)]
