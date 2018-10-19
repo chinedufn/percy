@@ -33,6 +33,17 @@ npm install
 # Now visit http://localhost:7878
 ```
 
+### Running with hot reload
+
+```sh
+# You will need `cargo-watch and systemfd`
+cargo install --force cargo-watch systemfd
+```
+
+```sh
+./examples/isomorphic/dev.sh
+```
+
 ---
 
 ## Structure
@@ -75,4 +86,16 @@ To run it
 docker build -t percy-isomorphic .
 docker run -d -p 7878:7878 percy-isomorphic
 # Visit localhost:7878 in your web browser
+```
+
+You can also do a release build outside docker, for that you will need `musl-tools` and the `x86_64-unknown-linux-musl` target.
+
+```sh
+sudo apt install musl-tools
+rustup target add x86_64-unknown-linux-musl
+```
+
+```sh
+./examples/isomorphic/build.release.sh
+./examples/isomorphic/run.release.sh
 ```

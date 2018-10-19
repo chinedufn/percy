@@ -12,11 +12,9 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install -y nodejs 
 
 # Install WASM bindgen CLI
-RUN curl -OL https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.23/wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz &&\
-  tar xf wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz &&\
-  rm wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz &&\
-  chmod +x wasm-bindgen-0.2.23-x86_64-unknown-linux-musl/wasm-bindgen &&\
-  mv wasm-bindgen-0.2.23-x86_64-unknown-linux-musl/wasm-bindgen /usr/local/bin/wasm-bindgen
+RUN curl -L https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.23/wasm-bindgen-0.2.23-x86_64-unknown-linux-musl.tar.gz | tar --strip-components=1 --wildcards -xzf - "*/wasm-bindgen" &&\
+  chmod +x wasm-bindgen* &&\
+  mv wasm-bindgen* /usr/local/bin/
 
 WORKDIR /usr/src
 
@@ -27,16 +25,9 @@ RUN npm install
 
 COPY . ./
 
-# Compile to WASM
-RUN cargo build -p isomorphic-client --release --target wasm32-unknown-unknown
+WORKDIR /usr/src/examples/isomorphic
 
-# Build WASM module
-# TODO: --mode=production . Need to make sure it works locally. If it doesn't try disabling UglifyJS mangling
-RUN wasm-bindgen --no-typescript target/wasm32-unknown-unknown/release/isomorphic_client.wasm --out-dir ./examples/isomorphic/client
-RUN ./node_modules/webpack-cli/bin/cli.js --mode=development ./examples/isomorphic/client/client-entry-point.js -o ./examples/isomorphic/client/bundle.js
-
-# Build example isomorphic server binary
-RUN cargo build -p isomorphic-server --release --target x86_64-unknown-linux-musl
+RUN ./build.release.sh
 
 # This gets around the 100Mb limit by re-starting from a tiny image
 # We tried `scratch` and `alpine:rust` but targeting them proved difficult so going the easy route.
@@ -44,8 +35,9 @@ FROM scratch
 
 # At the moment our server expects the files to be in `/examples/isomorphic/client/{filename}` so we copy the examples dir
 COPY --from=build /usr/src/target/x86_64-unknown-linux-musl/release/isomorphic-server /
-COPY --from=build  /usr/src/examples /examples
+COPY --from=build /usr/src/examples/isomorphic/client/dist /dist
 
 EXPOSE 7878/tcp
 
+WORKDIR /
 ENTRYPOINT ["/isomorphic-server"]
