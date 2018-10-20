@@ -169,7 +169,9 @@ impl VirtualNode {
         let current_elem = document.create_element(&self.tag).unwrap();
 
         self.props.iter().for_each(|(name, value)| {
-            current_elem.set_attribute(name, value);
+            current_elem
+                .set_attribute(name, value)
+                .expect("Set element attribute in create element");
         });
 
         self.events.0.iter().for_each(|(onevent, callback)| {

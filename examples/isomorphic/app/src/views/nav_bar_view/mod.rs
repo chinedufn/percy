@@ -39,7 +39,7 @@ impl View for NavBarView {
         );
 
         html! {
-        <div class=*NavBarCSS,>
+        <div class=*NAV_BAR_CSS,>
             { home.render() }
             { contributors.render() }
         </div>
@@ -47,7 +47,7 @@ impl View for NavBarView {
     }
 }
 
-static NavBarCSS: &'static str = css! {"
+static NAV_BAR_CSS: &'static str = css! {"
 :host {
     align-items: center;
     background: linear-gradient(267deg,#2a38ef,#200994 50%,#1c2dab);

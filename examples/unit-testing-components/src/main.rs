@@ -9,15 +9,6 @@ fn main() {
 }
 
 #[allow(unused)]
-fn water_bottle_view(percent_full: f32) -> VirtualNode {
-    if percent_full > 0.5 {
-        full_water_bottle()
-    } else {
-        struggling_water_bottle(percent_full)
-    }
-}
-
-#[allow(unused)]
 fn full_water_bottle() -> VirtualNode {
     html! {
     <div>
@@ -42,6 +33,16 @@ fn struggling_water_bottle(percent_full: f32) -> VirtualNode {
     }
 }
 
+
+#[allow(unused)]
+fn water_bottle_view(percent_full: f32) -> VirtualNode {
+    if percent_full > 0.5 {
+        full_water_bottle()
+    } else {
+        struggling_water_bottle(percent_full)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -55,10 +56,10 @@ mod tests {
             1
         );
 
-        let struggle_water = water_bottle_view(0.2587);
+        let water_view = water_bottle_view(0.2587);
 
         assert_eq!(
-            struggle_water.children.as_ref().unwrap()[0]
+            water_view.children.as_ref().unwrap()[0]
                 .text
                 .as_ref()
                 .unwrap(),

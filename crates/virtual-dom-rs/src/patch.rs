@@ -180,7 +180,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
         }
         Patch::RemoveAttributes(_node_idx, attributes) => {
             for attrib_name in attributes.iter() {
-                node.remove_attribute(attrib_name);
+                node.remove_attribute(attrib_name).expect("Remove attribute from element");
             }
         }
         Patch::Replace(_node_idx, new_node) => {
@@ -197,7 +197,6 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
             let mut non_separator_children_found = 0;
 
             for index in 0 as u32..child_count {
-                web_sys::console::log_1(&wasm_bindgen::JsValue::from(format!("{}", index)));
                 let child = children
                     .get_with_index(min(index, child_count - 1))
                     .expect("Potential child to truncate");

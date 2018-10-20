@@ -33,18 +33,16 @@ impl View for NavBarItemView {
         let store = Rc::clone(&self.store);
 
         let path = self.path;
-        let text = self.text.to_string();
-        let style = self.style;
 
         html! {
             <span
-                style=style,
+                style=self.style,
                 class=*NAV_BAR_ITEM_CSS,
                 !onclick=move || {
                   store.borrow_mut().msg(&Msg::Path(path.to_string()));
                 },
             >
-              { &text }
+              { self.text }
             </span>
         }
     }

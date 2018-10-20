@@ -5,7 +5,6 @@
 //! to an `HtmlElement`, and on the server we render to a `String`.
 
 #![deny(missing_docs)]
-#![feature(use_extern_macros)]
 
 extern crate wasm_bindgen;
 
