@@ -36,7 +36,7 @@ impl View for HomeView {
 
           <span> { "The button has been clicked: " click_component " times!"} </span>
           <button !onclick=move|| { store.borrow_mut().msg(&Msg::Click) },>{ "Click me!" }</button>
-          <div> { "In this time " click_count " rustaceans have been born." } </div>
+          <div> { "In this time Ferris has made " click_count " new friends." } </div>
 
         </div>
         }
