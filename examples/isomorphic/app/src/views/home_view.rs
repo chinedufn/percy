@@ -20,7 +20,7 @@ impl HomeView {
 
 impl View for HomeView {
     fn render(&self) -> VirtualNode {
-        let nav_bar = NavBarView::new(ActivePage::Home).render();
+        let nav_bar = NavBarView::new(ActivePage::Home, Rc::clone(&self.store)).render();
 
         let store = Rc::clone(&self.store);
 

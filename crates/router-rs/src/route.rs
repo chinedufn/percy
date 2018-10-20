@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::str::FromStr;
 use virtual_dom_rs::View;
 
 type ViewFn = Box<Fn(HashMap<String, String>) -> Box<View>>;
@@ -48,10 +47,17 @@ impl Route {
     /// ```
     pub fn matches(&self, path: &str) -> bool {
         // ex: [ "", "food", ":food_type" ]
-        let defined_segments = self.route_definition.split("/").collect::<Vec<&str>>();
+        let defined_segments = self
+            .route_definition
+            .split("/")
+            .filter(|segment| segment.len() > 0)
+            .collect::<Vec<&str>>();
 
         // ex: [ "", "food", "tacos" ]
-        let incoming_segments = path.split("/").collect::<Vec<&str>>();
+        let incoming_segments = path
+            .split("/")
+            .filter(|segment| segment.len() > 0)
+            .collect::<Vec<&str>>();
 
         if defined_segments.len() != incoming_segments.len() {
             return false;
@@ -112,7 +118,7 @@ impl Route {
             .collect::<Vec<&str>>()
             .iter()
             .enumerate()
-            .filter(|(index, segment)| {
+            .filter(|(_index, segment)| {
                 if segment.len() == 0 {
                     return false;
                 }
@@ -140,22 +146,63 @@ mod tests {
         }
     }
 
-    #[test]
-    fn match_route() {
-        let route = create_test_route();
+    struct MatchRouteTestCase {
+        desc: &'static str,
+        route_definition: &'static str,
+        // (route ... should it match ... description of test)
+        matches: Vec<(&'static str, bool, &'static str)>,
+    }
 
-        assert!(route.matches("/users/5"), "5 is a u32");
-        assert!(!route.matches("/users/foo"), "'foo' is not a u32");
-        assert!(
-            !route.matches("/users/5/extra"),
-            "Does not match if there are extra path segments"
-        );
+    impl MatchRouteTestCase {
+        fn test(&self) {
+            let view_creator = |params: HashMap<String, String>| {
+                Box::new(MyView {
+                    id: params.get(":id").unwrap().parse::<u32>().unwrap(),
+                }) as Box<View>
+            };
+
+            let mut param_types = HashMap::new();
+            param_types.insert("id".to_string(), ParamType::U32);
+
+            let route = Route::new(self.route_definition, param_types, Box::new(view_creator));
+
+            for match_case in self.matches.iter() {
+                assert_eq!(
+                    route.matches(match_case.0),
+                    match_case.1,
+                    "{}\n{}",
+                    self.desc,
+                    match_case.2
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn route_type_safety() {
+        MatchRouteTestCase {
+            desc: "Typed route parameters",
+            route_definition: "/users/:id",
+            matches: vec![
+                ("/users/5", true, "5 is a u32"),
+                ("/users/foo", false, "foo is not a u32"),
+            ],
+        }
+        .test();
+    }
+
+    #[test]
+    fn route_cascade() {
+        MatchRouteTestCase {
+            desc: "Make sure that `/` route doesn't capture `/other-routes`",
+            route_definition: "/",
+            matches: vec![("/foo", false, "routes should not match additional segments")],
+        }
+        .test();
     }
 
     #[test]
     fn create_view() {
-        let route = create_test_route();
-
         assert_eq!(
             create_test_route().view("/users/300").render(),
             html! {<div> { "300" } </div>},
@@ -163,7 +210,7 @@ mod tests {
         );
     }
 
-    fn create_test_route() -> Route<'static> {
+    fn create_test_route() -> Route {
         let view_creator = |params: HashMap<String, String>| {
             Box::new(MyView {
                 id: params.get(":id").unwrap().parse::<u32>().unwrap(),

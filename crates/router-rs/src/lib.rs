@@ -1,8 +1,6 @@
 //! A router implementation geared towards front-end web apps
 
 #[deny(missing_docs)]
-use virtual_dom_rs;
-
 mod router;
 pub use self::router::Router;
 

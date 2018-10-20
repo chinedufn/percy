@@ -43,7 +43,7 @@ lazy_static! {
 ///
 /// ```ignore
 /// #![feature(use_extern_macros)]
-/// #![feature(proc_macro_non_items)]
+/// #![feature(proc_macro_hygiene)]
 ///
 /// extern crate css_rs_macro;
 /// use css_rs_macro::css;

@@ -38,3 +38,4 @@ window.update = function() {
 
   updateScheduled = true
 }
+

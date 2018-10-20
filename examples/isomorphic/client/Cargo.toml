@@ -8,6 +8,7 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
+console_error_panic_hook = "0.1"
 isomorphic-app = { path = "../app" }
 virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
 

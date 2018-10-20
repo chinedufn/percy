@@ -1,3 +1,5 @@
+#![feature(proc_macro_hygiene)]
+
 #[macro_use]
 extern crate virtual_dom_rs;
 
@@ -22,7 +24,7 @@ pub use crate::store::*;
 
 mod state;
 pub use crate::state::*;
-use crate::views::home_view::HomeView;
+use crate::views::*;
 use std::collections::HashMap;
 
 mod views;
@@ -58,21 +60,34 @@ impl App {
         #[allow(unused_variables)] // Compiler doesn't see it inside html macro
         let store = Rc::clone(&self.store);
 
-        self.router.view("/").unwrap().render()
+        self.router
+            .view(self.store.borrow().path())
+            .unwrap()
+            .render()
     }
 }
 
 fn make_router(store: Rc<RefCell<Store>>) -> Router {
     let mut router = Router::default();
 
+    let store_clone = Rc::clone(&store);
+
     let param_types = HashMap::new();
-    let route = Route::new(
+    let home_route = Route::new(
         "/",
         param_types,
-        Box::new(move |params| Box::new(HomeView::new(Rc::clone(&store))) as Box<View>),
+        Box::new(move |params| Box::new(HomeView::new(Rc::clone(&store_clone))) as Box<View>),
     );
 
-    router.add_route(route);
+    router.add_route(home_route);
+
+    let param_types = HashMap::new();
+    let contributors_route = Route::new(
+        "/contributors",
+        param_types,
+        Box::new(move |params| Box::new(ContributorsView::new(Rc::clone(&store))) as Box<View>),
+    );
+    router.add_route(contributors_route);
 
     router
 }

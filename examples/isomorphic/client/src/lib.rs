@@ -1,6 +1,7 @@
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
+use console_error_panic_hook;
 use virtual_dom_rs;
 
 use web_sys;
@@ -33,6 +34,8 @@ extern "C" {
 impl Client {
     #[wasm_bindgen(constructor)]
     pub fn new(initial_state: &str) -> Client {
+        console_error_panic_hook::set_once();
+
         let app = App::from_state_json(initial_state);
 
         // TODO: Use request animation frame from web_sys
