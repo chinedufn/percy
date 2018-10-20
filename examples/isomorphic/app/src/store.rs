@@ -15,7 +15,10 @@ impl Store {
     }
 
     pub fn msg(&mut self, msg: &Msg) {
-        self.state.msg(msg);
+        match msg {
+            Msg::Path(path) => self.state.msg(msg),
+            _ => self.state.msg(msg),
+        }
     }
 
     pub fn subscribe(&mut self, callback: Box<Fn() -> ()>) {

@@ -20,8 +20,12 @@ impl View for ContributorsView {
         let nav_bar = NavBarView::new(ActivePage::Contributors, Rc::clone(&self.store)).render();
 
         html! {
+        <div>
             { nav_bar }
-            { " Contributors page here " }
+            <div>
+             { "Contributors page here" }
+            </div>
+        </div>
         }
     }
 }

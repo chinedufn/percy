@@ -2,6 +2,7 @@ use crate::virtual_node::VirtualNode;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+use std::cmp::min;
 use wasm_bindgen::JsCast;
 use web_sys;
 use web_sys::{Element, Node};
@@ -188,14 +189,18 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
         }
         Patch::TruncateChildren(_node_idx, num_children_remaining) => {
             let children = node.children();
+            let mut child_count = children.length();
 
             // We skip over any separators that we placed between two text nodes
             //   -> `<!--ptns-->`
             //  and trim all children that come after our new desired `num_children_remaining`
             let mut non_separator_children_found = 0;
 
-            for index in 0 as u32..children.length() {
-                let child = children.get_with_index(index).unwrap();
+            for index in 0 as u32..child_count {
+                web_sys::console::log_1(&wasm_bindgen::JsValue::from(format!("{}", index)));
+                let child = children
+                    .get_with_index(min(index, child_count - 1))
+                    .expect("Potential child to truncate");
                 let child = child.as_ref() as &web_sys::Node;
 
                 // If this is a comment node then we know that it is a `<!--ptns-->`
@@ -213,6 +218,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
                 (node.as_ref() as &web_sys::Node)
                     .remove_child(child)
                     .expect("Truncated children");
+                child_count -= 1;
             }
         }
         Patch::AppendChildren(_node_idx, new_nodes) => {
@@ -223,10 +229,12 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
                     parent
                         .append_child(
                             &document
-                                .create_text_node(new_node.text.as_ref().unwrap())
+                                .create_text_node(
+                                    new_node.text.as_ref().expect("Text node to append"),
+                                )
                                 .dyn_into::<web_sys::Node>()
                                 .ok()
-                                .unwrap(),
+                                .expect("Appended text node"),
                         )
                         .expect("Append text node");
                 } else {

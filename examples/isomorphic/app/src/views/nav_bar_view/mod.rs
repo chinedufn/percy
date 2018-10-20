@@ -5,6 +5,9 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use virtual_dom_rs::prelude::*;
 
+mod nav_bar_item_view;
+use self::nav_bar_item_view::NavBarItemView;
+
 pub struct NavBarView {
     active_page: ActivePage,
     store: Rc<RefCell<Store>>,
@@ -27,31 +30,18 @@ impl View for NavBarView {
         let path = store.path();
         let path = path.clone();
 
-        let store = Rc::clone(&self.store);
-
-        let home = html! {
-            <span !onclick=move || {
-                    store.borrow_mut().msg(&Msg::Path("/".to_string()));
-                },
-            >
-              { "Home" }
-              { path }
-            </span>
-        };
-
-        let store = Rc::clone(&self.store);
-        let contributors = html! {
-            <span !onclick=move || {
-                store.borrow_mut().msg(&Msg::Path("/contributors".to_string()));
-            },>
-                { "Contributors" }
-            </span>
-        };
+        let home = NavBarItemView::new(Rc::clone(&self.store), "/", "Isomorphic Web App", "");
+        let contributors = NavBarItemView::new(
+            Rc::clone(&self.store),
+            "/contributors",
+            "Contributors",
+            "margin-left: auto;",
+        );
 
         html! {
         <div class=*NavBarCSS,>
-            { home }
-            { contributors }
+            { home.render() }
+            { contributors.render() }
         </div>
         }
     }
@@ -59,7 +49,16 @@ impl View for NavBarView {
 
 static NavBarCSS: &'static str = css! {"
 :host {
-    background-color: red;
+    align-items: center;
+    background: linear-gradient(267deg,#2a38ef,#200994 50%,#1c2dab);
+    color: white;
+    display: flex;
+    font-family: Avenir-Next;
+    font-size: 20px;
+    font-weight: bold;
+    height: 50px;
+    padding-left: 30px;
+    padding-right: 30px;
 }
 "};
 
