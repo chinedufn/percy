@@ -25,9 +25,13 @@ RUN npm install
 
 COPY . ./
 
+
 WORKDIR /usr/src/examples/isomorphic
 
 RUN ./build.release.sh
+
+# TODO: Unused.. the code just expects it to be there atm..
+RUN mkdir client/build
 
 # This gets around the 100Mb limit by re-starting from a tiny image
 # We tried `scratch` and `alpine:rust` but targeting them proved difficult so going the easy route.
@@ -35,6 +39,7 @@ FROM scratch
 
 # At the moment our server expects the files to be in `/examples/isomorphic/client/{filename}` so we copy the examples dir
 COPY --from=build /usr/src/target/x86_64-unknown-linux-musl/release/isomorphic-server /
+COPY --from=build /usr/src/examples/isomorphic/client/build /build # TODO: Unused.. the code just expects it to be there atm..
 COPY --from=build /usr/src/examples/isomorphic/client/dist /dist
 
 EXPOSE 7878/tcp
