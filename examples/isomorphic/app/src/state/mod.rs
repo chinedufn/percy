@@ -2,19 +2,11 @@ use serde_json;
 use std::cell::Cell;
 use std::rc::Rc;
 
-mod serialize;
-use self::serialize::deserialize_rc_cell;
-use self::serialize::serialize_rc_cell;
-
 mod msg;
 pub use self::msg::Msg;
 
 #[derive(Serialize, Deserialize)]
 pub struct State {
-    #[serde(
-        deserialize_with = "deserialize_rc_cell",
-        serialize_with = "serialize_rc_cell"
-    )]
     click_count: Rc<Cell<u32>>,
     #[serde(skip)]
     listeners: Vec<Box<Fn() -> ()>>,
