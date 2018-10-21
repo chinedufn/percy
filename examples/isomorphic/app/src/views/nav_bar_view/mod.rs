@@ -27,8 +27,6 @@ pub enum ActivePage {
 impl View for NavBarView {
     fn render(&self) -> VirtualNode {
         let store = self.store.borrow();
-        let path = store.path();
-        let path = path.clone();
 
         let home = NavBarItemView::new(Rc::clone(&self.store), "/", "Isomorphic Web App", "");
         let contributors = NavBarItemView::new(
@@ -68,6 +66,5 @@ mod tests {
 
     #[test]
     fn render_nav() {
-        let nav_bar = ActivePage::new(ActivePage::Home);
     }
 }

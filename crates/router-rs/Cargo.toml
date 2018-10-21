@@ -5,7 +5,7 @@ authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-virtual-dom-rs = { path = "../virtual-dom-rs", version = "0.2.2"}
+virtual-dom-rs = { path = "../virtual-dom-rs", version = "0.3.0"}
 
 [dev-dependencies]
 router-rs-macro = {path = "../router-rs-macro"}
