@@ -135,6 +135,8 @@ mod tests {
     use super::*;
     use virtual_dom_rs::virtual_node::VirtualNode;
     use virtual_dom_rs::{html, recurse_html};
+    use std::rc::Rc;
+    use std::cell::RefCell;
 
     struct MyView {
         id: u32,
@@ -232,5 +234,21 @@ mod tests {
         //
         //        assert!(route.matches("/users/5"));
         //        assert!(!route.matches("/users/not_a_u32"));
+    }
+
+    struct Store {
+    }
+
+    // TODO: Plan out how to provide a state store to routes on paper. Probably some sort of generic
+    // StateStore<T> where T is your applications Store
+//    #[route(path = "/users/:id")]
+    struct ViewWithStore {
+        id: u32,
+        store: Rc<RefCell<Store>>
+    }
+
+    // TODO
+    #[test]
+    fn provide_state_store() {
     }
 }
