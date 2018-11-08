@@ -9,18 +9,6 @@ pub fn diff<'a>(old: &'a VirtualNode, new: &'a VirtualNode) -> Vec<Patch<'a>> {
     diff_recursive(&old, &new, &mut 0)
 }
 
-
-
-fn clean_children<'a, 'b>(
-    old: &'a VirtualNode,
-    cur_node_idx: &'b mut usize,
-) {
-    *cur_node_idx += 1;
-    for child in old.children.as_ref().unwrap() {
-        clean_children(&child, cur_node_idx);
-    }
-}
-
 fn diff_recursive<'a, 'b>(
     old: &'a VirtualNode,
     new: &'a VirtualNode,
@@ -30,9 +18,10 @@ fn diff_recursive<'a, 'b>(
 
     if old.tag != new.tag {
         patches.push(Patch::Replace(*cur_node_idx, &new));
-        let old_children = old.children.as_ref().unwrap();
-        for child in old_children.iter() {
-            clean_children(child, cur_node_idx);
+        if let Some(children) = old.children.as_ref() {
+            for child in children {
+                increment_node_idx_for_children(child, cur_node_idx);
+            }
         }
         return patches;
     }
@@ -108,12 +97,24 @@ fn diff_recursive<'a, 'b>(
     }
     if new_child_count < old_child_count {
         for child in old_children[min_count..].iter() {
-            clean_children(child, cur_node_idx);
+            increment_node_idx_for_children(child, cur_node_idx);
         }
     }
 
     //    new_root.create_element()
     patches
+}
+
+fn increment_node_idx_for_children<'a, 'b>(
+    old: &'a VirtualNode,
+    cur_node_idx: &'b mut usize,
+) {
+    *cur_node_idx += 1;
+    if let Some(children) = old.children.as_ref() {
+        for child in children {
+            increment_node_idx_for_children(&child, cur_node_idx);
+        }
+    }
 }
 
 #[cfg(test)]
