@@ -143,6 +143,13 @@ mod tests {
             expected: vec![Patch::Replace(1, &html! { <strong></strong> })],
             description: "Replace a child node",
         });
+        test(DiffTestCase {
+            old: html! { <div> <b>{"1"}</b> <b>{"2"}</b></div> },
+            new: html! { <div> <strong>{"1"}</strong> <b>{"3"}</b> </div> },
+            expected: vec![Patch::Replace(1, &html! { <strong>{"1"}</strong> }),
+                        Patch::ChangeText(4, &html! { {"3"} })],
+            description: "Replace a child node",
+        });
     }
 
     #[test]
