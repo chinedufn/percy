@@ -144,11 +144,11 @@ mod tests {
             description: "Replace a child node",
         });
         test(DiffTestCase {
-            old: html! { <div> <b>{"1"}</b> <b>{"2"}</b></div> },
-            new: html! { <div> <strong>{"1"}</strong> <b>{"3"}</b> </div> },
-            expected: vec![Patch::Replace(1, &html! { <strong>{"1"}</strong> }),
-                        Patch::ChangeText(4, &html! { {"3"} })],
-            description: "Replace a child node",
+            old: html! { <div> <b>{"1"}</b> <b></b> </div> },
+            new: html! { <div> <i>{"1"}</i> <i></i> </div>},
+            expected: vec![Patch::Replace(1, &html! { <i>{"1"}</i> }),
+                        Patch::Replace(3, &html! { <i></i> })], //required to check correct index
+            description: "Replace node with a chiild",
         });
     }
 
@@ -189,6 +189,13 @@ mod tests {
             </div> },
             expected: vec![Patch::TruncateChildren(0, 1), Patch::TruncateChildren(1, 1)],
             description: "Remove a child and a grandchild node",
+        });
+        test(DiffTestCase {
+            old: html! { <div> <b> <i></i> <i></i> </b> <b></b> </div> },
+            new: html! { <div> <b> <i></i> </b> <i></i> </div>},
+            expected: vec![Patch::TruncateChildren(1,1),
+                        Patch::Replace(4, &html! { <i></i> })], //required to check correct index
+            description: "Removing child and change next node after parent",
         });
     }
 
