@@ -8,10 +8,16 @@ pub use std::rc::Rc;
 
 pub mod virtual_node_test_utils;
 
+#[cfg(target_arch = "wasm32")]
 use web_sys;
-use web_sys::{Element, Text};
+#[cfg(target_arch = "wasm32")]
+use web_sys::*;
 
+#[cfg(target_arch = "wasm32")]
+use js_sys::Function;
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::Closure;
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsCast;
 
 /// When building your views you'll typically use the `html!` macro to generate
@@ -25,6 +31,8 @@ use wasm_bindgen::JsCast;
 ///
 /// Or on the server side you'll just call `.to_string()` on your root virtual node
 /// in order to recursively render the node and all of its children.
+///
+/// TODO: Make all of these fields private and create accessor methods
 #[derive(PartialEq)]
 pub struct VirtualNode {
     /// The HTML tag, such as "div"
@@ -32,7 +40,10 @@ pub struct VirtualNode {
     /// HTML props such as id, class, style, etc
     pub props: HashMap<String, String>,
     /// Events that will get added to your real DOM element via `.addEventListener`
-    pub events: Events,
+    pub custom_events: CustomEvents,
+    /// Events that are specified in web_sys such as `oninput` `onclick` `onmousemove`
+    /// etc...
+    pub browser_events: BrowserEvents,
     /// The children of this `VirtualNode`. So a <div> <em></em> </div> structure would
     /// have a parent div and one child, em.
     pub children: Option<Vec<VirtualNode>>,
@@ -56,7 +67,9 @@ pub struct ParsedVirtualNode {
     /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
     pub props: HashMap<String, String>,
     /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
-    pub events: Events,
+    pub custom_events: CustomEvents,
+    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
+    pub browser_events: BrowserEvents,
     /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
     /// TODO: Don't think this needs to be an option
     pub children: Option<Vec<Rc<RefCell<ParsedVirtualNode>>>>,
@@ -70,11 +83,12 @@ impl ParsedVirtualNode {
     /// Create a virtual node that is meant to represent a DOM element
     pub fn new(tag: &str) -> ParsedVirtualNode {
         let props = HashMap::new();
-        let events = Events(HashMap::new());
+        let events = CustomEvents(HashMap::new());
         ParsedVirtualNode {
             tag: tag.to_string(),
             props,
-            events,
+            custom_events: events,
+            browser_events: BrowserEvents::default(),
             children: Some(vec![]),
             parent: None,
             text: None,
@@ -86,7 +100,8 @@ impl ParsedVirtualNode {
         ParsedVirtualNode {
             tag: "".to_string(),
             props: HashMap::new(),
-            events: Events(HashMap::new()),
+            browser_events: BrowserEvents::default(),
+            custom_events: CustomEvents(HashMap::new()),
             children: Some(vec![]),
             parent: None,
             text: Some(text.to_string()),
@@ -111,7 +126,8 @@ impl From<ParsedVirtualNode> for VirtualNode {
         VirtualNode {
             tag: parsed_node.tag,
             props: parsed_node.props,
-            events: parsed_node.events,
+            browser_events: parsed_node.browser_events,
+            custom_events: parsed_node.custom_events,
             children,
             text: parsed_node.text,
         }
@@ -130,11 +146,13 @@ impl VirtualNode {
     /// ```
     pub fn new(tag: &str) -> VirtualNode {
         let props = HashMap::new();
-        let events = Events(HashMap::new());
+        let custom_events = CustomEvents(HashMap::new());
+        let browser_events = BrowserEvents::default();
         VirtualNode {
             tag: tag.to_string(),
             props,
-            events,
+            custom_events,
+            browser_events,
             children: Some(vec![]),
             text: None,
         }
@@ -153,7 +171,8 @@ impl VirtualNode {
         VirtualNode {
             tag: "".to_string(),
             props: HashMap::new(),
-            events: Events(HashMap::new()),
+            custom_events: CustomEvents(HashMap::new()),
+            browser_events: BrowserEvents::default(),
             children: Some(vec![]),
             text: Some(text.to_string()),
         }
@@ -163,6 +182,7 @@ impl VirtualNode {
 impl VirtualNode {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
+    #[cfg(target_arch = "wasm32")]
     pub fn create_element(&self) -> Element {
         let document = web_sys::window().unwrap().document().unwrap();
 
@@ -174,15 +194,16 @@ impl VirtualNode {
                 .expect("Set element attribute in create element");
         });
 
-        self.events.0.iter().for_each(|(onevent, callback)| {
+        self.custom_events.0.iter().for_each(|(onevent, callback)| {
             // onclick -> click
             let event = &onevent[2..];
 
             let mut callback = callback.borrow_mut();
             let callback = callback.take().unwrap();
             (current_elem.as_ref() as &web_sys::EventTarget)
-                .add_event_listener_with_callback(event, callback.as_ref().unchecked_ref())
+                .add_event_listener_with_callback(event, &callback.as_ref().unchecked_ref())
                 .unwrap();
+
             callback.forget();
         });
 
@@ -227,6 +248,7 @@ impl VirtualNode {
         current_elem
     }
 
+    #[cfg(target_arch = "wasm32")]
     /// Return a `Text` element from a `VirtualNode`, typically right before adding it
     /// into the DOM.
     pub fn create_text_node(&self) -> Text {
@@ -263,7 +285,8 @@ impl From<VirtualNode> for ParsedVirtualNode {
         ParsedVirtualNode {
             tag: node.tag,
             props: node.props,
-            events: node.events,
+            browser_events: node.browser_events,
+            custom_events: node.custom_events,
             children,
             parent: None,
             text: node.text,
@@ -341,24 +364,58 @@ impl fmt::Display for VirtualNode {
     }
 }
 
-/// We need a custom implementation of fmt::Debug since Fn() doesn't
-/// implement debug.
-pub struct Events(pub HashMap<String, RefCell<Option<Closure<Fn() -> ()>>>>);
+#[cfg(target_arch = "wasm32")]
+/// TODO: Private fields with set/get methods
+#[derive(Default)]
+pub struct BrowserEvents {
+    /// https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.HtmlElement.html#method.oninput
+    pub oninput: Option<Closure<FnMut(InputEvent) -> ()>>,
+}
 
-impl PartialEq for Events {
+#[cfg(target_arch = "wasm32")]
+impl PartialEq for BrowserEvents {
+    fn eq(&self, _rhs: &Self) -> bool {
+        true
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+impl fmt::Debug for BrowserEvents {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", "TODO: browser event debug implementation")
+    }
+}
+
+/// Not used on the server side
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(Debug, PartialEq, Default)]
+pub struct BrowserEvents;
+
+/// We need a custom implementation of fmt::Debug since FnMut() doesn't
+/// implement debug.
+#[cfg(target_arch = "wasm32")]
+pub struct CustomEvents(pub HashMap<String, RefCell<Option<Closure<FnMut() -> ()>>>>);
+
+#[cfg(target_arch = "wasm32")]
+impl PartialEq for CustomEvents {
     // TODO: What should happen here..? And why?
     fn eq(&self, _rhs: &Self) -> bool {
         true
     }
 }
 
-impl fmt::Debug for Events {
+#[cfg(target_arch = "wasm32")]
+impl fmt::Debug for CustomEvents {
     // Print out all of the event names for this VirtualNode
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let events: String = self.0.keys().map(|key| format!("{} ", key)).collect();
         write!(f, "{}", events)
     }
 }
+
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(Debug, PartialEq)]
+pub struct CustomEvents(pub HashMap<(), ()>);
 
 #[cfg(test)]
 mod tests {

@@ -9,14 +9,12 @@ repository = "https://github.com/chinedufn/percy"
 documentation = "https://chinedufn.github.io/percy/api/virtual_dom_rs/"
 edition = "2018"
 
-[dev-dependencies]
-wasm-bindgen-test = "0.2"
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = "0.3"
 
 [dependencies]
 
-[dependencies.wasm-bindgen]
-version = "0.2"
-features = ["default", "nightly"]
+wasm-bindgen = {version = "0.2", features = ["default", "nightly"]}
 
 [dependencies.web-sys]
 version = "0.3"
@@ -31,11 +29,17 @@ features = [
     "NodeList",
     "Text",
     "Window",
+    "MouseEvent",
+    "InputEvent",
 ]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.2"
 
 [dev-dependencies.web-sys]
 version = "0.3"
 features = [
     "Event",
-    "DomTokenList"
+    "DomTokenList",
+    "HtmlInputElement",
 ]

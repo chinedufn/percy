@@ -5,6 +5,9 @@
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::Closure;
 
+#[cfg(target_arch = "wasm32")]
+use js_sys::Function;
+
 /// When parsing our HTML we keep track of whether the last tag that we saw was an open or
 /// close tag.
 ///
@@ -166,6 +169,24 @@ macro_rules! recurse_html {
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
     };
 
+    // InputEvent
+    //
+    // for <input oninput=|input_event| { do.something(); },></input> ths is:
+    //   oninput=|input_event| { do.something(); }
+    ($active_node:ident $root_nodes:ident $prev_tag_type:ident oninput = $callback:expr, $($remaining_html:tt)*) => {
+        // Closure::wrap only works on wasm32 targets, so we only support events when compiling to
+        // wasm at this time.
+        #[cfg(target_arch = "wasm32")]
+        {
+            let closure = $crate::Closure::wrap(Box::new($callback) as Box<FnMut(_)>);
+
+            $active_node.as_mut().unwrap().borrow_mut().browser_events.oninput = Some(closure);
+        }
+
+        recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
+    };
+
+
     // A property
     // For <div id="10",> this is:
     // id = "10",
@@ -178,18 +199,20 @@ macro_rules! recurse_html {
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
     };
 
+
     // An event
     // for <div $onclick=|| { do.something(); },></div> ths is:
-    //   $onclick=|| { do.something() }
+    //   $onclick=|| { do.something(); }
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident ! $event_name:tt = $callback:expr, $($remaining_html:tt)*) => {
-
         // Closure::new only works on wasm32 targets, so we only support events when compiling to
         // wasm at this time.
         #[cfg(target_arch = "wasm32")]
         {
-            $active_node.as_mut().unwrap().borrow_mut().events.0.insert(
+            let closure = $crate::Closure::wrap(Box::new($callback) as Box<FnMut()>);
+
+            $active_node.as_mut().unwrap().borrow_mut().custom_events.0.insert(
                 stringify!($event_name).to_string(),
-                $crate::RefCell::new(Some($crate::Closure::new($callback)))
+                $crate::RefCell::new(Some(closure))
             );
         }
 
@@ -261,9 +284,7 @@ macro_rules! recurse_html {
 mod tests {
     use super::*;
     use crate::VirtualNode;
-    use std::cell::RefCell;
     use std::collections::HashMap;
-    use std::rc::Rc;
 
     struct HTMLMacroTest {
         generated: VirtualNode,
