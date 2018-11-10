@@ -1,6 +1,15 @@
 //! The virtual_node module exposes the `VirtualNode` struct and methods that power our
 //! virtual dom.
 
+// TODO: A few of thse dependencies (including js_sys) are used to power events.. yet events
+// only work on wasm32 targest. So we should start sprinkling some
+//
+// #[cfg(target_arch = "wasm32")]
+// #[cfg(not(target_arch = "wasm32"))]
+//
+// Around in order to get rid of dependencies that we don't need in non wasm32 targets
+
+
 pub use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
@@ -8,17 +17,15 @@ pub use std::rc::Rc;
 
 pub mod virtual_node_test_utils;
 
-#[cfg(target_arch = "wasm32")]
 use web_sys;
-#[cfg(target_arch = "wasm32")]
 use web_sys::*;
 
-#[cfg(target_arch = "wasm32")]
 use js_sys::Function;
-#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::Closure;
-#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsCast;
+
+mod browser_events;
+pub use self::browser_events::*;
 
 /// When building your views you'll typically use the `html!` macro to generate
 /// `VirtualNode`'s.
@@ -182,7 +189,6 @@ impl VirtualNode {
 impl VirtualNode {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
-    #[cfg(target_arch = "wasm32")]
     pub fn create_element(&self) -> Element {
         let document = web_sys::window().unwrap().document().unwrap();
 
@@ -259,7 +265,6 @@ impl VirtualNode {
         current_elem
     }
 
-    #[cfg(target_arch = "wasm32")]
     /// Return a `Text` element from a `VirtualNode`, typically right before adding it
     /// into the DOM.
     pub fn create_text_node(&self) -> Text {
@@ -375,39 +380,11 @@ impl fmt::Display for VirtualNode {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
-/// TODO: Private fields with set/get methods
-#[derive(Default)]
-pub struct BrowserEvents {
-    /// https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.HtmlElement.html#method.oninput
-    pub oninput: RefCell<Option<Closure<FnMut(InputEvent) -> ()>>>,
-}
-
-#[cfg(target_arch = "wasm32")]
-impl PartialEq for BrowserEvents {
-    fn eq(&self, _rhs: &Self) -> bool {
-        true
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-impl fmt::Debug for BrowserEvents {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", "TODO: browser event debug implementation")
-    }
-}
-
-/// Not used on the server side
-#[cfg(not(target_arch = "wasm32"))]
-#[derive(Debug, PartialEq, Default)]
-pub struct BrowserEvents;
 
 /// We need a custom implementation of fmt::Debug since FnMut() doesn't
 /// implement debug.
-#[cfg(target_arch = "wasm32")]
 pub struct CustomEvents(pub HashMap<String, RefCell<Option<Closure<FnMut() -> ()>>>>);
 
-#[cfg(target_arch = "wasm32")]
 impl PartialEq for CustomEvents {
     // TODO: What should happen here..? And why?
     fn eq(&self, _rhs: &Self) -> bool {
@@ -415,18 +392,13 @@ impl PartialEq for CustomEvents {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
 impl fmt::Debug for CustomEvents {
     // Print out all of the event names for this VirtualNode
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let events: String = self.0.keys().map(|key| format!("{} ", key)).collect();
+        let events: String = self.0.keys().map(|key| " ".to_string() + key).collect();
         write!(f, "{}", events)
     }
 }
-
-#[cfg(not(target_arch = "wasm32"))]
-#[derive(Debug, PartialEq)]
-pub struct CustomEvents(pub HashMap<(), ()>);
 
 #[cfg(test)]
 mod tests {

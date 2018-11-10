@@ -2,10 +2,7 @@
 //! that will eventually get rendered into DOM nodes on the client side, or String's
 //! if you're on the server side.
 
-#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::Closure;
-
-#[cfg(target_arch = "wasm32")]
 use js_sys::Function;
 
 /// When parsing our HTML we keep track of whether the last tag that we saw was an open or
@@ -174,8 +171,7 @@ macro_rules! recurse_html {
     // for <input oninput=|input_event| { do.something(); },></input> ths is:
     //   oninput=|input_event| { do.something(); }
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident oninput = $callback:expr, $($remaining_html:tt)*) => {
-        // Closure::wrap only works on wasm32 targets, so we only support events when compiling to
-        // wasm at this time.
+        // Closure::wrap is not implemented on non wasm32 targets
         #[cfg(target_arch = "wasm32")]
         {
             let closure = $crate::Closure::wrap(Box::new($callback) as Box<FnMut(_)>);
@@ -204,8 +200,7 @@ macro_rules! recurse_html {
     // for <div $onclick=|| { do.something(); },></div> ths is:
     //   $onclick=|| { do.something(); }
     ($active_node:ident $root_nodes:ident $prev_tag_type:ident ! $event_name:tt = $callback:expr, $($remaining_html:tt)*) => {
-        // Closure::new only works on wasm32 targets, so we only support events when compiling to
-        // wasm at this time.
+        // Closure::wrap is not implemented on non wasm32 targets
         #[cfg(target_arch = "wasm32")]
         {
             let closure = $crate::Closure::wrap(Box::new($callback) as Box<FnMut()>);

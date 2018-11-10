@@ -24,14 +24,10 @@ pub use crate::html_macro::*;
 pub mod virtual_node;
 pub use crate::virtual_node::*;
 
-#[cfg(target_arch = "wasm32")]
 mod diff;
-#[cfg(target_arch = "wasm32")]
 pub use crate::diff::*;
 
-#[cfg(target_arch = "wasm32")]
 mod patch;
-#[cfg(target_arch = "wasm32")]
 pub use crate::patch::*;
 
 mod view;

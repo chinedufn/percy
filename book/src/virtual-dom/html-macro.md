@@ -32,7 +32,7 @@ an event please open an issue and we'll address it ASAP.
 // Or better yet take a look at the web_sys API:
 //   https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.MouseEvent.html
 
-{{#include ../../../crates/virtual-dom-rs/tests/events:15:50}}
+{{#include ../../../crates/virtual-dom-rs/tests/events.rs:15:50}}
 ```
 
 ### Custom Event Handlers
