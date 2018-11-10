@@ -180,7 +180,7 @@ macro_rules! recurse_html {
         {
             let closure = $crate::Closure::wrap(Box::new($callback) as Box<FnMut(_)>);
 
-            $active_node.as_mut().unwrap().borrow_mut().browser_events.oninput = Some(closure);
+            $active_node.as_mut().unwrap().borrow_mut().browser_events.oninput = RefCell::new(Some(closure));
         }
 
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }

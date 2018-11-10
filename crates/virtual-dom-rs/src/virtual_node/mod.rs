@@ -207,6 +207,17 @@ impl VirtualNode {
             callback.forget();
         });
 
+        // Handle the `oninput` event
+        let mut callback = self.browser_events.oninput.borrow_mut().take();
+        if callback.is_some() {
+            let callback = callback.unwrap();
+            (current_elem.as_ref() as &web_sys::EventTarget)
+                .add_event_listener_with_callback("input", &callback.as_ref().unchecked_ref())
+                .unwrap();
+
+            callback.forget();
+        }
+
         let mut previous_node_was_text = false;
 
         self.children.as_ref().unwrap().iter().for_each(|child| {
@@ -369,7 +380,7 @@ impl fmt::Display for VirtualNode {
 #[derive(Default)]
 pub struct BrowserEvents {
     /// https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.HtmlElement.html#method.oninput
-    pub oninput: Option<Closure<FnMut(InputEvent) -> ()>>,
+    pub oninput: RefCell<Option<Closure<FnMut(InputEvent) -> ()>>>,
 }
 
 #[cfg(target_arch = "wasm32")]
