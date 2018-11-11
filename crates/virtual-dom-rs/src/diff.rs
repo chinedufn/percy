@@ -105,10 +105,7 @@ fn diff_recursive<'a, 'b>(
     patches
 }
 
-fn increment_node_idx_for_children<'a, 'b>(
-    old: &'a VirtualNode,
-    cur_node_idx: &'b mut usize,
-) {
+fn increment_node_idx_for_children<'a, 'b>(old: &'a VirtualNode, cur_node_idx: &'b mut usize) {
     *cur_node_idx += 1;
     if let Some(children) = old.children.as_ref() {
         for child in children {
@@ -146,8 +143,10 @@ mod tests {
         test(DiffTestCase {
             old: html! { <div> <b>{"1"}</b> <b></b> </div> },
             new: html! { <div> <i>{"1"}</i> <i></i> </div>},
-            expected: vec![Patch::Replace(1, &html! { <i>{"1"}</i> }),
-                        Patch::Replace(3, &html! { <i></i> })], //required to check correct index
+            expected: vec![
+                Patch::Replace(1, &html! { <i>{"1"}</i> }),
+                Patch::Replace(3, &html! { <i></i> }),
+            ], //required to check correct index
             description: "Replace node with a chiild",
         });
     }
@@ -193,8 +192,10 @@ mod tests {
         test(DiffTestCase {
             old: html! { <div> <b> <i></i> <i></i> </b> <b></b> </div> },
             new: html! { <div> <b> <i></i> </b> <i></i> </div>},
-            expected: vec![Patch::TruncateChildren(1,1),
-                        Patch::Replace(4, &html! { <i></i> })], //required to check correct index
+            expected: vec![
+                Patch::TruncateChildren(1, 1),
+                Patch::Replace(4, &html! { <i></i> }),
+            ], //required to check correct index
             description: "Removing child and change next node after parent",
         });
     }

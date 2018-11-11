@@ -11,6 +11,8 @@ extern crate wasm_bindgen;
 // Used so that `html!` calls work when people depend on this crate since `html!` needs
 // access to `Closure` when creating event handlers.
 pub use wasm_bindgen::prelude::Closure;
+#[cfg(target_arch = "wasm32")]
+pub use wasm_bindgen::JsCast;
 
 pub extern crate web_sys;
 pub use web_sys::*;
