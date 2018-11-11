@@ -1,6 +1,6 @@
 [package]
 name = "virtual-dom-rs"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A standalone Virtual DOM creation, diffing and patching implementation"
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
@@ -9,14 +9,9 @@ repository = "https://github.com/chinedufn/percy"
 documentation = "https://chinedufn.github.io/percy/api/virtual_dom_rs/"
 edition = "2018"
 
-[dev-dependencies]
-wasm-bindgen-test = "0.2"
-
 [dependencies]
-
-[dependencies.wasm-bindgen]
-version = "0.2"
-features = ["default", "nightly"]
+js-sys = "0.3"
+wasm-bindgen = {version = "0.2", features = ["default", "nightly"]}
 
 [dependencies.web-sys]
 version = "0.3"
@@ -31,11 +26,17 @@ features = [
     "NodeList",
     "Text",
     "Window",
+    "MouseEvent",
+    "InputEvent",
 ]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.2"
 
 [dev-dependencies.web-sys]
 version = "0.3"
 features = [
     "Event",
-    "DomTokenList"
+    "DomTokenList",
+    "HtmlInputElement",
 ]

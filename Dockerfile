@@ -25,13 +25,12 @@ RUN npm install
 
 COPY . ./
 
-
 WORKDIR /usr/src/examples/isomorphic
 
-RUN ./build.release.sh
-
-# TODO: Unused.. the code just expects it to be there atm..
+# TODO: Unused.. the server code just expects this directory to be there at the moment.....
 RUN mkdir client/build
+
+RUN ./build.release.sh
 
 # This gets around the 100Mb limit by re-starting from a tiny image
 # We tried `scratch` and `alpine:rust` but targeting them proved difficult so going the easy route.

@@ -124,6 +124,17 @@ fn append_sibling_text_nodes() {
     .test();
 }
 
+#[wasm_bindgen_test]
+fn replace_with_children() {
+    DiffPatchTest {
+        desc: "Replace node that has children",
+        old: html! { <table id="old_table",><tr><th>{"0"}</th></tr><tr><td>{"1"}</td></tr></table> },
+        new: html! { <table id="new_table",><tr><td>{"2"}</td></tr><tr><th>{"3"}</th></tr></table> },
+        override_expected: None,
+    }
+    .test();
+}
+
 impl DiffPatchTest {
     fn test(&self) {
         let document = web_sys::window().unwrap().document().unwrap();

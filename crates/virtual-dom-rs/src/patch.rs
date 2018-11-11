@@ -180,7 +180,8 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
         }
         Patch::RemoveAttributes(_node_idx, attributes) => {
             for attrib_name in attributes.iter() {
-                node.remove_attribute(attrib_name).expect("Remove attribute from element");
+                node.remove_attribute(attrib_name)
+                    .expect("Remove attribute from element");
             }
         }
         Patch::Replace(_node_idx, new_node) => {

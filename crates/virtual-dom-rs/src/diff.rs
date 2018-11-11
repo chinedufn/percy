@@ -18,6 +18,11 @@ fn diff_recursive<'a, 'b>(
 
     if old.tag != new.tag {
         patches.push(Patch::Replace(*cur_node_idx, &new));
+        if let Some(children) = old.children.as_ref() {
+            for child in children {
+                increment_node_idx_for_children(child, cur_node_idx);
+            }
+        }
         return patches;
     }
 
@@ -83,15 +88,30 @@ fn diff_recursive<'a, 'b>(
         patches.push(Patch::TruncateChildren(*cur_node_idx, new_child_count))
     }
 
-    for index in 0..min(old_child_count, new_child_count) {
+    let min_count = min(old_child_count, new_child_count);
+    for index in 0..min_count {
         *cur_node_idx = *cur_node_idx + 1;
         let old_child = &old_children[index];
         let new_child = &new_children[index];
         patches.append(&mut diff_recursive(&old_child, &new_child, cur_node_idx))
     }
+    if new_child_count < old_child_count {
+        for child in old_children[min_count..].iter() {
+            increment_node_idx_for_children(child, cur_node_idx);
+        }
+    }
 
     //    new_root.create_element()
     patches
+}
+
+fn increment_node_idx_for_children<'a, 'b>(old: &'a VirtualNode, cur_node_idx: &'b mut usize) {
+    *cur_node_idx += 1;
+    if let Some(children) = old.children.as_ref() {
+        for child in children {
+            increment_node_idx_for_children(&child, cur_node_idx);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -119,6 +139,15 @@ mod tests {
             new: html! { <div> <strong></strong> </div> },
             expected: vec![Patch::Replace(1, &html! { <strong></strong> })],
             description: "Replace a child node",
+        });
+        test(DiffTestCase {
+            old: html! { <div> <b>{"1"}</b> <b></b> </div> },
+            new: html! { <div> <i>{"1"}</i> <i></i> </div>},
+            expected: vec![
+                Patch::Replace(1, &html! { <i>{"1"}</i> }),
+                Patch::Replace(3, &html! { <i></i> }),
+            ], //required to check correct index
+            description: "Replace node with a chiild",
         });
     }
 
@@ -159,6 +188,15 @@ mod tests {
             </div> },
             expected: vec![Patch::TruncateChildren(0, 1), Patch::TruncateChildren(1, 1)],
             description: "Remove a child and a grandchild node",
+        });
+        test(DiffTestCase {
+            old: html! { <div> <b> <i></i> <i></i> </b> <b></b> </div> },
+            new: html! { <div> <b> <i></i> </b> <i></i> </div>},
+            expected: vec![
+                Patch::TruncateChildren(1, 1),
+                Patch::Replace(4, &html! { <i></i> }),
+            ], //required to check correct index
+            description: "Removing child and change next node after parent",
         });
     }
 
