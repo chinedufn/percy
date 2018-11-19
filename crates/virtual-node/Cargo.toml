@@ -1,0 +1,27 @@
+[package]
+name = "virtual-node"
+version = "0.0.1"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+js-sys = "0.3"
+wasm-bindgen = {version = "0.2", features = ["default", "nightly"]}
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "Comment",
+    "Document",
+    "Element",
+    "HtmlElement",
+    "EventTarget",
+    "HtmlCollection",
+    "Node",
+    "NodeList",
+    "Text",
+    "Window",
+    "MouseEvent",
+    "InputEvent",
+]
+

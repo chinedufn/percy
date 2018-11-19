@@ -1,4 +1,4 @@
-use crate::virtual_node::VirtualNode;
+use crate::VirtualNode;
 
 /// A trait with common functionality for rendering front-end views.
 ///

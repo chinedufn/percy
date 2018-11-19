@@ -1,4 +1,4 @@
-use crate::virtual_node::VirtualNode;
+use crate::VirtualNode;
 use crate::Patch;
 use std::cmp::min;
 use std::collections::HashMap;

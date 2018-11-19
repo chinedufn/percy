@@ -21,8 +21,7 @@ pub use web_sys::*;
 pub mod html_macro;
 pub use crate::html_macro::*;
 
-pub mod virtual_node;
-pub use crate::virtual_node::*;
+pub use virtual_node::*;
 
 mod diff;
 pub use crate::diff::*;
@@ -38,5 +37,5 @@ pub use crate::view::*;
 pub mod prelude {
     pub use crate::html_macro::*;
     pub use crate::view::View;
-    pub use crate::virtual_node::VirtualNode;
+    pub use crate::VirtualNode;
 }

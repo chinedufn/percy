@@ -2,7 +2,7 @@ extern crate wasm_bindgen_test;
 extern crate web_sys;
 use wasm_bindgen_test::*;
 
-use virtual_dom_rs::virtual_node::VirtualNode;
+use virtual_dom_rs::VirtualNode;
 use web_sys::*;
 
 #[macro_use]

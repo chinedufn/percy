@@ -133,7 +133,7 @@ impl Route {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use virtual_dom_rs::virtual_node::VirtualNode;
+    use virtual_dom_rs::VirtualNode;
     use virtual_dom_rs::{html, recurse_html};
     use std::rc::Rc;
     use std::cell::RefCell;

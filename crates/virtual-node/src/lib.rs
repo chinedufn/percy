@@ -404,17 +404,18 @@ impl fmt::Debug for CustomEvents {
 mod tests {
     use super::*;
 
-    #[test]
-    fn to_string() {
-        let node = html! {
-        <div id="some-id", !onclick=|| {},>
-            <span>
-                { "Hello world" }
-            </span>
-        </div>
-        };
-        let expected = r#"<div id="some-id"><span>Hello world</span></div>"#;
-
-        assert_eq!(node.to_string(), expected);
-    }
+    // TODO: Move this somewhere that we can use the `html!` macro
+//    #[test]
+//    fn to_string() {
+//        let node = html! {
+//        <div id="some-id", !onclick=|| {},>
+//            <span>
+//                { "Hello world" }
+//            </span>
+//        </div>
+//        };
+//        let expected = r#"<div id="some-id"><span>Hello world</span></div>"#;
+//
+//        assert_eq!(node.to_string(), expected);
+//    }
 }

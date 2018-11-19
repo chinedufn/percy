@@ -1,4 +1,4 @@
-use crate::virtual_node::VirtualNode;
+use crate::VirtualNode;
 use std::collections::HashMap;
 use std::collections::HashSet;
 

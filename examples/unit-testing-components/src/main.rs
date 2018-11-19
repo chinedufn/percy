@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate virtual_dom_rs;
 
-use virtual_dom_rs::virtual_node::VirtualNode;
+use virtual_dom_rs::VirtualNode;
 
 fn main() {
     println!("To see this example in action:");
