@@ -19,22 +19,23 @@ use web_sys::{Element, Node};
 ///
 /// Our old virtual dom's nodes are indexed depth first, as shown in this illustration
 /// (0 being the root node, 1 being it's first child, 2 being it's first child's first child).
-///               .─.
-///              ( 0 )
-///               `┬'
-///           ┌────┴──────┐
-///           │           │
-///           ▼           ▼
-///          .─.         .─.
-///         ( 1 )       ( 4 )
-///          `┬'         `─'
-///      ┌────┴───┐       │
-///      │        │       ├─────┬─────┐
-///      ▼        ▼       │     │     │
-///     .─.      .─.      ▼     ▼     ▼
-///    ( 2 )    ( 3 )    .─.   .─.   .─.
-///     `─'      `─'    ( 5 ) ( 6 ) ( 7 )
-///                      `─'   `─'   `─'
+///
+///                .─.
+///               ( 0 )
+///                `┬'
+///            ┌────┴──────┐
+///            │           │
+///            ▼           ▼
+///           .─.         .─.
+///          ( 1 )       ( 4 )
+///           `┬'         `─'
+///       ┌────┴───┐       │
+///       │        │       ├─────┬─────┐
+///       ▼        ▼       │     │     │
+///      .─.      .─.      ▼     ▼     ▼
+///     ( 2 )    ( 3 )    .─.   .─.   .─.
+///      `─'      `─'    ( 5 ) ( 6 ) ( 7 )
+///                       `─'   `─'   `─'
 ///
 /// We'll revisit our indexing in the future when we optimize our diff/patch process.
 #[derive(Debug, PartialEq)]
