@@ -87,7 +87,7 @@ pub enum TagType {
 /// html_generic ! { MyCustomVirtualNode <div> <span></span> </div> };
 /// ```
 ///
-/// Then make html! { <div></div> } call html_generic! { $crate::VirtualNode <div></div> }.
+/// Then make `html! { <div></div> }` call `html_generic! { $crate::VirtualNode <div></div> }`.
 ///
 /// This would allow anyone to use the html_generic! macro to power their own virtual dom
 /// implementation!
