@@ -60,7 +60,7 @@ impl View for HomePage {
     ) -> VirtualNode {
         html! {
             <div id='homepage',>
-                <button !onclick || {
+                <button !onclick |_ev| {
                     store.msg(Msg::Route("/posts/25/authors/jennifer"));
                 },>
                     { "Get the behind the scenes on how" }

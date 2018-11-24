@@ -35,7 +35,7 @@ impl View for HomeView {
           { nav_bar }
 
           <span> { "The button has been clicked: " click_component " times!"} </span>
-          <button !onclick=move|| { store.borrow_mut().msg(&Msg::Click) },>{ "Click me!" }</button>
+          <button !onclick=move|_ev| { store.borrow_mut().msg(&Msg::Click) },>{ "Click me!" }</button>
           <div> { "In this time Ferris has made " click_count " new friends." } </div>
 
         </div>

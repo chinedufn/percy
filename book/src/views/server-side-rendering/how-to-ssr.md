@@ -14,7 +14,7 @@ fn main () {
 
   let app = html! {
     <div id='app',>
-      <button !onclick=|| { *count+= 1; },>
+      <button !onclick=|_ev| { *count+= 1; },>
         { "Hello world" }
       </button>
     </div>
