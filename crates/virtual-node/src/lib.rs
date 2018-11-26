@@ -30,7 +30,7 @@ pub use self::browser_events::*;
 /// When building your views you'll typically use the `html!` macro to generate
 /// `VirtualNode`'s.
 ///
-/// html! { <div> <span></span> </div> } really generates a `VirtualNode` with
+/// `html! { <div> <span></span> </div> }` really generates a `VirtualNode` with
 /// one child (span).
 ///
 /// Later, on the client side, you'll use the `diff` and `patch` modules to
