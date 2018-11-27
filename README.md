@@ -62,7 +62,7 @@ fn main () {
     <div id="hello-world", class=*SOME_COMPONENT_CSS,>
       <span>{ "Hey :)" }</span>
       <button
-        !onclick=|| { count_clone.set(count_clone.get() + 1); },
+        !onclick=|_ev| { count_clone.set(count_clone.get() + 1); },
         // CSS in Rust isn't required. You can use regular old
         /* classes just fine! */
         class="btn-bs4 btn-bs4-success",

@@ -383,7 +383,7 @@ impl fmt::Display for VirtualNode {
 
 /// We need a custom implementation of fmt::Debug since FnMut() doesn't
 /// implement debug.
-pub struct CustomEvents(pub HashMap<String, RefCell<Option<Closure<FnMut() -> ()>>>>);
+pub struct CustomEvents(pub HashMap<String, RefCell<Option<Closure<FnMut(Event) -> ()>>>>);
 
 impl PartialEq for CustomEvents {
     // TODO: What should happen here..? And why?
@@ -408,7 +408,7 @@ mod tests {
 //    #[test]
 //    fn to_string() {
 //        let node = html! {
-//        <div id="some-id", !onclick=|| {},>
+//        <div id="some-id", !onclick=|_ev| {},>
 //            <span>
 //                { "Hello world" }
 //            </span>

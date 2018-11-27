@@ -38,7 +38,7 @@ impl View for NavBarItemView {
             <span
                 style=self.style,
                 class=*NAV_BAR_ITEM_CSS,
-                !onclick=move || {
+                !onclick=move |_ev| {
                   store.borrow_mut().msg(&Msg::Path(path.to_string()));
                 },
             >

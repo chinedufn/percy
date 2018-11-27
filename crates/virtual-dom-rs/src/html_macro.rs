@@ -42,7 +42,7 @@ pub enum TagType {
 /// use virtual_dom_rs::VirtualNode;
 ///
 /// let click_message = "I was clicked!";
-/// let some_component = html! { <div !onclick=move || { println!("{}", click_message); },></div> };
+/// let some_component = html! { <div !onclick=move |_ev| { println!("{}", click_message); },></div> };
 ///
 /// // Create lists of nodes from data!
 /// let list: Vec<VirtualNode> = [0, 1, 2].iter().map(|index| {
@@ -57,7 +57,7 @@ pub enum TagType {
 /// }).collect();
 ///
 /// let root_node = html! {
-///  <div id="my-app", !onmouseenter=||{},>
+///  <div id="my-app", !onmouseenter=|_ev|{},>
 ///   <span> { "Hello world" } </span>
 ///   <b> { "How are" "you?" } </b>
 ///
@@ -203,7 +203,7 @@ macro_rules! recurse_html {
         // Closure::wrap is not implemented on non wasm32 targets
         #[cfg(target_arch = "wasm32")]
         {
-            let closure = $crate::Closure::wrap(Box::new($callback) as Box<FnMut()>);
+            let closure = $crate::Closure::wrap(Box::new($callback) as Box<FnMut(_)>);
 
             $active_node.as_mut().unwrap().borrow_mut().custom_events.0.insert(
                 stringify!($event_name).to_string(),
@@ -314,7 +314,7 @@ mod tests {
     fn event() {
         test(HTMLMacroTest {
             generated: html!{
-                <div !onclick=|| {},></div>
+                <div !onclick=|_ev| {},></div>
             },
             expected: html!{<div></div>},
             desc: "Events are ignored in non wasm-32 targets",

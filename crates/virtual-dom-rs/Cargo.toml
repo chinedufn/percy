@@ -27,6 +27,7 @@ features = [
     "NodeList",
     "Text",
     "Window",
+    "Event",
     "MouseEvent",
     "InputEvent",
 ]
@@ -37,7 +38,6 @@ wasm-bindgen-test = "0.2"
 [dev-dependencies.web-sys]
 version = "0.3"
 features = [
-    "Event",
     "DomTokenList",
     "HtmlInputElement",
 ]

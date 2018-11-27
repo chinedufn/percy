@@ -21,6 +21,7 @@ features = [
     "NodeList",
     "Text",
     "Window",
+    "Event",
     "MouseEvent",
     "InputEvent",
 ]
