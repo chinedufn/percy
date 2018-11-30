@@ -2,8 +2,9 @@ extern crate wasm_bindgen_test;
 extern crate web_sys;
 use wasm_bindgen_test::*;
 
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use virtual_dom_rs::VirtualNode;
-use web_sys::*;
 
 #[macro_use]
 extern crate virtual_dom_rs;
@@ -11,22 +12,22 @@ extern crate virtual_dom_rs;
 wasm_bindgen_test_configure!(run_in_browser);
 
 struct DiffPatchTest {
+    desc: &'static str,
     old: VirtualNode,
     new: VirtualNode,
-    desc: &'static str,
     override_expected: Option<String>,
 }
 
 #[wasm_bindgen_test]
 fn replace_child() {
     DiffPatchTest {
+        desc: "Replace a root node attribute attribute and a child text node",
         old: html! {
-         <div id="old",>
+         <div>
            { "Original element" }
          </div>
         },
-        new: html! { <div id="patched",> { "Patched element" }</div> },
-        desc: "Replace a root node attribute attribute and a child text node",
+        new: html! { <div> { "Patched element" }</div> },
         override_expected: None,
     }
     .test();
@@ -35,29 +36,45 @@ fn replace_child() {
 #[wasm_bindgen_test]
 fn truncate_children() {
     DiffPatchTest {
+        desc: "Truncates extra children",
         old: html! {
-         <div id="old",>
+         <div>
            <div> <div> <b></b> <em></em> </div> </div>
          </div>
         },
         new: html! {
-         <div id="new",>
+         <div>
            <div> <div> <b></b> </div> </div>
          </div>
         },
-        desc: "Truncates extra children",
         override_expected: None,
     }
     .test();
+
+    //    DiffPatchTest {
+    //        old: html! {
+    //         <div id="old2",>
+    //          {"ab"} <p></p> {"c"}
+    //         </div>
+    //        },
+    //        new: html! {
+    //         <div id="new2",>
+    //           {"ab"} <p></p>
+    //         </div>
+    //        },
+    //        desc: "https://github.com/chinedufn/percy/issues/48",
+    //        override_expected: None,
+    //    }
+    //    .test();
 }
 
 #[wasm_bindgen_test]
 fn remove_attributes() {
     DiffPatchTest {
-        old: html! { <div id="remove-attrib", style="",> </div>
-        },
-        new: html! { <div id="new-root",></div> },
         desc: "Removes attributes",
+        old: html! { <div style="",> </div>
+        },
+        new: html! { <div></div> },
         override_expected: None,
     }
     .test();
@@ -67,9 +84,9 @@ fn remove_attributes() {
 fn append_children() {
     DiffPatchTest {
         desc: "Append a child node",
-        old: html! { <div id="foo",> </div>
+        old: html! { <div> </div>
         },
-        new: html! { <div id="bar",> <span></span> </div> },
+        new: html! { <div> <span></span> </div> },
         override_expected: None,
     }
     .test();
@@ -106,8 +123,8 @@ fn text_node_siblings() {
 fn append_text_node() {
     DiffPatchTest {
         desc: "Append text node",
-        old: html! { <div id="foo",> </div> },
-        new: html! { <div id="foo",> {"Hello"} </div> },
+        old: html! { <div> </div> },
+        new: html! { <div> {"Hello"} </div> },
         override_expected: None,
     }
     .test();
@@ -117,8 +134,8 @@ fn append_text_node() {
 fn append_sibling_text_nodes() {
     DiffPatchTest {
         desc: "Append sibling text nodes",
-        old: html! { <div id="bar",> </div> },
-        new: html! { <div id="bang",> {"Hello"} {"World"} </div> },
+        old: html! { <div> </div> },
+        new: html! { <div> {"Hello"} {"World"} </div> },
         override_expected: None,
     }
     .test();
@@ -128,36 +145,54 @@ fn append_sibling_text_nodes() {
 fn replace_with_children() {
     DiffPatchTest {
         desc: "Replace node that has children",
-        old: html! { <table id="old_table",><tr><th>{"0"}</th></tr><tr><td>{"1"}</td></tr></table> },
-        new: html! { <table id="new_table",><tr><td>{"2"}</td></tr><tr><th>{"3"}</th></tr></table> },
+        old: html! { <table><tr><th>{"0"}</th></tr><tr><td>{"1"}</td></tr></table> },
+        new: html! { <table><tr><td>{"2"}</td></tr><tr><th>{"3"}</th></tr></table> },
         override_expected: None,
     }
     .test();
 }
 
 impl DiffPatchTest {
-    fn test(&self) {
+    fn test(&mut self) {
         let document = web_sys::window().unwrap().document().unwrap();
-        let root_node = self.old.create_element();
 
-        (document.body().unwrap().as_ref() as &web_sys::Node)
-            .append_child(&root_node.as_ref() as &web_sys::Node)
-            .unwrap();
+        // If we haven't set an id for our element we hash the description of the test and set
+        // that as the ID.
+        // We need an ID in order to find the element within the DOM, otherwise we couldn't run
+        // our assertions.
+        if self.old.props.get("id").is_none() {
+            let mut hashed_desc = DefaultHasher::new();
+
+            self.desc.hash(&mut hashed_desc);
+
+            self.old
+                .props
+                .insert("id".to_string(), hashed_desc.finish().to_string());
+        }
+
+        // Add our old node into the DOM
+        let root_node = self.old.create_element();
+        document.body().unwrap().append_child(&root_node).unwrap();
+
+        let elem_id = self.old.props.get("id").unwrap().clone();
+        // This is our root node that we're about to patch.
+        // It isn't actually patched yet.. but by the time we use this it will be.
+        let patched_element = document.get_element_by_id(&elem_id).unwrap();
 
         let patches = virtual_dom_rs::diff(&self.old, &self.new);
 
         virtual_dom_rs::patch(root_node, &patches);
-
-        let new_root_node_id = self.new.props.get("id").unwrap();
-
-        let new_root_node = document.get_element_by_id(new_root_node_id).unwrap();
-        let new_root_node = new_root_node.outer_html();
 
         let expected_new_root_node = match self.override_expected {
             Some(ref expected) => expected.clone(),
             None => self.new.to_string(),
         };
 
-        assert_eq!(new_root_node, expected_new_root_node, "{}", self.desc);
+        assert_eq!(
+            patched_element.outer_html(),
+            expected_new_root_node,
+            "{}",
+            self.desc
+        );
     }
 }
