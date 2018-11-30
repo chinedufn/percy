@@ -200,8 +200,6 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
             //  and trim all children that come after our new desired `num_children_remaining`
             let mut non_separator_children_found = 0;
 
-            web_sys::console::log_1(&JsValue::from(format!("{}", child_count)));
-
             for index in 0 as u32..child_count {
                 let child = children
                     .get(min(index, child_count - 1))
