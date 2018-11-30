@@ -192,7 +192,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
                 .expect("Replaced element");
         }
         Patch::TruncateChildren(_node_idx, num_children_remaining) => {
-            let children = node.children();
+            let children = node.child_nodes();
             let mut child_count = children.length();
 
             // We skip over any separators that we placed between two text nodes
@@ -204,7 +204,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
 
             for index in 0 as u32..child_count {
                 let child = children
-                    .get_with_index(min(index, child_count - 1))
+                    .get(min(index, child_count - 1))
                     .expect("Potential child to truncate");
 
                 // If this is a comment node then we know that it is a `<!--ptns-->`

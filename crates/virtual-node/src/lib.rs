@@ -24,6 +24,8 @@ use js_sys::Function;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 
+// TODO: Remove browser_events entirely, custom_events appear to handle all of our use
+// cases at this time.
 mod browser_events;
 pub use self::browser_events::*;
 
