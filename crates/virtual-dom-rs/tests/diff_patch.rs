@@ -17,140 +17,140 @@ struct DiffPatchTest {
     new: VirtualNode,
     override_expected: Option<String>,
 }
-
-#[wasm_bindgen_test]
-fn replace_child() {
-    DiffPatchTest {
-        desc: "Replace a root node attribute attribute and a child text node",
-        old: html! {
-         <div>
-           { "Original element" }
-         </div>
-        },
-        new: html! { <div> { "Patched element" }</div> },
-        override_expected: None,
-    }
-    .test();
-}
+//
+//#[wasm_bindgen_test]
+//fn replace_child() {
+//    DiffPatchTest {
+//        desc: "Replace a root node attribute attribute and a child text node",
+//        old: html! {
+//         <div>
+//           { "Original element" }
+//         </div>
+//        },
+//        new: html! { <div> { "Patched element" }</div> },
+//        override_expected: None,
+//    }
+//    .test();
+//}
 
 #[wasm_bindgen_test]
 fn truncate_children() {
+//    DiffPatchTest {
+//        desc: "Truncates extra children",
+//        old: html! {
+//         <div>
+//           <div> <div> <b></b> <em></em> </div> </div>
+//         </div>
+//        },
+//        new: html! {
+//         <div>
+//           <div> <div> <b></b> </div> </div>
+//         </div>
+//        },
+//        override_expected: None,
+//    }
+//    .test();
+
     DiffPatchTest {
-        desc: "Truncates extra children",
         old: html! {
          <div>
-           <div> <div> <b></b> <em></em> </div> </div>
+          {"ab"} <p></p> {"c"}
          </div>
         },
         new: html! {
          <div>
-           <div> <div> <b></b> </div> </div>
+           {"ab"} <p></p>
          </div>
         },
-        override_expected: None,
-    }
-    .test();
-
-    //    DiffPatchTest {
-    //        old: html! {
-    //         <div id="old2",>
-    //          {"ab"} <p></p> {"c"}
-    //         </div>
-    //        },
-    //        new: html! {
-    //         <div id="new2",>
-    //           {"ab"} <p></p>
-    //         </div>
-    //        },
-    //        desc: "https://github.com/chinedufn/percy/issues/48",
-    //        override_expected: None,
-    //    }
-    //    .test();
-}
-
-#[wasm_bindgen_test]
-fn remove_attributes() {
-    DiffPatchTest {
-        desc: "Removes attributes",
-        old: html! { <div style="",> </div>
-        },
-        new: html! { <div></div> },
+        desc: "https://github.com/chinedufn/percy/issues/48",
         override_expected: None,
     }
     .test();
 }
 
-#[wasm_bindgen_test]
-fn append_children() {
-    DiffPatchTest {
-        desc: "Append a child node",
-        old: html! { <div> </div>
-        },
-        new: html! { <div> <span></span> </div> },
-        override_expected: None,
-    }
-    .test();
-}
-
-#[wasm_bindgen_test]
-fn text_node_siblings() {
-    // NOTE: Since there are two text nodes next to eachother we expect a `<!--ptns-->` separator in
-    // between them.
-    // @see virtual_node/mod.rs -> create_element() for more information
-    let override_expected = Some(
-        r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#
-            .to_string(),
-    );
-
-    DiffPatchTest {
-        desc: "Diff patch on text node siblings",
-        old: html! {
-        <div id="before",>
-            <span> { "The button has been clicked: "  "hello"} </span>
-        </div>
-        },
-        new: html! {
-        <div id="after",>
-            <span> { "The button has been clicked: "  "world"} </span>
-        </div>
-        },
-        override_expected,
-    }
-    .test();
-}
-
-#[wasm_bindgen_test]
-fn append_text_node() {
-    DiffPatchTest {
-        desc: "Append text node",
-        old: html! { <div> </div> },
-        new: html! { <div> {"Hello"} </div> },
-        override_expected: None,
-    }
-    .test();
-}
-
-#[wasm_bindgen_test]
-fn append_sibling_text_nodes() {
-    DiffPatchTest {
-        desc: "Append sibling text nodes",
-        old: html! { <div> </div> },
-        new: html! { <div> {"Hello"} {"World"} </div> },
-        override_expected: None,
-    }
-    .test();
-}
-
-#[wasm_bindgen_test]
-fn replace_with_children() {
-    DiffPatchTest {
-        desc: "Replace node that has children",
-        old: html! { <table><tr><th>{"0"}</th></tr><tr><td>{"1"}</td></tr></table> },
-        new: html! { <table><tr><td>{"2"}</td></tr><tr><th>{"3"}</th></tr></table> },
-        override_expected: None,
-    }
-    .test();
-}
+//#[wasm_bindgen_test]
+//fn remove_attributes() {
+//    DiffPatchTest {
+//        desc: "Removes attributes",
+//        old: html! { <div style="",> </div>
+//        },
+//        new: html! { <div></div> },
+//        override_expected: None,
+//    }
+//    .test();
+//}
+//
+//#[wasm_bindgen_test]
+//fn append_children() {
+//    DiffPatchTest {
+//        desc: "Append a child node",
+//        old: html! { <div> </div>
+//        },
+//        new: html! { <div> <span></span> </div> },
+//        override_expected: None,
+//    }
+//    .test();
+//}
+//
+//#[wasm_bindgen_test]
+//fn text_node_siblings() {
+//    // NOTE: Since there are two text nodes next to eachother we expect a `<!--ptns-->` separator in
+//    // between them.
+//    // @see virtual_node/mod.rs -> create_element() for more information
+//    let override_expected = Some(
+//        r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#
+//            .to_string(),
+//    );
+//
+//    DiffPatchTest {
+//        desc: "Diff patch on text node siblings",
+//        old: html! {
+//        <div id="before",>
+//            <span> { "The button has been clicked: "  "hello"} </span>
+//        </div>
+//        },
+//        new: html! {
+//        <div id="after",>
+//            <span> { "The button has been clicked: "  "world"} </span>
+//        </div>
+//        },
+//        override_expected,
+//    }
+//    .test();
+//}
+//
+//#[wasm_bindgen_test]
+//fn append_text_node() {
+//    DiffPatchTest {
+//        desc: "Append text node",
+//        old: html! { <div> </div> },
+//        new: html! { <div> {"Hello"} </div> },
+//        override_expected: None,
+//    }
+//    .test();
+//}
+//
+//#[wasm_bindgen_test]
+//fn append_sibling_text_nodes() {
+//    DiffPatchTest {
+//        desc: "Append sibling text nodes",
+//        old: html! { <div> </div> },
+//        new: html! { <div> {"Hello"} {"World"} </div> },
+//        override_expected: None,
+//    }
+//    .test();
+//}
+//
+//#[wasm_bindgen_test]
+//fn replace_with_children() {
+//    DiffPatchTest {
+//        desc: "Replace node that has children",
+//        old: html! { <table><tr><th>{"0"}</th></tr><tr><td>{"1"}</td></tr></table> },
+//        new: html! { <table><tr><td>{"2"}</td></tr><tr><th>{"3"}</th></tr></table> },
+//        override_expected: None,
+//    }
+//    .test();
+//}
 
 impl DiffPatchTest {
     fn test(&mut self) {
