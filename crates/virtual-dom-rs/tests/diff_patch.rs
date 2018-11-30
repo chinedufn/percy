@@ -52,6 +52,7 @@ fn truncate_children() {
     .test();
 
     DiffPatchTest {
+        desc: "https://github.com/chinedufn/percy/issues/48",
         old: html! {
          <div>
           {"ab"} <p></p> {"c"}
@@ -62,7 +63,6 @@ fn truncate_children() {
            {"ab"} <p></p>
          </div>
         },
-        desc: "https://github.com/chinedufn/percy/issues/48",
         override_expected: None,
     }
     .test();
