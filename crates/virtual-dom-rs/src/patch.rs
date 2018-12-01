@@ -7,6 +7,8 @@ use wasm_bindgen::JsCast;
 use web_sys;
 use web_sys::{Element, Node};
 
+use wasm_bindgen::JsValue;
+
 /// A `Patch` encodes an operation that modifies a real DOM element.
 ///
 /// To update the real DOM that a user sees you'll want to first diff your
@@ -125,7 +127,7 @@ fn find_nodes(
     }
 
     // We use child_nodes() instead of children() because children() ignores text nodes
-    let children = (root_node.as_ref() as &web_sys::Node).child_nodes();
+    let children = root_node.child_nodes();
     let child_node_count = children.length();
 
     if nodes_to_find.get(&cur_node_idx).is_some() {
@@ -186,11 +188,11 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
             }
         }
         Patch::Replace(_node_idx, new_node) => {
-            node.replace_with_with_node_1(new_node.create_element().as_ref() as &web_sys::Node)
+            node.replace_with_with_node_1(&new_node.create_element())
                 .expect("Replaced element");
         }
         Patch::TruncateChildren(_node_idx, num_children_remaining) => {
-            let children = node.children();
+            let children = node.child_nodes();
             let mut child_count = children.length();
 
             // We skip over any separators that we placed between two text nodes
@@ -200,9 +202,8 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
 
             for index in 0 as u32..child_count {
                 let child = children
-                    .get_with_index(min(index, child_count - 1))
+                    .get(min(index, child_count - 1))
                     .expect("Potential child to truncate");
-                let child = child.as_ref() as &web_sys::Node;
 
                 // If this is a comment node then we know that it is a `<!--ptns-->`
                 // text node separator that was created in virtual_node/mod.rs.
@@ -216,14 +217,12 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
                     continue;
                 }
 
-                (node.as_ref() as &web_sys::Node)
-                    .remove_child(child)
-                    .expect("Truncated children");
+                node.remove_child(&child).expect("Truncated children");
                 child_count -= 1;
             }
         }
         Patch::AppendChildren(_node_idx, new_nodes) => {
-            let parent = node.as_ref() as &web_sys::Node;
+            let parent = &node;
 
             for new_node in new_nodes {
                 if new_node.is_text_node() {
@@ -240,7 +239,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
                         .expect("Append text node");
                 } else {
                     parent
-                        .append_child(new_node.create_element().as_ref() as &web_sys::Node)
+                        .append_child(&new_node.create_element())
                         .expect("Appended child element");
                 }
             }
