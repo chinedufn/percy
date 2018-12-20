@@ -33,7 +33,7 @@ fn main () {
 You'll usually want your views to be rendered based on some application state. So, typically, your server will
 
 1. Receive a request from the client
-2. Set the initial application state based on the requst
+2. Set the initial application state based on the request
 3. Render the application using the initial state
 4. Reply with the initial HTML and the initial state
 5. Client takes over rendering, starting from the initial state.
