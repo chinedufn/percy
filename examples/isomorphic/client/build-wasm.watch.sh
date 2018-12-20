@@ -3,6 +3,7 @@
 cd $(dirname $0)
 
 mkdir -p build/
+mkdir -p dist/
 
 cargo +nightly watch -w ./ -w ../app \
     -x 'build -p isomorphic-client --target wasm32-unknown-unknown' \
