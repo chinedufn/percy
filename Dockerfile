@@ -30,10 +30,6 @@ RUN npm install
 
 COPY . ./
 
-# TODO: Unused.. the server code just expects this directory to be there at the moment.....
-RUN mkdir /usr/src/examples/isomorphic/client/build
-RUN touch /usr/src/examples/isomorphic/client/build/unused.txt
-
 WORKDIR /usr/src/examples/isomorphic
 
 RUN ./build.release.sh
