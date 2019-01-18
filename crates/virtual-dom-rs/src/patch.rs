@@ -7,37 +7,37 @@ use wasm_bindgen::JsCast;
 use web_sys;
 use web_sys::{Element, Node};
 
-use wasm_bindgen::JsValue;
-
-/// A `Patch` encodes an operation that modifies a real DOM element.
+/// A Patch encodes an operation that modifies a real DOM element.
 ///
 /// To update the real DOM that a user sees you'll want to first diff your
 /// old virtual dom and new virtual dom.
 ///
-/// This diff operation will generate `Vec<Patch>` with zero or more patches that, when
+/// This diff operation will generate Vec<Patch> with zero or more patches that, when
 /// applied to your real DOM, will make your real DOM look like your new virtual dom.
 ///
-/// Each `Patch` has a u32 node index that helps us identify the real DOM node that it applies to.
+/// Each Patch has a u32 node index that helps us identify the real DOM node that it applies to.
 ///
 /// Our old virtual dom's nodes are indexed depth first, as shown in this illustration
 /// (0 being the root node, 1 being it's first child, 2 being it's first child's first child).
 ///
-///                .─.
-///               ( 0 )
-///                `┬'
-///            ┌────┴──────┐
-///            │           │
-///            ▼           ▼
-///           .─.         .─.
-///          ( 1 )       ( 4 )
-///           `┬'         `─'
-///       ┌────┴───┐       │
-///       │        │       ├─────┬─────┐
-///       ▼        ▼       │     │     │
-///      .─.      .─.      ▼     ▼     ▼
-///     ( 2 )    ( 3 )    .─.   .─.   .─.
-///      `─'      `─'    ( 5 ) ( 6 ) ( 7 )
-///                       `─'   `─'   `─'
+/// ```ignore
+///             .─.
+///            ( 0 )
+///             `┬'
+///         ┌────┴──────┐
+///         │           │
+///         ▼           ▼
+///        .─.         .─.
+///       ( 1 )       ( 4 )
+///        `┬'         `─'
+///    ┌────┴───┐       │
+///    │        │       ├─────┬─────┐
+///    ▼        ▼       │     │     │
+///   .─.      .─.      ▼     ▼     ▼
+///  ( 2 )    ( 3 )    .─.   .─.   .─.
+///   `─'      `─'    ( 5 ) ( 6 ) ( 7 )
+///                    `─'   `─'   `─'
+/// ```
 ///
 /// We'll revisit our indexing in the future when we optimize our diff/patch process.
 #[derive(Debug, PartialEq)]
