@@ -110,6 +110,7 @@ macro_rules! html {
     }};
 }
 
+/// Powers the html! macro
 #[macro_export]
 macro_rules! recurse_html {
     // The beginning of an element without any attributes.
