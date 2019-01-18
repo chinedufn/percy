@@ -40,8 +40,8 @@ FROM scratch
 
 # At the moment our server expects the files to be in `/examples/isomorphic/client/{filename}` so we copy the examples dir
 COPY --from=build /usr/src/target/x86_64-unknown-linux-musl/release/isomorphic-server /
-COPY --from=build /usr/src/examples/isomorphic/client/build /build # TODO: Unused.. the code just expects it to be there atm..
 COPY --from=build /usr/src/examples/isomorphic/client/dist /dist
+COPY --from=build /usr/src/examples/isomorphic/client/build /build # TODO: Unused.. the code just expects it to be there atm..
 
 EXPOSE 7878/tcp
 
