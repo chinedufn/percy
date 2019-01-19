@@ -39,7 +39,7 @@ fn click_event() {
 
     let div = html! {
      <div
-         !onclick=move |_ev| {
+         !onclick=move |_ev: MouseEvent| {
              clicked_clone.set(true);
          },
      >

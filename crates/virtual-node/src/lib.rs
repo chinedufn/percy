@@ -20,14 +20,8 @@ pub mod virtual_node_test_utils;
 use web_sys;
 use web_sys::*;
 
-use js_sys::Function;
-use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
-
-// TODO: Remove browser_events entirely, custom_events appear to handle all of our use
-// cases at this time.
-mod browser_events;
-pub use self::browser_events::*;
+use wasm_bindgen::JsValue;
 
 /// When building your views you'll typically use the `html!` macro to generate
 /// `VirtualNode`'s.
@@ -49,10 +43,7 @@ pub struct VirtualNode {
     /// HTML props such as id, class, style, etc
     pub props: HashMap<String, String>,
     /// Events that will get added to your real DOM element via `.addEventListener`
-    pub custom_events: CustomEvents,
-    /// Events that are specified in web_sys such as `oninput` `onclick` `onmousemove`
-    /// etc...
-    pub browser_events: BrowserEvents,
+    pub events: Events,
     /// The children of this `VirtualNode`. So a <div> <em></em> </div> structure would
     /// have a parent div and one child, em.
     pub children: Option<Vec<VirtualNode>>,
@@ -76,9 +67,7 @@ pub struct ParsedVirtualNode {
     /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
     pub props: HashMap<String, String>,
     /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
-    pub custom_events: CustomEvents,
-    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
-    pub browser_events: BrowserEvents,
+    pub custom_events: Events,
     /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
     /// TODO: Don't think this needs to be an option
     pub children: Option<Vec<Rc<RefCell<ParsedVirtualNode>>>>,
@@ -92,12 +81,11 @@ impl ParsedVirtualNode {
     /// Create a virtual node that is meant to represent a DOM element
     pub fn new(tag: &str) -> ParsedVirtualNode {
         let props = HashMap::new();
-        let events = CustomEvents(HashMap::new());
+        let events = Events(HashMap::new());
         ParsedVirtualNode {
             tag: tag.to_string(),
             props,
             custom_events: events,
-            browser_events: BrowserEvents::default(),
             children: Some(vec![]),
             parent: None,
             text: None,
@@ -109,8 +97,7 @@ impl ParsedVirtualNode {
         ParsedVirtualNode {
             tag: "".to_string(),
             props: HashMap::new(),
-            browser_events: BrowserEvents::default(),
-            custom_events: CustomEvents(HashMap::new()),
+            custom_events: Events(HashMap::new()),
             children: Some(vec![]),
             parent: None,
             text: Some(text.to_string()),
@@ -135,8 +122,7 @@ impl From<ParsedVirtualNode> for VirtualNode {
         VirtualNode {
             tag: parsed_node.tag,
             props: parsed_node.props,
-            browser_events: parsed_node.browser_events,
-            custom_events: parsed_node.custom_events,
+            events: parsed_node.custom_events,
             children,
             text: parsed_node.text,
         }
@@ -155,13 +141,11 @@ impl VirtualNode {
     /// ```
     pub fn new(tag: &str) -> VirtualNode {
         let props = HashMap::new();
-        let custom_events = CustomEvents(HashMap::new());
-        let browser_events = BrowserEvents::default();
+        let custom_events = Events(HashMap::new());
         VirtualNode {
             tag: tag.to_string(),
             props,
-            custom_events,
-            browser_events,
+            events: custom_events,
             children: Some(vec![]),
             text: None,
         }
@@ -180,8 +164,7 @@ impl VirtualNode {
         VirtualNode {
             tag: "".to_string(),
             props: HashMap::new(),
-            custom_events: CustomEvents(HashMap::new()),
-            browser_events: BrowserEvents::default(),
+            events: Events(HashMap::new()),
             children: Some(vec![]),
             text: Some(text.to_string()),
         }
@@ -202,29 +185,16 @@ impl VirtualNode {
                 .expect("Set element attribute in create element");
         });
 
-        self.custom_events.0.iter().for_each(|(onevent, callback)| {
+        self.events.0.iter().for_each(|(onevent, callback)| {
             // onclick -> click
             let event = &onevent[2..];
 
-            let mut callback = callback.borrow_mut();
-            let callback = callback.take().unwrap();
-            (current_elem.as_ref() as &web_sys::EventTarget)
-                .add_event_listener_with_callback(event, &callback.as_ref().unchecked_ref())
-                .unwrap();
+            let current_elem: &EventTarget = current_elem.dyn_ref().unwrap();
 
-            callback.forget();
+            current_elem
+                .add_event_listener_with_callback(event, callback.as_ref().as_ref().unchecked_ref())
+                .unwrap();
         });
-
-        // Handle the `oninput` event
-        let mut callback = self.browser_events.oninput.borrow_mut().take();
-        if callback.is_some() {
-            let callback = callback.unwrap();
-            (current_elem.as_ref() as &web_sys::EventTarget)
-                .add_event_listener_with_callback("input", &callback.as_ref().unchecked_ref())
-                .unwrap();
-
-            callback.forget();
-        }
 
         let mut previous_node_was_text = false;
 
@@ -303,8 +273,7 @@ impl From<VirtualNode> for ParsedVirtualNode {
         ParsedVirtualNode {
             tag: node.tag,
             props: node.props,
-            browser_events: node.browser_events,
-            custom_events: node.custom_events,
+            custom_events: node.events,
             children,
             parent: None,
             text: node.text,
@@ -385,16 +354,19 @@ impl fmt::Display for VirtualNode {
 
 /// We need a custom implementation of fmt::Debug since FnMut() doesn't
 /// implement debug.
-pub struct CustomEvents(pub HashMap<String, RefCell<Option<Closure<FnMut(Event) -> ()>>>>);
+///
+/// Box<dyn AsRef<JsValue>>> is our js_sys::Closure. Stored this way to allow us to store
+/// any Closure regardless of the arguments.
+pub struct Events(pub HashMap<String, Box<dyn AsRef<JsValue>>>);
 
-impl PartialEq for CustomEvents {
+impl PartialEq for Events {
     // TODO: What should happen here..? And why?
     fn eq(&self, _rhs: &Self) -> bool {
         true
     }
 }
 
-impl fmt::Debug for CustomEvents {
+impl fmt::Debug for Events {
     // Print out all of the event names for this VirtualNode
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let events: String = self.0.keys().map(|key| " ".to_string() + key).collect();

@@ -11,7 +11,7 @@ edition = "2018"
 
 [dependencies]
 js-sys = "0.3"
-wasm-bindgen = {version = "0.2.33", features = ["default", "nightly"]}
+wasm-bindgen = "0.2.33"
 virtual-node = { path = "../virtual-node", version = "0.0.1" }
 
 [dependencies.web-sys]
@@ -27,9 +27,6 @@ features = [
     "NodeList",
     "Text",
     "Window",
-    "Event",
-    "MouseEvent",
-    "InputEvent",
 ]
 
 [dev-dependencies]
@@ -40,4 +37,7 @@ version = "0.3"
 features = [
     "DomTokenList",
     "HtmlInputElement",
+    "Event",
+    "MouseEvent",
+    "InputEvent",
 ]

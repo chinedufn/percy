@@ -20,13 +20,13 @@ let view = html!{
 };
 ```
 
-Event Handlers
+### Event Handlers
 
 Event handlers begin with a `!` and, like attributes must end with a `,`.
 
 Percy will attach event handlers your DOM nodes via `addEventListener`
 
-So `!mycustomevent` becomes `element.addEventListener('mycustomevent', callback)`
+So `!myevent` becomes `element.addEventListener('myevent', callback)`
 
 ```rust
 pub fn render (state: Rc<State>) -> VirtualNode {

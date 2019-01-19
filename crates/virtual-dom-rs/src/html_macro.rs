@@ -2,8 +2,8 @@
 //! that will eventually get rendered into DOM nodes on the client side, or String's
 //! if you're on the server side.
 
-use wasm_bindgen::prelude::Closure;
 use js_sys::Function;
+use wasm_bindgen::prelude::Closure;
 
 /// When parsing our HTML we keep track of whether the last tag that we saw was an open or
 /// close tag.
@@ -167,23 +167,6 @@ macro_rules! recurse_html {
         recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
     };
 
-    // InputEvent
-    //
-    // for <input oninput=|input_event| { do.something(); },></input> ths is:
-    //   oninput=|input_event| { do.something(); }
-    ($active_node:ident $root_nodes:ident $prev_tag_type:ident oninput = $callback:expr, $($remaining_html:tt)*) => {
-        // Closure::wrap is not implemented on non wasm32 targets
-        #[cfg(target_arch = "wasm32")]
-        {
-            let closure = $crate::Closure::wrap(Box::new($callback) as Box<FnMut(_)>);
-
-            $active_node.as_mut().unwrap().borrow_mut().browser_events.oninput = RefCell::new(Some(closure));
-        }
-
-        recurse_html! { $active_node $root_nodes $prev_tag_type $($remaining_html)* }
-    };
-
-
     // A property
     // For <div id="10",> this is:
     // id = "10",
@@ -205,10 +188,11 @@ macro_rules! recurse_html {
         #[cfg(target_arch = "wasm32")]
         {
             let closure = $crate::Closure::wrap(Box::new($callback) as Box<FnMut(_)>);
+            let closure = Box::new(closure);
 
             $active_node.as_mut().unwrap().borrow_mut().custom_events.0.insert(
                 stringify!($event_name).to_string(),
-                $crate::RefCell::new(Some(closure))
+                closure
             );
         }
 
@@ -291,7 +275,7 @@ mod tests {
     #[test]
     fn empty_div() {
         test(HTMLMacroTest {
-            generated: html!{ <div></div> },
+            generated: html! { <div></div> },
             expected: VirtualNode::new("div"),
             desc: "Empty div",
         })
@@ -305,7 +289,7 @@ mod tests {
         expected.props = props;
 
         test(HTMLMacroTest {
-            generated: html!{ <div id="hello-world",></div> },
+            generated: html! { <div id="hello-world",></div> },
             expected,
             desc: "One property",
         });
@@ -314,10 +298,10 @@ mod tests {
     #[test]
     fn event() {
         test(HTMLMacroTest {
-            generated: html!{
-                <div !onclick=|_ev| {},></div>
+            generated: html! {
+                <div !onclick=|_: web_sys::MouseEvent| {},></div>
             },
-            expected: html!{<div></div>},
+            expected: html! {<div></div>},
             desc: "Events are ignored in non wasm-32 targets",
         });
     }
@@ -328,7 +312,7 @@ mod tests {
         expected.children = Some(vec![VirtualNode::new("span")]);
 
         test(HTMLMacroTest {
-            generated: html!{ <div><span></span></div> },
+            generated: html! { <div><span></span></div> },
             expected,
             desc: "Child node",
         })
@@ -417,7 +401,7 @@ mod tests {
         expected.children = Some(vec![VirtualNode::new("div"), VirtualNode::new("strong")]);
 
         test(HTMLMacroTest {
-            generated: html!{ <div> { children } </div> },
+            generated: html! { <div> { children } </div> },
             expected,
             desc: "Vec of nodes",
         });
