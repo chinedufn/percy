@@ -13,7 +13,7 @@ isomorphic-app = { path = "../app" }
 virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
 
 [dependencies.wasm-bindgen]
-version = "0.2.31"
+version = "0.2.33"
 features = ["default", "nightly"]
 
 [dependencies.web-sys]
