@@ -48,6 +48,18 @@ fn closure_not_dropped() {
         new_node.props.insert("id".into(), "new-input-elem".into());
 
         dom_updater.update(new_node);
+
+        // FIXME: Remove.. just here for figuring out lifetimes while i get tests passing
+            let input: HtmlInputElement = document
+        .get_element_by_id("new-input-elem")
+        .expect("Input element")
+        .dyn_into()
+        .unwrap();
+    let input_event = InputEvent::new("input").unwrap();
+
+        web_sys::EventTarget::from(input)
+            .dispatch_event(&input_event)
+            .unwrap();
     }
 
     web_sys::console::log_1(&format!("{}", document.body().unwrap().inner_html()).into());

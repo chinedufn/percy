@@ -240,12 +240,10 @@ impl VirtualNode {
 
                 let current_elem: &EventTarget = element.dyn_ref().unwrap();
 
-                let closure_clone = Rc::clone(&callback);
-
                 current_elem
                     .add_event_listener_with_callback(
                         event,
-                        closure_clone.as_ref().as_ref().as_ref().unchecked_ref(),
+                        callback.as_ref().as_ref().unchecked_ref(),
                     )
                     .unwrap();
 
@@ -289,20 +287,12 @@ impl VirtualNode {
                 previous_node_was_text = false;
 
                 let mut child = child.create_element();
+                let child_elem = child.element;
 
-                // FiXME: When we get things working use `.merge` on our closure hashmaps
-                for (unique_elem_id, child_closures) in child.closures.iter() {
-                    let mut new_closures = vec![];
+                closures.extend(child.closures);
 
-                    for closure in  child_closures.iter() {
-                        new_closures.push(Rc::clone(closure));
-                    }
-
-                    closures.insert(*unique_elem_id, new_closures);
-                }
-
-                (element.as_ref() as &web_sys::Node)
-                    .append_child(&child)
+                element
+                    .append_child(&child_elem)
                     .unwrap();
             }
         });
