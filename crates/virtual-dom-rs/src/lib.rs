@@ -32,6 +32,9 @@ pub use crate::patch::*;
 mod view;
 pub use crate::view::*;
 
+mod dom_updater;
+pub use self::dom_updater::DomUpdater;
+
 /// Exports structs and macros that you'll almost always want access to in a virtual-dom
 /// powered application
 pub mod prelude {
