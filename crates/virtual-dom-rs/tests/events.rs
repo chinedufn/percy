@@ -33,7 +33,7 @@ fn on_input_custom() {
     };
 
     let input_event = InputEvent::new("input").unwrap();
-    let input = input.create_element();
+    let input = input.create_element().element;
 
     assert_eq!(&*text.borrow(), "Start Text");
 

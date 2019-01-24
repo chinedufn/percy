@@ -34,12 +34,9 @@ view [the isomorphic web app example live.](https://percy-isomorphic.now.sh/)
 For more on the `html!` macro see [html macro](virtual-dom-rs/src/html_macro.rs)
 
 ```rust
-#![feature(proc_macro_hygiene)]
-
 #[macro_use]
 extern crate virtual_dom_rs;
 
-extern crate css_rs_macro;
 use css_rs_macro::css;
 
 static SOME_COMPONENT_CSS: &'static str = css! {"

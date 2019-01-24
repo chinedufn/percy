@@ -1,20 +1,23 @@
 //! Diff virtual-doms and patch the real DOM
 
+use crate::diff::diff;
+use crate::patch::patch;
+use crate::patch::Patch;
 use std::collections::HashMap;
 use std::rc::Rc;
+use virtual_node::DynClosure;
 use virtual_node::VirtualNode;
 use wasm_bindgen::JsValue;
 use web_sys::*;
-use crate::diff::diff;
-use crate::patch::patch;
 
-type ActiveClosures = HashMap<u32, Rc<Box<dyn AsRef<JsValue>>>>;
+type ActiveClosures = HashMap<u32, Vec<DynClosure>>;
 
 /// Used for keeping a real DOM node up to date based on the current VirtualNode
 /// and a new incoming VirtualNode that represents our latest DOM state.
 pub struct DomUpdater {
     current_vdom: VirtualNode,
-    active_closures: ActiveClosures,
+    /// i
+    pub active_closures: ActiveClosures,
     root_node: web_sys::Element,
 }
 
@@ -25,9 +28,14 @@ impl DomUpdater {
     pub fn new(current_vdom: VirtualNode) -> DomUpdater {
         let root_node = current_vdom.create_element();
 
+        let active_closures = root_node.closures;
+        let root_node = root_node.element;
+
+        web_sys::console::log_1(&format!("closures {}", active_closures.len()).into());
+
         DomUpdater {
             current_vdom,
-            active_closures: HashMap::new(),
+            active_closures,
             root_node,
         }
     }
@@ -35,14 +43,17 @@ impl DomUpdater {
     /// Create a new DomUpdater.
     ///
     /// A root Element will be created and appended to your passed in mount element.
-    pub fn new_append_to_mount(current_vdom: VirtualNode, mount: Element) -> DomUpdater {
+    pub fn new_append_to_mount(current_vdom: VirtualNode, mount: &Element) -> DomUpdater {
         let root_node = current_vdom.create_element();
+
+        let active_closures = root_node.closures;
+        let root_node = root_node.element;
 
         mount.append_child(&root_node);
 
         DomUpdater {
             current_vdom,
-            active_closures: HashMap::new(),
+            active_closures,
             root_node,
         }
     }
@@ -50,23 +61,17 @@ impl DomUpdater {
     /// Create a new DomUpdater.
     ///
     /// A root Element will be created and it will replace your passed in mount element.
-    ///
-    /// # Panics
-    ///
-    /// - If the mount does not have a parent element.
-    ///    You need a parent element to replace an element.
     pub fn new_replace_mount(current_vdom: VirtualNode, mount: Element) -> DomUpdater {
         let root_node = current_vdom.create_element();
 
-        let parent_node = mount.parent_node().expect("Parent node");
+        let active_closures = root_node.closures;
+        let root_node = root_node.element;
 
-        parent_node
-            .replace_child(&root_node, &mount)
-            .expect("Replaced parent node");
+        mount.replace_with_with_node_1(&root_node);
 
         DomUpdater {
             current_vdom,
-            active_closures: HashMap::new(),
+            active_closures,
             root_node,
         }
     }
@@ -81,5 +86,21 @@ impl DomUpdater {
         let patches = diff(&self.current_vdom, &new_vdom);
 
         patch(self.root_node.clone(), &patches);
+
+        self.current_vdom = new_vdom;
+    }
+
+    /// Return the root node of your application, the highest ancestor of all other nodes in
+    /// your real DOM tree.
+    pub fn root_node(&self) -> Element {
+        // Note that we're cloning the web_sys::Element, not the DOM element.
+        // So we're effectively cloning a pointer here, which is fast.
+        self.root_node.clone()
+    }
+}
+
+impl DomUpdater {
+    fn update_active_closures(&mut self, patches: &Vec<Patch>) {
+        for patch in patches.iter() {}
     }
 }

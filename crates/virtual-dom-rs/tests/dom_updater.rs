@@ -24,11 +24,9 @@ fn patches_dom() {
     let document = web_sys::window().unwrap().document().unwrap();
 
     let vdom = html! { <div></div> };
-
     let mut dom_updater = DomUpdater::new(vdom);
 
     let new_vdom = html! { <div id="patched",></div> };
-
     dom_updater.update(new_vdom);
 
     assert_eq!(document.query_selector("#patched").unwrap().is_some(), true);

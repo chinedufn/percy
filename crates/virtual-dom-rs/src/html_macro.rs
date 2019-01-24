@@ -188,7 +188,7 @@ macro_rules! recurse_html {
         #[cfg(target_arch = "wasm32")]
         {
             let closure = $crate::Closure::wrap(Box::new($callback) as Box<FnMut(_)>);
-            let closure = Box::new(closure);
+            let closure = $crate::Rc::new(closure);
 
             $active_node.as_mut().unwrap().borrow_mut().custom_events.0.insert(
                 stringify!($event_name).to_string(),
@@ -415,6 +415,9 @@ mod tests {
             desc: "Text as root node",
         })
     }
+
+    // TODO: Support Option<VirtualNode> as a child. When see wee that we do nothing. This
+    // would allow views to return `None` if nothing should be rendered.
 
     fn test(macro_test: HTMLMacroTest) {
         assert_eq!(

@@ -87,30 +87,30 @@ mod tests {
     use std::collections::HashMap;
 
     // TODO: Move this test somewhere that we can use the `html!` macro
-//    #[test]
-//    fn filter_label() {
-//        let html = html! {
-//        // Should not pick up labels on the root node
-//        <div label="hello0",>
-//            // This node gets picked up
-//            <span label="hello1",>
-//            </span>
-//            // This node gets picked up
-//            <em label="hello2",>
-//                { "hello there :)!" }
-//            </em>
-//            <div label="world",></div>
-//        </div>
-//        };
-//
-//        let hello_nodes = html.filter_label(|label| label.contains("hello"));
-//
-//        assert_eq!(
-//            hello_nodes.len(),
-//            2,
-//            "2 elements with label containing 'hello'"
-//        );
-//    }
+    //    #[test]
+    //    fn filter_label() {
+    //        let html = html! {
+    //        // Should not pick up labels on the root node
+    //        <div label="hello0",>
+    //            // This node gets picked up
+    //            <span label="hello1",>
+    //            </span>
+    //            // This node gets picked up
+    //            <em label="hello2",>
+    //                { "hello there :)!" }
+    //            </em>
+    //            <div label="world",></div>
+    //        </div>
+    //        };
+    //
+    //        let hello_nodes = html.filter_label(|label| label.contains("hello"));
+    //
+    //        assert_eq!(
+    //            hello_nodes.len(),
+    //            2,
+    //            "2 elements with label containing 'hello'"
+    //        );
+    //    }
 
     #[test]
     fn label_equals() {
@@ -124,7 +124,6 @@ mod tests {
         let mut html = VirtualNode::new("div");
         html.children.as_mut().unwrap().push(span);
         html.children.as_mut().unwrap().push(em);
-
 
         let hello_nodes = html.filter_label_equals("hello");
 
