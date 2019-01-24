@@ -24,9 +24,7 @@ fn on_input_custom() {
          // On input we'll set our Rc<RefCell<String>> value to the input elements value
          !oninput=move |event: Event| {
             let input_elem = event.target().unwrap();
-
             let input_elem = input_elem.dyn_into::<HtmlInputElement>().unwrap();
-
             *text_clone.borrow_mut() = input_elem.value();
          },
          value="End Text",
@@ -40,8 +38,8 @@ fn on_input_custom() {
     assert_eq!(&*text.borrow(), "Start Text");
 
     // After dispatching the oninput event our `text` should have a value of the input elements value.
-    (web_sys::EventTarget::from(input))
-        .dispatch_event(input_event.as_ref() as &web_sys::Event)
+    web_sys::EventTarget::from(input)
+        .dispatch_event(&input_event)
         .unwrap();
 
     assert_eq!(&*text.borrow(), "End Text");
