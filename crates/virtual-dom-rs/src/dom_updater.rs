@@ -16,7 +16,11 @@ type ActiveClosures = HashMap<u32, Vec<DynClosure>>;
 /// and a new incoming VirtualNode that represents our latest DOM state.
 pub struct DomUpdater {
     current_vdom: VirtualNode,
-    /// i
+    /// The closures that are currently attached to elements in the page.
+    ///
+    /// We keep these around so that they don't get dropped (and thus stop working);
+    ///
+    /// TODO: Drop them when the element is no longer in the page
     pub active_closures: ActiveClosures,
     root_node: web_sys::Element,
 }

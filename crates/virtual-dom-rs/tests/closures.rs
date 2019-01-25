@@ -49,30 +49,28 @@ fn closure_not_dropped() {
 
         dom_updater.update(new_node);
 
-        // FIXME: Remove.. just here for figuring out lifetimes while i get tests passing
-            let input: HtmlInputElement = document
-        .get_element_by_id("new-input-elem")
-        .expect("Input element")
-        .dyn_into()
-        .unwrap();
-    let input_event = InputEvent::new("input").unwrap();
+        // If you uncomment this you'll se the CLOSURE RUN text in the test output..
+        // Yet when we do the same thing outside of this block it isn't working
 
-        web_sys::EventTarget::from(input)
-            .dispatch_event(&input_event)
-            .unwrap();
+//        let input: HtmlInputElement = document
+//            .get_element_by_id("new-input-elem")
+//            .expect("Input element")
+//            .dyn_into()
+//            .unwrap();
+//        let input_event = InputEvent::new("input").unwrap();
+//
+//        web_sys::EventTarget::from(input)
+//            .dispatch_event(&input_event)
+//            .unwrap();
     }
+
+    let dom_updater = dom_updater.as_ref().unwrap();
+
+    // Proof that the Closure that we created hasn't been dropped yet
+    assert_eq!(dom_updater.active_closures.get(&1).as_ref().unwrap().len(), 1);
 
     web_sys::console::log_1(&format!("{}", document.body().unwrap().inner_html()).into());
 
-    let dom_updater = dom_updater.unwrap();
-
-    web_sys::console::log_1(
-        &format!(
-            "Closures {}",
-            dom_updater.active_closures.get(&1).unwrap().len()
-        )
-        .into(),
-    );
 
     let input: HtmlInputElement = document
         .get_element_by_id("new-input-elem")
@@ -89,6 +87,8 @@ fn closure_not_dropped() {
         .unwrap();
 
     assert_eq!(&*text.borrow(), "End Text");
+
+    assert_eq!(dom_updater.active_closures.get(&1).as_ref().unwrap().len(), 1);
 }
 
 fn make_input_component(text_clone: Rc<RefCell<String>>) -> VirtualNode {
@@ -96,7 +96,7 @@ fn make_input_component(text_clone: Rc<RefCell<String>>) -> VirtualNode {
         <input
            // On input we'll set our Rc<RefCell<String>> value to the input elements value
            !oninput=move |event: Event| {
-              web_sys::console::log_1(&format!("RAN!@!(@!!!@").into());
+              web_sys::console::log_1(&format!("CLOSURE RAN!@!(@!!!@").into());
               let input_elem = event.target().unwrap();
               let input_elem = input_elem.dyn_into::<HtmlInputElement>().unwrap();
               *text_clone.borrow_mut() = input_elem.value();
