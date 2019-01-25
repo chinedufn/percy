@@ -151,8 +151,6 @@ impl Parse for Html {
     }
 }
 
-// TODO: BREADCRUMB - Start by commenting this out so that I understand it.
-// Then add support for text nodes
 impl Parse for Tag {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut input = input;
