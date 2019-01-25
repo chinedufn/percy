@@ -104,22 +104,22 @@ fn three_nodes_deep() {
     .test()
 }
 
-#[test]
-fn nested_text_node() {
-    let mut expected = VirtualNode::new("div");
-    expected.children = Some(vec![
-        VirtualNode::text("This is a text node"),
-        VirtualNode::text("More"),
-        VirtualNode::text("Text"),
-    ]);
-
-    HtmlMacroTest {
-        generated: html! { <div>{ "This is a text node" } {"More" "Text"}</div> },
-        expected,
-        desc: "Nested text nide",
-    }
-    .test();
-}
+//#[test]
+//fn sibling_text_nodes() {
+//    let mut expected = VirtualNode::new("div");
+//    expected.children = Some(vec![
+//        VirtualNode::text("This is a text node"),
+//        VirtualNode::text("More"),
+//        VirtualNode::text("Text"),
+//    ]);
+//
+//    HtmlMacroTest {
+//        generated: html! { <div>"This is a text node" "More" "Text"</div> },
+//        expected,
+//        desc: "Nested text nide",
+//    }
+//    .test();
+//}
 //
 //    #[test]
 //    fn nested_macro() {
@@ -128,15 +128,15 @@ fn nested_text_node() {
 //        let mut expected = VirtualNode::new("div");
 //        expected.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
 //
-//        test(HtmlMacroTest {
+//        HtmlMacroTest {
 //            generated: html! { <div>{ html! { <span></span> } { child_2 } }</div> },
 //            expected,
 //            desc: "Nested macros",
-//        });
+//        }.test();
 //    }
 //
 //    #[test]
-//    fn strings() {
+//    fn strs_of_text() {
 //        let text1 = "This is a text node";
 //        let text2 = text1.clone();
 //
@@ -146,11 +146,11 @@ fn nested_text_node() {
 //            VirtualNode::text("This is a text node"),
 //        ]);
 //
-//        test(HtmlMacroTest {
+//        HtmlMacroTest {
 //            generated: html! { <div>{ text1 text2 }</div> },
 //            expected,
 //            desc: "Creates text nodes",
-//        });
+//        }.test();
 //    }
 //
 //    #[test]
@@ -160,45 +160,20 @@ fn nested_text_node() {
 //        let mut expected = VirtualNode::new("div");
 //        expected.children = Some(vec![VirtualNode::new("div"), VirtualNode::new("strong")]);
 //
-//        test(HtmlMacroTest {
+//        HtmlMacroTest {
 //            generated: html! { <div> { children } </div> },
 //            expected,
 //            desc: "Vec of nodes",
-//        });
+//        }.test();
 //    }
 //
 //    #[test]
 //    fn text_root_node() {
-//        test(HtmlMacroTest {
+//        HtmlMacroTest {
 //            generated: html! { { "some text" } },
 //            expected: VirtualNode::text("some text"),
 //            desc: "Text as root node",
-//        })
+//        }.test()
 //    }
-//
-//    fn test(macro_test: HtmlMacroTest) {
-//        assert_eq!(
-//            macro_test.generated, macro_test.expected,
-//            "{}",
-//            macro_test.desc
-//        );
-//
-//        for (index, child) in macro_test
-//            .expected
-//            .children
-//            .as_ref()
-//            .unwrap()
-//            .iter()
-//            .enumerate()
-//        {
-//            assert_eq!(
-//                child,
-//                &macro_test.generated.children.as_ref().unwrap()[index],
-//                "{}",
-//                macro_test.desc
-//            );
-//        }
-//    }
-//}
 
 // TODO: Test for self closing tags such as <b />

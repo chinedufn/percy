@@ -75,9 +75,6 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         };
     }
 
-    eprintln!("parent_stack = {:#?}", parent_stack);
-    eprintln!("parent_children = {:#?}", parent_children);
-
     for _ in 0..(node_order.len()) {
         let parent_idx = node_order.pop().unwrap();
 
