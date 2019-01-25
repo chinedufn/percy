@@ -104,22 +104,22 @@ fn three_nodes_deep() {
     .test()
 }
 
-//#[test]
-//fn sibling_text_nodes() {
-//    let mut expected = VirtualNode::new("div");
-//    expected.children = Some(vec![
-//        VirtualNode::text("This is a text node"),
-//        VirtualNode::text("More"),
-//        VirtualNode::text("Text"),
-//    ]);
-//
-//    HtmlMacroTest {
-//        generated: html! { <div>"This is a text node" "More" "Text"</div> },
-//        expected,
-//        desc: "Nested text nide",
-//    }
-//    .test();
-//}
+#[test]
+fn sibling_text_nodes() {
+    let mut expected = VirtualNode::new("div");
+    expected.children = Some(vec![
+        VirtualNode::text("This is a text node"),
+        VirtualNode::text("More"),
+        VirtualNode::text("Text"),
+    ]);
+
+    HtmlMacroTest {
+        generated: html! { <div>"This is a text node" "More" "Text"</div> },
+        expected,
+        desc: "Nested text nide",
+    }
+        .test();
+}
 //
 //    #[test]
 //    fn nested_macro() {

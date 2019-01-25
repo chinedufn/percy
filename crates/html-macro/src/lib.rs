@@ -71,6 +71,8 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             }
             Tag::Close { name } => {
                                 parent_stack.pop();
+            },
+            Tag::Text => {
             }
         };
     }
@@ -127,6 +129,8 @@ enum Tag {
     Open { name: Ident, attrs: Vec<Attr> },
     /// `</div>`
     Close { name: Ident },
+    /// "Hello world"
+    Text { text: Expr },
 }
 
 #[derive(Debug)]
@@ -148,6 +152,8 @@ impl Parse for Html {
     }
 }
 
+// TODO: BREADCRUMB - Start by commenting this out so that I understand it.
+// Then add support for text nodes
 impl Parse for Tag {
     fn parse(input: ParseStream) -> Result<Self> {
         input.parse::<Token![<]>()?;
