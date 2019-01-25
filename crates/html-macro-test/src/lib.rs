@@ -50,86 +50,76 @@ fn one_prop() {
     .test();
 }
 
-//#[cfg(test)]
-//mod tests {
-//    use super::*;
-//    use crate::VirtualNode;
-//    use std::collections::HashMap;
-//
-//    struct HtmlMacroTest {
-//        generated: VirtualNode,
-//        expected: VirtualNode,
-//        desc: &'static str,
+//#[test]
+//fn event() {
+//    HtmlMacroTest {
+//        generated: html! {
+//            <div onclick=|_: web_sys::MouseEvent| {}></div>
+//        },
+//        expected: html! {<div></div>},
+//        desc: "Events are ignored in non wasm-32 targets",
 //    }
-//
+//    .test();
+//}
 
-//
-//
-//    #[test]
-//    fn event() {
-//        test(HtmlMacroTest {
-//            generated: html! {
-//                <div !onclick=|_: web_sys::MouseEvent| {},></div>
-//            },
-//            expected: html! {<div></div>},
-//            desc: "Events are ignored in non wasm-32 targets",
-//        });
-//    }
-//
-//    #[test]
-//    fn child_node() {
-//        let mut expected = VirtualNode::new("div");
-//        expected.children = Some(vec![VirtualNode::new("span")]);
-//
-//        test(HtmlMacroTest {
-//            generated: html! { <div><span></span></div> },
-//            expected,
-//            desc: "Child node",
-//        })
-//    }
-//
-//    #[test]
-//    fn sibling_child_nodes() {
-//        let mut expected = VirtualNode::new("div");
-//        expected.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
-//
-//        test(HtmlMacroTest {
-//            generated: html! { <div><span></span><b></b></div> },
-//            expected,
-//            desc: "Sibling child nodes",
-//        })
-//    }
-//
-//    #[test]
-//    fn three_nodes_deep() {
-//        let mut child = VirtualNode::new("span");
-//        child.children = Some(vec![VirtualNode::new("b")]);
-//
-//        let mut expected = VirtualNode::new("div");
-//        expected.children = Some(vec![child]);
-//
-//        test(HtmlMacroTest {
-//            generated: html! { <div><span><b></b></span></div> },
-//            expected,
-//            desc: "Nested 3 nodes deep",
-//        })
-//    }
-//
-//    #[test]
-//    fn nested_text_node() {
-//        let mut expected = VirtualNode::new("div");
-//        expected.children = Some(vec![
-//            VirtualNode::text("This is a text node"),
-//            VirtualNode::text("More"),
-//            VirtualNode::text("Text"),
-//        ]);
-//
-//        test(HtmlMacroTest {
-//            generated: html! { <div>{ "This is a text node" } {"More" "Text"}</div> },
-//            expected,
-//            desc: "Nested text nide",
-//        });
-//    }
+#[test]
+fn child_node() {
+    let mut expected = VirtualNode::new("div");
+    expected.children = Some(vec![VirtualNode::new("span")]);
+
+    HtmlMacroTest {
+        generated: html! { <div><span></span></div> },
+        expected,
+        desc: "Child node",
+    }
+    .test();
+}
+
+#[test]
+fn sibling_child_nodes() {
+    let mut expected = VirtualNode::new("div");
+    expected.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
+
+    HtmlMacroTest {
+        generated: html! { <div><span></span><b></b></div> },
+        expected,
+        desc: "Sibling child nodes",
+    }
+    .test();
+}
+
+#[test]
+fn three_nodes_deep() {
+    let mut child = VirtualNode::new("span");
+    child.children = Some(vec![VirtualNode::new("b")]);
+
+    let mut expected = VirtualNode::new("div");
+    expected.children = Some(vec![child]);
+
+    HtmlMacroTest {
+        generated: html! { <div><span><b></b></span></div> },
+        expected,
+        desc: "Nested 3 nodes deep",
+    }
+    .test()
+}
+
+#[test]
+fn nested_text_node() {
+    let mut expected = VirtualNode::new("div");
+    expected.children = Some(vec![
+        VirtualNode::text("This is a text node"),
+        VirtualNode::text("More"),
+        VirtualNode::text("Text"),
+    ]);
+
+    HtmlMacroTest {
+        generated: html! { <div>{ "This is a text node" } {"More" "Text"}</div> },
+        expected,
+        desc: "Nested text nide",
+    }
+    .test();
+}
 //
 //    #[test]
 //    fn nested_macro() {
@@ -210,3 +200,5 @@ fn one_prop() {
 //        }
 //    }
 //}
+
+// TODO: Test for self closing tags such as <b />

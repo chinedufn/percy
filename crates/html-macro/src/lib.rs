@@ -2,6 +2,8 @@ extern crate proc_macro;
 
 use proc_macro2::{TokenStream, TokenTree};
 use quote::quote;
+use std::collections::HashMap;
+use syn::export::Span;
 use syn::parse::{Parse, ParseStream, Result};
 use syn::{parse_macro_input, Expr, Ident, Token};
 
@@ -15,6 +17,14 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     eprintln!("parsed = {:#?}", parsed);
 
     let mut tokens = vec![];
+
+    // TODO: Manage node_order and parent_stack together so that we don't forget to change
+    // one but not the other..
+    let mut node_order = vec![0];
+    let mut parent_stack = vec![0];
+
+    let mut parent_children: HashMap<usize, Vec<usize>> = HashMap::new();
+    parent_children.insert(0, vec![]);
 
     for (idx, tag) in parsed.tags.into_iter().enumerate() {
         match tag {
@@ -40,9 +50,60 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
                     tokens.push(insert_attribute);
                 }
+
+                // The first open tag that we see is our root node so we won't worry about
+                // giving it a parent
+                if idx == 0 {
+                    continue;
+                }
+
+                let parent_idx = parent_stack[parent_stack.len() - 1];
+
+                parent_stack.push(idx);
+                node_order.push(idx);
+
+                parent_children
+                    .get_mut(&parent_idx)
+                    .expect("Parent")
+                    .push(idx);
+
+                parent_children.insert(idx, vec![]);
             }
-            Tag::Close { name } => {}
+            Tag::Close { name } => {
+                                parent_stack.pop();
+            }
         };
+    }
+
+    eprintln!("parent_stack = {:#?}", parent_stack);
+    eprintln!("parent_children = {:#?}", parent_children);
+
+    for _ in 0..(node_order.len()) {
+        let parent_idx = node_order.pop().unwrap();
+
+        // TODO: Figure out how to really use spans
+        let parent_name = Ident::new(format!("node_{}", parent_idx).as_str(), Span::call_site());
+
+        let parent_children_indices = parent_children.get(&parent_idx).expect("Parent");
+
+        if parent_children_indices.len() > 0 {
+            let create_children_vec = quote! {
+                #parent_name.children = Some(vec![]);
+            };
+
+            tokens.push(create_children_vec);
+
+            for child_idx in parent_children_indices.iter() {
+                let child_name =
+                    Ident::new(format!("node_{}", child_idx).as_str(), Span::call_site());
+
+                // TODO: Multiple .as_mut().unwrap() of children. Let's just do this once.
+                let push_child = quote! {
+                    #parent_name.children.as_mut().unwrap().push(#child_name);
+                };
+                tokens.push(push_child);
+            }
+        }
     }
 
     let virtual_nodes = quote! {
