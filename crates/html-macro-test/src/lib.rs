@@ -138,7 +138,7 @@ fn sibling_text_nodes() {
             desc: "Nested macros",
         }.test();
     }
-//
+
 //    #[test]
 //    fn strs_of_text() {
 //        let text1 = "This is a text node";
@@ -151,12 +151,12 @@ fn sibling_text_nodes() {
 //        ]);
 //
 //        HtmlMacroTest {
-//            generated: html! { <div>{ text1 text2 }</div> },
+//            generated: html! { <div>{ text1 } { text2 } </div> },
 //            expected,
 //            desc: "Creates text nodes",
 //        }.test();
 //    }
-//
+
 //    #[test]
 //    fn vec_of_nodes() {
 //        let children = vec![html! { <div> </div>}, html! { <strong> </strong>}];
@@ -170,11 +170,12 @@ fn sibling_text_nodes() {
 //            desc: "Vec of nodes",
 //        }.test();
 //    }
-//
+
+
 //    #[test]
 //    fn text_root_node() {
 //        HtmlMacroTest {
-//            generated: html! { { "some text" } },
+//            generated: html! { some text },
 //            expected: VirtualNode::text("some text"),
 //            desc: "Text as root node",
 //        }.test()

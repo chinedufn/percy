@@ -5,8 +5,9 @@ use quote::quote;
 use std::collections::HashMap;
 use syn::export::Span;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{parse_macro_input, Expr, Ident, Token, Block};
+use syn::{parse_macro_input, Expr, Ident, Token, Block, braced};
 use syn::group::Group;
+use syn::spanned::Spanned;
 
 // FIXME: Play around and get things working but add thorough commenting
 // once it's all put together
@@ -27,7 +28,11 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let mut parent_children: HashMap<usize, Vec<usize>> = HashMap::new();
     parent_children.insert(0, vec![]);
 
-    for (idx, tag) in parsed.tags.into_iter().enumerate() {
+    // TODO: A struct that manages all of these indices as we parse. Handle this when we refactor.
+    // Before merging this all..
+    let mut idx = 0;
+
+    for tag in parsed.tags.into_iter() {
         match tag {
             Tag::Open { name, attrs } => {
                 // The root node is named `node_0`. All of it's descendants are node_1.. node_2.. etc.
@@ -55,6 +60,7 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 // The first open tag that we see is our root node so we won't worry about
                 // giving it a parent
                 if idx == 0 {
+                    idx += 1;
                     continue;
                 }
 
@@ -69,6 +75,8 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     .push(idx);
 
                 parent_children.insert(idx, vec![]);
+
+                idx += 1;
             }
             Tag::Close { name } => {
                 parent_stack.pop();
@@ -85,18 +93,45 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
                 node_order.push(idx);
 
-                eprintln!("parent_children = {:#?}", parent_children);
-                eprintln!("parent_idx = {:#?}", parent_idx);
-
                 parent_children
                     .get_mut(&parent_idx)
                     .expect("Parent of this text node")
                     .push(idx);
 
                 tokens.push(text_node);
-            }
-            Tag::Block => {
 
+                idx += 1;
+            }
+            Tag::Braced {block} => {
+                eprintln!("block = {:#?}", block);
+
+                block.stmts.iter().for_each(|stmt| {
+                    let node_name = format!("node_{}", idx);
+                    let node_name = Ident::new(node_name.as_str(), stmt.span());
+
+                    eprintln!("node_name = {:#?}", node_name);
+
+                    let node = quote! {
+                        let #node_name = VirtualNode::from(#stmt);
+                    };
+                    eprintln!("node = {:#?}", node);
+                    tokens.push(node);
+
+                    let parent_idx = parent_stack[parent_stack.len() - 1];
+
+                                    parent_children
+                    .get_mut(&parent_idx)
+                    .expect("Parent of this text node")
+                    .push(idx);
+
+                    // TODO: Only really needed if this node is a node that can actually have
+                    // children but we can worry about that later
+                    parent_children.insert(idx, vec![]);
+
+                    node_order.push(idx);
+
+                    idx += 1;
+                })
             }
         };
     }
@@ -139,7 +174,6 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             node_0
         }
     };
-    eprintln!("virtual_nodes  = {:#?}", virtual_nodes);
 
     virtual_nodes.into()
 }
@@ -170,7 +204,7 @@ enum Tag {
     ///   </div>
     /// }
     /// ```
-    Block { expr: Expr }
+    Braced { block: Box<Block> }
 }
 
 #[derive(Debug)]
@@ -196,14 +230,32 @@ impl Parse for Tag {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut input = input;
 
-        let is_block = input.peek(Token![}]);
+        let content;
 
         // If it doesn't start with a < it's weird a text node or an expression
+        let is_text_or_block = !input.peek(Token![<]);
+        if  is_text_or_block {
+            if !input.peek(Ident){
+                let brace_token = braced!(content in input);
+
+                let block_expr = content.call(Block::parse_within)?;
+
+                let block = Box::new(Block {
+                    brace_token,
+                    stmts: block_expr
+                });
+
+                return Ok(Tag::Braced { block })
+            }
+
+            return parse_text_node(&mut input);
+        }
+
+
         // TODO: Rename
         let is_text_node = !input.peek(Token![<]);
 
         if is_text_node {
-            return parse_text_node(&mut input);
         }
 
         input.parse::<Token![<]>()?;

@@ -294,6 +294,36 @@ impl From<Vec<VirtualNode>> for ParsedVirtualNode {
     }
 }
 
+impl<'a> From<&'a str> for VirtualNode {
+    fn from(text: &'a str) -> Self {
+        VirtualNode::text(text)
+    }
+}
+impl From<String> for VirtualNode {
+    fn from(text: String) -> Self {
+        VirtualNode::text(&text)
+    }
+}
+impl<'a> From<&'a String> for VirtualNode {
+    fn from(text: &'a String) -> Self {
+        VirtualNode::text(text)
+    }
+}
+
+//impl From<Vec<VirtualNode>> for VirtualNode {
+//    fn from(nodes: Vec<VirtualNode>) -> Self {
+//        let parsed_nodes: Vec<Rc<RefCell<VirtualNode>>> = nodes
+//            .into_iter()
+//            .map(|node| Rc::new(RefCell::new(VirtualNode::from(node))))
+//            .collect();
+//
+//        let mut wrapper = VirtualNode::new("__VEC_OF_CHILDREN__");
+//        wrapper.children = Some(parsed_nodes);
+//
+//        wrapper
+//    }
+//}
+
 impl VirtualNode {
     fn wrap_children(&mut self) -> Vec<Rc<RefCell<ParsedVirtualNode>>> {
         self.children
