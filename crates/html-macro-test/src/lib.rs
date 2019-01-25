@@ -1,6 +1,7 @@
 #![feature(proc_macro_hygiene)]
 
 use html_macro::html;
+use std::collections::HashMap;
 use virtual_node::VirtualNode;
 
 struct HtmlMacroTest {
@@ -30,7 +31,23 @@ fn empty_div() {
         generated: html! { <div></div> },
         expected: VirtualNode::new("div"),
         desc: "Empty div",
-    }.test();
+    }
+    .test();
+}
+
+#[test]
+fn one_prop() {
+    let mut props = HashMap::new();
+    props.insert("id".to_string(), "hello-world".to_string());
+    let mut expected = VirtualNode::new("div");
+    expected.props = props;
+
+    HtmlMacroTest {
+        generated: html! { <div id="hello-world"></div> },
+        expected,
+        desc: "One property",
+    }
+    .test();
 }
 
 //#[cfg(test)]
@@ -47,19 +64,6 @@ fn empty_div() {
 //
 
 //
-//    #[test]
-//    fn one_prop() {
-//        let mut props = HashMap::new();
-//        props.insert("id".to_string(), "hello-world".to_string());
-//        let mut expected = VirtualNode::new("div");
-//        expected.props = props;
-//
-//        test(HtmlMacroTest {
-//            generated: html! { <div id="hello-world",></div> },
-//            expected,
-//            desc: "One property",
-//        });
-//    }
 //
 //    #[test]
 //    fn event() {

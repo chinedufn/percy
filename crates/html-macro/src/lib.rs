@@ -5,6 +5,9 @@ use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
 use syn::{parse_macro_input, Expr, Ident, Token};
 
+// FIXME: Play around and get things working but add thorough commenting
+// once it's all put together
+
 #[proc_macro]
 pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let parsed = parse_macro_input!(input as Html);
@@ -13,23 +16,44 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let mut tokens = vec![];
 
-    for tag in parsed.tags.into_iter() {
+    for (idx, tag) in parsed.tags.into_iter().enumerate() {
         match tag {
-            Tag::Open {name, attrs} => {
+            Tag::Open { name, attrs } => {
+                // The root node is named `node_0`. All of it's descendants are node_1.. node_2.. etc.
+                // This just comes from the `idx` variable
+                // TODO: Not sure what the span is supposed to be so I just picked something..
+                let var_name = Ident::new(format!("node_{}", idx).as_str(), name.span());
+
                 let name = format!("{}", name);
                 let node = quote! {
-                    VirtualNode::new(#name)
+                    let mut #var_name = VirtualNode::new(#name);
                 };
                 tokens.push(node);
+
+                for attr in attrs.iter() {
+                    let key = format!("{}", attr.key);
+                    let value = &attr.value;
+
+                    let insert_attribute = quote! {
+                       #var_name.props.insert(#key.to_string(), #value.to_string());
+                    };
+
+                    tokens.push(insert_attribute);
+                }
             }
-            Tag::Close {name} => {
-            }
+            Tag::Close { name } => {}
         };
     }
 
     let virtual_nodes = quote! {
-        #(#tokens)*
+        {
+            #(#tokens)*
+            // Root node is always named node_0
+            node_0
+        }
     };
+    eprintln!("virtual_nodes  = {:#?}", virtual_nodes);
+
     virtual_nodes.into()
 }
 
@@ -103,4 +127,3 @@ impl Parse for Tag {
         }
     }
 }
-
