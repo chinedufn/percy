@@ -104,37 +104,40 @@ fn three_nodes_deep() {
     .test()
 }
 
-//#[test]
-//fn sibling_text_nodes() {
-//    let mut expected = VirtualNode::new("div");
-//    expected.children = Some(vec![
-//        VirtualNode::text("This is a text node"),
-//        VirtualNode::text("More"),
-//        VirtualNode::text("Text"),
-//    ]);
-//
-//    HtmlMacroTest {
-//        generated: html! { <div>"This is a text node" "More" "Text"</div> },
-//        expected,
-//        desc: "Nested text nide",
-//    }
-//        .test();
-//}
+#[test]
+fn sibling_text_nodes() {
+    let mut expected = VirtualNode::new("div");
+    expected.children = Some(vec![
+        VirtualNode::text("This is a text node")
+    ]);
 
-//
-//    #[test]
-//    fn nested_macro() {
-//        let child_2 = html! { <b></b> };
-//
-//        let mut expected = VirtualNode::new("div");
-//        expected.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
-//
-//        HtmlMacroTest {
-//            generated: html! { <div>{ html! { <span></span> } { child_2 } }</div> },
-//            expected,
-//            desc: "Nested macros",
-//        }.test();
-//    }
+    HtmlMacroTest {
+        generated: html! { <div>This is a text node</div> },
+        expected,
+        desc: "Nested text node",
+    }
+        .test();
+}
+
+
+    #[test]
+    fn nested_macro() {
+        let child_2 = html! { <b></b> };
+
+        let mut expected = VirtualNode::new("div");
+        expected.children = Some(vec![VirtualNode::new("span"), VirtualNode::new("b")]);
+
+        HtmlMacroTest {
+            generated: html! {
+              <div>
+                { html! { <span></span> } }
+                { child_2 }
+              </div>
+            },
+            expected,
+            desc: "Nested macros",
+        }.test();
+    }
 //
 //    #[test]
 //    fn strs_of_text() {

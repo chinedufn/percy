@@ -5,7 +5,8 @@ use quote::quote;
 use std::collections::HashMap;
 use syn::export::Span;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{parse_macro_input, Expr, Ident, Token};
+use syn::{parse_macro_input, Expr, Ident, Token, Block};
+use syn::group::Group;
 
 // FIXME: Play around and get things working but add thorough commenting
 // once it's all put together
@@ -64,7 +65,7 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
                 parent_children
                     .get_mut(&parent_idx)
-                    .expect("Parent")
+                    .expect("Parent of this node")
                     .push(idx);
 
                 parent_children.insert(idx, vec![]);
@@ -72,7 +73,31 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             Tag::Close { name } => {
                 parent_stack.pop();
             }
-            Tag::Text { text } => {}
+            Tag::Text { text } => {
+                // TODO: Figure out how to use spans
+                let var_name = Ident::new(format!("node_{}", idx).as_str(), Span::call_site());
+
+                let text_node = quote! {
+                    let #var_name = VirtualNode::text(#text);
+                };
+
+                let parent_idx = parent_stack[parent_stack.len() - 1];
+
+                node_order.push(idx);
+
+                eprintln!("parent_children = {:#?}", parent_children);
+                eprintln!("parent_idx = {:#?}", parent_idx);
+
+                parent_children
+                    .get_mut(&parent_idx)
+                    .expect("Parent of this text node")
+                    .push(idx);
+
+                tokens.push(text_node);
+            }
+            Tag::Block => {
+
+            }
         };
     }
 
@@ -82,7 +107,10 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         // TODO: Figure out how to really use spans
         let parent_name = Ident::new(format!("node_{}", parent_idx).as_str(), Span::call_site());
 
-        let parent_children_indices = parent_children.get(&parent_idx).expect("Parent");
+        let parent_children_indices = match parent_children.get(&parent_idx) {
+            Some(children) => children,
+            None => continue,
+        };
 
         if parent_children_indices.len() > 0 {
             let create_children_vec = quote! {
@@ -124,12 +152,25 @@ struct Html {
 
 #[derive(Debug)]
 enum Tag {
-    /// `<div id="app" class=*CSS>`
+    /// <div id="app" class=*CSS>
     Open { name: Ident, attrs: Vec<Attr> },
-    /// `</div>`
+    /// </div>
     Close { name: Ident },
-    /// "Hello world"
-    Text { text: Expr },
+    /// html { <div> Hello World </div> }
+    ///
+    ///  -> "Hello world"
+    Text { text: String },
+    /// ```
+    /// let some_expression = 3;
+    /// html {
+    ///   <div>
+    ///     { some_expression }
+    ///     { "Another expression" }
+    ///     { html! { <div> </div> }
+    ///   </div>
+    /// }
+    /// ```
+    Block { expr: Expr }
 }
 
 #[derive(Debug)]
@@ -155,6 +196,16 @@ impl Parse for Tag {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut input = input;
 
+        let is_block = input.peek(Token![}]);
+
+        // If it doesn't start with a < it's weird a text node or an expression
+        // TODO: Rename
+        let is_text_node = !input.peek(Token![<]);
+
+        if is_text_node {
+            return parse_text_node(&mut input);
+        }
+
         input.parse::<Token![<]>()?;
 
         let optional_close: Option<Token![/]> = input.parse()?;
@@ -166,6 +217,26 @@ impl Parse for Tag {
             parse_close_tag(&mut input)
         }
     }
+}
+
+fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
+    // Continue parsing tokens until we see a closing tag <
+    let mut text_tokens = TokenStream::new();
+
+    loop {
+        let tt: TokenTree = input.parse()?;
+        text_tokens.extend(Some(tt));
+
+        let peek_closing_tag = input.peek(Token![<]);
+
+        if peek_closing_tag {
+            break;
+        }
+    }
+
+    let text = format!("{}", text_tokens);
+
+    Ok(Tag::Text { text })
 }
 
 /// `<div id="app" class=*CSS>`
