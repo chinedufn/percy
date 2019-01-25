@@ -335,6 +335,16 @@ impl VirtualNode {
     }
 }
 
+impl IntoIterator for VirtualNode {
+    type Item = VirtualNode;
+    // TODO: Is this possible with an array [VirtualNode] instead of a vec?
+    type IntoIter = ::std::vec::IntoIter<VirtualNode>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        vec![self].into_iter()
+    }
+}
+
 fn wrap(v: VirtualNode) -> Rc<RefCell<ParsedVirtualNode>> {
     Rc::new(RefCell::new(ParsedVirtualNode::from(v)))
 }

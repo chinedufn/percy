@@ -4,10 +4,10 @@ use proc_macro2::{TokenStream, TokenTree};
 use quote::quote;
 use std::collections::HashMap;
 use syn::export::Span;
-use syn::parse::{Parse, ParseStream, Result};
-use syn::{parse_macro_input, Expr, Ident, Token, Block, braced};
 use syn::group::Group;
+use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
+use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
 
 // FIXME: Play around and get things working but add thorough commenting
 // once it's all put together
@@ -86,8 +86,15 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 let var_name = Ident::new(format!("node_{}", idx).as_str(), Span::call_site());
 
                 let text_node = quote! {
-                    let #var_name = VirtualNode::text(#text);
+                    let mut #var_name = VirtualNode::text(#text);
                 };
+
+                tokens.push(text_node);
+
+                if idx == 0 {
+                    idx += 1;
+                    continue
+                }
 
                 let parent_idx = parent_stack[parent_stack.len() - 1];
 
@@ -98,71 +105,72 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     .expect("Parent of this text node")
                     .push(idx);
 
-                tokens.push(text_node);
-
                 idx += 1;
             }
-            Tag::Braced {block} => {
-                eprintln!("block = {:#?}", block);
-
+            Tag::Braced { block } => {
                 block.stmts.iter().for_each(|stmt| {
                     let node_name = format!("node_{}", idx);
                     let node_name = Ident::new(node_name.as_str(), stmt.span());
 
-                    eprintln!("node_name = {:#?}", node_name);
-
-                    let node = quote! {
-                        let #node_name = VirtualNode::from(#stmt);
-                    };
-                    eprintln!("node = {:#?}", node);
-                    tokens.push(node);
-
                     let parent_idx = parent_stack[parent_stack.len() - 1];
+                    let parent_node_name = format!("node_{}", parent_idx);
+                    let parent_node_name = Ident::new(parent_node_name.as_str(), stmt.span());
 
-                                    parent_children
-                    .get_mut(&parent_idx)
-                    .expect("Parent of this text node")
-                    .push(idx);
+                    let nodes = quote! {
+                    // FIXME: As we iterate over the statements we need to increment the node name
+                        for node in #stmt.into_iter() {
+                            #parent_node_name.children.as_mut().unwrap().push(node);
+                        }
+                    };
+                    tokens.push(nodes);
 
-                    // TODO: Only really needed if this node is a node that can actually have
-                    // children but we can worry about that later
-                    parent_children.insert(idx, vec![]);
-
-                    node_order.push(idx);
-
-                    idx += 1;
+//                    parent_children
+//                        .get_mut(&parent_idx)
+//                        .expect("Parent of this text node")
+//                        .push(idx);
+//
+//                    // TODO: Only really needed if this node is a node that can actually have
+//                    // children but we can worry about that later
+//                    parent_children.insert(idx, vec![]);
+//
+//                    node_order.push(idx);
+//
+//                    idx += 1;
                 })
             }
         };
     }
 
-    for _ in 0..(node_order.len()) {
-        let parent_idx = node_order.pop().unwrap();
+    if node_order.len() > 1 {
+        for _ in 0..(node_order.len()) {
+            let parent_idx = node_order.pop().unwrap();
 
-        // TODO: Figure out how to really use spans
-        let parent_name = Ident::new(format!("node_{}", parent_idx).as_str(), Span::call_site());
+            // TODO: Figure out how to really use spans
+            let parent_name =
+                Ident::new(format!("node_{}", parent_idx).as_str(), Span::call_site());
 
-        let parent_children_indices = match parent_children.get(&parent_idx) {
-            Some(children) => children,
-            None => continue,
-        };
-
-        if parent_children_indices.len() > 0 {
-            let create_children_vec = quote! {
-                #parent_name.children = Some(vec![]);
+            let parent_children_indices = match parent_children.get(&parent_idx) {
+                Some(children) => children,
+                None => continue,
             };
 
-            tokens.push(create_children_vec);
-
-            for child_idx in parent_children_indices.iter() {
-                let child_name =
-                    Ident::new(format!("node_{}", child_idx).as_str(), Span::call_site());
-
-                // TODO: Multiple .as_mut().unwrap() of children. Let's just do this once.
-                let push_child = quote! {
-                    #parent_name.children.as_mut().unwrap().push(#child_name);
+            if parent_children_indices.len() > 0 {
+                let create_children_vec = quote! {
+                    #parent_name.children = Some(vec![]);
                 };
-                tokens.push(push_child);
+
+                tokens.push(create_children_vec);
+
+                for child_idx in parent_children_indices.iter() {
+                    let child_name =
+                        Ident::new(format!("node_{}", child_idx).as_str(), Span::call_site());
+
+                    // TODO: Multiple .as_mut().unwrap() of children. Let's just do this once.
+                    let push_child = quote! {
+                        #parent_name.children.as_mut().unwrap().push(#child_name);
+                    };
+                    tokens.push(push_child);
+                }
             }
         }
     }
@@ -204,7 +212,7 @@ enum Tag {
     ///   </div>
     /// }
     /// ```
-    Braced { block: Box<Block> }
+    Braced { block: Box<Block> },
 }
 
 #[derive(Debug)]
@@ -234,28 +242,22 @@ impl Parse for Tag {
 
         // If it doesn't start with a < it's weird a text node or an expression
         let is_text_or_block = !input.peek(Token![<]);
-        if  is_text_or_block {
-            if !input.peek(Ident){
+        if is_text_or_block {
+            // TODO: Move into parse_brace
+            if !input.peek(Ident) {
                 let brace_token = braced!(content in input);
 
                 let block_expr = content.call(Block::parse_within)?;
 
                 let block = Box::new(Block {
                     brace_token,
-                    stmts: block_expr
+                    stmts: block_expr,
                 });
 
-                return Ok(Tag::Braced { block })
+                return Ok(Tag::Braced { block });
             }
 
             return parse_text_node(&mut input);
-        }
-
-
-        // TODO: Rename
-        let is_text_node = !input.peek(Token![<]);
-
-        if is_text_node {
         }
 
         input.parse::<Token![<]>()?;
@@ -276,6 +278,10 @@ fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
     let mut text_tokens = TokenStream::new();
 
     loop {
+        if input.is_empty() {
+            break;
+        }
+
         let tt: TokenTree = input.parse()?;
         text_tokens.extend(Some(tt));
 

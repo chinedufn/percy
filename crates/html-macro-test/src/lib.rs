@@ -139,46 +139,28 @@ fn sibling_text_nodes() {
         }.test();
     }
 
-//    #[test]
-//    fn strs_of_text() {
-//        let text1 = "This is a text node";
-//        let text2 = text1.clone();
-//
-//        let mut expected = VirtualNode::new("div");
-//        expected.children = Some(vec![
-//            VirtualNode::text("This is a text node"),
-//            VirtualNode::text("This is a text node"),
-//        ]);
-//
-//        HtmlMacroTest {
-//            generated: html! { <div>{ text1 } { text2 } </div> },
-//            expected,
-//            desc: "Creates text nodes",
-//        }.test();
-//    }
+    #[test]
+    fn vec_of_nodes() {
+        let children = vec![html! { <div> </div>}, html! { <strong> </strong>}];
 
-//    #[test]
-//    fn vec_of_nodes() {
-//        let children = vec![html! { <div> </div>}, html! { <strong> </strong>}];
-//
-//        let mut expected = VirtualNode::new("div");
-//        expected.children = Some(vec![VirtualNode::new("div"), VirtualNode::new("strong")]);
-//
-//        HtmlMacroTest {
-//            generated: html! { <div> { children } </div> },
-//            expected,
-//            desc: "Vec of nodes",
-//        }.test();
-//    }
+        let mut expected = VirtualNode::new("div");
+        expected.children = Some(vec![VirtualNode::new("div"), VirtualNode::new("strong")]);
+
+        HtmlMacroTest {
+            generated: html! { <div> { children } </div> },
+            expected,
+            desc: "Vec of nodes",
+        }.test();
+    }
 
 
-//    #[test]
-//    fn text_root_node() {
-//        HtmlMacroTest {
-//            generated: html! { some text },
-//            expected: VirtualNode::text("some text"),
-//            desc: "Text as root node",
-//        }.test()
-//    }
+    #[test]
+    fn text_root_node() {
+        HtmlMacroTest {
+            generated: html! { some text },
+            expected: VirtualNode::text("some text"),
+            desc: "Text as root node",
+        }.test()
+    }
 
 // TODO: Test for self closing tags such as <b />
