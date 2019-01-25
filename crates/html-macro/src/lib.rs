@@ -70,10 +70,9 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 parent_children.insert(idx, vec![]);
             }
             Tag::Close { name } => {
-                                parent_stack.pop();
-            },
-            Tag::Text => {
+                parent_stack.pop();
             }
+            Tag::Text { text } => {}
         };
     }
 
@@ -156,38 +155,78 @@ impl Parse for Html {
 // Then add support for text nodes
 impl Parse for Tag {
     fn parse(input: ParseStream) -> Result<Self> {
+        let mut input = input;
+
         input.parse::<Token![<]>()?;
+
         let optional_close: Option<Token![/]> = input.parse()?;
-        let is_close_tag = optional_close.is_some();
-        let name: Ident = input.parse()?;
+        let is_open_tag = optional_close.is_none();
 
-        let mut attrs = Vec::new();
-        while input.peek(Ident) && !is_close_tag {
-            let key: Ident = input.parse()?;
-            input.parse::<Token![=]>()?;
-
-            let mut value_tokens = TokenStream::new();
-            loop {
-                let tt: TokenTree = input.parse()?;
-                value_tokens.extend(Some(tt));
-
-                let peek_end_of_tag = input.peek(Token![>]);
-                let peek_start_of_next_attr = input.peek(Ident) && input.peek2(Token![=]);
-                if peek_end_of_tag || peek_start_of_next_attr {
-                    break;
-                }
-            }
-
-            let value: Expr = syn::parse2(value_tokens)?;
-            attrs.push(Attr { key, value });
-        }
-
-        input.parse::<Token![>]>()?;
-
-        if is_close_tag {
-            Ok(Tag::Close { name })
+        if is_open_tag {
+            parse_open_tag(&mut input)
         } else {
-            Ok(Tag::Open { name, attrs })
+            parse_close_tag(&mut input)
         }
     }
+}
+
+/// `<div id="app" class=*CSS>`
+fn parse_open_tag(input: &mut ParseStream) -> Result<Tag> {
+    let name: Ident = input.parse()?;
+
+    let attrs = parse_attributes(input)?;
+
+    input.parse::<Token![>]>()?;
+
+    Ok(Tag::Open { name, attrs })
+}
+
+/// Parse the attributes starting from something like:
+///     id="app" class=*CSS>
+///
+/// As soon as we see
+///     >
+/// We know that the element has no more attributes and our loop will end
+fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
+    let mut attrs = Vec::new();
+
+    // Do we see an identifier such as `id`? If so proceed
+    while input.peek(Ident) {
+        // id
+        let key: Ident = input.parse()?;
+
+        // =
+        input.parse::<Token![=]>()?;
+
+        // Continue parsing tokens until we see the next attribute or a closing > tag
+        let mut value_tokens = TokenStream::new();
+
+        loop {
+            let tt: TokenTree = input.parse()?;
+            value_tokens.extend(Some(tt));
+
+            let peek_start_of_next_attr = input.peek(Ident) && input.peek2(Token![=]);
+
+            let peek_end_of_tag = input.peek(Token![>]);
+
+            if peek_end_of_tag || peek_start_of_next_attr {
+                break;
+            }
+        }
+
+        let value: Expr = syn::parse2(value_tokens)?;
+
+        attrs.push(Attr { key, value });
+    }
+
+    Ok(attrs)
+}
+
+/// </div>
+fn parse_close_tag(input: &mut ParseStream) -> Result<Tag> {
+    let name: Ident = input.parse()?;
+
+    input.parse::<Token![>]>()?;
+
+    Ok(Tag::Close { name })
 }
