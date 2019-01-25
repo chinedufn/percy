@@ -10,14 +10,16 @@ repository = "https://github.com/chinedufn/percy"
 [workspace]
 members = [
   "crates/css-rs-macro",
+  "crates/html-macro",
+  "crates/html-macro-test",
   "crates/router-rs",
   "crates/router-rs-macro",
   "crates/virtual-node",
+  "examples/css-in-rust",
   "examples/isomorphic/app",
   "examples/isomorphic/client",
   "examples/isomorphic/server",
   "examples/unit-testing-components",
-  "examples/css-in-rust",
   "tests/test-css-rs",
   "tests/test-css-rs-fixture",
 ]
