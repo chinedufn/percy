@@ -163,11 +163,18 @@ impl HtmlParser {
             }
             Tag::Braced { block } => block.stmts.iter().for_each(|stmt| {
                 if *idx == 0 {
+                    // Here we handle a block being the root node of an `html!` call
+                    //
+                    // html { { some_node }  }
                     let node = quote! {
                         let node_0 = #stmt;
                     };
                     tokens.push(node);
                 } else {
+                    // Here we handle a block being a descendant within some html! call
+                    //
+                    // html { <div> { some_node } </div> }
+
                     let node_name = format!("node_{}", idx);
                     let node_name = Ident::new(node_name.as_str(), stmt.span());
 
@@ -246,23 +253,4 @@ impl HtmlParser {
             }
         }
     }
-
-//    /// node_kind might be div ... span ... em ... etc
-//    fn create_open_tag(&mut self, node_kind: Ident, attrs: Vec<Attr>) -> proc_macro2::TokenStream {
-//        let node_name = &format!("node_{}", self.current_idx);
-//        let node_name = Ident::new(node_name, node_kind.span());
-//
-//        let node = quote! {
-//            #[allow(unused_mut)]
-//            let #node_name = VirtualNode::new(#node_kind);
-//        };
-//
-//        self.increment_node_idx();
-//
-//        node
-//    }
-//
-//    fn increment_node_idx(&mut self) {
-//        self.current_idx += 1;
-//    }
 }
