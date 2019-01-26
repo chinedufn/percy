@@ -144,7 +144,7 @@ fn block_root() {
     let mut expected = VirtualNode::new("em");
 
     HtmlMacroTest {
-        desc: "Nested macros",
+        desc: "Block root node",
         generated: html! {
             { em }
         },
