@@ -321,6 +321,8 @@ fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
     // Continue parsing tokens until we see a closing tag <
     let mut text_tokens = TokenStream::new();
 
+    let text = "".to_string();
+
     loop {
         if input.is_empty() {
             break;

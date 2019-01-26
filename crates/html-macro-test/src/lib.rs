@@ -177,7 +177,16 @@ fn text_next_to_block() {
 }
 
 #[test]
-fn puncutation() {}
+fn puncutation() {
+    let text = "Hello,hi!hola.alright;";
+
+    HtmlMacroTest {
+        desc: "Text as root node",
+        generated: html! { Hello,hi!hola.alright; },
+        expected: VirtualNode::text(&text),
+    }
+        .test()
+}
 
 #[test]
 fn vec_of_nodes() {
@@ -236,9 +245,10 @@ fn text_macro() {
 //        </div>
 //    };
 //
-//    let text_var = "Foo";
+//    let text_var = "Text variable";
 //    let iterable = vec![
 //        html! { This text becomes a TextNode },
+//        html! { <strong>More text</strong> },
 //        html! { <span> { text!(text_var) }</span> },
 //    ];
 //
