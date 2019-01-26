@@ -321,18 +321,39 @@ fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
     // Continue parsing tokens until we see a closing tag <
     let mut text_tokens = TokenStream::new();
 
-    let text = "".to_string();
+    let mut text = "".to_string();
+
+    let mut idx = 0;
 
     loop {
         if input.is_empty() {
             break;
         }
 
-        let puncutation = input.peek(Token![,]);
+        let is_comma = input.peek(Token![,]);
 
-        let tt: TokenTree = input.parse()?;
-        //        eprintln!("tt.to_string() = {:#?}", tt.to_string());
-        text_tokens.extend(Some(tt));
+        // TODO: If we peek a token that we aren't confident that we can choose the correct
+        // spacing for almost all of the time just print a compiler error telling the user
+        // to use the text macro instead of text tokens...
+        //  { text!("My text") }
+        if input.peek(Token![,]) {
+            let _: TokenTree = input.parse()?;
+            text += ",";
+        } else if input.peek(Token![!]) {
+            let _: TokenTree = input.parse()?;
+            text += "!";
+        } else if input.peek(Token![.]) {
+            let _: TokenTree = input.parse()?;
+            text += ".";
+        } else {
+            let tt: TokenTree = input.parse()?;
+
+            if idx != 0 {
+                text += " ";
+            }
+
+            text += &tt.to_string();
+        }
 
         let peek_closing_tag = input.peek(Token![<]);
         let peek_start_block = input.peek(syn::token::Brace);
@@ -340,10 +361,9 @@ fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
         if peek_closing_tag || peek_start_block {
             break;
         }
-    }
 
-    let text = format!("{}", text_tokens);
-    eprintln!("text = {:#?}", text);
+        idx += 1;
+    }
 
     Ok(Tag::Text { text })
 }

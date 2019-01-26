@@ -164,7 +164,7 @@ fn text_next_to_block() {
     ]);
 
     HtmlMacroTest {
-        desc: "Nested macros",
+        desc: "Text node next to a block",
         generated: html! {
           <div>
             A bit of text
@@ -177,12 +177,36 @@ fn text_next_to_block() {
 }
 
 #[test]
-fn puncutation() {
-    let text = "Hello,hi!hola.alright;";
+fn punctuation_comma() {
+    let text = "Hello, World";
 
     HtmlMacroTest {
-        desc: "Text as root node",
-        generated: html! { Hello,hi!hola.alright; },
+        desc: "Comma",
+        generated: html! { Hello, World},
+        expected: VirtualNode::text(&text),
+    }
+        .test()
+}
+
+#[test]
+fn punctuation_exclamation() {
+    let text = "Hello World!";
+
+    HtmlMacroTest {
+        desc: "Exclamation point",
+        generated: html! { Hello World! },
+        expected: VirtualNode::text(&text),
+    }
+        .test()
+}
+
+#[test]
+fn punctuation_period() {
+    let text = "Hello.";
+
+    HtmlMacroTest {
+        desc: "Period",
+        generated: html! { Hello. },
         expected: VirtualNode::text(&text),
     }
         .test()
