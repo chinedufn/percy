@@ -157,17 +157,20 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     let node_name = format!("node_{}", idx);
                     let node_name = Ident::new(node_name.as_str(), stmt.span());
 
-                    let parent_idx = parent_stack[parent_stack.len() - 1];
-                    let parent_node_name = format!("node_{}", parent_idx);
-                    let parent_node_name = Ident::new(parent_node_name.as_str(), stmt.span());
-
                     let nodes = quote! {
-                        for node in #stmt.into_iter() {
-                            let node = VirtualNode::from(node);
-                            #parent_node_name.children.as_mut().unwrap().push(node);
-                        }
+                        let #node_name = #stmt;
                     };
                     tokens.push(nodes);
+
+                    let parent_idx = parent_stack[parent_stack.len() - 1];
+
+                    parent_children
+                        .get_mut(&parent_idx)
+                        .expect("Parent of this text node")
+                        .push(idx);
+                    node_order.push(idx);
+
+                    idx += 1;
                 }
             }),
         };

@@ -152,29 +152,29 @@ fn block_root() {
     }
     .test();
 }
-//
-//#[test]
-//fn text_next_to_block() {
-//    let child = html! { <ul></ul> };
-//
-//    let mut expected = VirtualNode::new("div");
-//    expected.children = Some(vec![
-//        VirtualNode::text("A bit of text"),
-//        VirtualNode::new("ul"),
-//    ]);
-//
-//    HtmlMacroTest {
-//        desc: "Nested macros",
-//        generated: html! {
-//          <div>
-//            A bit of text
-//            { child }
-//          </div>
-//        },
-//        expected,
-//    }
-//    .test();
-//}
+
+#[test]
+fn text_next_to_block() {
+    let child = html! { <ul></ul> };
+
+    let mut expected = VirtualNode::new("div");
+    expected.children = Some(vec![
+        VirtualNode::text("A bit of text"),
+        VirtualNode::new("ul"),
+    ]);
+
+    HtmlMacroTest {
+        desc: "Nested macros",
+        generated: html! {
+          <div>
+            A bit of text
+            { child }
+          </div>
+        },
+        expected,
+    }
+    .test();
+}
 
 #[test]
 fn puncutation() {}
