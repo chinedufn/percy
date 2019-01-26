@@ -150,7 +150,7 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             Tag::Braced { block } => block.stmts.iter().for_each(|stmt| {
                 if idx == 0 {
                     let node = quote! {
-                        let node_0 = #stmt.into_iter().next().unwrap();
+                        let node_0 = #stmt;
                     };
                     tokens.push(node);
                 } else {
@@ -194,14 +194,16 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 tokens.push(create_children_vec);
 
                 for child_idx in parent_children_indices.iter() {
-                    let child_name =
+                    let children =
                         Ident::new(format!("node_{}", child_idx).as_str(), Span::call_site());
 
                     // TODO: Multiple .as_mut().unwrap() of children. Let's just do this once.
-                    let push_child = quote! {
-                        #parent_name.children.as_mut().unwrap().push(#child_name);
+                    let push_children = quote! {
+                        for child in #children.into_iter() {
+                            #parent_name.children.as_mut().unwrap().push(child);
+                        }
                     };
-                    tokens.push(push_child);
+                    tokens.push(push_children);
                 }
             }
         }
