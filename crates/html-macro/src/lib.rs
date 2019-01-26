@@ -148,20 +148,27 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 idx += 1;
             }
             Tag::Braced { block } => block.stmts.iter().for_each(|stmt| {
-                let node_name = format!("node_{}", idx);
-                let node_name = Ident::new(node_name.as_str(), stmt.span());
+                if idx == 0 {
+                    let node = quote! {
+                        let node_0 = #stmt.into_iter().next().unwrap();
+                    };
+                    tokens.push(node);
+                } else {
+                    let node_name = format!("node_{}", idx);
+                    let node_name = Ident::new(node_name.as_str(), stmt.span());
 
-                let parent_idx = parent_stack[parent_stack.len() - 1];
-                let parent_node_name = format!("node_{}", parent_idx);
-                let parent_node_name = Ident::new(parent_node_name.as_str(), stmt.span());
+                    let parent_idx = parent_stack[parent_stack.len() - 1];
+                    let parent_node_name = format!("node_{}", parent_idx);
+                    let parent_node_name = Ident::new(parent_node_name.as_str(), stmt.span());
 
-                let nodes = quote! {
-                    for node in #stmt.into_iter() {
-                        let node = VirtualNode::from(node);
-                        #parent_node_name.children.as_mut().unwrap().push(node);
-                    }
-                };
-                tokens.push(nodes);
+                    let nodes = quote! {
+                        for node in #stmt.into_iter() {
+                            let node = VirtualNode::from(node);
+                            #parent_node_name.children.as_mut().unwrap().push(node);
+                        }
+                    };
+                    tokens.push(nodes);
+                }
             }),
         };
     }

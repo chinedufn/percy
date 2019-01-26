@@ -137,21 +137,21 @@ fn nested_macro() {
     .test();
 }
 
-//#[test]
-//fn block_root() {
-//    let em = html! { <em></em> };
-//
-//    let mut expected = VirtualNode::new("em");
-//
-//    HtmlMacroTest {
-//        desc: "Nested macros",
-//        generated: html! {
-//            { em }
-//        },
-//        expected,
-//    }
-//    .test();
-//}
+#[test]
+fn block_root() {
+    let em = html! { <em></em> };
+
+    let mut expected = VirtualNode::new("em");
+
+    HtmlMacroTest {
+        desc: "Nested macros",
+        generated: html! {
+            { em }
+        },
+        expected,
+    }
+    .test();
+}
 //
 //#[test]
 //fn text_next_to_block() {
