@@ -12,6 +12,7 @@ use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
 
 // TODO: BREADCRUMB - look at the diff on GitHub and clean the code up.
 // Replace text node from var creation with text! macro ..
+// Update book with a big block of HTML illustrating everything. Save with README
 
 // FIXME: Move to module
 #[proc_macro]
