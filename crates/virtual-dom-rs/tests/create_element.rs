@@ -13,7 +13,7 @@ wasm_bindgen_test_configure!(run_in_browser);
 
 #[wasm_bindgen_test]
 fn nested_divs() {
-    let div = html! { <div> <div> <div></div> </div> </div> };
+    let div = html_old! { <div> <div> <div></div> </div> </div> };
     let div = div.create_element();
 
     assert_eq!(&div.inner_html(), "<div><div></div></div>");
@@ -21,7 +21,7 @@ fn nested_divs() {
 
 #[wasm_bindgen_test]
 fn div_with_properties() {
-    let mut div = html! { <div id="id-here", class="two classes",></div> };
+    let mut div = html_old! { <div id="id-here", class="two classes",></div> };
     let div = div.create_element();
 
     assert_eq!(&div.id(), "id-here");
@@ -37,7 +37,7 @@ fn click_event() {
     let clicked = Rc::new(Cell::new(false));
     let clicked_clone = Rc::clone(&clicked);
 
-    let div = html! {
+    let div = html_old! {
      <div
          !onclick=move |_ev: MouseEvent| {
              clicked_clone.set(true);

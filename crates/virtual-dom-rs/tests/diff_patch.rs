@@ -22,12 +22,12 @@ struct DiffPatchTest {
 fn replace_child() {
     DiffPatchTest {
         desc: "Replace a root node attribute attribute and a child text node",
-        old: html! {
+        old: html_old! {
          <div>
            { "Original element" }
          </div>
         },
-        new: html! { <div> { "Patched element" }</div> },
+        new: html_old! { <div> { "Patched element" }</div> },
         override_expected: None,
     }
     .test();
@@ -37,12 +37,12 @@ fn replace_child() {
 fn truncate_children() {
     DiffPatchTest {
         desc: "Truncates extra children",
-        old: html! {
+        old: html_old! {
          <div>
            <div> <div> <b></b> <em></em> </div> </div>
          </div>
         },
-        new: html! {
+        new: html_old! {
          <div>
            <div> <div> <b></b> </div> </div>
          </div>
@@ -53,12 +53,12 @@ fn truncate_children() {
 
     DiffPatchTest {
         desc: "https://github.com/chinedufn/percy/issues/48",
-        old: html! {
+        old: html_old! {
          <div>
           {"ab"} <p></p> {"c"}
          </div>
         },
-        new: html! {
+        new: html_old! {
          <div>
            {"ab"} <p></p>
          </div>
@@ -72,9 +72,9 @@ fn truncate_children() {
 fn remove_attributes() {
     DiffPatchTest {
         desc: "Removes attributes",
-        old: html! { <div style="",> </div>
+        old: html_old! { <div style="",> </div>
         },
-        new: html! { <div></div> },
+        new: html_old! { <div></div> },
         override_expected: None,
     }
     .test();
@@ -84,9 +84,9 @@ fn remove_attributes() {
 fn append_children() {
     DiffPatchTest {
         desc: "Append a child node",
-        old: html! { <div> </div>
+        old: html_old! { <div> </div>
         },
-        new: html! { <div> <span></span> </div> },
+        new: html_old! { <div> <span></span> </div> },
         override_expected: None,
     }
     .test();
@@ -104,12 +104,12 @@ fn text_node_siblings() {
 
     DiffPatchTest {
         desc: "Diff patch on text node siblings",
-        old: html! {
+        old: html_old! {
         <div id="before",>
             <span> { "The button has been clicked: "  "hello"} </span>
         </div>
         },
-        new: html! {
+        new: html_old! {
         <div id="after",>
             <span> { "The button has been clicked: "  "world"} </span>
         </div>
@@ -123,8 +123,8 @@ fn text_node_siblings() {
 fn append_text_node() {
     DiffPatchTest {
         desc: "Append text node",
-        old: html! { <div> </div> },
-        new: html! { <div> {"Hello"} </div> },
+        old: html_old! { <div> </div> },
+        new: html_old! { <div> {"Hello"} </div> },
         override_expected: None,
     }
     .test();
@@ -134,8 +134,8 @@ fn append_text_node() {
 fn append_sibling_text_nodes() {
     DiffPatchTest {
         desc: "Append sibling text nodes",
-        old: html! { <div> </div> },
-        new: html! { <div> {"Hello"} {"World"} </div> },
+        old: html_old! { <div> </div> },
+        new: html_old! { <div> {"Hello"} {"World"} </div> },
         override_expected: None,
     }
     .test();
@@ -145,8 +145,8 @@ fn append_sibling_text_nodes() {
 fn replace_with_children() {
     DiffPatchTest {
         desc: "Replace node that has children",
-        old: html! { <table><tr><th>{"0"}</th></tr><tr><td>{"1"}</td></tr></table> },
-        new: html! { <table><tr><td>{"2"}</td></tr><tr><th>{"3"}</th></tr></table> },
+        old: html_old! { <table><tr><th>{"0"}</th></tr><tr><td>{"1"}</td></tr></table> },
+        new: html_old! { <table><tr><td>{"2"}</td></tr><tr><th>{"3"}</th></tr></table> },
         override_expected: None,
     }
     .test();

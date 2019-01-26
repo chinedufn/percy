@@ -118,6 +118,7 @@ fn increment_node_idx_for_children<'a, 'b>(old: &'a VirtualNode, cur_node_idx: &
 mod tests {
     use super::*;
     use std::collections::HashMap;
+    use crate::html;
 
     struct DiffTestCase<'a> {
         old: VirtualNode,
@@ -141,10 +142,10 @@ mod tests {
             description: "Replace a child node",
         });
         test(DiffTestCase {
-            old: html! { <div> <b>{"1"}</b> <b></b> </div> },
-            new: html! { <div> <i>{"1"}</i> <i></i> </div>},
+            old: html! { <div> <b>1</b> <b></b> </div> },
+            new: html! { <div> <i>1</i> <i></i> </div>},
             expected: vec![
-                Patch::Replace(1, &html! { <i>{"1"}</i> }),
+                Patch::Replace(1, &html! { <i>1</i> }),
                 Patch::Replace(3, &html! { <i></i> }),
             ], //required to check correct index
             description: "Replace node with a chiild",
@@ -207,14 +208,14 @@ mod tests {
 
         test(DiffTestCase {
             old: html! { <div> </div> },
-            new: html! { <div id="hello", },
+            new: html! { <div id="hello"> </div> },
             expected: vec![Patch::AddAttributes(0, attributes.clone())],
             description: "Add attributes",
         });
 
         test(DiffTestCase {
-            old: html! { <div id="foobar",> </div> },
-            new: html! { <div id="hello", },
+            old: html! { <div id="foobar"> </div> },
+            new: html! { <div id="hello"> </div> },
             expected: vec![Patch::AddAttributes(0, attributes)],
             description: "Change attribute",
         });
@@ -223,7 +224,7 @@ mod tests {
     #[test]
     fn remove_attributes() {
         test(DiffTestCase {
-            old: html! { <div id="hey-there",></div> },
+            old: html! { <div id="hey-there"></div> },
             new: html! { <div> </div> },
             expected: vec![Patch::RemoveAttributes(0, vec!["id"])],
             description: "Add attributes",
@@ -236,8 +237,8 @@ mod tests {
         attributes.insert("id", "changed");
 
         test(DiffTestCase {
-            old: html! { <div id="hey-there",></div> },
-            new: html! { <div id="changed",> </div> },
+            old: html! { <div id="hey-there"></div> },
+            new: html! { <div id="changed"> </div> },
             expected: vec![Patch::AddAttributes(0, attributes)],
             description: "Add attributes",
         })
@@ -280,9 +281,9 @@ mod tests {
     #[test]
     fn replace_text_node() {
         test(DiffTestCase {
-            old: html! { { "Old" } },
-            new: html! { { "New" } },
-            expected: vec![Patch::ChangeText(0, &html! { { "New" } })],
+            old: html! { Old },
+            new: html! { New },
+            expected: vec![Patch::ChangeText(0, &html! { New })],
             description: "Replace text node",
         })
     }

@@ -10,7 +10,7 @@ fn main() {
 
 #[allow(unused)]
 fn full_water_bottle() -> VirtualNode {
-    html! {
+    html_old! {
     <div>
         <span label="full-water",>
           { "I am full of delicious and refreshing H20!" }
@@ -26,7 +26,7 @@ fn struggling_water_bottle(percent_full: f32) -> VirtualNode {
         percent_full
     );
 
-    html! {
+    html_old! {
         <div label="struggle-water",>
          { message }
         </div>

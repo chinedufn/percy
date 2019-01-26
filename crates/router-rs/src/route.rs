@@ -144,7 +144,7 @@ mod tests {
 
     impl View for MyView {
         fn render(&self) -> VirtualNode {
-            html! { <div> {self.id.to_string()} </div> }
+            html_old! { <div> {self.id.to_string()} </div> }
         }
     }
 
@@ -207,7 +207,7 @@ mod tests {
     fn create_view() {
         assert_eq!(
             create_test_route().view("/users/300").render(),
-            html! {<div> { "300" } </div>},
+            html_old! {<div> { "300" } </div>},
             "Creates a view from a provided route"
         );
     }

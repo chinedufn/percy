@@ -9,8 +9,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 
-#[macro_use]
-extern crate virtual_dom_rs;
+use virtual_dom_rs::html_macro_old::h;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -19,7 +18,7 @@ fn on_input_custom() {
     let text = Rc::new(RefCell::new("Start Text".to_string()));
     let text_clone = Rc::clone(&text);
 
-    let input = html! {
+    let input = h! {
      <input
          // On input we'll set our Rc<RefCell<String>> value to the input elements value
          !oninput=move |event: Event| {
@@ -40,7 +39,7 @@ fn on_input_custom() {
     assert_eq!(&*text.borrow(), "Start Text");
 
     // After dispatching the oninput event our `text` should have a value of the input elements value.
-    (web_sys::EventTarget::from(input))
+    web_sys::EventTarget::from(input)
         .dispatch_event(input_event.as_ref() as &web_sys::Event)
         .unwrap();
 

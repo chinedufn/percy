@@ -53,7 +53,7 @@ mod tests {
 
     impl View for TestView {
         fn render(&self) -> VirtualNode {
-            html! {<div> {self.kind} </div> }
+            html_old! {<div> {self.kind} </div> }
         }
     }
 
@@ -78,7 +78,7 @@ mod tests {
 
         assert_eq!(
             router.view("/users/5/name").unwrap().render(),
-            html! { <div> {"second"} </div>}
+            html_old! { <div> {"second"} </div>}
         );
     }
 }

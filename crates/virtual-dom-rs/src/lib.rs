@@ -6,6 +6,8 @@
 
 #![deny(missing_docs)]
 
+#![feature(proc_macro_hygiene)]
+
 extern crate wasm_bindgen;
 
 // Used so that `html!` calls work when people depend on this crate since `html!` needs
@@ -18,8 +20,8 @@ pub extern crate web_sys;
 pub use web_sys::*;
 
 #[macro_use]
-pub mod html_macro;
-pub use crate::html_macro::*;
+pub mod html_macro_old;
+pub use crate::html_macro_old::*;
 
 pub use virtual_node::*;
 
@@ -32,11 +34,13 @@ pub use crate::patch::*;
 mod view;
 pub use crate::view::*;
 
+pub use html_macro::html;
+
 /// Exports structs and macros that you'll almost always want access to in a virtual-dom
 /// powered application
 pub mod prelude {
-    pub use crate::html_macro::*;
+    pub use crate::html_macro_old::*;
     pub use crate::view::View;
     pub use crate::VirtualNode;
-    pub use html_macro::h;
+    pub use html_macro::html;
 }

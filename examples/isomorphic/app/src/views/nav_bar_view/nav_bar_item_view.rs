@@ -34,7 +34,7 @@ impl View for NavBarItemView {
 
         let path = self.path;
 
-        html! {
+        html_old! {
             <span
                 style=self.style,
                 class=*NAV_BAR_ITEM_CSS,

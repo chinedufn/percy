@@ -36,7 +36,7 @@ impl View for NavBarView {
             "margin-left: auto;",
         );
 
-        html! {
+        html_old! {
         <div class=*NAV_BAR_CSS,>
             { home.render() }
             { contributors.render() }

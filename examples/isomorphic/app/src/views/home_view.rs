@@ -27,9 +27,9 @@ impl View for HomeView {
         let click_count = self.store.borrow().click_count();
         let click_count = &click_count.to_string();
 
-        let click_component = html! { <strong style="font-size: 30px",>{ click_count }</strong> };
+        let click_component = html_old! { <strong style="font-size: 30px",>{ click_count }</strong> };
 
-        html! {
+        html_old! {
         <div>
 
           { nav_bar }

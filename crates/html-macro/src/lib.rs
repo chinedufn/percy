@@ -8,12 +8,13 @@ use syn::group::Group;
 use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
 use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
+use proc_macro2::Literal;
 
 // FIXME: Play around and get things working but add thorough commenting
 // once it's all put together
 
 #[proc_macro]
-pub fn h(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let parsed = parse_macro_input!(input as Html);
 
     let mut tokens = vec![];
@@ -249,7 +250,7 @@ impl Parse for Tag {
         let is_text_or_block = !input.peek(Token![<]);
         if is_text_or_block {
             // TODO: Move into parse_brace
-            if !input.peek(Ident) {
+            if !input.peek(Ident) && !input.peek(syn::Lit) {
                 let brace_token = braced!(content in input);
 
                 let block_expr = content.call(Block::parse_within)?;
