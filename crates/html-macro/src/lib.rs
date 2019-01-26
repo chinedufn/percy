@@ -16,8 +16,6 @@ use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
 pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let parsed = parse_macro_input!(input as Html);
 
-    eprintln!("parsed = {:#?}", parsed);
-
     let mut tokens = vec![];
 
     // TODO: Manage node_order and parent_stack together so that we don't forget to change
@@ -50,11 +48,20 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     let key = format!("{}", attr.key);
                     let value = &attr.value;
 
-                    let insert_attribute = quote! {
-                       #var_name.props.insert(#key.to_string(), #value.to_string());
+                    match value {
+                        Expr::Closure(closure) => {
+                            let num_args = closure.inputs.len();
+                            eprintln!("closure = {:#?}", closure);
+
+                        }
+                        _ => {
+                            let insert_attribute = quote! {
+                                #var_name.props.insert(#key.to_string(), #value.to_string());
+                            };
+                            tokens.push(insert_attribute);
+                        }
                     };
 
-                    tokens.push(insert_attribute);
                 }
 
                 // The first open tag that we see is our root node so we won't worry about

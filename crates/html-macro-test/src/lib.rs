@@ -50,17 +50,17 @@ fn one_prop() {
     .test();
 }
 
-//#[test]
-//fn event() {
-//    HtmlMacroTest {
-//        generated: html! {
-//            <div onclick=|_: web_sys::MouseEvent| {}></div>
-//        },
-//        expected: html! {<div></div>},
-//        desc: "Events are ignored in non wasm-32 targets",
-//    }
-//    .test();
-//}
+#[test]
+fn event() {
+    HtmlMacroTest {
+        generated: html! {
+            <div onclick=||{}></div>
+        },
+        expected: html! {<div></div>},
+        desc: "Events are ignored in non wasm-32 targets",
+    }
+    .test();
+}
 
 #[test]
 fn child_node() {
