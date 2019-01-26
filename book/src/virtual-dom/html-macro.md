@@ -1,47 +1,52 @@
 # Writing html!
 
-### Text
+### Static text
 
-Text is rendered inside of a block `{}`
+Text that will never change can be typed right into your HTML
 
 ```rust
-let view = html!{
-  <div> {"Text goes here,"} {"or here" " or here!"}</div>
+use virtual_dom_rs::prelude::*;
+
+html!{
+  <div> Text goes here </div>
 };
+```
+
+### Text variables
+
+Text variables much be wrapped in the `text!` macro.
+
+```rust
+use virtual_dom_rs::prelude::*;
+
+let text_var = " world"
+
+html! {
+  Hello { text!(text_var) }
+}
 ```
 
 ### Attributes
 
-At this time attributes must end with a `,` due to how our `html!` macro works.
+Attributes work just like regular HTML.
 
 ```rust
 let view = html!{
-  <div id='my-id',></div>
+  <div id='my-id' class='big wide'></div>
 };
 ```
 
 ### Event Handlers
 
-Event handlers begin with a `!` and, like attributes must end with a `,`.
-
-Percy will attach event handlers your DOM nodes via `addEventListener`
-
-So `!myevent` becomes `element.addEventListener('myevent', callback)`
-
 ```rust
-pub fn render (state: Rc<State>) -> VirtualNode {
-  let state = Rc::clone(&self.state);
-
-  let view = html! {
-      <button
-        !onclick=move|_event: web_sys::MouseEvent| {
-          state.borrow_mut().msg(Msg::ShowAlert)
-        },>
-        { "Dispatch 'mycustomevent' to me and I will do something!" }
-     </button>
-  };
-
-  view
+html! {
+    <button
+      onclick=move|_event: web_sys::MouseEvent| {
+        web_sys::console::log_1(&"clicked!".into());
+      }
+    >
+      Click me!
+    </button>
 }
 ```
 
@@ -58,7 +63,7 @@ let parent_view = html! {
     { view1 }
     { view2 }
     html! {
-      {"Nested html! call"}
+      Nested html! call
     }
   </div>
 };

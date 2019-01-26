@@ -10,11 +10,6 @@ use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
 use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
 
-// TODO: BREADCRUMB - look at the diff on GitHub and clean the code up.
-// Replace text node from var creation with text! macro ..
-// Update book with a big block of HTML illustrating everything. Save with README
-
-// FIXME: Move to module
 #[proc_macro]
 pub fn text(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let text: Expr = syn::parse(input).expect("Text variable");
@@ -25,11 +20,44 @@ pub fn text(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     text.into()
 }
 
+/// Used to maintain state as we iterate over the tokens that were passed to us by the compiler.
+#[derive(Default)]
+struct HtmlParser {
+    /// As we parse our macro tokens we'll generate new tokens to return back into the compiler
+    /// when we're done.
+    tokens: Vec<proc_macro2::TokenStream>,
+    /// Everytime we encounter a new node we'll use the current_idx to name it.
+    /// Then we'll increment the current_idx by one.
+    /// This gives every node that we encounter a unique name that we can use to find
+    /// it later when we want to push child nodes into parent nodes
+    current_idx: usize,
+    /// The order that we encountered nodes while parsing.
+    node_order: Vec<usize>,
+    /// Each time we encounter a new node that could possible be a parent node
+    /// we push it's node index onto the stack.
+    ///
+    /// Text nodes cannot be parent nodes.
+    parent_stack: Vec<usize>,
+    /// Key -> index of the parent node within the HTML tree
+    /// Value -> vector of child node indices
+    parent_to_children: HashMap<usize, Vec<usize>>
+}
+
+impl HtmlParser {
+    fn create_node_from_ident (&mut self) -> proc_macro2::TokenStream {
+    }
+}
+
+/// Used to generate VirtualNode's from a TokenStream.
+///
+/// html! { <div> Welcome to the html! procedural macro! </div> }
 #[proc_macro]
 pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let parsed = parse_macro_input!(input as Html);
 
     let mut tokens = vec![];
+
+    let mut html_parser = HtmlParser::default();
 
     // TODO: Manage node_order and parent_stack together so that we don't forget to change
     // one but not the other..
@@ -176,6 +204,11 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         };
     }
 
+
+    //  1. Pop a node off the stack
+    //  2. Look up all of it's children in parent_to_children
+    //  3. Append the children to this node
+    //  4l Move on to the next node (as in, go back to step 1)
     if node_order.len() > 1 {
         for _ in 0..(node_order.len()) {
             let parent_idx = node_order.pop().unwrap();

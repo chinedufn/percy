@@ -254,3 +254,5 @@ fn text_macro() {
     }
     .test()
 }
+
+// TODO: Support self closing tags such as <b />
