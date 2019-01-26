@@ -255,44 +255,46 @@ fn text_macro() {
     .test()
 }
 
-//#[test]
-//fn delete_me() {
-//    let sub_component = html! {
-//        <div
-//           id="no-more-commas"
-//           onclick = || {}
-//           onmouseenter=move|_ev: web_sys::MouseEvent| {
-//                web_sys::console::log_1(&"Mouse Enter!".into());
-//           }
-//        >
-//            Sub components!
-//        </div>
-//    };
-//
-//    let text_var = "Text variable";
-//    let iterable = vec![
-//        html! { This text becomes a TextNode },
-//        html! { <strong>More text</strong> },
-//        html! { <span> { text!(text_var) }</span> },
-//    ];
-//
-//    let html = html! {
-//    <div>
-//        Look ma, text nodes without blocks or quotation marks!
-//
-//        {sub_component}
-//
-//        <div>
-//            <strong>syn + quote + proc-macro2 = amazing
-//        </div>
-//
-//        { iterable }
-//    </div>
-//    };
-//
-//    eprintln!("html = {:#?}", html);
-//
-//    println!("{}", html);
-//}
+#[test]
+fn delete_me() {
+    let sub_component = html! {
+        <div
+           id="no-more-commas"
+           onclick = || {}
+           onmouseenter=move|_ev: web_sys::MouseEvent| {
+                web_sys::console::log_1(&"Mouse Enter!".into());
+           }
+        >
+            Sub components!
+        </div>
+    };
+
+    let text_var = "Text variable";
+    let iterable = vec![
+        html! { This text becomes a TextNode },
+        html! { <strong>More text</strong> },
+        html! { <span> { text!(text_var) }</span> },
+    ];
+
+    let html = html! {
+    <div>
+        Look ma, text nodes without blocks or quotation marks!
+
+        {sub_component}
+
+        <div>
+            <strong>syn + quote + proc-macro2 = amazing
+        </div>
+
+        { html! { Woah } }
+
+        { iterable }
+    </div>
+    };
+
+    eprintln!("html = {:#?}", html);
+
+    println!("{}", html);
+}
 
 // TODO: Test for self closing tags such as <b />
