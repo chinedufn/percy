@@ -21,7 +21,6 @@ pub fn text(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 /// Used to maintain state as we iterate over the tokens that were passed to us by the compiler.
-#[derive(Default)]
 struct HtmlParser {
     /// As we parse our macro tokens we'll generate new tokens to return back into the compiler
     /// when we're done.
@@ -40,41 +39,33 @@ struct HtmlParser {
     parent_stack: Vec<usize>,
     /// Key -> index of the parent node within the HTML tree
     /// Value -> vector of child node indices
-    parent_to_children: HashMap<usize, Vec<usize>>
+    parent_to_children: HashMap<usize, Vec<usize>>,
 }
 
 impl HtmlParser {
-    fn create_node_from_ident (&mut self) -> proc_macro2::TokenStream {
+    pub fn new() -> HtmlParser {
+        let mut parent_to_children: HashMap<usize, Vec<usize>> = HashMap::new();
+        parent_to_children.insert(0, vec![]);
+
+        HtmlParser {
+            tokens: vec![],
+            current_idx: 0,
+            node_order: vec![],
+            parent_stack: vec![],
+            parent_to_children,
+        }
     }
-}
 
-/// Used to generate VirtualNode's from a TokenStream.
-///
-/// html! { <div> Welcome to the html! procedural macro! </div> }
-#[proc_macro]
-pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let parsed = parse_macro_input!(input as Html);
+    pub fn push_tag(&mut self, tag: Tag) {
+        let mut idx = &mut self.current_idx;
+        let mut parent_stack = &mut self.parent_stack;
+        let mut node_order = &mut self.node_order;
+        let mut parent_to_children = &mut self.parent_to_children;
+        let mut tokens = &mut self.tokens;
 
-    let mut tokens = vec![];
-
-    let mut html_parser = HtmlParser::default();
-
-    // TODO: Manage node_order and parent_stack together so that we don't forget to change
-    // one but not the other..
-    let mut node_order = vec![];
-    let mut parent_stack = vec![];
-
-    let mut parent_children: HashMap<usize, Vec<usize>> = HashMap::new();
-    parent_children.insert(0, vec![]);
-
-    // TODO: A struct that manages all of these indices as we parse. Handle this when we refactor.
-    // Before merging this all..
-    let mut idx = 0;
-
-    for tag in parsed.tags.into_iter() {
         match tag {
             Tag::Open { name, attrs } => {
-                if idx == 0 {
+                if *idx == 0 {
                     node_order.push(0);
                     parent_stack.push(0);
                 }
@@ -122,30 +113,30 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
                 // The first open tag that we see is our root node so we won't worry about
                 // giving it a parent
-                if idx == 0 {
-                    idx += 1;
-                    continue;
+                if *idx == 0 {
+                    *idx += 1;
+                    return;
                 }
 
                 let parent_idx = parent_stack[parent_stack.len() - 1];
 
-                parent_stack.push(idx);
-                node_order.push(idx);
+                parent_stack.push(*idx);
+                node_order.push(*idx);
 
-                parent_children
+                parent_to_children
                     .get_mut(&parent_idx)
                     .expect("Parent of this node")
-                    .push(idx);
+                    .push(*idx);
 
-                parent_children.insert(idx, vec![]);
+                parent_to_children.insert(*idx, vec![]);
 
-                idx += 1;
+                *idx += 1;
             }
             Tag::Close { name } => {
                 parent_stack.pop();
             }
             Tag::Text { text } => {
-                if idx == 0 {
+                if *idx == 0 {
                     node_order.push(0);
                     parent_stack.push(0);
                 }
@@ -159,24 +150,24 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
                 tokens.push(text_node);
 
-                if idx == 0 {
-                    idx += 1;
-                    continue;
+                if *idx == 0 {
+                    *idx += 1;
+                    return;
                 }
 
                 let parent_idx = parent_stack[parent_stack.len() - 1];
 
-                node_order.push(idx);
+                node_order.push(*idx);
 
-                parent_children
+                parent_to_children
                     .get_mut(&parent_idx)
                     .expect("Parent of this text node")
-                    .push(idx);
+                    .push(*idx);
 
-                idx += 1;
+                *idx += 1;
             }
             Tag::Braced { block } => block.stmts.iter().for_each(|stmt| {
-                if idx == 0 {
+                if *idx == 0 {
                     let node = quote! {
                         let node_0 = #stmt;
                     };
@@ -192,68 +183,109 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
                     let parent_idx = parent_stack[parent_stack.len() - 1];
 
-                    parent_children
+                    parent_to_children
                         .get_mut(&parent_idx)
                         .expect("Parent of this text node")
-                        .push(idx);
-                    node_order.push(idx);
+                        .push(*idx);
+                    node_order.push(*idx);
 
-                    idx += 1;
+                    *idx += 1;
                 }
             }),
         };
     }
 
+    ///  1. Pop a node off the stack
+    ///  2. Look up all of it's children in parent_to_children
+    ///  3. Append the children to this node
+    ///  4. Move on to the next node (as in, go back to step 1)
+    pub fn finish(&mut self) -> proc_macro2::TokenStream {
+        let mut idx = &mut self.current_idx;
+        let mut parent_stack = &mut self.parent_stack;
+        let mut node_order = &mut self.node_order;
+        let mut parent_to_children = &mut self.parent_to_children;
+        let mut tokens = &mut self.tokens;
 
-    //  1. Pop a node off the stack
-    //  2. Look up all of it's children in parent_to_children
-    //  3. Append the children to this node
-    //  4l Move on to the next node (as in, go back to step 1)
-    if node_order.len() > 1 {
-        for _ in 0..(node_order.len()) {
-            let parent_idx = node_order.pop().unwrap();
+        if node_order.len() > 1 {
+            for _ in 0..(node_order.len()) {
+                let parent_idx = node_order.pop().unwrap();
 
-            // TODO: Figure out how to really use spans
-            let parent_name =
-                Ident::new(format!("node_{}", parent_idx).as_str(), Span::call_site());
+                // TODO: Figure out how to really use spans
+                let parent_name =
+                    Ident::new(format!("node_{}", parent_idx).as_str(), Span::call_site());
 
-            let parent_children_indices = match parent_children.get(&parent_idx) {
-                Some(children) => children,
-                None => continue,
-            };
-
-            if parent_children_indices.len() > 0 {
-                let create_children_vec = quote! {
-                    #parent_name.children = Some(vec![]);
+                let parent_to_children_indices = match parent_to_children.get(&parent_idx) {
+                    Some(children) => children,
+                    None => continue,
                 };
 
-                tokens.push(create_children_vec);
-
-                for child_idx in parent_children_indices.iter() {
-                    let children =
-                        Ident::new(format!("node_{}", child_idx).as_str(), Span::call_site());
-
-                    // TODO: Multiple .as_mut().unwrap() of children. Let's just do this once.
-                    let push_children = quote! {
-                        for child in #children.into_iter() {
-                            #parent_name.children.as_mut().unwrap().push(child);
-                        }
+                if parent_to_children_indices.len() > 0 {
+                    let create_children_vec = quote! {
+                        #parent_name.children = Some(vec![]);
                     };
-                    tokens.push(push_children);
+
+                    tokens.push(create_children_vec);
+
+                    for child_idx in parent_to_children_indices.iter() {
+                        let children =
+                            Ident::new(format!("node_{}", child_idx).as_str(), Span::call_site());
+
+                        // TODO: Multiple .as_mut().unwrap() of children. Let's just do this once.
+                        let push_children = quote! {
+                            for child in #children.into_iter() {
+                                #parent_name.children.as_mut().unwrap().push(child);
+                            }
+                        };
+                        tokens.push(push_children);
+                    }
                 }
+            }
+        }
+
+        // Create a virtual node tree
+        quote! {
+            {
+                #(#tokens)*
+                // Root node is always named node_0
+                node_0
             }
         }
     }
 
-    let virtual_nodes = quote! {
-        {
-            #(#tokens)*
-            // Root node is always named node_0
-            node_0
-        }
-    };
+    /// node_kind might be div ... span ... em ... etc
+    fn create_open_tag(&mut self, node_kind: Ident, attrs: Vec<Attr>) -> proc_macro2::TokenStream {
+        let node_name = &format!("node_{}", self.current_idx);
+        let node_name = Ident::new(node_name, node_kind.span());
 
-    virtual_nodes.into()
+        let node = quote! {
+            #[allow(unused_mut)]
+            let #node_name = VirtualNode::new(#node_kind);
+        };
+
+        self.increment_node_idx();
+
+        node
+    }
+
+    fn increment_node_idx(&mut self) {
+        self.current_idx += 1;
+    }
+}
+
+/// Used to generate VirtualNode's from a TokenStream.
+///
+/// html! { <div> Welcome to the html! procedural macro! </div> }
+#[proc_macro]
+pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let parsed = parse_macro_input!(input as Html);
+
+    let mut html_parser = HtmlParser::new();
+
+    for tag in parsed.tags.into_iter() {
+        html_parser.push_tag(tag);
+    }
+
+    html_parser.finish().into()
 }
 
 #[derive(Debug)]
