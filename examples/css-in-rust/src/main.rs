@@ -1,4 +1,3 @@
-#![feature(use_extern_macros)]
 #![feature(proc_macro_hygiene)]
 
 extern crate css_rs_macro;
@@ -8,8 +7,7 @@ use std::io::Read;
 use std::io::Write;
 use std::net::TcpListener;
 
-#[macro_use]
-extern crate virtual_dom_rs;
+use virtual_dom_rs::prelude::*;
 
 static SOME_COMPONENT_CSS: &'static str = css! {"
 :host {
@@ -72,22 +70,24 @@ fn render_app() -> virtual_dom_rs::VirtualNode {
 
     let another_component_css = &format!("{} more classes can go here", another_component_css);
 
-    let some_component = html_old! {
-    <h1 class=*SOME_COMPONENT_CSS,>
-        { "And there we have it" }
+    let some_component = html! {
+    <h1 class=SOME_COMPONENT_CSS>
+        And there we have it
     </h1>
     };
 
-    let another_component = html_old! {
-    <div class=another_component_css,>
-        <h3> { "we have some" } </h3>
-        <span class="red",> {"CSS!"} </span>
+    let another_component = html! {
+    <div class=another_component_css>
+        <h3> we have some </h3>
+        <span class="red"> CSS </span>
     </div>
     };
 
-    html_old! { <div>
+    html! {
+     <div>
       {some_component}
       {another_component}
-      <link rel="stylesheet", type="text/css", href="/app.css",></link>
-    </div>}
+      <link rel="stylesheet" type="text/css" href="/app.css"></link>
+    </div>
+   }
 }

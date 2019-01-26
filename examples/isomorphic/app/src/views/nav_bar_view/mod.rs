@@ -36,8 +36,8 @@ impl View for NavBarView {
             "margin-left: auto;",
         );
 
-        html_old! {
-        <div class=*NAV_BAR_CSS,>
+        html! {
+        <div class=NAV_BAR_CSS>
             { home.render() }
             { contributors.render() }
         </div>
@@ -60,11 +60,3 @@ static NAV_BAR_CSS: &'static str = css! {"
 }
 "};
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn render_nav() {
-    }
-}

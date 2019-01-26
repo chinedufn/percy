@@ -34,15 +34,17 @@ impl View for NavBarItemView {
 
         let path = self.path;
 
-        html_old! {
+        let text = VirtualNode::from(self.text);
+
+        html! {
             <span
-                style=self.style,
-                class=*NAV_BAR_ITEM_CSS,
-                !onclick=move |_ev| {
+                style=self.style
+                class=NAV_BAR_ITEM_CSS
+                onclick=move |_ev: u32| {
                   store.borrow_mut().msg(&Msg::Path(path.to_string()));
-                },
+                }
             >
-              { self.text }
+              { text }
             </span>
         }
     }

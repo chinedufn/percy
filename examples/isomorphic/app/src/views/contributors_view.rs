@@ -19,11 +19,11 @@ impl View for ContributorsView {
     fn render(&self) -> VirtualNode {
         let nav_bar = NavBarView::new(ActivePage::Contributors, Rc::clone(&self.store)).render();
 
-        html_old! {
+        html! {
         <div>
             { nav_bar }
             <div>
-             { "Contributors page here" }
+             Contributors page here
             </div>
         </div>
         }

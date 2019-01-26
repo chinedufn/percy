@@ -55,7 +55,7 @@ fn event() {
     HtmlMacroTest {
         desc: "Events are ignored in non wasm-32 targets",
         generated: html! {
-            <div onclick=||{}></div>
+            <div onclick=|_: u8|{}></div>
         },
         expected: html! {<div></div>},
     }
@@ -160,6 +160,12 @@ fn text_root_node() {
         expected: VirtualNode::text("some text"),
     }
     .test()
+}
+
+/// Just make sure that this compiles since type is a keyword
+#[test]
+fn type_attribute() {
+    html! { <link rel="stylesheet" type="text/css" href="/app.css"></link> };
 }
 
 // TODO: Test for self closing tags such as <b />

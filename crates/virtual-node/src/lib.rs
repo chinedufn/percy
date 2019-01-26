@@ -53,82 +53,6 @@ pub struct VirtualNode {
     pub text: Option<String>,
 }
 
-/// Our html! macro takes in tokens, builds `ParsedVirtualNode`'s from those tokens and then
-/// finally converts that `ParsedVirtualNode` into a `VirtualNode`.
-///
-/// When we next revisit that macro we'll want to revisit whether or not we can build a `VirtualNode`
-/// as we go vs. needing this intermediary data structure.
-///
-/// TODO: Is this complexity really necessary? Doubt it... Map this all out on paper... shouldn't need
-/// two nearly identical structs...?
-#[derive(PartialEq)]
-pub struct ParsedVirtualNode {
-    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
-    pub tag: String,
-    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
-    pub props: HashMap<String, String>,
-    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
-    pub custom_events: Events,
-    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
-    /// TODO: Don't think this needs to be an option
-    pub children: Option<Vec<Rc<RefCell<ParsedVirtualNode>>>>,
-    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
-    pub parent: Option<Rc<RefCell<ParsedVirtualNode>>>,
-    /// TODO: See if we can get rid of ParsedVirtualNode entirely in favor of only VirtualNode
-    pub text: Option<String>,
-}
-
-impl ParsedVirtualNode {
-    /// Create a virtual node that is meant to represent a DOM element
-    pub fn new(tag: &str) -> ParsedVirtualNode {
-        let props = HashMap::new();
-        let events = Events(HashMap::new());
-        ParsedVirtualNode {
-            tag: tag.to_string(),
-            props,
-            custom_events: events,
-            children: Some(vec![]),
-            parent: None,
-            text: None,
-        }
-    }
-
-    /// Create a virtual node that is meant to represent DOM Text
-    pub fn text(text: &str) -> ParsedVirtualNode {
-        ParsedVirtualNode {
-            tag: "".to_string(),
-            props: HashMap::new(),
-            custom_events: Events(HashMap::new()),
-            children: Some(vec![]),
-            parent: None,
-            text: Some(text.to_string()),
-        }
-    }
-
-    /// Take off the the `VirtualNode`'s direct descendants (who in turn might have their
-    /// own descendants)
-    pub fn take_children(&mut self) -> Vec<VirtualNode> {
-        self.children
-            .take()
-            .unwrap()
-            .into_iter()
-            .map(|child| VirtualNode::from(Rc::try_unwrap(child).unwrap().into_inner()))
-            .collect()
-    }
-}
-
-impl From<ParsedVirtualNode> for VirtualNode {
-    fn from(mut parsed_node: ParsedVirtualNode) -> Self {
-        let children = Some(parsed_node.take_children());
-        VirtualNode {
-            tag: parsed_node.tag,
-            props: parsed_node.props,
-            events: parsed_node.custom_events,
-            children,
-            text: parsed_node.text,
-        }
-    }
-}
 
 impl VirtualNode {
     /// Create a new virtual node with a given tag.
@@ -251,49 +175,6 @@ impl VirtualNode {
     }
 }
 
-// Used by our html! macro to turn "Strings of text" into virtual nodes.
-impl<'a> From<&'a str> for ParsedVirtualNode {
-    fn from(text: &'a str) -> Self {
-        ParsedVirtualNode::text(text)
-    }
-}
-impl From<String> for ParsedVirtualNode {
-    fn from(text: String) -> Self {
-        ParsedVirtualNode::text(&text)
-    }
-}
-impl<'a> From<&'a String> for ParsedVirtualNode {
-    fn from(text: &'a String) -> Self {
-        ParsedVirtualNode::text(text)
-    }
-}
-impl From<VirtualNode> for ParsedVirtualNode {
-    fn from(mut node: VirtualNode) -> Self {
-        let children = Some(node.wrap_children());
-
-        ParsedVirtualNode {
-            tag: node.tag,
-            props: node.props,
-            custom_events: node.events,
-            children,
-            parent: None,
-            text: node.text,
-        }
-    }
-}
-impl From<Vec<VirtualNode>> for ParsedVirtualNode {
-    fn from(nodes: Vec<VirtualNode>) -> Self {
-        let parsed_nodes: Vec<Rc<RefCell<ParsedVirtualNode>>> = nodes
-            .into_iter()
-            .map(|node| Rc::new(RefCell::new(ParsedVirtualNode::from(node))))
-            .collect();
-
-        let mut wrapper = ParsedVirtualNode::new("__VEC_OF_CHILDREN__");
-        wrapper.children = Some(parsed_nodes);
-
-        wrapper
-    }
-}
 
 impl From<&str> for VirtualNode {
     fn from(text: &str) -> Self {
@@ -311,31 +192,6 @@ impl<'a> From<&'a String> for VirtualNode {
     }
 }
 
-//impl From<Vec<VirtualNode>> for VirtualNode {
-//    fn from(nodes: Vec<VirtualNode>) -> Self {
-//        let parsed_nodes: Vec<Rc<RefCell<VirtualNode>>> = nodes
-//            .into_iter()
-//            .map(|node| Rc::new(RefCell::new(VirtualNode::from(node))))
-//            .collect();
-//
-//        let mut wrapper = VirtualNode::new("__VEC_OF_CHILDREN__");
-//        wrapper.children = Some(parsed_nodes);
-//
-//        wrapper
-//    }
-//}
-
-impl VirtualNode {
-    fn wrap_children(&mut self) -> Vec<Rc<RefCell<ParsedVirtualNode>>> {
-        self.children
-            .take()
-            .unwrap()
-            .into_iter()
-            .map(|child| wrap(child))
-            .collect()
-    }
-}
-
 impl IntoIterator for VirtualNode {
     type Item = VirtualNode;
     // TODO: Is this possible with an array [VirtualNode] instead of a vec?
@@ -346,21 +202,7 @@ impl IntoIterator for VirtualNode {
     }
 }
 
-fn wrap(v: VirtualNode) -> Rc<RefCell<ParsedVirtualNode>> {
-    Rc::new(RefCell::new(ParsedVirtualNode::from(v)))
-}
-
 impl fmt::Debug for VirtualNode {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "VirtualNode | tag: {}, props: {:#?}, text: {:#?}, children: {:#?} |",
-            self.tag, self.props, self.text, self.children
-        )
-    }
-}
-
-impl fmt::Debug for ParsedVirtualNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -419,7 +261,7 @@ impl fmt::Debug for Events {
 mod tests {
     use super::*;
 
-    // TODO: Move this somewhere that we can use the `html!` macro
+    // TODO: Use html_macro as dev dependency and uncomment
 //    #[test]
 //    fn to_string() {
 //        let node = html! {

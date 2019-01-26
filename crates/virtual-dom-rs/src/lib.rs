@@ -19,10 +19,6 @@ pub use wasm_bindgen::JsCast;
 pub extern crate web_sys;
 pub use web_sys::*;
 
-#[macro_use]
-pub mod html_macro_old;
-pub use crate::html_macro_old::*;
-
 pub use virtual_node::*;
 
 mod diff;
@@ -39,7 +35,6 @@ pub use html_macro::html;
 /// Exports structs and macros that you'll almost always want access to in a virtual-dom
 /// powered application
 pub mod prelude {
-    pub use crate::html_macro_old::*;
     pub use crate::view::View;
     pub use crate::VirtualNode;
     pub use html_macro::html;

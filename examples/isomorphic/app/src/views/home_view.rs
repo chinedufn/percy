@@ -26,17 +26,20 @@ impl View for HomeView {
 
         let click_count = self.store.borrow().click_count();
         let click_count = &click_count.to_string();
+        let click_count = VirtualNode::text(click_count);
 
-        let click_component = html_old! { <strong style="font-size: 30px",>{ click_count }</strong> };
+        let click_component = html! { <strong style="font-size: 30px">{ click_count }</strong> };
 
-        html_old! {
+        html! {
         <div>
 
           { nav_bar }
 
-          <span> { "The button has been clicked: " click_component " times!"} </span>
-          <button !onclick=move|_ev: web_sys::MouseEvent| { store.borrow_mut().msg(&Msg::Click) },>{ "Click me!" }</button>
-          <div> { "In this time Ferris has made " click_count " new friends." } </div>
+          <span> The button has been clicked: { click_component } times!</span>
+          <button onclick=move|_: u8| { store.borrow_mut().msg(&Msg::Click) }>
+            Click me!
+          </button>
+          <div> In this time Ferris has made { click_count } new friends. </div>
 
         </div>
         }

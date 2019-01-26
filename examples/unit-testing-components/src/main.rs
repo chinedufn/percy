@@ -1,7 +1,6 @@
-#[macro_use]
-extern crate virtual_dom_rs;
+#![feature(proc_macro_hygiene)]
 
-use virtual_dom_rs::VirtualNode;
+use virtual_dom_rs::prelude::*;
 
 fn main() {
     println!("To see this example in action:");
@@ -10,10 +9,10 @@ fn main() {
 
 #[allow(unused)]
 fn full_water_bottle() -> VirtualNode {
-    html_old! {
+    html! {
     <div>
-        <span label="full-water",>
-          { "I am full of delicious and refreshing H20!" }
+        <span label="full-water">
+          I am full of delicious and refreshing H20!
         </span>
     </div>
     }
@@ -25,9 +24,10 @@ fn struggling_water_bottle(percent_full: f32) -> VirtualNode {
         "Please fill me up :( I am only {} percent full :(",
         percent_full
     );
+    let message = VirtualNode::text(&message);
 
-    html_old! {
-        <div label="struggle-water",>
+    html! {
+        <div label="struggle-water">
          { message }
         </div>
     }

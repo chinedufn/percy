@@ -48,28 +48,23 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 for attr in attrs.iter() {
                     let key = format!("{}", attr.key);
                     let value = &attr.value;
-
                     match value {
-                        #[cfg(target_arch = "wasm_32")]
                         Expr::Closure(closure) => {
-                            let num_args = closure.inputs.len();
-                            eprintln!("closure = {:#?}", closure);
+                            // TODO: Use this to decide Box<FnMut(_, _, _, ...)
+                            let arg_count = closure.inputs.len();
 
                             let add_closure = quote! {
-                                let closure = Box::new(#value) as Box<FnMut(_)>;
-                                let closure = Closure::wrap(closure);
-                                let closure = Box::new(closure);
-                                #var_name.events.0.insert(#key.to_string(), closure);
+                                #[cfg(target_arch = "wasm32")]
+                                {
+                                  let closure = wasm_bindgen::prelude::Closure::wrap(
+                                      Box::new(#value) as Box<FnMut(_)>
+                                  );
+                                  let closure = Box::new(closure);
+                                  #var_name.events.0.insert(#key.to_string(), closure);
+                                }
                             };
 
                             tokens.push(add_closure);
-                        }
-                        #[cfg(not(target_arch = "wasm_32"))]
-                        Expr::Closure(closure) => {
-                            // Events are ignored in non wasm32 targets.
-                            //
-                            // If this is a problem for you please open an issue explaining your
-                            // use case.
                         }
                         _ => {
                             let insert_attribute = quote! {
@@ -146,19 +141,6 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                         }
                     };
                     tokens.push(nodes);
-
-                    //                    parent_children
-                    //                        .get_mut(&parent_idx)
-                    //                        .expect("Parent of this text node")
-                    //                        .push(idx);
-                    //
-                    //                    // TODO: Only really needed if this node is a node that can actually have
-                    //                    // children but we can worry about that later
-                    //                    parent_children.insert(idx, vec![]);
-                    //
-                    //                    node_order.push(idx);
-                    //
-                    //                    idx += 1;
                 })
             }
         };
@@ -221,20 +203,26 @@ enum Tag {
     Open { name: Ident, attrs: Vec<Attr> },
     /// </div>
     Close { name: Ident },
-    /// html { <div> Hello World </div> }
+    /// html! { <div> Hello World </div> }
     ///
     ///  -> "Hello world"
     Text { text: String },
-    /// ```
-    /// let some_expression = 3;
-    /// html {
+    /// let text_var = VirtualNode::from("3");
+    ///
+    /// let iter_nodes =
+    ///   vec![
+    ///     html!{ <div></div> },
+    ///     html! {<span> </span>}
+    ///   ];
+    ///
+    /// html! {
     ///   <div>
-    ///     { some_expression }
-    ///     { "Another expression" }
+    ///     Here are some examples of blocks
+    ///     { text_var }
+    ///     { iter_nodes }
     ///     { html! { <div> </div> }
     ///   </div>
     /// }
-    /// ```
     Braced { block: Box<Block> },
 }
 
@@ -342,9 +330,16 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
     let mut attrs = Vec::new();
 
     // Do we see an identifier such as `id`? If so proceed
-    while input.peek(Ident) {
-        // id
-        let key: Ident = input.parse()?;
+    while input.peek(Ident) || input.peek(Token![type]) {
+        // <link rel="stylesheet" type="text/css"
+        //   .. type needs to be handled specially since it's a keyword
+        let maybe_type_key: Option<Token![type]> = input.parse()?;
+
+        let key = if maybe_type_key.is_some() {
+            Ident::new("type", maybe_type_key.unwrap().span())
+        } else {
+            input.parse()?
+        };
 
         // =
         input.parse::<Token![=]>()?;
@@ -356,7 +351,8 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
             let tt: TokenTree = input.parse()?;
             value_tokens.extend(Some(tt));
 
-            let peek_start_of_next_attr = input.peek(Ident) && input.peek2(Token![=]);
+            let has_attrib_key = input.peek(Ident) || input.peek(Token![type]);
+            let peek_start_of_next_attr = has_attrib_key && input.peek2(Token![=]);
 
             let peek_end_of_tag = input.peek(Token![>]);
 
