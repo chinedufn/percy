@@ -10,8 +10,19 @@ use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
 use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
 
-// FIXME: Play around and get things working but add thorough commenting
-// once it's all put together
+// TODO: BREADCRUMB - look at the diff on GitHub and clean the code up.
+// Replace text node from var creation with text! macro ..
+
+// FIXME: Move to module
+#[proc_macro]
+pub fn text(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let text: Expr = syn::parse(input).expect("Text variable");
+    let text = quote! {
+        VirtualNode::text(#text)
+    };
+
+    text.into()
+}
 
 #[proc_macro]
 pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

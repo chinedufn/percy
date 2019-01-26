@@ -1,6 +1,6 @@
 #![feature(proc_macro_hygiene)]
 
-use html_macro::html;
+use html_macro::{html, text};
 use std::collections::HashMap;
 use virtual_node::VirtualNode;
 
@@ -166,6 +166,18 @@ fn text_root_node() {
 #[test]
 fn type_attribute() {
     html! { <link rel="stylesheet" type="text/css" href="/app.css"></link> };
+}
+
+#[test]
+fn text_macro() {
+    let text_var = "some text";
+
+    HtmlMacroTest {
+        desc: "text! creates text from variables",
+        generated: text!(text_var),
+        expected: VirtualNode::text("some text"),
+    }
+    .test()
 }
 
 // TODO: Test for self closing tags such as <b />

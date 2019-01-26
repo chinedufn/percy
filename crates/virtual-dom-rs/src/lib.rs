@@ -31,6 +31,7 @@ mod view;
 pub use crate::view::*;
 
 pub use html_macro::html;
+pub use html_macro::text;
 
 /// Exports structs and macros that you'll almost always want access to in a virtual-dom
 /// powered application
@@ -38,4 +39,5 @@ pub mod prelude {
     pub use crate::view::View;
     pub use crate::VirtualNode;
     pub use html_macro::html;
+    pub use html_macro::text;
 }
