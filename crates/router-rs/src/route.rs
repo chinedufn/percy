@@ -134,7 +134,7 @@ impl Route {
 mod tests {
     use super::*;
     use virtual_dom_rs::VirtualNode;
-    use virtual_dom_rs::{html, recurse_html};
+    use virtual_dom_rs::html;
     use std::rc::Rc;
     use std::cell::RefCell;
 
@@ -144,7 +144,8 @@ mod tests {
 
     impl View for MyView {
         fn render(&self) -> VirtualNode {
-            html_old! { <div> {self.id.to_string()} </div> }
+            let id = VirtualNode::text(&self.id.to_string());
+            html! { <div> {id} </div> }
         }
     }
 
@@ -207,7 +208,7 @@ mod tests {
     fn create_view() {
         assert_eq!(
             create_test_route().view("/users/300").render(),
-            html_old! {<div> { "300" } </div>},
+            html! {<div> 300 </div>},
             "Creates a view from a provided route"
         );
     }

@@ -1,6 +1,9 @@
 //! A router implementation geared towards front-end web apps
 
+#![feature(proc_macro_hygiene)]
+
 #[deny(missing_docs)]
+
 mod router;
 pub use self::router::Router;
 

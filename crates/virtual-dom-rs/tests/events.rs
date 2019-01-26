@@ -1,3 +1,5 @@
+#![feature(proc_macro_hygiene)]
+
 extern crate wasm_bindgen_test;
 extern crate web_sys;
 use std::cell::Cell;
@@ -9,7 +11,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 
-use virtual_dom_rs::html_macro_old::h;
+use virtual_dom_rs::prelude::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -18,17 +20,17 @@ fn on_input_custom() {
     let text = Rc::new(RefCell::new("Start Text".to_string()));
     let text_clone = Rc::clone(&text);
 
-    let input = h! {
+    let input = html! {
      <input
          // On input we'll set our Rc<RefCell<String>> value to the input elements value
-         !oninput=move |event: Event| {
+         oninput=move |event: Event| {
             let input_elem = event.target().unwrap();
 
             let input_elem = input_elem.dyn_into::<HtmlInputElement>().unwrap();
 
             *text_clone.borrow_mut() = input_elem.value();
-         },
-         value="End Text",
+         }
+         value="End Text"
      >
      </input>
     };

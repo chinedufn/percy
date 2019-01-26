@@ -22,6 +22,7 @@ use web_sys::*;
 
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
+use std::str::FromStr;
 
 /// When building your views you'll typically use the `html!` macro to generate
 /// `VirtualNode`'s.
@@ -294,8 +295,8 @@ impl From<Vec<VirtualNode>> for ParsedVirtualNode {
     }
 }
 
-impl<'a> From<&'a str> for VirtualNode {
-    fn from(text: &'a str) -> Self {
+impl From<&str> for VirtualNode {
+    fn from(text: &str) -> Self {
         VirtualNode::text(text)
     }
 }

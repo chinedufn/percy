@@ -1,5 +1,6 @@
 extern crate proc_macro;
 
+use proc_macro2::Literal;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::quote;
 use std::collections::HashMap;
@@ -8,7 +9,6 @@ use syn::group::Group;
 use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
 use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
-use proc_macro2::Literal;
 
 // FIXME: Play around and get things working but add thorough commenting
 // once it's all put together
@@ -50,9 +50,26 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     let value = &attr.value;
 
                     match value {
+                        #[cfg(target_arch = "wasm_32")]
                         Expr::Closure(closure) => {
                             let num_args = closure.inputs.len();
                             eprintln!("closure = {:#?}", closure);
+
+                            let add_closure = quote! {
+                                let closure = Box::new(#value) as Box<FnMut(_)>;
+                                let closure = Closure::wrap(closure);
+                                let closure = Box::new(closure);
+                                #var_name.events.0.insert(#key.to_string(), closure);
+                            };
+
+                            tokens.push(add_closure);
+                        }
+                        #[cfg(not(target_arch = "wasm_32"))]
+                        Expr::Closure(closure) => {
+                            // Events are ignored in non wasm32 targets.
+                            //
+                            // If this is a problem for you please open an issue explaining your
+                            // use case.
                         }
                         _ => {
                             let insert_attribute = quote! {
@@ -123,8 +140,8 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     let parent_node_name = Ident::new(parent_node_name.as_str(), stmt.span());
 
                     let nodes = quote! {
-                    // FIXME: As we iterate over the statements we need to increment the node name
                         for node in #stmt.into_iter() {
+                            let node = VirtualNode::from(node);
                             #parent_node_name.children.as_mut().unwrap().push(node);
                         }
                     };
@@ -248,6 +265,7 @@ impl Parse for Tag {
 
         // If it doesn't start with a < it's weird a text node or an expression
         let is_text_or_block = !input.peek(Token![<]);
+
         if is_text_or_block {
             // TODO: Move into parse_brace
             if !input.peek(Ident) && !input.peek(syn::Lit) {

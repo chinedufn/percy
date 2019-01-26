@@ -45,7 +45,6 @@ mod tests {
     use crate::route::ParamType;
     use std::collections::HashMap;
     use virtual_dom_rs::html;
-    use virtual_dom_rs::recurse_html;
 
     struct TestView {
         kind: &'static str,
@@ -53,7 +52,8 @@ mod tests {
 
     impl View for TestView {
         fn render(&self) -> VirtualNode {
-            html_old! {<div> {self.kind} </div> }
+            let kind = VirtualNode::text(self.kind);
+            html! {<div> { kind } </div> }
         }
     }
 
@@ -78,7 +78,7 @@ mod tests {
 
         assert_eq!(
             router.view("/users/5/name").unwrap().render(),
-            html_old! { <div> {"second"} </div>}
+            html! { <div> second </div>}
         );
     }
 }
