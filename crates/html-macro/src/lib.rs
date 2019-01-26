@@ -13,7 +13,7 @@ use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
 // once it's all put together
 
 #[proc_macro]
-pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn h(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let parsed = parse_macro_input!(input as Html);
 
     let mut tokens = vec![];
@@ -52,7 +52,6 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                         Expr::Closure(closure) => {
                             let num_args = closure.inputs.len();
                             eprintln!("closure = {:#?}", closure);
-
                         }
                         _ => {
                             let insert_attribute = quote! {
@@ -61,7 +60,6 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                             tokens.push(insert_attribute);
                         }
                     };
-
                 }
 
                 // The first open tag that we see is our root node so we won't worry about
@@ -100,7 +98,7 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
                 if idx == 0 {
                     idx += 1;
-                    continue
+                    continue;
                 }
 
                 let parent_idx = parent_stack[parent_stack.len() - 1];
@@ -131,18 +129,18 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     };
                     tokens.push(nodes);
 
-//                    parent_children
-//                        .get_mut(&parent_idx)
-//                        .expect("Parent of this text node")
-//                        .push(idx);
-//
-//                    // TODO: Only really needed if this node is a node that can actually have
-//                    // children but we can worry about that later
-//                    parent_children.insert(idx, vec![]);
-//
-//                    node_order.push(idx);
-//
-//                    idx += 1;
+                    //                    parent_children
+                    //                        .get_mut(&parent_idx)
+                    //                        .expect("Parent of this text node")
+                    //                        .push(idx);
+                    //
+                    //                    // TODO: Only really needed if this node is a node that can actually have
+                    //                    // children but we can worry about that later
+                    //                    parent_children.insert(idx, vec![]);
+                    //
+                    //                    node_order.push(idx);
+                    //
+                    //                    idx += 1;
                 })
             }
         };

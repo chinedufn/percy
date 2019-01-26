@@ -38,4 +38,5 @@ pub mod prelude {
     pub use crate::html_macro::*;
     pub use crate::view::View;
     pub use crate::VirtualNode;
+    pub use html_macro::h;
 }

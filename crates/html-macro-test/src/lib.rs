@@ -1,6 +1,6 @@
 #![feature(proc_macro_hygiene)]
 
-use html_macro::html;
+use html_macro::h;
 use std::collections::HashMap;
 use virtual_node::VirtualNode;
 
