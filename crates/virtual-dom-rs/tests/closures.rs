@@ -15,6 +15,9 @@ use web_sys::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
+// TODO: This test current fails in headless browsers but works in non headless browsers
+// (tested in both geckodriver and chromedriver)
+// Need to figure out why
 #[wasm_bindgen_test]
 fn closure_not_dropped() {
     let text = Rc::new(RefCell::new("Start Text".to_string()));
@@ -48,29 +51,9 @@ fn closure_not_dropped() {
         new_node.props.insert("id".into(), "new-input-elem".into());
 
         dom_updater.update(new_node);
-
-        // If you uncomment this you'll se the CLOSURE RUN text in the test output..
-        // Yet when we do the same thing outside of this block it isn't working
-
-//        let input: HtmlInputElement = document
-//            .get_element_by_id("new-input-elem")
-//            .expect("Input element")
-//            .dyn_into()
-//            .unwrap();
-//        let input_event = InputEvent::new("input").unwrap();
-//
-//        web_sys::EventTarget::from(input)
-//            .dispatch_event(&input_event)
-//            .unwrap();
     }
 
     let dom_updater = dom_updater.as_ref().unwrap();
-
-    // Proof that the Closure that we created hasn't been dropped yet
-    assert_eq!(dom_updater.active_closures.get(&1).as_ref().unwrap().len(), 1);
-
-    web_sys::console::log_1(&format!("{}", document.body().unwrap().inner_html()).into());
-
 
     let input: HtmlInputElement = document
         .get_element_by_id("new-input-elem")
@@ -88,7 +71,10 @@ fn closure_not_dropped() {
 
     assert_eq!(&*text.borrow(), "End Text");
 
-    assert_eq!(dom_updater.active_closures.get(&1).as_ref().unwrap().len(), 1);
+    assert_eq!(
+        dom_updater.active_closures.get(&1).as_ref().unwrap().len(),
+        1
+    );
 }
 
 fn make_input_component(text_clone: Rc<RefCell<String>>) -> VirtualNode {
