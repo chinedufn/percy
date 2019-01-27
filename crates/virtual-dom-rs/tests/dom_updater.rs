@@ -5,9 +5,7 @@ use std::cell::RefCell;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::rc::Rc;
-use virtual_dom_rs::html;
 use virtual_dom_rs::prelude::*;
-use virtual_dom_rs::recurse_html;
 use virtual_dom_rs::DomUpdater;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test;
@@ -27,7 +25,7 @@ fn patches_dom() {
     let mut dom_updater = DomUpdater::new(vdom);
 
 
-    let new_vdom = html! { <div id="patched",></div> };
+    let new_vdom = html! { <div id="patched"></div> };
     dom_updater.update(new_vdom);
 
     document.body().unwrap().append_child(&dom_updater.root_node());
