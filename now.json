@@ -1,5 +1,12 @@
 {
-  "name": "percy-isomorphic",
-  "alias": "percy-isomorphic.now.sh",
-  "type": "docker"
+    "name": "percy-isomorphic",
+    "alias": "percy-isomorphic.now.sh",
+    "version": 2,
+    "public": true,
+    "github": {
+        "enabled": true,
+        "autoJobCancelation": true,
+        "silent": false,
+        "autoAlias": true
+    }
 }
