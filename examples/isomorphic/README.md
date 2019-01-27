@@ -33,20 +33,6 @@ npm install
 # Now visit http://localhost:7878
 ```
 
-### Running with hot reload
-
-```sh
-# You will need `cargo-watch and systemfd`
-cargo install --force cargo-watch systemfd
-```
-
-```sh
-./examples/isomorphic/watch.sh
-# Now visit http://localhost:7878
-```
-
----
-
 ## Structure
 
 Percy powered isomorphic web applications use three crates in a cargo workspace.

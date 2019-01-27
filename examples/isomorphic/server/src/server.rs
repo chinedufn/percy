@@ -1,9 +1,6 @@
 extern crate actix_web;
 use self::actix_web::{fs, HttpRequest, HttpResponse, Responder};
 
-extern crate listenfd;
-use self::listenfd::ListenFd;
-
 use isomorphic_app::App;
 
 const HTML_PLACEHOLDER: &str = "#HTML_INSERTED_HERE_BY_SERVER#";
@@ -26,28 +23,25 @@ fn index(req: &HttpRequest) -> impl Responder {
 }
 
 pub fn serve() {
-    let mut listenfd = ListenFd::from_env();
-
     let server = actix_web::server::new(|| {
         let app = actix_web::App::new();
         let app = app.resource("/", |r| r.f(index));
 
         // Development
-        #[cfg(debug_attrs)]
+        #[cfg(debug_assertions)]
         let app = app.handler("/", fs::StaticFiles::new("./build").unwrap());
 
         // Production
-        #[cfg(not(debug_attrs))]
+        #[cfg(not(debug_assertions))]
         let app = app.handler("/", fs::StaticFiles::new("./dist").unwrap());
 
         app
     });
 
-    let server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
-        server.listen(l)
-    } else {
-        server.bind("0.0.0.0:7878").unwrap()
-    };
+    let path = std::env::current_dir().unwrap();
+    println!("The current directory is {}", path.display());
+
+    let server = server.bind("0.0.0.0:7878").unwrap();
 
     println!("Listening on port 7878");
     server.run();
