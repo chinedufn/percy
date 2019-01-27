@@ -4,9 +4,7 @@
 use std::cell::RefCell;
 use std::collections::hash_map::DefaultHasher;
 use std::rc::Rc;
-use virtual_dom_rs::html;
 use virtual_dom_rs::prelude::*;
-use virtual_dom_rs::recurse_html;
 use virtual_dom_rs::DomUpdater;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test;
@@ -81,13 +79,12 @@ fn make_input_component(text_clone: Rc<RefCell<String>>) -> VirtualNode {
     html! {
         <input
            // On input we'll set our Rc<RefCell<String>> value to the input elements value
-           !oninput=move |event: Event| {
-              web_sys::console::log_1(&format!("CLOSURE RAN!@!(@!!!@").into());
+           oninput=move |event: Event| {
               let input_elem = event.target().unwrap();
               let input_elem = input_elem.dyn_into::<HtmlInputElement>().unwrap();
               *text_clone.borrow_mut() = input_elem.value();
-           },
-           value="End Text",
+           }
+           value="End Text"
         >
         </input>
     }
