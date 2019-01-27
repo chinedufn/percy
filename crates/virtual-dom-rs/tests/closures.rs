@@ -1,6 +1,8 @@
 //! Ensure that our DomUpdater maintains Rc's to closures so that they work even
 //! after dropping virtual dom nodes.
 
+#![feature(proc_macro_hygiene)]
+
 use std::cell::RefCell;
 use std::collections::hash_map::DefaultHasher;
 use std::rc::Rc;

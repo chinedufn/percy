@@ -14,10 +14,6 @@ type ActiveClosures = HashMap<u32, Vec<DynClosure>>;
 
 /// Used for keeping a real DOM node up to date based on the current VirtualNode
 /// and a new incoming VirtualNode that represents our latest DOM state.
-///
-/// FiXME: We should to periodically delete old closures from active_closures.
-/// We can do this by looking up elements by the closure's id and if we don't
-/// find the element we can safely remove and drop the closure.
 pub struct DomUpdater {
     current_vdom: VirtualNode,
     /// The closures that are currently attached to elements in the page.
@@ -38,8 +34,6 @@ impl DomUpdater {
 
         let active_closures = root_node.closures;
         let root_node = root_node.element;
-
-        web_sys::console::log_1(&format!("closures {}", active_closures.len()).into());
 
         DomUpdater {
             current_vdom,
