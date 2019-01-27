@@ -90,7 +90,7 @@ impl HtmlParser {
                                   let closure = wasm_bindgen::prelude::Closure::wrap(
                                       Box::new(#value) as Box<FnMut(_)>
                                   );
-                                  let closure = Box::new(closure);
+                                  let closure = Rc::new(closure);
                                   #var_name.events.0.insert(#key.to_string(), closure);
                                 }
                             };

@@ -179,7 +179,7 @@ impl DiffPatchTest {
         }
 
         // Add our old node into the DOM
-        let root_node = self.old.create_element();
+        let root_node = self.old.create_element().element;
         document.body().unwrap().append_child(&root_node).unwrap();
 
         let elem_id = self.old.props.get("id").unwrap().clone();

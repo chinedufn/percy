@@ -9,7 +9,6 @@
 //
 // Around in order to get rid of dependencies that we don't need in non wasm32 targets
 
-
 pub use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
@@ -23,6 +22,19 @@ use web_sys::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use std::str::FromStr;
+
+use lazy_static::lazy_static;
+
+use std::ops::Deref;
+use std::sync::Mutex;
+
+// Used to uniquely identify elements that contain closures so that the DomUpdater can
+// look them up by their unique id.
+// When the DomUpdater sees that the element no longer exists it will drop all of it's
+// Rc'd Closures for those events.
+lazy_static! {
+    static ref ELEM_UNIQUE_ID: Mutex<u32> = Mutex::new(0);
+}
 
 /// When building your views you'll typically use the `html!` macro to generate
 /// `VirtualNode`'s.
@@ -96,36 +108,82 @@ impl VirtualNode {
     }
 }
 
+/// A web_sys::Element along with all of the closures that were created for that element's
+/// events and all of it's child element's events.
+pub struct CreatedElement {
+    /// An Element that was created from a VirtualNode
+    pub element: Element,
+    /// A map of an element's unique identifier along with all of the Closures for that element.
+    ///
+    /// The DomUpdater uses this to look up elements and see if they're still in the page. If not
+    /// the refernce that we maintain to their closure will be dropped, thus freeing the Closure's
+    /// memory.
+    pub closures: HashMap<u32, Vec<DynClosure>>,
+}
+
+impl Deref for CreatedElement {
+    type Target = Element;
+
+    fn deref(&self) -> &Self::Target {
+        &self.element
+    }
+}
+
+fn create_unique_identifier() -> u32 {
+    let mut elem_unique_id = ELEM_UNIQUE_ID.lock().unwrap();
+
+    *elem_unique_id += 1;
+
+    *elem_unique_id
+}
+
 impl VirtualNode {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
-    pub fn create_element(&self) -> Element {
+    pub fn create_element(&self) -> CreatedElement {
         let document = web_sys::window().unwrap().document().unwrap();
 
-        let current_elem = document.create_element(&self.tag).unwrap();
+        let element = document.create_element(&self.tag).unwrap();
+        let mut closures = HashMap::new();;
+
 
         self.props.iter().for_each(|(name, value)| {
-            current_elem
-                .set_attribute(name, value)
+            element.set_attribute(name, value)
                 .expect("Set element attribute in create element");
         });
 
-        self.events.0.iter().for_each(|(onevent, callback)| {
-            // onclick -> click
-            let event = &onevent[2..];
+        if self.events.0.len() > 0 {
+            let unique_id = create_unique_identifier();
 
-            let current_elem: &EventTarget = current_elem.dyn_ref().unwrap();
+            element.set_attribute("data-vdom-id".into(), &unique_id.to_string());
 
-            current_elem
-                .add_event_listener_with_callback(event, callback.as_ref().as_ref().unchecked_ref())
-                .unwrap();
-        });
+            closures.insert(unique_id, vec![]);
+
+            self.events.0.iter().for_each(|(onevent, callback)| {
+                // onclick -> click
+                let event = &onevent[2..];
+
+                let current_elem: &EventTarget = element.dyn_ref().unwrap();
+
+                current_elem
+                    .add_event_listener_with_callback(
+                        event,
+                        callback.as_ref().as_ref().unchecked_ref(),
+                    )
+                    .unwrap();
+
+                closures
+                    .get_mut(&unique_id)
+                    .unwrap()
+                    .push(Rc::clone(callback));
+            });
+        }
 
         let mut previous_node_was_text = false;
 
         self.children.as_ref().unwrap().iter().for_each(|child| {
             if child.is_text_node() {
-                let current_node = current_elem.as_ref() as &web_sys::Node;
+                let current_node = element.as_ref() as &web_sys::Node;
 
                 // We ensure that the text siblings are patched by preventing the browser from merging
                 // neighboring text nodes. Originally inspired by some of React's work from 2016.
@@ -153,13 +211,21 @@ impl VirtualNode {
             } else {
                 previous_node_was_text = false;
 
-                (current_elem.as_ref() as &web_sys::Node)
-                    .append_child(child.create_element().as_ref() as &web_sys::Node)
+                let mut child = child.create_element();
+                let child_elem = child.element;
+
+                closures.extend(child.closures);
+
+                element
+                    .append_child(&child_elem)
                     .unwrap();
             }
         });
 
-        current_elem
+        CreatedElement {
+            element,
+            closures
+        }
     }
 
     /// Return a `Text` element from a `VirtualNode`, typically right before adding it
@@ -234,13 +300,13 @@ impl fmt::Display for VirtualNode {
     }
 }
 
-
-/// We need a custom implementation of fmt::Debug since FnMut() doesn't
-/// implement debug.
-///
 /// Box<dyn AsRef<JsValue>>> is our js_sys::Closure. Stored this way to allow us to store
 /// any Closure regardless of the arguments.
-pub struct Events(pub HashMap<String, Box<dyn AsRef<JsValue>>>);
+pub type DynClosure = Rc<dyn AsRef<JsValue>>;
+
+/// We need a custom implementation of fmt::Debug since JsValue doesn't
+/// implement debug.
+pub struct Events(pub HashMap<String, DynClosure>);
 
 impl PartialEq for Events {
     // TODO: What should happen here..? And why?

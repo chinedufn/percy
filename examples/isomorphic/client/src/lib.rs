@@ -1,9 +1,8 @@
-
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
 use console_error_panic_hook;
-use virtual_dom_rs;
+use virtual_dom_rs::prelude::*;
 
 use web_sys;
 use web_sys::Element;
@@ -15,8 +14,7 @@ use isomorphic_app::VirtualNode;
 #[wasm_bindgen]
 pub struct Client {
     app: App,
-    root_node: Option<Element>,
-    previous_vdom: Option<VirtualNode>,
+    dom_updater: DomUpdater,
 }
 
 // Expose globals from JS for things such as request animation frame
@@ -46,34 +44,18 @@ impl Client {
             global_js.update();
         }));
 
-        Client {
-            app,
-            root_node: None,
-            previous_vdom: None,
-        }
+        let window = web_sys::window().unwrap();
+        let document = window.document().unwrap();
+        let root_node = document
+            .get_element_by_id("isomorphic-rust-web-app")
+            .unwrap();
+        let dom_updater = DomUpdater::new_replace_mount(app.render(), root_node);
+
+        Client { app, dom_updater }
     }
 
-    pub fn set_root_node(&mut self, root_node: Element) {
-        self.root_node = Some(root_node);
-    }
-
-    pub fn render(&mut self) -> Element {
-        let html = self.app.render();
-
-        self.previous_vdom = Some(html);
-
-        self.previous_vdom.as_ref().unwrap().create_element()
-    }
-
-    pub fn update_dom(&mut self) {
-        let mut new_vdom = self.app.render();
-
-        if let Some(ref previous_vdom) = self.previous_vdom {
-            let patches = virtual_dom_rs::diff(&previous_vdom, &mut new_vdom);
-            let root_node = self.root_node.take().unwrap();
-            virtual_dom_rs::patch(root_node, &patches);
-        }
-
-        self.previous_vdom = Some(new_vdom);
+    pub fn render(&mut self) {
+        let vdom = self.app.render();
+        self.dom_updater.update(vdom);
     }
 }

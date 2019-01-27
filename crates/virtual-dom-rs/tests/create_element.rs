@@ -49,7 +49,7 @@ fn click_event() {
 
     let click_event = Event::new("click").unwrap();
 
-    let div = div.create_element();
+    let div = div.create_element().element;
 
     (web_sys::EventTarget::from(div))
         .dispatch_event(&click_event)

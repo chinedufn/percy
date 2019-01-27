@@ -51,25 +51,28 @@ static SOME_COMPONENT_CSS: &'static str = css! {"
 "};
 
 fn main () {
-  let count = Rc::new(Cell::new(0));
+    let count = Rc::new(Cell::new(0));
 
-  let count_clone = Rc::clone(count);
+    let count_clone = Rc::clone(count);
 
-  let html = html! {
-    <div id="hello-world" class=SOME_COMPONENT_CSS>
-      <span>Hey there!</span>
-      <button
-        onclick=|_event: web_sys::MouseEvent| { count_clone.set(count_clone.get() + 1); },
-        // CSS in Rust isn't required. You can use regular old
-        /* classes just fine! */
-        class="btn-bs4 btn-bs4-success"
-      >
-        Click Me!
-      </button>
-    </div>
-  };
+    let html = html! {
+      <div id="hello-world" class=SOME_COMPONENT_CSS>
+        <span>Hey there!</span>
+        <button
+          onclick=|_event: web_sys::MouseEvent| { count_clone.set(count_clone.get() + 1); },
+          // CSS in Rust isn't required. You can use regular old
+          /* classes just fine! */
+          class="btn-bs4 btn-bs4-success"
+        >
+          Click Me!
+        </button>
+      </div>
+    };
 
-  println!("{}", html.to_string());
+    // Used for server side rendering
+    println!("{}", html.to_string());
+
+    // Check out the DomUpdater for client side rendering
 }
 ```
 

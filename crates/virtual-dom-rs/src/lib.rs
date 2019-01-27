@@ -5,7 +5,6 @@
 //! to an `HtmlElement`, and on the server we render to a `String`.
 
 #![deny(missing_docs)]
-
 #![feature(proc_macro_hygiene)]
 
 extern crate wasm_bindgen;
@@ -33,9 +32,13 @@ pub use crate::view::*;
 pub use html_macro::html;
 pub use html_macro::text;
 
+mod dom_updater;
+pub use self::dom_updater::DomUpdater;
+
 /// Exports structs and macros that you'll almost always want access to in a virtual-dom
 /// powered application
 pub mod prelude {
+    pub use crate::dom_updater::DomUpdater;
     pub use crate::view::View;
     pub use crate::VirtualNode;
     pub use html_macro::html;

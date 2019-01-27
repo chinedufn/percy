@@ -1,5 +1,5 @@
-use crate::VirtualNode;
 use crate::Patch;
+use crate::VirtualNode;
 use std::cmp::min;
 use std::collections::HashMap;
 
@@ -117,8 +117,8 @@ fn increment_node_idx_for_children<'a, 'b>(old: &'a VirtualNode, cur_node_idx: &
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
     use crate::html;
+    use std::collections::HashMap;
 
     struct DiffTestCase<'a> {
         old: VirtualNode,
