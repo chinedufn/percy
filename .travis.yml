@@ -46,7 +46,7 @@ matrix:
         - cargo install-update -a
       script:
         - (cd book && mdbook build)
-        - cargo doc --no-deps -p virtual-dom-rs -p css-rs-macro
+        - cargo doc --no-deps -p virtual-dom-rs -p css-rs-macro -p html-macro
         - mv target/doc book/book/api
       deploy:
         provider: pages
