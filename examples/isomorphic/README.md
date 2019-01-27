@@ -8,28 +8,17 @@
 
 [Install rustup if you haven't already](https://rustup.rs/)
 
-```
-# Make sure you have Rust nightly
-rustup install nightly
-rustup update nightly
-```
-
 ```sh
-# Install wasm-bindgen
-rustup target add wasm32-unknown-unknown
-cargo +nightly install wasm-bindgen-cli
-```
+# Install wasm-pack
+cargo install wasm-pack
 
-```sh
 # Clone the Percy repository
 git clone https://github.com/chinedufn/percy
 cd percy
-npm install
-```
 
-```sh
 # Build the WebAssembly module and start the server
 ./examples/isomorphic/start.sh
+
 # Now visit http://localhost:7878
 ```
 

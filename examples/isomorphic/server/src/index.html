@@ -11,14 +11,35 @@
       #HTML_INSERTED_HERE_BY_SERVER#
   </div>
 
+  <script src='./isomorphic_client.js'></script>
   <script>
+    window.wasm_bindgen(`/isomorphic_client_bg.wasm`).then(main)
+
+    let client
+    let updateScheduled = false
+
     window.GlobalJS = function () {}
+    // TODO:
+    // https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Window.html#method.request_animation_frame
     window.GlobalJS.prototype.update = function () {
-      window.update()
+      if (!updateScheduled) {
+        requestAnimationFrame(() => {
+          client.render()
+
+          updateScheduled = false
+        })
+      }
+
+      updateScheduled = true
+    }
+
+    window.global_js = new GlobalJS()
+
+    function main () {
+      const { Client } = window.wasm_bindgen
+      client = new Client(window.initialState)
     }
   </script>
-  <script src='./isomorphic_client.js'></script>
   <script>window.initialState = '#INITIAL_STATE_JSON#'</script>
-  <script src="/bundle.js"></script>
 </body>
 </html>
