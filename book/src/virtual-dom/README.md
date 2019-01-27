@@ -7,13 +7,12 @@ This same `virtual-dom-rs` also works on the backend by rendering to a String in
 This ability to render on the backend is commonly referred to as server side rendering.
 
 ```rust
-#[macro_use]
-extern crate virtual_dom_rs;
+use virtual_dom_rs::prelude::*;
 
 // The most basic example of rendering to a String
 fn main () {
-  let component = html! { <div> {"Hello world"} </div> };
+  let component = html! { <div id="my-id"> Hello world </div> };
   println!("{}", component);
-  // <div>Hello world</div>
+  // <div id="my-id">Hello world</div>
 }
 ```
