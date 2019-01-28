@@ -88,6 +88,5 @@ fn make_input_component(text_clone: Rc<RefCell<String>>) -> VirtualNode {
            }
            value="End Text"
         >
-        </input>
     }
 }
