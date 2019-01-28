@@ -14,7 +14,7 @@ html!{
 
 ### Text variables
 
-Text variables much be wrapped in the `text!` macro.
+Text variables must be wrapped in the `text!` macro.
 
 ```rust
 use virtual_dom_rs::prelude::*;
