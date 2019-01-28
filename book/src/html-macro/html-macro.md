@@ -62,8 +62,10 @@ let parent_view = html! {
   <div>
     { view1 }
     { view2 }
-    html! {
-      Nested html! call
+    {
+      html! {
+        Nested html! call
+      }
     }
   </div>
 };
@@ -72,4 +74,39 @@ let parent_view = html! {
 let html_string = parent_view.to_string();
 // Here's what the String looks like:
 // <div><em></em><span></span>Nested html! call</div>
+```
+
+### Iterable Children
+
+Any type that implements IntoIter<VirtualNode> can be used as a child element within a block.
+  
+```rust
+let list = vec!["1", "2", "3"]
+    .map(|item_num| {
+      html! { 
+        <li>
+          List item number { text!(item_num) }
+        </li>
+      }
+    });
+
+html! {
+  <ul> { list } >/ul>
+}
+```
+
+### Comments
+
+You can use Rust comments within your HTML
+
+```rust
+html! {
+  /* Main Div */
+  <div>
+    <br />
+    // Title
+    <h2>Header</h2>
+    <br />
+  </div>
+}
 ```
