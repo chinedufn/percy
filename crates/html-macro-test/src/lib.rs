@@ -4,13 +4,13 @@ use html_macro::{html, text};
 use std::collections::HashMap;
 use virtual_node::VirtualNode;
 
-struct HtmlMacroTest {
-    desc: &'static str,
+struct HtmlMacroTest<'a> {
+    desc: &'a str,
     generated: VirtualNode,
     expected: VirtualNode,
 }
 
-impl HtmlMacroTest {
+impl<'a> HtmlMacroTest<'a> {
     fn test(self) {
         assert_eq!(self.generated, self.expected, "{}", self.desc);
 
@@ -185,7 +185,7 @@ fn punctuation_comma() {
         generated: html! { Hello, World},
         expected: VirtualNode::text(&text),
     }
-        .test()
+    .test()
 }
 
 #[test]
@@ -197,7 +197,7 @@ fn punctuation_exclamation() {
         generated: html! { Hello World! },
         expected: VirtualNode::text(&text),
     }
-        .test()
+    .test()
 }
 
 #[test]
@@ -209,7 +209,7 @@ fn punctuation_period() {
         generated: html! { Hello. },
         expected: VirtualNode::text(&text),
     }
-        .test()
+    .test()
 }
 
 #[test]
@@ -240,7 +240,7 @@ fn text_root_node() {
 /// Just make sure that this compiles since type is a keyword
 #[test]
 fn type_attribute() {
-    html! { <link rel="stylesheet" type="text/css" href="/app.css"></link> };
+    html! { <link rel="stylesheet" type="text/css" href="/app.css" /> };
 }
 
 #[test]
@@ -255,4 +255,42 @@ fn text_macro() {
     .test()
 }
 
-// TODO: Support self closing tags such as <b />
+// Verify that all of our self closing tags work as both.
+// Self closing tags can be written as either <tag> and <tag />
+#[test]
+fn self_closing_tag() {
+    let mut expected = VirtualNode::new("div");
+    let children = vec![
+        "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
+        "keygen", "source",
+    ]
+    .iter()
+    .map(|tag| VirtualNode::new(tag))
+    .collect();
+    expected.children = Some(children);
+
+    let tag = "br";
+
+    let desc = &format!("Self closing tag without baskslash");
+    HtmlMacroTest {
+        desc,
+        generated: html! {
+            <div>
+                <area> <base> <br> <col> <hr> <img> <input> <link> <meta> <param> <command>
+                <keygen> <source>
+            </div>
+        },
+        expected,
+    }
+    .test();
+
+    let desc = &format!("Self closing tag with backslash");
+    HtmlMacroTest {
+        desc,
+        generated: html! {
+            <br />
+        },
+        expected: VirtualNode::new("br"),
+    }
+    .test();
+}

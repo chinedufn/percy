@@ -1,0 +1,16 @@
+[package]
+name = "html-macro-compile-fail"
+version = "0.1.0"
+authors = ["Chinedu Francis Nwafili"]
+# TODO: Not sure if this works with edition 2018. No need worrying about it this works for now
+
+[lib]
+path = "test.rs"
+doctest = false
+harness = false
+
+[dependencies]
+virtual-dom-rs = { path = "../virtual-dom-rs" }
+
+[dev-dependencies]
+compiletest_rs = "0.3"

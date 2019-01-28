@@ -12,6 +12,7 @@ members = [
   "crates/css-rs-macro",
   "crates/html-macro",
   "crates/html-macro-test",
+  "crates/html-macro-ui",
   "crates/router-rs",
   "crates/router-rs-macro",
   "crates/virtual-node",
