@@ -255,6 +255,8 @@ fn text_macro() {
     .test()
 }
 
+// Verify that all of our self closing tags work as both.
+// Self closing tags can be written as either <tag> and <tag />
 #[test]
 fn self_closing_tag() {
     let mut expected = VirtualNode::new("div");
@@ -266,11 +268,6 @@ fn self_closing_tag() {
     .map(|tag| VirtualNode::new(tag))
     .collect();
     expected.children = Some(children);
-
-    let whitelist = [
-        "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
-        "keygen", "source",
-    ];
 
     let tag = "br";
 
