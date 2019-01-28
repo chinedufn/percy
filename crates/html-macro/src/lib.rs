@@ -1,17 +1,10 @@
 extern crate proc_macro;
 
 use crate::parser::HtmlParser;
-use crate::tag::{Attr, Tag};
-use proc_macro2::Literal;
-use proc_macro2::{TokenStream, TokenTree};
+use crate::tag::{Tag};
 use quote::quote;
-use std::collections::HashMap;
-use syn::export::Span;
-use syn::group::Group;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::spanned::Spanned;
-use syn::token::Brace;
-use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
+use syn::{parse_macro_input, Expr,};
 
 mod parser;
 mod tag;

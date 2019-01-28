@@ -5,8 +5,10 @@
 ---
 
 - [Rendering Views](./views/README.md)
+  - [Writing html!](./html-macro/README.md)
+    - [Writing html!](./html-macro/html-macro.md)
+    - [Compile Time Errors](./html-macro/compile-time-errors.md)
   - [Virtual DOM](./virtual-dom/README.md)
-    - [Writing html!](./virtual-dom/html-macro.md)
     - [Unit Testing your Views](./virtual-dom/unit-testing-views.md)
   - [Server Side Rendering (SSR)](./views/server-side-rendering/README.md)
     - [Why SSR](./views/server-side-rendering/why-ssr.md)

@@ -1,18 +1,14 @@
-use proc_macro2::Literal;
 use proc_macro2::{TokenStream, TokenTree};
-use quote::quote;
-use std::collections::HashMap;
-use syn::export::Span;
-use syn::group::Group;
 use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
 use syn::token::Brace;
-use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
+use syn::{braced, Block, Expr, Ident, Token};
 
 #[derive(Debug)]
 pub enum Tag {
     /// <div id="app" class=*CSS>
-    Open { name: Ident, attrs: Vec<Attr> },
+    /// <br />
+    Open { name: Ident, attrs: Vec<Attr>, has_trailing_slash: bool },
     /// </div>
     Close { name: Ident },
     /// html! { <div> Hello World </div> }
@@ -82,9 +78,12 @@ fn parse_open_tag(input: &mut ParseStream) -> Result<Tag> {
 
     let attrs = parse_attributes(input)?;
 
+    let has_trailing_slash: Option<Token![/]> = input.parse()?;
+    let has_trailing_slash = has_trailing_slash.is_some();
+
     input.parse::<Token![>]>()?;
 
-    Ok(Tag::Open { name, attrs })
+    Ok(Tag::Open { name, attrs, has_trailing_slash })
 }
 
 /// Parse the attributes starting from something like:
@@ -123,7 +122,9 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
 
             let peek_end_of_tag = input.peek(Token![>]);
 
-            if peek_end_of_tag || peek_start_of_next_attr {
+            let peek_self_closing = input.peek(Token![/]);
+
+            if peek_end_of_tag || peek_start_of_next_attr || peek_self_closing {
                 break;
             }
         }

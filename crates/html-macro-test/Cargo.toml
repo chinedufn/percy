@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 html-macro = {path = "../html-macro"}
 virtual-node = {path = "../virtual-node"}
+compiletest_rs = "0.3"

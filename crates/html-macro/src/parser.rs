@@ -1,14 +1,9 @@
-use crate::Attr;
 use crate::Tag;
-use proc_macro2::Literal;
-use proc_macro2::{TokenStream, TokenTree};
-use quote::quote;
+use quote::{quote, quote_spanned};
 use std::collections::HashMap;
 use syn::export::Span;
-use syn::group::Group;
-use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
-use syn::{braced, parse_macro_input, Block, Expr, Ident, Token};
+use syn::{Expr, Ident};
 
 /// Iterate over Tag's that we've parsed and build a tree of VirtualNode's
 pub struct HtmlParser {
@@ -26,7 +21,7 @@ pub struct HtmlParser {
     /// we push it's node index onto the stack.
     ///
     /// Text nodes cannot be parent nodes.
-    parent_stack: Vec<usize>,
+    parent_stack: Vec<(usize, Ident)>,
     /// Key -> index of the parent node within the HTML tree
     /// Value -> vector of child node indices
     parent_to_children: HashMap<usize, Vec<usize>>,
@@ -58,20 +53,19 @@ impl HtmlParser {
         // TODO: Split each of these into functions and make this DRY. Can barely see what's
         // going on.
         match tag {
-            Tag::Open { name, attrs } => {
-                if *idx == 0 {
-                    node_order.push(0);
-                    parent_stack.push(0);
-                }
-
+            Tag::Open {
+                name,
+                attrs,
+                has_trailing_slash,
+            } => {
                 // The root node is named `node_0`. All of it's descendants are node_1.. node_2.. etc.
                 // This just comes from the `idx` variable
                 // TODO: Not sure what the span is supposed to be so I just picked something..
                 let var_name = Ident::new(format!("node_{}", idx).as_str(), name.span());
+                let html_tag = format!("{}", name);
 
-                let name = format!("{}", name);
                 let node = quote! {
-                    let mut #var_name = VirtualNode::new(#name);
+                    let mut #var_name = VirtualNode::new(#html_tag);
                 };
                 tokens.push(node);
 
@@ -109,13 +103,21 @@ impl HtmlParser {
                 // The first open tag that we see is our root node so we won't worry about
                 // giving it a parent
                 if *idx == 0 {
+                    node_order.push(0);
+
+                    if !is_self_closing(&html_tag) {
+                        parent_stack.push((0, name));
+                    }
+
                     *idx += 1;
                     return;
                 }
 
-                let parent_idx = parent_stack[parent_stack.len() - 1];
+                let parent_idx = *&parent_stack[parent_stack.len() - 1].0;
 
-                parent_stack.push(*idx);
+                if !is_self_closing(&html_tag) {
+                    parent_stack.push((*idx, name));
+                }
                 node_order.push(*idx);
 
                 parent_to_children
@@ -128,12 +130,53 @@ impl HtmlParser {
                 *idx += 1;
             }
             Tag::Close { name } => {
-                parent_stack.pop();
+                let close_span = name.span();
+                let close_tag = name.to_string();
+
+                // For example, this should have been <br /> instead of </br>
+                if is_self_closing(&close_tag) {
+                    let error = format!(
+                        r#"{} is a be a self closing tag. Try "<{}>" or "<{} />""#,
+                        close_tag, close_tag, close_tag
+                    );
+                    let error = quote_spanned! {close_span=> {
+                        compile_error!(#error);
+                    }};
+
+                    tokens.push(error);
+                    return;
+                }
+
+                let last_open_tag = parent_stack.pop().expect("Last open tag");
+
+                // TODO: join open and close span. Need to figure out how to enable that.
+                //                let open_span = last_open_tag.1.span();
+
+                let last_open_tag = last_open_tag.1.to_string();
+
+                // if div != strong
+                if last_open_tag != close_tag {
+                    let error = format!(
+                        r#"Wrong closing tag. Try changing "{}" into "{}""#,
+                        close_tag, last_open_tag
+                    );
+
+                    let error = quote_spanned! {close_span=> {
+                        compile_error!(#error);
+                    }};
+                    // TODO: Abort early if we find an error. So we should be returning
+                    // a Result.
+                    tokens.push(error);
+                }
             }
             Tag::Text { text } => {
                 if *idx == 0 {
                     node_order.push(0);
-                    parent_stack.push(0);
+                    // TODO: This is just a consequence of bad code. We're pushing this to make
+                    // things work but in reality a text node isn't a parent ever.
+                    // Just need to make the code DRY / refactor so that we can make things make
+                    // sense vs. just bolting things together.
+                    parent_stack.push((0, Ident::new("unused", Span::call_site())));
                 }
 
                 // TODO: Figure out how to use spans
@@ -150,12 +193,12 @@ impl HtmlParser {
                     return;
                 }
 
-                let parent_idx = parent_stack[parent_stack.len() - 1];
+                let parent_idx = &parent_stack[parent_stack.len() - 1];
 
                 node_order.push(*idx);
 
                 parent_to_children
-                    .get_mut(&parent_idx)
+                    .get_mut(&parent_idx.0)
                     .expect("Parent of this text node")
                     .push(*idx);
 
@@ -183,7 +226,7 @@ impl HtmlParser {
                     };
                     tokens.push(nodes);
 
-                    let parent_idx = parent_stack[parent_stack.len() - 1];
+                    let parent_idx = *&parent_stack[parent_stack.len() - 1].0;
 
                     parent_to_children
                         .get_mut(&parent_idx)
@@ -253,4 +296,20 @@ impl HtmlParser {
             }
         }
     }
+}
+
+// TODO: Cache this as a HashSet inside of our parser
+fn is_self_closing(tag: &str) -> bool {
+    let whitelist = [
+        "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
+        "keygen", "source",
+    ];
+
+    for whitelisted in whitelist.iter() {
+        if &tag == whitelisted {
+            return true;
+        }
+    }
+
+    return false;
 }
