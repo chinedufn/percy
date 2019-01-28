@@ -30,7 +30,6 @@ fn on_input_custom() {
          }
          value="End Text"
      >
-     </input>
     };
 
     let input_event = InputEvent::new("input").unwrap();
