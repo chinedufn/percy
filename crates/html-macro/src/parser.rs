@@ -136,7 +136,7 @@ impl HtmlParser {
                 // For example, this should have been <br /> instead of </br>
                 if is_self_closing(&close_tag) {
                     let error = format!(
-                        r#"{} is a be a self closing tag. Try "<{}>" or "<{} />""#,
+                        r#"{} is a self closing tag. Try "<{}>" or "<{} />""#,
                         close_tag, close_tag, close_tag
                     );
                     let error = quote_spanned! {close_span=> {
