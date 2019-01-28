@@ -87,7 +87,7 @@ fn render_app() -> virtual_dom_rs::VirtualNode {
      <div>
       {some_component}
       {another_component}
-      <link rel="stylesheet" type="text/css" href="/app.css"></link>
+      <link rel="stylesheet" type="text/css" href="/app.css" />
     </div>
    }
 }
