@@ -14,8 +14,9 @@ interested in using it for real things you can [watch the development progress.]
 ### A snippet
 
 ```rust
-#[macro_use]
-extern crate virtual_dom_rs;
+#![feature(proc_macro_hygiene)]
+
+use virtual_dom_rs::prelude::*;
 
 // Percy supports events, classes, attributes a virtual dom
 // with diff/patch and everything else that you'd expect from
@@ -25,7 +26,7 @@ extern crate virtual_dom_rs;
 // some HTML on the server side.
 fn main () {
   let some_component = html! {
-    <div class="cool-component",>{ "Hello World" }</div>
+    <div class="cool-component">Hello World</div>
   };
 
   let html_string = some_component.to_string();
