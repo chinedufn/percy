@@ -133,10 +133,10 @@ impl Route {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use virtual_dom_rs::VirtualNode;
-    use virtual_dom_rs::html;
-    use std::rc::Rc;
     use std::cell::RefCell;
+    use std::rc::Rc;
+    use virtual_dom_rs::html;
+    use virtual_dom_rs::VirtualNode;
 
     struct MyView {
         id: u32,
@@ -237,19 +237,17 @@ mod tests {
         //        assert!(!route.matches("/users/not_a_u32"));
     }
 
-    struct Store {
-    }
+    struct Store {}
 
     // TODO: Plan out how to provide a state store to routes on paper. Probably some sort of generic
     // StateStore<T> where T is your applications Store
-//    #[route(path = "/users/:id")]
+    //    #[route(path = "/users/:id")]
     struct ViewWithStore {
         id: u32,
-        store: Rc<RefCell<Store>>
+        store: Rc<RefCell<Store>>,
     }
 
     // TODO
     #[test]
-    fn provide_state_store() {
-    }
+    fn provide_state_store() {}
 }

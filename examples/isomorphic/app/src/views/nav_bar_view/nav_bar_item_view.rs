@@ -50,7 +50,7 @@ impl View for NavBarItemView {
     }
 }
 
-static NAV_BAR_ITEM_CSS: &'static str = css!{"
+static NAV_BAR_ITEM_CSS: &'static str = css! {"
 :host {
     border-bottom: solid transparent 3px;
     cursor: pointer;

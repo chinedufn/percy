@@ -115,33 +115,33 @@ fn increment_node_idx_for_children<'a, 'b>(old: &'a VirtualNode, cur_node_idx: &
 }
 
 #[cfg(test)]
+mod diff_test_case;
+#[cfg(test)]
+use self::diff_test_case::*;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::html;
     use std::collections::HashMap;
 
-    struct DiffTestCase<'a> {
-        old: VirtualNode,
-        new: VirtualNode,
-        expected: Vec<Patch<'a>>,
-        description: &'static str,
-    }
-
     #[test]
     fn replace_node() {
-        test(DiffTestCase {
+        DiffTestCase {
             old: html! { <div> </div> },
             new: html! { <span> </span> },
             expected: vec![Patch::Replace(0, &html! { <span></span> })],
             description: "Replace the root if the tag changed",
-        });
-        test(DiffTestCase {
+        }
+        .test();
+        DiffTestCase {
             old: html! { <div> <b></b> </div> },
             new: html! { <div> <strong></strong> </div> },
             expected: vec![Patch::Replace(1, &html! { <strong></strong> })],
             description: "Replace a child node",
-        });
-        test(DiffTestCase {
+        }
+        .test();
+        DiffTestCase {
             old: html! { <div> <b>1</b> <b></b> </div> },
             new: html! { <div> <i>1</i> <i></i> </div>},
             expected: vec![
@@ -149,28 +149,31 @@ mod tests {
                 Patch::Replace(3, &html! { <i></i> }),
             ], //required to check correct index
             description: "Replace node with a chiild",
-        });
+        }
+        .test();
     }
 
     #[test]
     fn add_children() {
-        test(DiffTestCase {
+        DiffTestCase {
             old: html! { <div> <b></b> </div> },
             new: html! { <div> <b></b> <new></new> </div> },
             expected: vec![Patch::AppendChildren(0, vec![&html! { <new></new> }])],
             description: "Added a new node to the root node",
-        });
+        }
+        .test();
     }
 
     #[test]
     fn remove_nodes() {
-        test(DiffTestCase {
+        DiffTestCase {
             old: html! { <div> <b></b> <span></span> </div> },
             new: html! { <div> </div> },
             expected: vec![Patch::TruncateChildren(0, 0)],
             description: "Remove all child nodes at and after child sibling index 1",
-        });
-        test(DiffTestCase {
+        }
+        .test();
+        DiffTestCase {
             old: html! {
             <div>
              <span>
@@ -189,8 +192,9 @@ mod tests {
             </div> },
             expected: vec![Patch::TruncateChildren(0, 1), Patch::TruncateChildren(1, 1)],
             description: "Remove a child and a grandchild node",
-        });
-        test(DiffTestCase {
+        }
+        .test();
+        DiffTestCase {
             old: html! { <div> <b> <i></i> <i></i> </b> <b></b> </div> },
             new: html! { <div> <b> <i></i> </b> <i></i> </div>},
             expected: vec![
@@ -198,7 +202,8 @@ mod tests {
                 Patch::Replace(4, &html! { <i></i> }),
             ], //required to check correct index
             description: "Removing child and change next node after parent",
-        });
+        }
+        .test();
     }
 
     #[test]
@@ -206,29 +211,32 @@ mod tests {
         let mut attributes = HashMap::new();
         attributes.insert("id", "hello");
 
-        test(DiffTestCase {
+        DiffTestCase {
             old: html! { <div> </div> },
             new: html! { <div id="hello"> </div> },
             expected: vec![Patch::AddAttributes(0, attributes.clone())],
             description: "Add attributes",
-        });
+        }
+        .test();
 
-        test(DiffTestCase {
+        DiffTestCase {
             old: html! { <div id="foobar"> </div> },
             new: html! { <div id="hello"> </div> },
             expected: vec![Patch::AddAttributes(0, attributes)],
             description: "Change attribute",
-        });
+        }
+        .test();
     }
 
     #[test]
     fn remove_attributes() {
-        test(DiffTestCase {
+        DiffTestCase {
             old: html! { <div id="hey-there"></div> },
             new: html! { <div> </div> },
             expected: vec![Patch::RemoveAttributes(0, vec!["id"])],
             description: "Add attributes",
-        })
+        }
+        .test();
     }
 
     #[test]
@@ -236,12 +244,13 @@ mod tests {
         let mut attributes = HashMap::new();
         attributes.insert("id", "changed");
 
-        test(DiffTestCase {
+        DiffTestCase {
             old: html! { <div id="hey-there"></div> },
             new: html! { <div id="changed"> </div> },
             expected: vec![Patch::AddAttributes(0, attributes)],
             description: "Add attributes",
-        })
+        }
+        .test();
     }
 
     //    // TODO: Key support
@@ -280,17 +289,12 @@ mod tests {
 
     #[test]
     fn replace_text_node() {
-        test(DiffTestCase {
+        DiffTestCase {
             old: html! { Old },
             new: html! { New },
             expected: vec![Patch::ChangeText(0, &html! { New })],
             description: "Replace text node",
-        })
-    }
-
-    fn test(test_case: DiffTestCase) {
-        let patches = diff(&test_case.old, &test_case.new);
-
-        assert_eq!(patches, test_case.expected, "{}", test_case.description);
+        }
+        .test();
     }
 }

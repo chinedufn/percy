@@ -57,4 +57,3 @@ fn click_event() {
 
     assert_eq!(*clicked, Cell::new(true));
 }
-

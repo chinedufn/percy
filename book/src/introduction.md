@@ -1,5 +1,7 @@
 # Introduction
 
+> Note: The book is a work in progress. Some chapters are empty placeholders that will be filled in over time.
+
 `Percy` is a modular toolkit for building isomorphic web apps with Rust + WebAssembly.
 
 Modular in the sense that a big design focus is being able to replace different

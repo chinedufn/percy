@@ -59,4 +59,3 @@ static NAV_BAR_CSS: &'static str = css! {"
     padding-right: 30px;
 }
 "};
-

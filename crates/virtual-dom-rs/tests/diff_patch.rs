@@ -4,18 +4,12 @@ extern crate wasm_bindgen_test;
 extern crate web_sys;
 use wasm_bindgen_test::*;
 
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 use virtual_dom_rs::prelude::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
-struct DiffPatchTest {
-    desc: &'static str,
-    old: VirtualNode,
-    new: VirtualNode,
-    override_expected: Option<String>,
-}
+mod diff_patch_test_case;
+use self::diff_patch_test_case::DiffPatchTest;
 
 #[wasm_bindgen_test]
 fn replace_child() {
@@ -161,59 +155,13 @@ fn replace_with_children() {
 }
 
 // https://github.com/chinedufn/percy/issues/62
-#[wasm_bindgen_test]
-fn issue_62() {
-    DiffPatchTest {
-        desc: "Fix issue #62",
-        old: html! { <span><br></span> },
-        new: html! { <span>a<br></span> },
-        override_expected: None,
-    }
-        .test();
-}
-
-
-impl DiffPatchTest {
-    fn test(&mut self) {
-        let document = web_sys::window().unwrap().document().unwrap();
-
-        // If we haven't set an id for our element we hash the description of the test and set
-        // that as the ID.
-        // We need an ID in order to find the element within the DOM, otherwise we couldn't run
-        // our assertions.
-        if self.old.props.get("id").is_none() {
-            let mut hashed_desc = DefaultHasher::new();
-
-            self.desc.hash(&mut hashed_desc);
-
-            self.old
-                .props
-                .insert("id".to_string(), hashed_desc.finish().to_string());
-        }
-
-        // Add our old node into the DOM
-        let root_node = self.old.create_element().element;
-        document.body().unwrap().append_child(&root_node).unwrap();
-
-        let elem_id = self.old.props.get("id").unwrap().clone();
-        // This is our root node that we're about to patch.
-        // It isn't actually patched yet.. but by the time we use this it will be.
-        let patched_element = document.get_element_by_id(&elem_id).unwrap();
-
-        let patches = virtual_dom_rs::diff(&self.old, &self.new);
-
-        virtual_dom_rs::patch(root_node, &patches);
-
-        let expected_new_root_node = match self.override_expected {
-            Some(ref expected) => expected.clone(),
-            None => self.new.to_string(),
-        };
-
-        assert_eq!(
-            patched_element.outer_html(),
-            expected_new_root_node,
-            "{}",
-            self.desc
-        );
-    }
-}
+//#[wasm_bindgen_test]
+//fn issue_62() {
+//    DiffPatchTest {
+//        desc: "Fix issue #62",
+//        old: html! { <span> <br> </span> },
+//        new: html! { <span> a <br> </span> },
+//        override_expected: None,
+//    }
+//    .test();
+//}

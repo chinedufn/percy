@@ -22,7 +22,7 @@ mod tests {
         }
         "#};
 
-        let class2 = css!{r#"
+        let class2 = css! {r#"
         :host {
             color: red;
         }

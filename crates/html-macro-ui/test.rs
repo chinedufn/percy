@@ -4,9 +4,9 @@
 
 extern crate compiletest_rs as compiletest;
 
-use std::path::PathBuf;
 use std::env;
 use std::fs;
+use std::path::PathBuf;
 
 /// Tests that ensure that we print out compile time error messages for different
 /// scenarios of malformed html!

@@ -33,7 +33,6 @@ fn struggling_water_bottle(percent_full: f32) -> VirtualNode {
     }
 }
 
-
 #[allow(unused)]
 fn water_bottle_view(percent_full: f32) -> VirtualNode {
     if percent_full > 0.5 {

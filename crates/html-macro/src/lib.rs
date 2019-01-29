@@ -1,10 +1,10 @@
 extern crate proc_macro;
 
 use crate::parser::HtmlParser;
-use crate::tag::{Tag};
+use crate::tag::Tag;
 use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{parse_macro_input, Expr,};
+use syn::{parse_macro_input, Expr};
 
 mod parser;
 mod tag;
@@ -52,4 +52,3 @@ impl Parse for Html {
         Ok(Html { tags })
     }
 }
-

@@ -26,10 +26,12 @@ fn patches_dom() {
     let vdom = html! { <div></div> };
     let mut dom_updater = DomUpdater::new(vdom);
 
-
     let new_vdom = html! { <div id="patched"></div> };
     dom_updater.update(new_vdom);
 
-    document.body().unwrap().append_child(&dom_updater.root_node());
+    document
+        .body()
+        .unwrap()
+        .append_child(&dom_updater.root_node());
     assert_eq!(document.query_selector("#patched").unwrap().is_some(), true);
 }

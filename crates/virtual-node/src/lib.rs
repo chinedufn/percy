@@ -19,9 +19,9 @@ pub mod virtual_node_test_utils;
 use web_sys;
 use web_sys::*;
 
+use std::str::FromStr;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use std::str::FromStr;
 
 use lazy_static::lazy_static;
 
@@ -64,7 +64,6 @@ pub struct VirtualNode {
     /// When patching these into a real DOM these use `document.createTextNode(text)`
     pub text: Option<String>,
 }
-
 
 impl VirtualNode {
     /// Create a new virtual node with a given tag.
@@ -146,9 +145,9 @@ impl VirtualNode {
         let element = document.create_element(&self.tag).unwrap();
         let mut closures = HashMap::new();;
 
-
         self.props.iter().for_each(|(name, value)| {
-            element.set_attribute(name, value)
+            element
+                .set_attribute(name, value)
                 .expect("Set element attribute in create element");
         });
 
@@ -216,16 +215,11 @@ impl VirtualNode {
 
                 closures.extend(child.closures);
 
-                element
-                    .append_child(&child_elem)
-                    .unwrap();
+                element.append_child(&child_elem).unwrap();
             }
         });
 
-        CreatedElement {
-            element,
-            closures
-        }
+        CreatedElement { element, closures }
     }
 
     /// Return a `Text` element from a `VirtualNode`, typically right before adding it
@@ -240,7 +234,6 @@ impl VirtualNode {
         self.text.is_some()
     }
 }
-
 
 impl From<&str> for VirtualNode {
     fn from(text: &str) -> Self {
@@ -328,17 +321,17 @@ mod tests {
     use super::*;
 
     // TODO: Use html_macro as dev dependency and uncomment
-//    #[test]
-//    fn to_string() {
-//        let node = html! {
-//        <div id="some-id", !onclick=|_ev| {},>
-//            <span>
-//                { "Hello world" }
-//            </span>
-//        </div>
-//        };
-//        let expected = r#"<div id="some-id"><span>Hello world</span></div>"#;
-//
-//        assert_eq!(node.to_string(), expected);
-//    }
+    //    #[test]
+    //    fn to_string() {
+    //        let node = html! {
+    //        <div id="some-id", !onclick=|_ev| {},>
+    //            <span>
+    //                { "Hello world" }
+    //            </span>
+    //        </div>
+    //        };
+    //        let expected = r#"<div id="some-id"><span>Hello world</span></div>"#;
+    //
+    //        assert_eq!(node.to_string(), expected);
+    //    }
 }

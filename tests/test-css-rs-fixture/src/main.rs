@@ -12,7 +12,7 @@ fn main() {
     }
     "#};
 
-    let class2 = css!{"
+    let class2 = css! {"
     :host {
         display: flex;
     }
