@@ -160,6 +160,19 @@ fn replace_with_children() {
     .test();
 }
 
+// https://github.com/chinedufn/percy/issues/62
+#[wasm_bindgen_test]
+fn issue_62() {
+    DiffPatchTest {
+        desc: "Fix issue #62",
+        old: html! { <span><br></span> },
+        new: html! { <span>a<br></span> },
+        override_expected: None,
+    }
+        .test();
+}
+
+
 impl DiffPatchTest {
     fn test(&mut self) {
         let document = web_sys::window().unwrap().document().unwrap();
