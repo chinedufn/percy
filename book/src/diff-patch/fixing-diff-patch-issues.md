@@ -30,7 +30,7 @@ If you'd like to go further, here's how to get to the root of the problem.
 The easiest place to start is by adding a new diff test and seeing what patches you get.
 
 ```rust
-{{#include ../../../crates/virtual-dom-rs/src/diff/diff_test_case.rs}}
+{{#include ../../../crates/virtual-dom-rs/src/diff/diff_test_case.rs:2:}}
 ```
 
 Diff patch tests get added in `diff.rs`. Here's an example:
@@ -81,7 +81,7 @@ A patch test case looks like this:
 // Example diff patch test case.
 // Found in `crates/virtual-dom-rs/tests/diff_patch.rs`
 
-{{#include ../../../crates/virtual-dom-rs/tests/diff_patch_test_case/mod.rs}}
+{{#include ../../../crates/virtual-dom-rs/tests/diff_patch.rs:14:27}}
 ```
 
 ```
