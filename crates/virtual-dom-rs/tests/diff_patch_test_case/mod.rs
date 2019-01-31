@@ -8,14 +8,14 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 /// A test case that both diffing and patching are working in a real browser
-pub struct DiffPatchTest {
+pub struct DiffPatchTest<'a> {
     pub desc: &'static str,
     pub old: VirtualNode,
     pub new: VirtualNode,
-    pub override_expected: Option<String>,
+    pub override_expected: Option<&'a str>,
 }
 
-impl DiffPatchTest {
+impl<'a> DiffPatchTest<'a> {
     pub fn test(&mut self) {
         console_error_panic_hook::set_once();
 
@@ -49,14 +49,19 @@ impl DiffPatchTest {
 
         virtual_dom_rs::patch(root_node, &patches);
 
-        let expected_new_root_node = match self.override_expected {
-            Some(ref expected) => expected.clone(),
-            None => self.new.to_string(),
-        };
+        let expected_new_root_node = self.new.to_string();
+        let mut expected_new_root_node = expected_new_root_node.as_str();
+
+        if let Some(ref expected) = self.override_expected {
+            expected_new_root_node = expected;
+        }
+
+        web_sys::console::log_1(&format!("NEW NODE {:#?}", patched_element.outer_html()).into());
+        web_sys::console::log_1(&format!("Outter HTML {:#?}", expected_new_root_node).into());
 
         assert_eq!(
-            patched_element.outer_html(),
-            expected_new_root_node,
+            &patched_element.outer_html(),
+            &expected_new_root_node,
             "{}",
             self.desc
         );

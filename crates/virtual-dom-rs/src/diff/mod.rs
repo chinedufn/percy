@@ -253,6 +253,17 @@ mod tests {
         .test();
     }
 
+    #[test]
+    fn replace_text_node() {
+        DiffTestCase {
+            old: html! { Old },
+            new: html! { New },
+            expected: vec![Patch::ChangeText(0, &html! { New })],
+            description: "Replace text node",
+        }
+        .test();
+    }
+
     //    // TODO: Key support
     //    #[test]
     //    fn reorder_chldren() {
@@ -287,14 +298,4 @@ mod tests {
     //        })
     //    }
 
-    #[test]
-    fn replace_text_node() {
-        DiffTestCase {
-            old: html! { Old },
-            new: html! { New },
-            expected: vec![Patch::ChangeText(0, &html! { New })],
-            description: "Replace text node",
-        }
-        .test();
-    }
 }
