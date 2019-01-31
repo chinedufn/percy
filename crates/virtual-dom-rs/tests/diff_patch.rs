@@ -92,7 +92,6 @@ fn text_node_siblings() {
     // @see virtual_node/mod.rs -> create_element() for more information
     let override_expected = Some(
         r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#
-            .to_string(),
     );
 
     let old1 = VirtualNode::text("The button has been clicked: ");
@@ -155,13 +154,13 @@ fn replace_with_children() {
 }
 
 // https://github.com/chinedufn/percy/issues/62
-//#[wasm_bindgen_test]
-//fn issue_62() {
-//    DiffPatchTest {
-//        desc: "Fix issue #62",
-//        old: html! { <span> <br> </span> },
-//        new: html! { <span> a <br> </span> },
-//        override_expected: None,
-//    }
-//    .test();
-//}
+#[wasm_bindgen_test]
+fn replace_element_with_text_node() {
+    DiffPatchTest {
+        desc: "#62: Replace element with text node",
+        old: html! { <span> <br> </span> },
+        new: html! { <span> a </span> },
+        override_expected: None
+    }
+    .test();
+}

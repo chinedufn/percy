@@ -264,21 +264,6 @@ mod tests {
         .test();
     }
 
-    // https://github.com/chinedufn/percy/issues/62
-    #[test]
-    fn issue_62() {
-        DiffTestCase {
-            old: html! { <span> <br /> </span> },
-            new: html! { <span> a <br /> </span> },
-            expected: vec![
-                Patch::Replace(1, &VirtualNode::text("a")),
-                Patch::AppendChildren(0, vec![&VirtualNode::new("br")]),
-            ],
-            description: "Replace text node",
-        }
-        .test();
-    }
-
     //    // TODO: Key support
     //    #[test]
     //    fn reorder_chldren() {

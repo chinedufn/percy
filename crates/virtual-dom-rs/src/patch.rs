@@ -188,8 +188,13 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
             }
         }
         Patch::Replace(_node_idx, new_node) => {
-            node.replace_with_with_node_1(&new_node.create_element())
-                .expect("Replaced element");
+            if new_node.is_text_node() {
+                node.replace_with_with_node_1(&new_node.create_text_node())
+                    .expect("Replaced with text node");
+            } else {
+                node.replace_with_with_node_1(&new_node.create_element())
+                    .expect("Replaced with element");
+            }
         }
         Patch::TruncateChildren(_node_idx, num_children_remaining) => {
             let children = node.child_nodes();

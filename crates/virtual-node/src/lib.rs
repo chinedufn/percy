@@ -10,7 +10,7 @@
 // Around in order to get rid of dependencies that we don't need in non wasm32 targets
 
 pub use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashSet,HashMap};
 use std::fmt;
 pub use std::rc::Rc;
 
@@ -28,12 +28,28 @@ use lazy_static::lazy_static;
 use std::ops::Deref;
 use std::sync::Mutex;
 
+
 // Used to uniquely identify elements that contain closures so that the DomUpdater can
 // look them up by their unique id.
 // When the DomUpdater sees that the element no longer exists it will drop all of it's
 // Rc'd Closures for those events.
 lazy_static! {
     static ref ELEM_UNIQUE_ID: Mutex<u32> = Mutex::new(0);
+
+    static ref SELF_CLOSING_TAGS: HashSet<&'static str> = {
+        let mut set = HashSet::new();
+
+        let mut self_closing = vec![
+            "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
+            "keygen", "source",
+        ];
+
+        for tag in self_closing {
+            set.insert(tag);
+        }
+
+        set
+    };
 }
 
 /// When building your views you'll typically use the `html!` macro to generate
@@ -233,6 +249,11 @@ impl VirtualNode {
     pub fn is_text_node(&self) -> bool {
         self.text.is_some()
     }
+
+    /// Whether or not this is a self closing tag such as <br> or <img />
+    pub fn is_self_closing(&self) -> bool {
+        SELF_CLOSING_TAGS.contains(self.tag.as_str())
+    }
 }
 
 impl From<&str> for VirtualNode {
@@ -288,7 +309,12 @@ impl fmt::Display for VirtualNode {
             for child in self.children.as_ref().unwrap().iter() {
                 write!(f, "{}", child.to_string())?;
             }
-            write!(f, "</{}>", self.tag)
+
+            if !self.is_self_closing() {
+                write!(f, "</{}>", self.tag)?;
+            }
+
+            Ok(())
         }
     }
 }
@@ -319,6 +345,14 @@ impl fmt::Debug for Events {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn self_closing_tag_to_string() {
+        let node = VirtualNode::new("br");
+
+        // No </br> since self closing tag
+        assert_eq!(&node.to_string(), "<br>");
+    }
 
     // TODO: Use html_macro as dev dependency and uncomment
     //    #[test]
