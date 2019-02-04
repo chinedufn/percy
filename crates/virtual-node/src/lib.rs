@@ -1,7 +1,7 @@
 //! The virtual_node module exposes the `VirtualNode` struct and methods that power our
 //! virtual dom.
 
-// TODO: A few of thse dependencies (including js_sys) are used to power events.. yet events
+// TODO: A few of these dependencies (including js_sys) are used to power events.. yet events
 // only work on wasm32 targest. So we should start sprinkling some
 //
 // #[cfg(target_arch = "wasm32")]
@@ -35,20 +35,10 @@ use std::sync::Mutex;
 lazy_static! {
     static ref ELEM_UNIQUE_ID: Mutex<u32> = Mutex::new(0);
 
-    static ref SELF_CLOSING_TAGS: HashSet<&'static str> = {
-        let mut set = HashSet::new();
-
-        let mut self_closing = vec![
-            "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
-            "keygen", "source",
-        ];
-
-        for tag in self_closing {
-            set.insert(tag);
-        }
-
-        set
-    };
+    static ref SELF_CLOSING_TAGS: HashSet<&'static str> = [
+        "area", "base", "br", "col", "hr", "img", "input", "link", "meta",
+        "param", "command", "keygen", "source",
+    ].iter().cloned().collect();
 }
 
 /// When building your views you'll typically use the `html!` macro to generate
@@ -169,7 +159,9 @@ impl VirtualNode {
         if self.events.0.len() > 0 {
             let unique_id = create_unique_identifier();
 
-            element.set_attribute("data-vdom-id".into(), &unique_id.to_string());
+            element
+                .set_attribute("data-vdom-id".into(), &unique_id.to_string())
+                .expect("Could not set attribute on element");
 
             closures.insert(unique_id, vec![]);
 
@@ -225,7 +217,7 @@ impl VirtualNode {
             } else {
                 previous_node_was_text = false;
 
-                let mut child = child.create_element();
+                let child = child.create_element();
                 let child_elem = child.element;
 
                 closures.extend(child.closures);
