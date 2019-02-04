@@ -160,7 +160,9 @@ impl VirtualNode {
         if self.events.0.len() > 0 {
             let unique_id = create_unique_identifier();
 
-            element.set_attribute("data-vdom-id".into(), &unique_id.to_string());
+            element
+                .set_attribute("data-vdom-id".into(), &unique_id.to_string())
+                .expect("Could not set attribute on element");
 
             closures.insert(unique_id, vec![]);
 
@@ -216,7 +218,7 @@ impl VirtualNode {
             } else {
                 previous_node_was_text = false;
 
-                let mut child = child.create_element();
+                let child = child.create_element();
                 let child_elem = child.element;
 
                 closures.extend(child.closures);
