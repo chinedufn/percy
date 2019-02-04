@@ -56,9 +56,6 @@ impl<'a> DiffPatchTest<'a> {
             expected_new_root_node = expected;
         }
 
-        web_sys::console::log_1(&format!("NEW NODE {:#?}", patched_element.outer_html()).into());
-        web_sys::console::log_1(&format!("Outter HTML {:#?}", expected_new_root_node).into());
-
         assert_eq!(
             &patched_element.outer_html(),
             &expected_new_root_node,
