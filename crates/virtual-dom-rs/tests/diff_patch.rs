@@ -1,3 +1,9 @@
+//! Tests that ensure that diffing and patching work properly in a real browser.
+//!
+//! To run all tests in this file:
+//!
+//! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch
+
 #![feature(proc_macro_hygiene)]
 
 extern crate wasm_bindgen_test;
@@ -90,9 +96,8 @@ fn text_node_siblings() {
     // NOTE: Since there are two text nodes next to eachother we expect a `<!--ptns-->` separator in
     // between them.
     // @see virtual_node/mod.rs -> create_element() for more information
-    let override_expected = Some(
-        r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#
-    );
+    let override_expected =
+        Some(r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#);
 
     let old1 = VirtualNode::text("The button has been clicked: ");
     let old2 = VirtualNode::text("hello");
@@ -160,7 +165,19 @@ fn replace_element_with_text_node() {
         desc: "#62: Replace element with text node",
         old: html! { <span> <br> </span> },
         new: html! { <span> a </span> },
-        override_expected: None
+        override_expected: None,
     }
     .test();
 }
+
+//// https://github.com/chinedufn/percy/issues/68
+//#[wasm_bindgen_test]
+//fn text_root_node() {
+//    DiffPatchTest {
+//        desc: "Patching of text root node works",
+//        old: html! { Old text },
+//        new: html! { New text },
+//        override_expected: None,
+//    }
+//        .test();
+//}

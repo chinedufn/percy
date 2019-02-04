@@ -92,7 +92,7 @@ wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch my
 wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch replace
 
 # Run all diff patch tests
-wasm-pack test crates/virtual-dom-rs --chrome --headless
+wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch
 ```
 
 Create your new test case and run it to see if things fail.

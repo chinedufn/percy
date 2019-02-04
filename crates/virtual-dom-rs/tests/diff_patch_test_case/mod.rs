@@ -1,11 +1,7 @@
 //! Kept in its own file to more easily import into the book
 
 use console_error_panic_hook;
-
 use virtual_dom_rs::prelude::*;
-
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 
 /// A test case that both diffing and patching are working in a real browser
 pub struct DiffPatchTest<'a> {
@@ -21,44 +17,25 @@ impl<'a> DiffPatchTest<'a> {
 
         let document = web_sys::window().unwrap().document().unwrap();
 
-        // If we haven't set an id for our element we hash the description of the test and set
-        // that as the ID.
-        // We need an ID in order to find the element within the DOM, otherwise we couldn't run
-        // our assertions.
-        if self.old.props.get("id").is_none() {
-            let mut hashed_desc = DefaultHasher::new();
-
-            self.desc.hash(&mut hashed_desc);
-
-            self.old
-                .props
-                .insert("id".to_string(), hashed_desc.finish().to_string());
-        }
-
         // Add our old node into the DOM
         let root_node = self.old.create_element().element;
-        document.body().unwrap().append_child(&root_node).unwrap();
-
-        let elem_id = self.old.props.get("id").unwrap().clone();
-
-        // This is our root node that we're about to patch.
-        // It isn't actually patched yet.. but by the time we use this it will be.
-        let patched_element = document.get_element_by_id(&elem_id).unwrap();
+        // Clone since virtual_dom_rs::patch takes ownership of the root node.
+        let patched_root_node = root_node.clone();
 
         let patches = virtual_dom_rs::diff(&self.old, &self.new);
 
+        // Patch our root node. It should now look like `self.new`
         virtual_dom_rs::patch(root_node, &patches);
 
-        let expected_new_root_node = self.new.to_string();
-        let mut expected_new_root_node = expected_new_root_node.as_str();
-
-        if let Some(ref expected) = self.override_expected {
-            expected_new_root_node = expected;
-        }
+        let expected_outer_html = if let Some(ref expected) = self.override_expected {
+            expected.to_string()
+        } else {
+            self.new.to_string()
+        };
 
         assert_eq!(
-            &patched_element.outer_html(),
-            &expected_new_root_node,
+            &patched_root_node.outer_html(),
+            &expected_outer_html,
             "{}",
             self.desc
         );
