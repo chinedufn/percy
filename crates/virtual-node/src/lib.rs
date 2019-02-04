@@ -16,8 +16,7 @@ pub use std::rc::Rc;
 
 pub mod virtual_node_test_utils;
 
-use web_sys;
-use web_sys::*;
+use web_sys::{self, Text, Element, Node, EventTarget};
 
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -54,8 +53,16 @@ lazy_static! {
 /// in order to recursively render the node and all of its children.
 ///
 /// TODO: Make all of these fields private and create accessor methods
+#[derive(Debug, PartialEq)]
+pub enum VirtualNode {
+    /// An element node (node type `ELEMENT_NODE`).
+    Element(VirtualNodeElement),
+    /// A text node (node type `TEXT_NODE`).
+    Text(VirtualNodeText),
+}
+
 #[derive(PartialEq)]
-pub struct VirtualNode {
+pub struct VirtualNodeElement {
     /// The HTML tag, such as "div"
     pub tag: String,
     /// HTML props such as id, class, style, etc
@@ -65,9 +72,11 @@ pub struct VirtualNode {
     /// The children of this `VirtualNode`. So a <div> <em></em> </div> structure would
     /// have a parent div and one child, em.
     pub children: Option<Vec<VirtualNode>>,
-    /// Some(String) if this is a [text node](https://developer.mozilla.org/en-US/docs/Web/API/Text).
-    /// When patching these into a real DOM these use `document.createTextNode(text)`
-    pub text: Option<String>,
+}
+
+#[derive(PartialEq)]
+pub struct VirtualNodeText {
+    pub text: String,
 }
 
 impl VirtualNode {
@@ -83,12 +92,20 @@ impl VirtualNode {
     pub fn new(tag: &str) -> VirtualNode {
         let props = HashMap::new();
         let custom_events = Events(HashMap::new());
-        VirtualNode {
+        VirtualNode::Element(VirtualNodeElement {
             tag: tag.to_string(),
             props,
             events: custom_events,
             children: Some(vec![]),
-            text: None,
+        })
+    }
+
+    /// Create and return a `CreatedNode` instance (containing a DOM `Node`
+    /// together with potentially related closures) for this virtual node.
+    pub fn create_dom_node(&self) -> CreatedNode {
+        match self {
+            VirtualNode::Text(text_node) => CreatedNode::without_closures(text_node.create_text_node()),
+            VirtualNode::Element(element_node) => element_node.create_element_node().into(),
         }
     }
 
@@ -101,54 +118,34 @@ impl VirtualNode {
     ///
     /// let div = VirtualNode::text("div");
     /// ```
+    #[deprecated(note = "Use the .into() method on a string or string slice instead")] // TODO remove
     pub fn text(text: &str) -> VirtualNode {
-        VirtualNode {
-            tag: "".to_string(),
-            props: HashMap::new(),
-            events: Events(HashMap::new()),
-            children: Some(vec![]),
-            text: Some(text.to_string()),
+        text.into()
+    }
+
+    /// Whether or not this `VirtualNode` is representing a `Text` node
+    #[deprecated(note="Use enum matching instead")]  // TODO remove this method
+    pub fn is_text_node(&self) -> bool {
+        match self {
+            VirtualNode::Text(_) => true,
+            _ => false,
         }
     }
 }
 
-/// A web_sys::Element along with all of the closures that were created for that element's
-/// events and all of it's child element's events.
-pub struct CreatedElement {
-    /// An Element that was created from a VirtualNode
-    pub element: Element,
-    /// A map of an element's unique identifier along with all of the Closures for that element.
-    ///
-    /// The DomUpdater uses this to look up elements and see if they're still in the page. If not
-    /// the refernce that we maintain to their closure will be dropped, thus freeing the Closure's
-    /// memory.
-    pub closures: HashMap<u32, Vec<DynClosure>>,
-}
-
-impl Deref for CreatedElement {
-    type Target = Element;
-
-    fn deref(&self) -> &Self::Target {
-        &self.element
+impl VirtualNodeElement {
+    /// Whether or not this is a self closing tag such as <br> or <img />
+    pub fn is_self_closing(&self) -> bool {
+        SELF_CLOSING_TAGS.contains(self.tag.as_str())
     }
-}
 
-fn create_unique_identifier() -> u32 {
-    let mut elem_unique_id = ELEM_UNIQUE_ID.lock().unwrap();
-
-    *elem_unique_id += 1;
-
-    *elem_unique_id
-}
-
-impl VirtualNode {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
-    pub fn create_element(&self) -> CreatedElement {
+    pub fn create_element_node(&self) -> CreatedElement {
         let document = web_sys::window().unwrap().document().unwrap();
 
         let element = document.create_element(&self.tag).unwrap();
-        let mut closures = HashMap::new();;
+        let mut closures = HashMap::new();
 
         self.props.iter().for_each(|(name, value)| {
             element
@@ -188,78 +185,149 @@ impl VirtualNode {
         let mut previous_node_was_text = false;
 
         self.children.as_ref().unwrap().iter().for_each(|child| {
-            if child.is_text_node() {
-                let current_node = element.as_ref() as &web_sys::Node;
+            match child {
+                VirtualNode::Text(text_node) => {
+                    let current_node = element.as_ref() as &web_sys::Node;
 
-                // We ensure that the text siblings are patched by preventing the browser from merging
-                // neighboring text nodes. Originally inspired by some of React's work from 2016.
-                //  -> https://reactjs.org/blog/2016/04/07/react-v15.html#major-changes
-                //  -> https://github.com/facebook/react/pull/5753
-                //
-                // `ptns` = Percy text node separator
-                if previous_node_was_text {
-                    let separator = document.create_comment("ptns");
+                    // We ensure that the text siblings are patched by preventing the browser from merging
+                    // neighboring text nodes. Originally inspired by some of React's work from 2016.
+                    //  -> https://reactjs.org/blog/2016/04/07/react-v15.html#major-changes
+                    //  -> https://github.com/facebook/react/pull/5753
+                    //
+                    // `ptns` = Percy text node separator
+                    if previous_node_was_text {
+                        let separator = document.create_comment("ptns");
+                        current_node
+                            .append_child(separator.as_ref() as &web_sys::Node)
+                            .unwrap();
+                    }
 
                     current_node
-                        .append_child(separator.as_ref() as &web_sys::Node)
+                        .append_child(&text_node.create_text_node())
                         .unwrap();
-                }
 
-                current_node
-                    .append_child(
-                        document
-                            .create_text_node(&child.text.as_ref().unwrap())
-                            .as_ref() as &web_sys::Node,
-                    )
-                    .unwrap();
+                    previous_node_was_text = true;
+                },
+                VirtualNode::Element(element_node) => {
+                    previous_node_was_text = false;
 
-                previous_node_was_text = true;
-            } else {
-                previous_node_was_text = false;
+                    let child = element_node.create_element_node();
+                    let child_elem = child.element;
 
-                let child = child.create_element();
-                let child_elem = child.element;
+                    closures.extend(child.closures);
 
-                closures.extend(child.closures);
-
-                element.append_child(&child_elem).unwrap();
+                    element.append_child(&child_elem).unwrap();
+                },
             }
         });
 
         CreatedElement { element, closures }
     }
 
+}
+
+impl VirtualNodeText {
     /// Return a `Text` element from a `VirtualNode`, typically right before adding it
     /// into the DOM.
     pub fn create_text_node(&self) -> Text {
         let document = web_sys::window().unwrap().document().unwrap();
-        document.create_text_node(&self.text.as_ref().unwrap())
+        document.create_text_node(&self.text)
     }
+}
 
-    /// Whether or not this `VirtualNode` is representing a `Text` node
-    pub fn is_text_node(&self) -> bool {
-        self.text.is_some()
-    }
+/// A `web_sys::Element` along with all of the closures that were created for that element's
+/// events and all of it's child element's events.
+pub struct CreatedElement {
+    /// An Element that was created from a VirtualNode
+    pub element: Element,
+    /// A map of an element's unique identifier along with all of the Closures for that element.
+    ///
+    /// The DomUpdater uses this to look up elements and see if they're still in the page. If not
+    /// the reference that we maintain to their closure will be dropped, thus freeing the Closure's
+    /// memory.
+    pub closures: HashMap<u32, Vec<DynClosure>>,
+}
 
-    /// Whether or not this is a self closing tag such as <br> or <img />
-    pub fn is_self_closing(&self) -> bool {
-        SELF_CLOSING_TAGS.contains(self.tag.as_str())
+impl Deref for CreatedElement {
+    type Target = Element;
+    fn deref(&self) -> &Self::Target {
+        &self.element
     }
+}
+
+/// A `web_sys::Node` along with all of the closures that were created for that
+/// node's events and all of it's child node's events.
+pub struct CreatedNode {
+    /// A Node` that was created from a `VirtualNode`
+    pub node: Node,
+    /// A map of a node's unique identifier along with all of the Closures for that node.
+    ///
+    /// The DomUpdater uses this to look up nodes and see if they're still in the page. If not
+    /// the reference that we maintain to their closure will be dropped, thus freeing the Closure's
+    /// memory.
+    pub closures: HashMap<u32, Vec<DynClosure>>,
+}
+
+impl CreatedNode {
+    pub fn without_closures<N: Into<Node>>(node: N) -> Self {
+        CreatedNode {
+            node: node.into(),
+            closures: HashMap::with_capacity(0),
+        }
+    }
+}
+
+impl Deref for CreatedNode {
+    type Target = Node;
+    fn deref(&self) -> &Self::Target {
+        &self.node
+    }
+}
+
+impl Into<CreatedNode> for CreatedElement {
+    fn into(self: Self) -> CreatedNode {
+        CreatedNode {
+            node: self.element.into(),
+            closures: self.closures,
+        }
+    }
+}
+
+fn create_unique_identifier() -> u32 {
+    let mut elem_unique_id = ELEM_UNIQUE_ID.lock().unwrap();
+
+    *elem_unique_id += 1;
+
+    *elem_unique_id
 }
 
 impl From<&str> for VirtualNode {
     fn from(text: &str) -> Self {
-        VirtualNode::text(text)
+        VirtualNode::Text(text.into())
     }
 }
+
 impl From<String> for VirtualNode {
     fn from(text: String) -> Self {
-        VirtualNode::text(&text)
+        VirtualNode::Text(text.into())
     }
 }
+
 impl<'a> From<&'a String> for VirtualNode {
     fn from(text: &'a String) -> Self {
-        VirtualNode::text(text)
+        VirtualNode::Text((&**text).into())
+    }
+}
+
+impl From<&str> for VirtualNodeText {
+    fn from(text: &str) -> Self {
+        VirtualNodeText { text: text.to_string() }
+    }
+}
+
+impl From<String> for VirtualNodeText {
+    fn from(text: String) -> Self {
+        VirtualNodeText { text }
     }
 }
 
@@ -273,39 +341,58 @@ impl IntoIterator for VirtualNode {
     }
 }
 
-impl fmt::Debug for VirtualNode {
+impl fmt::Debug for VirtualNodeElement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "VirtualNode(<{}>, props: {:?}, text: {:?}, children: {:?})",
-            self.tag, self.props, self.text, self.children
+            "Element(<{}>, props: {:?}, children: {:?})",
+            self.tag, self.props, self.children,
         )
     }
 }
 
-impl fmt::Display for VirtualNode {
-    // Turn a VirtualNode and all of it's children (recursively) into an HTML string
+impl fmt::Debug for VirtualNodeText {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.is_text_node() {
-            write!(f, "{}", self.text.as_ref().unwrap())
-        } else {
-            write!(f, "<{}", self.tag).unwrap();
+        write!(f, "Text({})", self.text)
+    }
+}
 
-            for (prop, value) in self.props.iter() {
-                write!(f, r#" {}="{}""#, prop, value)?;
-            }
+impl fmt::Display for VirtualNodeElement {
+    // Turn a VirtualNodeElement and all of it's children (recursively) into an HTML string
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "<{}", self.tag).unwrap();
 
-            write!(f, ">");
+        for (prop, value) in self.props.iter() {
+            write!(f, r#" {}="{}""#, prop, value)?;
+        }
 
-            for child in self.children.as_ref().unwrap().iter() {
-                write!(f, "{}", child.to_string())?;
-            }
+        write!(f, ">")?;
 
-            if !self.is_self_closing() {
-                write!(f, "</{}>", self.tag)?;
-            }
+        for child in self.children.as_ref().unwrap().iter() {
+            write!(f, "{}", child.to_string())?;
+        }
 
-            Ok(())
+        if !self.is_self_closing() {
+            write!(f, "</{}>", self.tag)?;
+        }
+
+        Ok(())
+    }
+}
+
+// Turn a VirtualNodeText into an HTML string
+impl fmt::Display for VirtualNodeText {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.text)
+    }
+}
+
+// Turn a VirtualNode into an HTML string (delegate impl to variants)
+impl fmt::Display for VirtualNode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            VirtualNode::Element(element) => write!(f, "{}", element),
+            VirtualNode::Text(text) => write!(f, "{}", text),
         }
     }
 }

@@ -170,14 +170,26 @@ fn replace_element_with_text_node() {
     .test();
 }
 
-//// https://github.com/chinedufn/percy/issues/68
-//#[wasm_bindgen_test]
-//fn text_root_node() {
-//    DiffPatchTest {
-//        desc: "Patching of text root node works",
-//        old: html! { Old text },
-//        new: html! { New text },
-//        override_expected: None,
-//    }
-//        .test();
-//}
+// https://github.com/chinedufn/percy/issues/68
+#[wasm_bindgen_test]
+fn text_root_node() {
+    DiffPatchTest {
+        desc: "Patching of text root node works",
+        old: html! { Old text },
+        new: html! { New text },
+        override_expected: None,
+    }
+        .test();
+}
+
+// https://github.com/chinedufn/percy/issues/62
+#[wasm_bindgen_test]
+fn prepend_text_node() {
+    DiffPatchTest {
+        desc: "#62: Prepend text node",
+        old: html! { <span> <br> </span> },
+        new: html! { <span> text <br> </span> },
+        override_expected: None
+    }
+    .test();
+}

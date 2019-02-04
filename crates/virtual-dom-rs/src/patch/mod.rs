@@ -1,7 +1,7 @@
 //! Our Patch enum is intentionally kept in it's own file for easy inclusion into
 //! The Percy Book.
 
-use crate::VirtualNode;
+use crate::{VirtualNode, VirtualNodeText};
 use std::collections::HashMap;
 
 mod apply_patches;
@@ -12,7 +12,7 @@ pub use apply_patches::patch;
 /// To update the real DOM that a user sees you'll want to first diff your
 /// old virtual dom and new virtual dom.
 ///
-/// This diff operation will generate Vec<Patch> with zero or more patches that, when
+/// This diff operation will generate `Vec<Patch>` with zero or more patches that, when
 /// applied to your real DOM, will make your real DOM look like your new virtual dom.
 ///
 /// Each Patch has a u32 node index that helps us identify the real DOM node that it applies to.
@@ -54,7 +54,7 @@ pub enum Patch<'a> {
     /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(NodeIdx, Vec<&'a str>),
     /// Change the text of a Text node.
-    ChangeText(NodeIdx, &'a VirtualNode),
+    ChangeText(NodeIdx, &'a VirtualNodeText),
 }
 
 type NodeIdx = usize;

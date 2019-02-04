@@ -5,9 +5,13 @@ use virtual_dom_rs::prelude::*;
 
 /// A test case that both diffing and patching are working in a real browser
 pub struct DiffPatchTest<'a> {
+    /// Description of the test case.
     pub desc: &'static str,
+    /// The old virtual node.
     pub old: VirtualNode,
+    /// The new virtual node.
     pub new: VirtualNode,
+    /// TODO: What does this do?
     pub override_expected: Option<&'a str>,
 }
 
