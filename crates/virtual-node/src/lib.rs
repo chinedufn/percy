@@ -19,7 +19,6 @@ pub mod virtual_node_test_utils;
 use web_sys;
 use web_sys::*;
 
-use std::str::FromStr;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 
@@ -286,7 +285,7 @@ impl fmt::Debug for VirtualNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "VirtualNode | tag: {}, props: {:#?}, text: {:#?}, children: {:#?} |",
+            "VirtualNode(<{}>, props: {:?}, text: {:?}, children: {:?})",
             self.tag, self.props, self.text, self.children
         )
     }
