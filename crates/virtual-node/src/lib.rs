@@ -162,7 +162,7 @@ impl VirtualNode {
 
     /// Create and return a `CreatedNode` instance (containing a DOM `Node`
     /// together with potentially related closures) for this virtual node.
-    pub fn create_dom_node(&self) -> CreatedNode {
+    pub fn create_dom_node(&self) -> CreatedNode<Node> {
         match self {
             VirtualNode::Text(text_node) => CreatedNode::without_closures(text_node.create_text_node()),
             VirtualNode::Element(element_node) => element_node.create_element_node().into(),
@@ -196,7 +196,7 @@ impl VirtualNodeElement {
 
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
-    pub fn create_element_node(&self) -> CreatedElement {
+    pub fn create_element_node(&self) -> CreatedNode<Element> {
         let document = web_sys::window().unwrap().document().unwrap();
 
         let element = document.create_element(&self.tag).unwrap();
@@ -267,7 +267,7 @@ impl VirtualNodeElement {
                     previous_node_was_text = false;
 
                     let child = element_node.create_element_node();
-                    let child_elem = child.element;
+                    let child_elem: Element = child.node;
 
                     closures.extend(child.closures);
 
@@ -276,7 +276,7 @@ impl VirtualNodeElement {
             }
         });
 
-        CreatedElement { element, closures }
+        CreatedNode { node: element, closures }
     }
 
 }
@@ -290,31 +290,11 @@ impl VirtualNodeText {
     }
 }
 
-/// A `web_sys::Element` along with all of the closures that were created for that element's
-/// events and all of it's child element's events.
-pub struct CreatedElement {
-    /// An Element that was created from a VirtualNode
-    pub element: Element,
-    /// A map of an element's unique identifier along with all of the Closures for that element.
-    ///
-    /// The DomUpdater uses this to look up elements and see if they're still in the page. If not
-    /// the reference that we maintain to their closure will be dropped, thus freeing the Closure's
-    /// memory.
-    pub closures: HashMap<u32, Vec<DynClosure>>,
-}
-
-impl Deref for CreatedElement {
-    type Target = Element;
-    fn deref(&self) -> &Self::Target {
-        &self.element
-    }
-}
-
-/// A `web_sys::Node` along with all of the closures that were created for that
+/// A node along with all of the closures that were created for that
 /// node's events and all of it's child node's events.
-pub struct CreatedNode {
-    /// A Node` that was created from a `VirtualNode`
-    pub node: Node,
+pub struct CreatedNode<T> {
+    /// A `Node` or `Element` that was created from a `VirtualNode`
+    pub node: T,
     /// A map of a node's unique identifier along with all of the Closures for that node.
     ///
     /// The DomUpdater uses this to look up nodes and see if they're still in the page. If not
@@ -323,8 +303,8 @@ pub struct CreatedNode {
     pub closures: HashMap<u32, Vec<DynClosure>>,
 }
 
-impl CreatedNode {
-    pub fn without_closures<N: Into<Node>>(node: N) -> Self {
+impl<T> CreatedNode<T> {
+    pub fn without_closures<N: Into<T>>(node: N) -> Self {
         CreatedNode {
             node: node.into(),
             closures: HashMap::with_capacity(0),
@@ -332,18 +312,18 @@ impl CreatedNode {
     }
 }
 
-impl Deref for CreatedNode {
-    type Target = Node;
+impl<T> Deref for CreatedNode<T> {
+    type Target = T;
     fn deref(&self) -> &Self::Target {
         &self.node
     }
 }
 
-impl Into<CreatedNode> for CreatedElement {
-    fn into(self: Self) -> CreatedNode {
+impl From<CreatedNode<Element>> for CreatedNode<Node> {
+    fn from(other: CreatedNode<Element>) -> CreatedNode<Node> {
         CreatedNode {
-            node: self.element.into(),
-            closures: self.closures,
+            node: other.node.into(),
+            closures: other.closures,
         }
     }
 }
