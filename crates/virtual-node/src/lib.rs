@@ -58,6 +58,10 @@ pub enum VirtualNode {
     /// An element node (node type `ELEMENT_NODE`).
     Element(VirtualNodeElement),
     /// A text node (node type `TEXT_NODE`).
+    ///
+    /// Note: This wraps a `VirtualNodeText` instead of a plain `String` in
+    /// order to enable custom methods like `create_text_node()` on the
+    /// wrapped type.
     Text(VirtualNodeText),
 }
 
