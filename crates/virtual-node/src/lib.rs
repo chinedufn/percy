@@ -111,23 +111,34 @@ impl VirtualNode {
         VirtualNode::Text(text.into())
     }
 
-    /// Create a new `VirtualDomElement`.
+    /// Create a new [`VirtualNodeElement`] with the specified tag name.
     ///
-    /// This is the variant that is contained inside `VirtualNode::Element`. It
-    /// can be turned into a `VirtualNode` using the from/into.
+    /// This is the variant that is contained inside [`VirtualNode::Element`].
+    /// It can be turned into a [`VirtualNode`] using the from/into.
+    ///
+    /// [`VirtualNode`]: enum.VirtualNode.html
+    /// [`VirtualNode::Element`]: enum.VirtualNode.html#variant.Element
+    /// [`VirtualNodeElement`]: struct.VirtualNodeElement.html
     pub fn element_variant<S: Into<String>>(tag: S) -> VirtualNodeElement {
         VirtualNodeElement::new(tag)
     }
 
-    /// Create a new `VirtualDomText`.
+    /// Create a new [`VirtualNodeText`] with the specified text content.
     ///
-    /// This is the variant that is contained inside `VirtualNode::Text`. It
-    /// can be turned into a `VirtualNode` using the from/into.
+    /// This is the variant that is contained inside [`VirtualNode::Text`]. It
+    /// can be turned into a [`VirtualNode`] using the from/into.
+    ///
+    /// [`VirtualNode`]: enum.VirtualNode.html
+    /// [`VirtualNode::Text`]: enum.VirtualNode.html#variant.Text
+    /// [`VirtualNodeText`]: struct.VirtualNodeText.html
     pub fn text_variant<S: Into<String>>(text: S) -> VirtualNodeText {
         VirtualNodeText { text: text.into() }
     }
 
-    /// Cast into a `VirtualNodeElement` reference, if this is an `Element` variant.
+    /// Cast into a [`VirtualNodeElement`] reference, if this is an [`Element`] variant.
+    ///
+    /// [`VirtualNodeElement`]: struct.VirtualNodeElement.html
+    /// [`Element`]: enum.VirtualNode.html#variant.Element
     pub fn as_element_variant_ref(&self) -> Option<&VirtualNodeElement> {
         match self {
             VirtualNode::Element(ref element_node) => Some(element_node),
@@ -135,7 +146,10 @@ impl VirtualNode {
         }
     }
 
-    /// Cast into a mutable `VirtualNodeElement` reference, if this is an `Element` variant.
+    /// Cast into a mutable [`VirtualNodeElement`] reference, if this is an [`Element`] variant.
+    ///
+    /// [`VirtualNodeElement`]: struct.VirtualNodeElement.html
+    /// [`Element`]: enum.VirtualNode.html#variant.Element
     pub fn as_element_variant_ref_mut(&mut self) -> Option<&mut VirtualNodeElement> {
         match self {
             VirtualNode::Element(ref mut element_node) => Some(element_node),
@@ -143,7 +157,10 @@ impl VirtualNode {
         }
     }
 
-    /// Cast into a `VirtualNodeText` reference, if this is a `Text` variant.
+    /// Cast into a [`VirtualNodeText`] reference, if this is an [`Text`] variant.
+    ///
+    /// [`VirtualNodeText`]: struct.VirtualNodeText.html
+    /// [`Text`]: enum.VirtualNode.html#variant.Text
     pub fn as_text_variant_ref(&self) -> Option<&VirtualNodeText> {
         match self {
             VirtualNode::Text(ref text_node) => Some(text_node),
@@ -151,7 +168,10 @@ impl VirtualNode {
         }
     }
 
-    /// Cast into a mutable `VirtualNodeText` reference, if this is a `Text` variant.
+    /// Cast into a mutable [`VirtualNodeText`] reference, if this is an [`Text`] variant.
+    ///
+    /// [`VirtualNodeText`]: struct.VirtualNodeText.html
+    /// [`Text`]: enum.VirtualNode.html#variant.Text
     pub fn as_text_variant_ref_mut(&mut self) -> Option<&mut VirtualNodeText> {
         match self {
             VirtualNode::Text(ref mut text_node) => Some(text_node),
