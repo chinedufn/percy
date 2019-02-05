@@ -66,7 +66,7 @@ impl HtmlParser {
                 let html_tag = format!("{}", name);
 
                 let element_node = quote! {
-                    let mut #var_name_element_node = VirtualNode::new_element(#html_tag);
+                    let mut #var_name_element_node = VirtualNode::element_variant(#html_tag);
                 };
                 tokens.push(element_node);
 

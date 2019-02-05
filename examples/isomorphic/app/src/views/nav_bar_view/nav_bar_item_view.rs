@@ -34,7 +34,7 @@ impl View for NavBarItemView {
 
         let path = self.path;
 
-        let text = VirtualNode::from(self.text);
+        let text = VirtualNode::text(self.text);
 
         html! {
             <span

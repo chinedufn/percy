@@ -23,7 +23,7 @@ fn empty_div() {
     HtmlMacroTest {
         desc: "Empty div",
         generated: html! { <div></div> },
-        expected: VirtualNode::new("div"),
+        expected: VirtualNode::element("div"),
     }
     .test();
 }
@@ -32,7 +32,7 @@ fn empty_div() {
 fn one_prop() {
     let mut props = HashMap::new();
     props.insert("id".to_string(), "hello-world".to_string());
-    let mut expected = VirtualNode::new_element("div");
+    let mut expected = VirtualNode::element_variant("div");
     expected.props = props;
 
     HtmlMacroTest {
@@ -57,8 +57,8 @@ fn event() {
 
 #[test]
 fn child_node() {
-    let mut expected = VirtualNode::new_element("div");
-    expected.children = vec![VirtualNode::new("span")];
+    let mut expected = VirtualNode::element_variant("div");
+    expected.children = vec![VirtualNode::element("span")];
 
     HtmlMacroTest {
         desc: "Child node",
@@ -70,8 +70,8 @@ fn child_node() {
 
 #[test]
 fn sibling_child_nodes() {
-    let mut expected = VirtualNode::new_element("div");
-    expected.children = vec![VirtualNode::new("span"), VirtualNode::new("b")];
+    let mut expected = VirtualNode::element_variant("div");
+    expected.children = vec![VirtualNode::element("span"), VirtualNode::element("b")];
 
     HtmlMacroTest {
         desc: "Sibling child nodes",
@@ -83,10 +83,10 @@ fn sibling_child_nodes() {
 
 #[test]
 fn three_nodes_deep() {
-    let mut child = VirtualNode::new_element("span");
-    child.children = vec![VirtualNode::new("b")];
+    let mut child = VirtualNode::element_variant("span");
+    child.children = vec![VirtualNode::element("b")];
 
-    let mut expected = VirtualNode::new_element("div");
+    let mut expected = VirtualNode::element_variant("div");
     expected.children = vec![child.into()];
 
     HtmlMacroTest {
@@ -99,8 +99,8 @@ fn three_nodes_deep() {
 
 #[test]
 fn sibling_text_nodes() {
-    let mut expected = VirtualNode::new_element("div");
-    expected.children = vec![VirtualNode::from("This is a text node")];
+    let mut expected = VirtualNode::element_variant("div");
+    expected.children = vec![VirtualNode::text("This is a text node")];
 
     HtmlMacroTest {
         desc: "Nested text node",
@@ -114,8 +114,8 @@ fn sibling_text_nodes() {
 fn nested_macro() {
     let child_2 = html! { <b></b> };
 
-    let mut expected = VirtualNode::new_element("div");
-    expected.children = vec![VirtualNode::new("span"), VirtualNode::new("b")];
+    let mut expected = VirtualNode::element_variant("div");
+    expected.children = vec![VirtualNode::element("span"), VirtualNode::element("b")];
 
     HtmlMacroTest {
         desc: "Nested macros",
@@ -134,7 +134,7 @@ fn nested_macro() {
 fn block_root() {
     let em = html! { <em></em> };
 
-    let expected = VirtualNode::new("em");
+    let expected = VirtualNode::element("em");
 
     HtmlMacroTest {
         desc: "Block root node",
@@ -150,10 +150,10 @@ fn block_root() {
 fn text_next_to_block() {
     let child = html! { <ul></ul> };
 
-    let mut expected = VirtualNode::new_element("div");
+    let mut expected = VirtualNode::element_variant("div");
     expected.children = vec![
-        VirtualNode::from("A bit of text"),
-        VirtualNode::new("ul"),
+        VirtualNode::text("A bit of text"),
+        VirtualNode::element("ul"),
     ];
 
     HtmlMacroTest {
@@ -176,7 +176,7 @@ fn punctuation_comma() {
     HtmlMacroTest {
         desc: "Comma",
         generated: html! { Hello, World},
-        expected: VirtualNode::from(text),
+        expected: VirtualNode::text(text),
     }
     .test()
 }
@@ -188,7 +188,7 @@ fn punctuation_exclamation() {
     HtmlMacroTest {
         desc: "Exclamation point",
         generated: html! { Hello World! },
-        expected: VirtualNode::from(text),
+        expected: VirtualNode::text(text),
     }
     .test()
 }
@@ -200,7 +200,7 @@ fn punctuation_period() {
     HtmlMacroTest {
         desc: "Period",
         generated: html! { Hello. },
-        expected: VirtualNode::from(text),
+        expected: VirtualNode::text(text),
     }
     .test()
 }
@@ -209,8 +209,8 @@ fn punctuation_period() {
 fn vec_of_nodes() {
     let children = vec![html! { <div> </div>}, html! { <strong> </strong>}];
 
-    let mut expected = VirtualNode::new_element("div");
-    expected.children = vec![VirtualNode::new("div"), VirtualNode::new("strong")];
+    let mut expected = VirtualNode::element_variant("div");
+    expected.children = vec![VirtualNode::element("div"), VirtualNode::element("strong")];
 
     HtmlMacroTest {
         desc: "Vec of nodes",
@@ -225,7 +225,7 @@ fn text_root_node() {
     HtmlMacroTest {
         desc: "Text as root node",
         generated: html! { some text },
-        expected: VirtualNode::from("some text"),
+        expected: VirtualNode::text("some text"),
     }
     .test()
 }
@@ -243,7 +243,7 @@ fn text_macro() {
     HtmlMacroTest {
         desc: "text! creates text from variables",
         generated: text!(text_var),
-        expected: VirtualNode::from("some text"),
+        expected: VirtualNode::text("some text"),
     }
     .test()
 }
@@ -252,13 +252,13 @@ fn text_macro() {
 // Self closing tags can be written as either <tag> and <tag />
 #[test]
 fn self_closing_tag() {
-    let mut expected = VirtualNode::new_element("div");
+    let mut expected = VirtualNode::element_variant("div");
     let children = vec![
         "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
         "keygen", "source",
     ]
     .into_iter()
-    .map(|tag| VirtualNode::new(tag))
+    .map(|tag| VirtualNode::element(tag))
     .collect();
     expected.children = children;
 
@@ -281,7 +281,7 @@ fn self_closing_tag() {
         generated: html! {
             <br />
         },
-        expected: VirtualNode::new("br"),
+        expected: VirtualNode::element("br"),
     }
     .test();
 }

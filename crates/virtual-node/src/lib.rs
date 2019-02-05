@@ -86,17 +86,46 @@ pub struct VirtualNodeText {
 }
 
 impl VirtualNode {
-    /// Create a new virtual node with a given tag.
+    /// Create a new virtual element node with a given tag.
     ///
     /// These get patched into the DOM using `document.createElement`
     ///
     /// ```ignore
     /// use virtual_dom_rs::VirtualNode;
     ///
-    /// let div = VirtualNode::new("div");
+    /// let div = VirtualNode::element("div");
     /// ```
-    pub fn new<S>(tag: S) -> VirtualNode where S: Into<String> {
+    pub fn element<S>(tag: S) -> Self where S: Into<String> {
         VirtualNode::Element(VirtualNodeElement::new(tag))
+    }
+
+    /// Create a new virtual text node with the given text.
+    ///
+    /// These get patched into the DOM using `document.createTextNode`
+    ///
+    /// ```ignore
+    /// use virtual_dom_rs::VirtualNode;
+    ///
+    /// let div = VirtualNode::text("div");
+    /// ```
+    pub fn text(text: &str) -> Self {
+        VirtualNode::Text(text.into())
+    }
+
+    /// Create a new `VirtualDomElement`.
+    ///
+    /// This is the variant that is contained inside `VirtualNode::Element`. It
+    /// can be turned into a `VirtualNode` using the from/into.
+    pub fn element_variant<S: Into<String>>(tag: S) -> VirtualNodeElement {
+        VirtualNodeElement::new(tag)
+    }
+
+    /// Create a new `VirtualDomText`.
+    ///
+    /// This is the variant that is contained inside `VirtualNode::Text`. It
+    /// can be turned into a `VirtualNode` using the from/into.
+    pub fn text_variant<S: Into<String>>(text: S) -> VirtualNodeText {
+        VirtualNodeText { text: text.into() }
     }
 
     /// Create and return a `CreatedNode` instance (containing a DOM `Node`
@@ -106,30 +135,6 @@ impl VirtualNode {
             VirtualNode::Text(text_node) => CreatedNode::without_closures(text_node.create_text_node()),
             VirtualNode::Element(element_node) => element_node.create_element_node().into(),
         }
-    }
-
-    /// Create a new `VirtualDomElement`.
-    pub fn new_element<S: Into<String>>(tag: S) -> VirtualNodeElement {
-        VirtualNodeElement::new(tag)
-    }
-
-    /// Create a new `VirtualDomText`.
-    pub fn new_text<S: Into<String>>(text: S) -> VirtualNodeText {
-        VirtualNodeText { text: text.into() }
-    }
-
-    /// Create a text node.
-    ///
-    /// These get patched into the DOM using `document.createTextNode`
-    ///
-    /// ```ignore
-    /// use virtual_dom_rs::VirtualNode;
-    ///
-    /// let div = VirtualNode::text("div");
-    /// ```
-    #[deprecated(note = "Use the VirtualNode::from(...) instead")] // TODO remove
-    pub fn text(text: &str) -> VirtualNode {
-        text.into()
     }
 
     /// Whether or not this `VirtualNode` is representing a `Text` node
@@ -319,24 +324,6 @@ fn create_unique_identifier() -> u32 {
     *elem_unique_id
 }
 
-impl From<&str> for VirtualNode {
-    fn from(text: &str) -> Self {
-        VirtualNode::Text(text.into())
-    }
-}
-
-impl From<String> for VirtualNode {
-    fn from(text: String) -> Self {
-        VirtualNode::Text(text.into())
-    }
-}
-
-impl<'a> From<&'a String> for VirtualNode {
-    fn from(text: &'a String) -> Self {
-        VirtualNode::Text((&**text).into())
-    }
-}
-
 impl From<VirtualNodeText> for VirtualNode {
     fn from(other: VirtualNodeText) -> Self {
         VirtualNode::Text(other)
@@ -456,7 +443,7 @@ mod tests {
 
     #[test]
     fn self_closing_tag_to_string() {
-        let node = VirtualNode::new("br");
+        let node = VirtualNode::element("br");
 
         // No </br> since self closing tag
         assert_eq!(&node.to_string(), "<br>");
