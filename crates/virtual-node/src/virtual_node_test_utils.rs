@@ -129,14 +129,15 @@ mod tests {
 
         let mut props = HashMap::new();
         props.insert("label".to_string(), "hello".to_string());
-        let mut em = VirtualNode::new("em");
+        let mut em = VirtualNode::new_element("em");
         em.props = props;
 
-        let mut html = VirtualNode::new("div");
+        let mut html = VirtualNode::new_element("div");
         html.children.push(span);
-        html.children.push(em);
+        html.children.push(em.into());
 
-        let hello_nodes = html.filter_label_equals("hello");
+        let html_node = VirtualNode::Element(html);
+        let hello_nodes = html_node.filter_label_equals("hello");
 
         assert_eq!(hello_nodes.len(), 1);
     }

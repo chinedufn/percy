@@ -53,6 +53,8 @@ lazy_static! {
 /// in order to recursively render the node and all of its children.
 ///
 /// TODO: Make all of these fields private and create accessor methods
+/// TODO: Create a builder to create instances of VirtualNode::Element with
+/// props and children without having to explicitly create a VirtualNodeElement
 #[derive(Debug, PartialEq)]
 pub enum VirtualNode {
     /// An element node (node type `ELEMENT_NODE`).
@@ -93,15 +95,8 @@ impl VirtualNode {
     ///
     /// let div = VirtualNode::new("div");
     /// ```
-    pub fn new(tag: &str) -> VirtualNode {
-        let props = HashMap::new();
-        let custom_events = Events(HashMap::new());
-        VirtualNode::Element(VirtualNodeElement {
-            tag: tag.to_string(),
-            props,
-            events: custom_events,
-            children: vec![],
-        })
+    pub fn new<S>(tag: S) -> VirtualNode where S: Into<String> {
+        VirtualNode::Element(VirtualNodeElement::new(tag))
     }
 
     /// Create and return a `CreatedNode` instance (containing a DOM `Node`
@@ -113,6 +108,16 @@ impl VirtualNode {
         }
     }
 
+    /// Create a new `VirtualDomElement`.
+    pub fn new_element<S: Into<String>>(tag: S) -> VirtualNodeElement {
+        VirtualNodeElement::new(tag)
+    }
+
+    /// Create a new `VirtualDomText`.
+    pub fn new_text<S: Into<String>>(text: S) -> VirtualNodeText {
+        VirtualNodeText { text: text.into() }
+    }
+
     /// Create a text node.
     ///
     /// These get patched into the DOM using `document.createTextNode`
@@ -122,7 +127,7 @@ impl VirtualNode {
     ///
     /// let div = VirtualNode::text("div");
     /// ```
-    #[deprecated(note = "Use the .into() method on a string or string slice instead")] // TODO remove
+    #[deprecated(note = "Use the VirtualNode::from(...) instead")] // TODO remove
     pub fn text(text: &str) -> VirtualNode {
         text.into()
     }
@@ -138,6 +143,15 @@ impl VirtualNode {
 }
 
 impl VirtualNodeElement {
+    pub fn new<S>(tag: S) -> Self where S: Into<String> {
+        VirtualNodeElement {
+            tag: tag.into(),
+            props: HashMap::new(),
+            events: Events(HashMap::new()),
+            children: vec![],
+        }
+    }
+
     /// Whether or not this is a self closing tag such as <br> or <img />
     pub fn is_self_closing(&self) -> bool {
         SELF_CLOSING_TAGS.contains(self.tag.as_str())
@@ -320,6 +334,18 @@ impl From<String> for VirtualNode {
 impl<'a> From<&'a String> for VirtualNode {
     fn from(text: &'a String) -> Self {
         VirtualNode::Text((&**text).into())
+    }
+}
+
+impl From<VirtualNodeText> for VirtualNode {
+    fn from(other: VirtualNodeText) -> Self {
+        VirtualNode::Text(other)
+    }
+}
+
+impl From<VirtualNodeElement> for VirtualNode {
+    fn from(other: VirtualNodeElement) -> Self {
+        VirtualNode::Element(other)
     }
 }
 
