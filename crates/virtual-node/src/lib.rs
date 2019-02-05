@@ -75,7 +75,7 @@ pub struct VirtualNodeElement {
     pub events: Events,
     /// The children of this `VirtualNode`. So a <div> <em></em> </div> structure would
     /// have a parent div and one child, em.
-    pub children: Option<Vec<VirtualNode>>,
+    pub children: Vec<VirtualNode>,
 }
 
 #[derive(PartialEq)]
@@ -100,7 +100,7 @@ impl VirtualNode {
             tag: tag.to_string(),
             props,
             events: custom_events,
-            children: Some(vec![]),
+            children: vec![],
         })
     }
 
@@ -188,7 +188,7 @@ impl VirtualNodeElement {
 
         let mut previous_node_was_text = false;
 
-        self.children.as_ref().unwrap().iter().for_each(|child| {
+        self.children.iter().for_each(|child| {
             match child {
                 VirtualNode::Text(text_node) => {
                     let current_node = element.as_ref() as &web_sys::Node;
@@ -372,7 +372,7 @@ impl fmt::Display for VirtualNodeElement {
 
         write!(f, ">")?;
 
-        for child in self.children.as_ref().unwrap().iter() {
+        for child in self.children.iter() {
             write!(f, "{}", child.to_string())?;
         }
 

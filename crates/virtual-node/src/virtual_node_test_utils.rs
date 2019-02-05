@@ -33,8 +33,8 @@ impl VirtualNode {
         match self {
             VirtualNode::Text(_) => { /* nothing to do */ },
             VirtualNode::Element(element_node) => {
-                for child in element_node.children.as_ref().unwrap() {
-                    get_descendants(&mut descendants, &child);
+                for child in element_node.children.iter() {
+                    get_descendants(&mut descendants, child);
                 }
             },
         }
@@ -85,7 +85,7 @@ fn get_descendants<'a>(descendants: &mut Vec<&'a VirtualNode>, node: &'a Virtual
     match node {
         VirtualNode::Text(_) => { /* nothing to do */ },
         VirtualNode::Element(element_node) => {
-            for child in element_node.children.as_ref().unwrap() {
+            for child in element_node.children.iter() {
                 get_descendants(descendants, child);
             }
         },
@@ -133,8 +133,8 @@ mod tests {
         em.props = props;
 
         let mut html = VirtualNode::new("div");
-        html.children.as_mut().unwrap().push(span);
-        html.children.as_mut().unwrap().push(em);
+        html.children.push(span);
+        html.children.push(em);
 
         let hello_nodes = html.filter_label_equals("hello");
 

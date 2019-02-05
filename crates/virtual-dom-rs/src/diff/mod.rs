@@ -34,11 +34,9 @@ fn diff_recursive<'a, 'b>(
     if replace {
         patches.push(Patch::Replace(*cur_node_idx, &new));
         if let VirtualNode::Element(old_element_node) = old {
-            if let Some(children) = old_element_node.children.as_ref() {
-                for child in children {
-                    if let VirtualNode::Element(child_element) = child {
-                        increment_node_idx_for_children(child_element, cur_node_idx);
-                    }
+            for child in old_element_node.children.iter() {
+                if let VirtualNode::Element(child_element) = child {
+                    increment_node_idx_for_children(child_element, cur_node_idx);
                 }
             }
         }
@@ -100,14 +98,11 @@ fn diff_recursive<'a, 'b>(
                 patches.push(Patch::RemoveAttributes(*cur_node_idx, remove_attributes));
             }
 
-            let old_children = old_element.children.as_ref().unwrap();
-            let new_children = new_element.children.as_ref().unwrap();
-
-            let old_child_count = old_children.len();
-            let new_child_count = new_children.len();
+            let old_child_count = old_element.children.len();
+            let new_child_count = new_element.children.len();
 
             if new_child_count > old_child_count {
-                let append_patch: Vec<&'a VirtualNode> = new_children[old_child_count..].iter().collect();
+                let append_patch: Vec<&'a VirtualNode> = new_element.children[old_child_count..].iter().collect();
                 patches.push(Patch::AppendChildren(*cur_node_idx, append_patch))
             }
 
@@ -118,12 +113,12 @@ fn diff_recursive<'a, 'b>(
             let min_count = min(old_child_count, new_child_count);
             for index in 0..min_count {
                 *cur_node_idx = *cur_node_idx + 1;
-                let old_child = &old_children[index];
-                let new_child = &new_children[index];
+                let old_child = &old_element.children[index];
+                let new_child = &new_element.children[index];
                 patches.append(&mut diff_recursive(&old_child, &new_child, cur_node_idx))
             }
             if new_child_count < old_child_count {
-                for child in old_children[min_count..].iter() {
+                for child in old_element.children[min_count..].iter() {
                     if let VirtualNode::Element(child_element) = child {
                         increment_node_idx_for_children(child_element, cur_node_idx);
                     }
@@ -142,11 +137,9 @@ fn diff_recursive<'a, 'b>(
 
 fn increment_node_idx_for_children<'a, 'b>(old: &'a VirtualNodeElement, cur_node_idx: &'b mut usize) {
     *cur_node_idx += 1;
-    if let Some(children) = old.children.as_ref() {
-        for child in children {
-            if let VirtualNode::Element(child_element) = child {
-                increment_node_idx_for_children(&child_element, cur_node_idx);
-            }
+    for child in old.children.iter() {
+        if let VirtualNode::Element(child_element) = child {
+            increment_node_idx_for_children(&child_element, cur_node_idx);
         }
     }
 }
