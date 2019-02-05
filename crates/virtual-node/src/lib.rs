@@ -9,10 +9,9 @@
 //
 // Around in order to get rid of dependencies that we don't need in non wasm32 targets
 
-pub use std::cell::RefCell;
 use std::collections::{HashSet,HashMap};
 use std::fmt;
-pub use std::rc::Rc;
+use std::rc::Rc;
 
 pub mod virtual_node_test_utils;
 
