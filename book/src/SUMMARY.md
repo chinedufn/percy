@@ -22,9 +22,7 @@
   - [Getting Started](./contributing/getting-started.md)
   - [Types of Contributions](./contributing/ways-to-contribute.md)
   - [Internal Design](./contributing/internal-design/README.md)
+    - [Diff / Patch Algorithm](./diff-patch/README.md)
+      - [Diff / Patch Walkthrough](./diff-patch/diff-patch-walkthrough/README.md)
+      - [Fixing diff/patch issues](./diff-patch/fixing-diff-patch-issues/README.md)
     - [Handling text siblings](./contributing/internal-design/sibling-text-nodes.md)
-
-- [Diff / Patch Algorithm](./diff-patch/README.md)
-  - [Diffing Algorithm](./diff-patch/diff.md)
-  - [Patching Algorithm](./diff-patch/patch.md)
-  - [Fixing diff/patch issues](./diff-patch/fixing-diff-patch-issues.md)
