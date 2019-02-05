@@ -1,4 +1,5 @@
 #![feature(proc_macro_hygiene)]
+#![cfg(test)]
 
 use html_macro::{html, text};
 use std::collections::HashMap;
