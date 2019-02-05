@@ -95,7 +95,7 @@ fn append_children() {
 fn text_node_siblings() {
     // NOTE: Since there are two text nodes next to eachother we expect a `<!--ptns-->` separator in
     // between them.
-    // @see virtual_node/mod.rs -> create_element() for more information
+    // @see virtual_node/mod.rs -> create_dom_node() for more information
     let override_expected =
         Some(r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#);
 
@@ -180,16 +180,4 @@ fn text_root_node() {
         override_expected: None,
     }
         .test();
-}
-
-// https://github.com/chinedufn/percy/issues/62
-#[wasm_bindgen_test]
-fn prepend_text_node() {
-    DiffPatchTest {
-        desc: "#62: Prepend text node",
-        old: html! { <span> <br> </span> },
-        new: html! { <span> text <br> </span> },
-        override_expected: None
-    }
-    .test();
 }

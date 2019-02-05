@@ -125,16 +125,8 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
             }
         }
         Patch::Replace(_node_idx, new_node) => {
-            match new_node {
-                VirtualNode::Text(text_node) => {
-                    node.replace_with_with_node_1(&text_node.create_text_node())
-                        .expect("Replaced with text node");
-                },
-                VirtualNode::Element(element_node) => {
-                    node.replace_with_with_node_1(&element_node.create_element_node())
-                        .expect("Replaced with element node");
-                },
-            }
+            node.replace_with_with_node_1(&new_node.create_dom_node().node)
+                .expect("Replacing node failed");
         }
         Patch::TruncateChildren(_node_idx, num_children_remaining) => {
             let children = node.child_nodes();
@@ -170,18 +162,8 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
             let parent = &node;
 
             for new_node in new_nodes {
-                match new_node {
-                    VirtualNode::Text(text_node) => {
-                        parent
-                            .append_child(&text_node.create_text_node())
-                            .expect("Appended text node");
-                    }
-                    VirtualNode::Element(element_node) => {
-                        parent
-                            .append_child(&element_node.create_element_node())
-                            .expect("Appended child element");
-                    }
-                }
+                parent.append_child(&new_node.create_dom_node().node)
+                    .expect("Appending child node failed");
             }
         }
         Patch::ChangeText(_node_idx, _new_node) => unreachable!(

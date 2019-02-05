@@ -35,9 +35,7 @@ fn diff_recursive<'a, 'b>(
         patches.push(Patch::Replace(*cur_node_idx, &new));
         if let VirtualNode::Element(old_element_node) = old {
             for child in old_element_node.children.iter() {
-                if let VirtualNode::Element(child_element) = child {
-                    increment_node_idx_for_children(child_element, cur_node_idx);
-                }
+                increment_node_idx_for_children(child, cur_node_idx);
             }
         }
         return patches;
@@ -119,9 +117,7 @@ fn diff_recursive<'a, 'b>(
             }
             if new_child_count < old_child_count {
                 for child in old_element.children[min_count..].iter() {
-                    if let VirtualNode::Element(child_element) = child {
-                        increment_node_idx_for_children(child_element, cur_node_idx);
-                    }
+                    increment_node_idx_for_children(child, cur_node_idx);
                 }
             }
         }
@@ -135,11 +131,11 @@ fn diff_recursive<'a, 'b>(
     patches
 }
 
-fn increment_node_idx_for_children<'a, 'b>(old: &'a VirtualNodeElement, cur_node_idx: &'b mut usize) {
+fn increment_node_idx_for_children<'a, 'b>(old: &'a VirtualNode, cur_node_idx: &'b mut usize) {
     *cur_node_idx += 1;
-    for child in old.children.iter() {
-        if let VirtualNode::Element(child_element) = child {
-            increment_node_idx_for_children(&child_element, cur_node_idx);
+    if let VirtualNode::Element(element_node) = old {
+        for child in element_node.children.iter() {
+            increment_node_idx_for_children(&child, cur_node_idx);
         }
     }
 }
@@ -178,7 +174,7 @@ mod tests {
                 Patch::Replace(1, &html! { <i>1</i> }),
                 Patch::Replace(3, &html! { <i></i> }),
             ], //required to check correct index
-            description: "Replace node with a chiild",
+            description: "Replace node with a child",
         }
         .test();
     }
@@ -288,7 +284,7 @@ mod tests {
         DiffTestCase {
             old: html! { Old },
             new: html! { New },
-            expected: vec![Patch::ChangeText(0, &html! { New })],
+            expected: vec![Patch::ChangeText(0, &VirtualNode::text_variant("New"))],
             description: "Replace text node",
         }
         .test();

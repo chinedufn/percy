@@ -28,7 +28,9 @@ fn closure_not_dropped() {
 
     {
         let mut input = make_input_component(Rc::clone(&text));
-        input.props.insert("id".into(), "old-input-elem".into());
+        input
+            .as_element_variant_ref_mut().expect("Not an element")
+            .props.insert("id".into(), "old-input-elem".into());
 
         let mount = document.create_element("div").unwrap();
         mount.set_id("mount");
@@ -48,7 +50,9 @@ fn closure_not_dropped() {
         // So, we're testing that our old Closure's still work. The reason that they work is
         // that dom_updater maintains Rc's to those Closures.
         let mut new_node = make_input_component(Rc::clone(&text));
-        new_node.props.insert("id".into(), "new-input-elem".into());
+        new_node
+            .as_element_variant_ref_mut().expect("Not an element")
+            .props.insert("id".into(), "new-input-elem".into());
 
         dom_updater.update(new_node);
     }
