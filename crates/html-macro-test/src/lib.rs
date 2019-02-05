@@ -11,17 +11,9 @@ struct HtmlMacroTest<'a> {
 }
 
 impl<'a> HtmlMacroTest<'a> {
+    /// Ensure that the generated and the expected virtual node are equal.
     fn test(self) {
         assert_eq!(self.generated, self.expected, "{}", self.desc);
-
-        for (index, child) in self.expected.children.as_ref().unwrap().iter().enumerate() {
-            assert_eq!(
-                child,
-                &self.generated.children.as_ref().unwrap()[index],
-                "{}",
-                self.desc
-            );
-        }
     }
 }
 
