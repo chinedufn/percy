@@ -128,6 +128,38 @@ impl VirtualNode {
         VirtualNodeText { text: text.into() }
     }
 
+    /// Cast into a `VirtualNodeElement` reference, if this is an `Element` variant.
+    pub fn as_element_variant_ref(&self) -> Option<&VirtualNodeElement> {
+        match self {
+            VirtualNode::Element(ref element_node) => Some(element_node),
+            _ => None,
+        }
+    }
+
+    /// Cast into a mutable `VirtualNodeElement` reference, if this is an `Element` variant.
+    pub fn as_element_variant_ref_mut(&mut self) -> Option<&mut VirtualNodeElement> {
+        match self {
+            VirtualNode::Element(ref mut element_node) => Some(element_node),
+            _ => None,
+        }
+    }
+
+    /// Cast into a `VirtualNodeText` reference, if this is a `Text` variant.
+    pub fn as_text_variant_ref(&self) -> Option<&VirtualNodeText> {
+        match self {
+            VirtualNode::Text(ref text_node) => Some(text_node),
+            _ => None,
+        }
+    }
+
+    /// Cast into a mutable `VirtualNodeText` reference, if this is a `Text` variant.
+    pub fn as_text_variant_ref_mut(&mut self) -> Option<&mut VirtualNodeText> {
+        match self {
+            VirtualNode::Text(ref mut text_node) => Some(text_node),
+            _ => None,
+        }
+    }
+
     /// Create and return a `CreatedNode` instance (containing a DOM `Node`
     /// together with potentially related closures) for this virtual node.
     pub fn create_dom_node(&self) -> CreatedNode {
