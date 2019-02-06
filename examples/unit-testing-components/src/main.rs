@@ -59,10 +59,10 @@ mod tests {
 
         assert_eq!(
             water_view
-                .as_element_variant_ref()
+                .as_velement_ref()
                 .expect("Not an element node")
                 .children[0]
-                .as_text_variant_ref()
+                .as_vtext_ref()
                 .expect("Not a text node")
                 .text,
             "Please fill me up :( I am only 0.2587 percent full :("

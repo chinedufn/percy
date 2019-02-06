@@ -139,7 +139,7 @@ impl VirtualNode {
     ///
     /// [`VElement`]: struct.VElement.html
     /// [`Element`]: enum.VirtualNode.html#variant.Element
-    pub fn as_element_variant_ref(&self) -> Option<&VElement> {
+    pub fn as_velement_ref(&self) -> Option<&VElement> {
         match self {
             VirtualNode::Element(ref element_node) => Some(element_node),
             _ => None,
@@ -150,7 +150,7 @@ impl VirtualNode {
     ///
     /// [`VElement`]: struct.VElement.html
     /// [`Element`]: enum.VirtualNode.html#variant.Element
-    pub fn as_element_variant_mut(&mut self) -> Option<&mut VElement> {
+    pub fn as_velement_mut(&mut self) -> Option<&mut VElement> {
         match self {
             VirtualNode::Element(ref mut element_node) => Some(element_node),
             _ => None,
@@ -161,7 +161,7 @@ impl VirtualNode {
     ///
     /// [`VText`]: struct.VText.html
     /// [`Text`]: enum.VirtualNode.html#variant.Text
-    pub fn as_text_variant_ref(&self) -> Option<&VText> {
+    pub fn as_vtext_ref(&self) -> Option<&VText> {
         match self {
             VirtualNode::Text(ref text_node) => Some(text_node),
             _ => None,
@@ -172,7 +172,7 @@ impl VirtualNode {
     ///
     /// [`VText`]: struct.VText.html
     /// [`Text`]: enum.VirtualNode.html#variant.Text
-    pub fn as_text_variant_mut(&mut self) -> Option<&mut VText> {
+    pub fn as_vtext_mut(&mut self) -> Option<&mut VText> {
         match self {
             VirtualNode::Text(ref mut text_node) => Some(text_node),
             _ => None,
