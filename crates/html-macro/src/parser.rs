@@ -274,11 +274,14 @@ impl HtmlParser {
                         let children =
                             Ident::new(format!("node_{}", child_idx).as_str(), Span::call_site());
 
+                        let unreachable = quote_spanned!(Span::call_site() => {
+                            unreachable!("Non-elements cannot have children");
+                        });
                         let push_children = quote! {
-                            if let VirtualNode::Element(ref mut element_node) = #parent_name {
+                            if let Some(ref mut element_node) =  #parent_name.as_element_variant_ref_mut() {
                                 element_node.children.extend(#children.into_iter());
                             } else {
-                                // TODO: Can this happen? What to do?
+                                #unreachable;
                             }
                         };
                         tokens.push(push_children);
