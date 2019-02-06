@@ -111,31 +111,7 @@ impl VirtualNode {
         VirtualNode::Text(text.into())
     }
 
-    /// Create a new [`VElement`] with the specified tag name.
-    ///
-    /// This is the variant that is contained inside [`VirtualNode::Element`].
-    /// It can be turned into a [`VirtualNode`] using the from/into.
-    ///
-    /// [`VirtualNode`]: enum.VirtualNode.html
-    /// [`VirtualNode::Element`]: enum.VirtualNode.html#variant.Element
-    /// [`VElement`]: struct.VElement.html
-    pub fn element_variant<S: Into<String>>(tag: S) -> VElement {
-        VElement::new(tag)
-    }
-
-    /// Create a new [`VText`] with the specified text content.
-    ///
-    /// This is the variant that is contained inside [`VirtualNode::Text`]. It
-    /// can be turned into a [`VirtualNode`] using the from/into.
-    ///
-    /// [`VirtualNode`]: enum.VirtualNode.html
-    /// [`VirtualNode::Text`]: enum.VirtualNode.html#variant.Text
-    /// [`VText`]: struct.VText.html
-    pub fn text_variant<S: Into<String>>(text: S) -> VText {
-        VText { text: text.into() }
-    }
-
-    /// Cast into a [`VElement`] reference, if this is an [`Element`] variant.
+    /// Return a [`VElement`] reference, if this is an [`Element`] variant.
     ///
     /// [`VElement`]: struct.VElement.html
     /// [`Element`]: enum.VirtualNode.html#variant.Element
@@ -146,7 +122,7 @@ impl VirtualNode {
         }
     }
 
-    /// Cast into a mutable [`VElement`] reference, if this is an [`Element`] variant.
+    /// Return a mutable [`VElement`] reference, if this is an [`Element`] variant.
     ///
     /// [`VElement`]: struct.VElement.html
     /// [`Element`]: enum.VirtualNode.html#variant.Element
@@ -157,7 +133,7 @@ impl VirtualNode {
         }
     }
 
-    /// Cast into a [`VText`] reference, if this is an [`Text`] variant.
+    /// Return a [`VText`] reference, if this is an [`Text`] variant.
     ///
     /// [`VText`]: struct.VText.html
     /// [`Text`]: enum.VirtualNode.html#variant.Text
@@ -168,7 +144,7 @@ impl VirtualNode {
         }
     }
 
-    /// Cast into a mutable [`VText`] reference, if this is an [`Text`] variant.
+    /// Return a mutable [`VText`] reference, if this is an [`Text`] variant.
     ///
     /// [`VText`]: struct.VText.html
     /// [`Text`]: enum.VirtualNode.html#variant.Text
@@ -292,6 +268,11 @@ impl VElement {
 }
 
 impl VText {
+    /// Create an new `VText` instance with the specified text.
+    pub fn new<S>(text: S) -> Self where S: Into<String> {
+        VText { text: text.into() }
+    }
+
     /// Return a `Text` element from a `VirtualNode`, typically right before adding it
     /// into the DOM.
     pub fn create_text_node(&self) -> Text {

@@ -1,6 +1,6 @@
 //! A collection of functions that are useful for unit testing your html! views.
 
-use crate::VirtualNode;
+use crate::{VirtualNode, VElement};
 
 impl VirtualNode {
     /// Get a vector of all of the VirtualNode children / grandchildren / etc of
@@ -129,10 +129,10 @@ mod tests {
 
         let mut props = HashMap::new();
         props.insert("label".to_string(), "hello".to_string());
-        let mut em = VirtualNode::element_variant("em");
+        let mut em = VElement::new("em");
         em.props = props;
 
-        let mut html = VirtualNode::element_variant("div");
+        let mut html = VElement::new("div");
         html.children.push(span);
         html.children.push(em.into());
 

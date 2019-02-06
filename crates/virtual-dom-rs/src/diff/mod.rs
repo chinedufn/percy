@@ -1,5 +1,5 @@
 use crate::Patch;
-use crate::{VirtualNode, VElement};
+use crate::VirtualNode;
 use std::cmp::min;
 use std::collections::HashMap;
 use std::mem;
@@ -148,7 +148,7 @@ use self::diff_test_case::*;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::html;
+    use crate::{html, VirtualNode, VText};
     use std::collections::HashMap;
 
     #[test]
@@ -284,7 +284,7 @@ mod tests {
         DiffTestCase {
             old: html! { Old },
             new: html! { New },
-            expected: vec![Patch::ChangeText(0, &VirtualNode::text_variant("New"))],
+            expected: vec![Patch::ChangeText(0, &VText::new("New"))],
             description: "Replace text node",
         }
         .test();
