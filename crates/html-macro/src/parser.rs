@@ -44,11 +44,11 @@ impl HtmlParser {
     }
 
     pub fn push_tag(&mut self, tag: Tag) {
-        let mut idx = &mut self.current_idx;
-        let mut parent_stack = &mut self.parent_stack;
-        let mut node_order = &mut self.node_order;
-        let mut parent_to_children = &mut self.parent_to_children;
-        let mut tokens = &mut self.tokens;
+        let idx = &mut self.current_idx;
+        let parent_stack = &mut self.parent_stack;
+        let node_order = &mut self.node_order;
+        let parent_to_children = &mut self.parent_to_children;
+        let tokens = &mut self.tokens;
 
         // TODO: Split each of these into functions and make this DRY. Can barely see what's
         // going on.
@@ -61,11 +61,11 @@ impl HtmlParser {
                 // The root node is named `node_0`. All of it's descendants are node_1.. node_2.. etc.
                 // This just comes from the `idx` variable
                 // TODO: Not sure what the span is supposed to be so I just picked something..
-                let var_name = Ident::new(format!("node_{}", idx).as_str(), name.span());
+                let var_name_node = Ident::new(format!("node_{}", idx).as_str(), name.span());
                 let html_tag = format!("{}", name);
 
                 let node = quote! {
-                    let mut #var_name = VirtualNode::new(#html_tag);
+                    let mut #var_name_node = VirtualNode::element(#html_tag);
                 };
                 tokens.push(node);
 
@@ -84,8 +84,9 @@ impl HtmlParser {
                                   let closure = wasm_bindgen::prelude::Closure::wrap(
                                       Box::new(#value) as Box<FnMut(_)>
                                   );
-                                  let closure = Rc::new(closure);
-                                  #var_name.events.0.insert(#key.to_string(), closure);
+                                  let closure_rc = Rc::new(closure);
+                                  #var_name_node.as_velement_mut().expect("Not an element")
+                                      .events.0.insert(#key.to_string(), closure_rc);
                                 }
                             };
 
@@ -93,7 +94,8 @@ impl HtmlParser {
                         }
                         _ => {
                             let insert_attribute = quote! {
-                                #var_name.props.insert(#key.to_string(), #value.to_string());
+                                #var_name_node.as_velement_mut().expect("Not an element")
+                                    .props.insert(#key.to_string(), #value.to_string());
                             };
                             tokens.push(insert_attribute);
                         }
@@ -245,11 +247,10 @@ impl HtmlParser {
     ///  3. Append the children to this node
     ///  4. Move on to the next node (as in, go back to step 1)
     pub fn finish(&mut self) -> proc_macro2::TokenStream {
-        let mut idx = &mut self.current_idx;
-        let mut parent_stack = &mut self.parent_stack;
-        let mut node_order = &mut self.node_order;
-        let mut parent_to_children = &mut self.parent_to_children;
-        let mut tokens = &mut self.tokens;
+        let parent_stack = &mut self.parent_stack;
+        let node_order = &mut self.node_order;
+        let parent_to_children = &mut self.parent_to_children;
+        let tokens = &mut self.tokens;
 
         if node_order.len() > 1 {
             for _ in 0..(node_order.len()) {
@@ -265,20 +266,18 @@ impl HtmlParser {
                 };
 
                 if parent_to_children_indices.len() > 0 {
-                    let create_children_vec = quote! {
-                        #parent_name.children = Some(vec![]);
-                    };
-
-                    tokens.push(create_children_vec);
-
                     for child_idx in parent_to_children_indices.iter() {
                         let children =
                             Ident::new(format!("node_{}", child_idx).as_str(), Span::call_site());
 
-                        // TODO: Multiple .as_mut().unwrap() of children. Let's just do this once.
+                        let unreachable = quote_spanned!(Span::call_site() => {
+                            unreachable!("Non-elements cannot have children");
+                        });
                         let push_children = quote! {
-                            for child in #children.into_iter() {
-                                #parent_name.children.as_mut().unwrap().push(child);
+                            if let Some(ref mut element_node) =  #parent_name.as_velement_mut() {
+                                element_node.children.extend(#children.into_iter());
+                            } else {
+                                #unreachable;
                             }
                         };
                         tokens.push(push_children);
@@ -288,13 +287,14 @@ impl HtmlParser {
         }
 
         // Create a virtual node tree
-        quote! {
+        let node = quote! {
             {
                 #(#tokens)*
                 // Root node is always named node_0
                 node_0
             }
-        }
+        };
+        node
     }
 }
 

@@ -4,9 +4,9 @@ extern crate wasm_bindgen_test;
 extern crate web_sys;
 use std::cell::Cell;
 use std::rc::Rc;
+use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
-
-use web_sys::*;
+use web_sys::{Event, MouseEvent, EventTarget, Element};
 
 use virtual_dom_rs::prelude::*;
 
@@ -14,16 +14,16 @@ wasm_bindgen_test_configure!(run_in_browser);
 
 #[wasm_bindgen_test]
 fn nested_divs() {
-    let div = html! { <div> <div> <div></div> </div> </div> };
-    let div = div.create_element();
+    let vdiv = html! { <div> <div> <div></div> </div> </div> };
+    let div: Element = vdiv.create_dom_node().node.unchecked_into();
 
     assert_eq!(&div.inner_html(), "<div><div></div></div>");
 }
 
 #[wasm_bindgen_test]
 fn div_with_properties() {
-    let mut div = html! { <div id="id-here" class="two classes"></div> };
-    let div = div.create_element();
+    let vdiv = html! { <div id="id-here" class="two classes"></div> };
+    let div: Element = vdiv.create_dom_node().node.unchecked_into();
 
     assert_eq!(&div.id(), "id-here");
 
@@ -49,9 +49,9 @@ fn click_event() {
 
     let click_event = Event::new("click").unwrap();
 
-    let div = div.create_element().element;
+    let div = div.create_dom_node().node;
 
-    (web_sys::EventTarget::from(div))
+    (EventTarget::from(div))
         .dispatch_event(&click_event)
         .unwrap();
 

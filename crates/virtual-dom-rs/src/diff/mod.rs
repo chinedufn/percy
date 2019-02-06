@@ -2,6 +2,7 @@ use crate::Patch;
 use crate::VirtualNode;
 use std::cmp::min;
 use std::collections::HashMap;
+use std::mem;
 
 /// Given two VirtualNode's generate Patch's that would turn the old virtual node's
 /// real DOM node equivalent into the new VirtualNode's real DOM node equivalent.
@@ -15,91 +16,116 @@ fn diff_recursive<'a, 'b>(
     cur_node_idx: &'b mut usize,
 ) -> Vec<Patch<'a>> {
     let mut patches = vec![];
+    let mut replace = false;
 
-    if old.tag != new.tag {
+    // Different enum variants, replace!
+    if mem::discriminant(old) != mem::discriminant(new) {
+        replace = true;
+    }
+
+    // Different element tags, replace!
+    if let (VirtualNode::Element(old_element), VirtualNode::Element(new_element)) = (old, new) {
+        if old_element.tag != new_element.tag {
+            replace = true;
+        }
+    }
+
+    // Handle replacing of a node
+    if replace {
         patches.push(Patch::Replace(*cur_node_idx, &new));
-        if let Some(children) = old.children.as_ref() {
-            for child in children {
+        if let VirtualNode::Element(old_element_node) = old {
+            for child in old_element_node.children.iter() {
                 increment_node_idx_for_children(child, cur_node_idx);
             }
         }
         return patches;
     }
 
-    if old.text != new.text {
-        patches.push(Patch::ChangeText(*cur_node_idx, &new));
-        return patches;
-    }
-
-    let mut add_attributes: HashMap<&str, &str> = HashMap::new();
-    let mut remove_attributes: Vec<&str> = vec![];
-
-    // TODO: -> split out into func
-    for (new_prop_name, new_prop_val) in new.props.iter() {
-        match old.props.get(new_prop_name) {
-            Some(ref old_prop_val) => {
-                if old_prop_val != &new_prop_val {
-                    add_attributes.insert(new_prop_name, new_prop_val);
-                }
+    // The following comparison can only contain identical variants, other
+    // cases have already been handled above by comparing variant
+    // discriminants.
+    match (old, new) {
+        // We're comparing two text nodes
+        (VirtualNode::Text(old_text), VirtualNode::Text(new_text)) => {
+            if old_text != new_text {
+                patches.push(Patch::ChangeText(*cur_node_idx, &new_text));
             }
-            None => {
-                add_attributes.insert(new_prop_name, new_prop_val);
-            }
-        };
-    }
-
-    // TODO: -> split out into func
-    for (old_prop_name, old_prop_val) in old.props.iter() {
-        if add_attributes.get(&old_prop_name[..]).is_some() {
-            continue;
-        };
-
-        match new.props.get(old_prop_name) {
-            Some(ref new_prop_val) => {
-                if new_prop_val != &old_prop_val {
-                    remove_attributes.push(old_prop_name);
-                }
-            }
-            None => {
-                remove_attributes.push(old_prop_name);
-            }
-        };
-    }
-
-    if add_attributes.len() > 0 {
-        patches.push(Patch::AddAttributes(*cur_node_idx, add_attributes));
-    }
-    if remove_attributes.len() > 0 {
-        patches.push(Patch::RemoveAttributes(*cur_node_idx, remove_attributes));
-    }
-
-    let old_children = old.children.as_ref().unwrap();
-    let new_children = new.children.as_ref().unwrap();
-
-    let old_child_count = old_children.len();
-    let new_child_count = new_children.len();
-
-    if new_child_count > old_child_count {
-        let append_patch: Vec<&'a VirtualNode> = new_children[old_child_count..].iter().collect();
-        patches.push(Patch::AppendChildren(*cur_node_idx, append_patch))
-    }
-
-    if new_child_count < old_child_count {
-        patches.push(Patch::TruncateChildren(*cur_node_idx, new_child_count))
-    }
-
-    let min_count = min(old_child_count, new_child_count);
-    for index in 0..min_count {
-        *cur_node_idx = *cur_node_idx + 1;
-        let old_child = &old_children[index];
-        let new_child = &new_children[index];
-        patches.append(&mut diff_recursive(&old_child, &new_child, cur_node_idx))
-    }
-    if new_child_count < old_child_count {
-        for child in old_children[min_count..].iter() {
-            increment_node_idx_for_children(child, cur_node_idx);
         }
-    }
+
+        // We're comparing two element nodes
+        (VirtualNode::Element(old_element), VirtualNode::Element(new_element)) => {
+            let mut add_attributes: HashMap<&str, &str> = HashMap::new();
+            let mut remove_attributes: Vec<&str> = vec![];
+
+            // TODO: -> split out into func
+            for (new_prop_name, new_prop_val) in new_element.props.iter() {
+                match old_element.props.get(new_prop_name) {
+                    Some(ref old_prop_val) => {
+                        if old_prop_val != &new_prop_val {
+                            add_attributes.insert(new_prop_name, new_prop_val);
+                        }
+                    }
+                    None => {
+                        add_attributes.insert(new_prop_name, new_prop_val);
+                    }
+                };
+            }
+
+            // TODO: -> split out into func
+            for (old_prop_name, old_prop_val) in old_element.props.iter() {
+                if add_attributes.get(&old_prop_name[..]).is_some() {
+                    continue;
+                };
+
+                match new_element.props.get(old_prop_name) {
+                    Some(ref new_prop_val) => {
+                        if new_prop_val != &old_prop_val {
+                            remove_attributes.push(old_prop_name);
+                        }
+                    }
+                    None => {
+                        remove_attributes.push(old_prop_name);
+                    }
+                };
+            }
+
+            if add_attributes.len() > 0 {
+                patches.push(Patch::AddAttributes(*cur_node_idx, add_attributes));
+            }
+            if remove_attributes.len() > 0 {
+                patches.push(Patch::RemoveAttributes(*cur_node_idx, remove_attributes));
+            }
+
+            let old_child_count = old_element.children.len();
+            let new_child_count = new_element.children.len();
+
+            if new_child_count > old_child_count {
+                let append_patch: Vec<&'a VirtualNode> = new_element.children[old_child_count..].iter().collect();
+                patches.push(Patch::AppendChildren(*cur_node_idx, append_patch))
+            }
+
+            if new_child_count < old_child_count {
+                patches.push(Patch::TruncateChildren(*cur_node_idx, new_child_count))
+            }
+
+            let min_count = min(old_child_count, new_child_count);
+            for index in 0..min_count {
+                *cur_node_idx = *cur_node_idx + 1;
+                let old_child = &old_element.children[index];
+                let new_child = &new_element.children[index];
+                patches.append(&mut diff_recursive(&old_child, &new_child, cur_node_idx))
+            }
+            if new_child_count < old_child_count {
+                for child in old_element.children[min_count..].iter() {
+                    increment_node_idx_for_children(child, cur_node_idx);
+                }
+            }
+        }
+        (VirtualNode::Text(_), VirtualNode::Element(_)) |
+        (VirtualNode::Element(_), VirtualNode::Text(_)) => {
+            unreachable!("Unequal variant discriminants should already have been handled");
+        }
+    };
 
     //    new_root.create_element()
     patches
@@ -107,8 +133,8 @@ fn diff_recursive<'a, 'b>(
 
 fn increment_node_idx_for_children<'a, 'b>(old: &'a VirtualNode, cur_node_idx: &'b mut usize) {
     *cur_node_idx += 1;
-    if let Some(children) = old.children.as_ref() {
-        for child in children {
+    if let VirtualNode::Element(element_node) = old {
+        for child in element_node.children.iter() {
             increment_node_idx_for_children(&child, cur_node_idx);
         }
     }
@@ -122,7 +148,7 @@ use self::diff_test_case::*;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::html;
+    use crate::{html, VirtualNode, VText};
     use std::collections::HashMap;
 
     #[test]
@@ -148,7 +174,7 @@ mod tests {
                 Patch::Replace(1, &html! { <i>1</i> }),
                 Patch::Replace(3, &html! { <i></i> }),
             ], //required to check correct index
-            description: "Replace node with a chiild",
+            description: "Replace node with a child",
         }
         .test();
     }
@@ -258,7 +284,7 @@ mod tests {
         DiffTestCase {
             old: html! { Old },
             new: html! { New },
-            expected: vec![Patch::ChangeText(0, &html! { New })],
+            expected: vec![Patch::ChangeText(0, &VText::new("New"))],
             description: "Replace text node",
         }
         .test();

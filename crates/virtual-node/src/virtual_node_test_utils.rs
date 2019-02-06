@@ -1,6 +1,6 @@
 //! A collection of functions that are useful for unit testing your html! views.
 
-use crate::VirtualNode;
+use crate::{VirtualNode, VElement};
 
 impl VirtualNode {
     /// Get a vector of all of the VirtualNode children / grandchildren / etc of
@@ -28,25 +28,32 @@ impl VirtualNode {
     where
         F: Fn(&str) -> bool,
     {
-        let mut descendants = vec![];
-
-        for child in self.children.as_ref().unwrap() {
-            get_descendants(&mut descendants, &child);
-        }
-
-        let mut filtered_descendants = vec![];
-        for node in descendants.into_iter() {
-            match node.props.get("label") {
-                Some(label) => {
-                    if filter(label) {
-                        filtered_descendants.push(node);
-                    }
+        // Get descendants recursively
+        let mut descendants: Vec<&'a VirtualNode> = vec![];
+        match self {
+            VirtualNode::Text(_) => { /* nothing to do */ },
+            VirtualNode::Element(element_node) => {
+                for child in element_node.children.iter() {
+                    get_descendants(&mut descendants, child);
                 }
-                None => {}
-            };
+            },
         }
 
-        filtered_descendants
+        // Filter descendants
+        descendants
+            .into_iter()
+            .filter(|vn: &&'a VirtualNode| {
+                match vn {
+                    VirtualNode::Text(_) => false,
+                    VirtualNode::Element(element_node) => {
+                        match element_node.props.get("label") {
+                            Some(label) => filter(label),
+                            None => false,
+                        }
+                    },
+                }
+            })
+            .collect()
     }
 
     /// Get a vector of all of the descendants of this VirtualNode
@@ -75,9 +82,13 @@ impl VirtualNode {
 
 fn get_descendants<'a>(descendants: &mut Vec<&'a VirtualNode>, node: &'a VirtualNode) {
     descendants.push(node);
-
-    for child in node.children.as_ref().unwrap() {
-        get_descendants(descendants, child);
+    match node {
+        VirtualNode::Text(_) => { /* nothing to do */ },
+        VirtualNode::Element(element_node) => {
+            for child in element_node.children.iter() {
+                get_descendants(descendants, child);
+            }
+        },
     }
 }
 
@@ -114,18 +125,19 @@ mod tests {
 
     #[test]
     fn label_equals() {
-        let span = VirtualNode::new("span");
+        let span = VirtualNode::element("span");
 
         let mut props = HashMap::new();
         props.insert("label".to_string(), "hello".to_string());
-        let mut em = VirtualNode::new("em");
+        let mut em = VElement::new("em");
         em.props = props;
 
-        let mut html = VirtualNode::new("div");
-        html.children.as_mut().unwrap().push(span);
-        html.children.as_mut().unwrap().push(em);
+        let mut html = VElement::new("div");
+        html.children.push(span);
+        html.children.push(em.into());
 
-        let hello_nodes = html.filter_label_equals("hello");
+        let html_node = VirtualNode::Element(html);
+        let hello_nodes = html_node.filter_label_equals("hello");
 
         assert_eq!(hello_nodes.len(), 1);
     }

@@ -19,7 +19,7 @@ pub enum Tag {
     ///
     ///  -> Hello world
     Text { text: String },
-    /// let text_var = VirtualNode::from("3");
+    /// let text_var = VirtualNode::text("3");
     ///
     /// let iter_nodes =
     ///   vec![
