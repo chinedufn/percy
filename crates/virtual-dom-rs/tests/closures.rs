@@ -29,7 +29,7 @@ fn closure_not_dropped() {
     {
         let mut input = make_input_component(Rc::clone(&text));
         input
-            .as_element_variant_ref_mut().expect("Not an element")
+            .as_element_variant_mut().expect("Not an element")
             .props.insert("id".into(), "old-input-elem".into());
 
         let mount = document.create_element("div").unwrap();
@@ -51,7 +51,7 @@ fn closure_not_dropped() {
         // that dom_updater maintains Rc's to those Closures.
         let mut new_node = make_input_component(Rc::clone(&text));
         new_node
-            .as_element_variant_ref_mut().expect("Not an element")
+            .as_element_variant_mut().expect("Not an element")
             .props.insert("id".into(), "new-input-elem".into());
 
         dom_updater.update(new_node);

@@ -278,7 +278,7 @@ impl HtmlParser {
                             unreachable!("Non-elements cannot have children");
                         });
                         let push_children = quote! {
-                            if let Some(ref mut element_node) =  #parent_name.as_element_variant_ref_mut() {
+                            if let Some(ref mut element_node) =  #parent_name.as_element_variant_mut() {
                                 element_node.children.extend(#children.into_iter());
                             } else {
                                 #unreachable;
