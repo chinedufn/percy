@@ -187,15 +187,6 @@ impl VirtualNode {
             VirtualNode::Element(element_node) => element_node.create_element_node().into(),
         }
     }
-
-    /// Whether or not this `VirtualNode` is representing a `Text` node
-    #[deprecated(note="Use enum matching instead")]  // TODO remove this method
-    pub fn is_text_node(&self) -> bool {
-        match self {
-            VirtualNode::Text(_) => true,
-            _ => false,
-        }
-    }
 }
 
 impl VElement {
