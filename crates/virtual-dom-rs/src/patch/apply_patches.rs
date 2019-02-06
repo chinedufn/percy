@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node, Text};
 
-use crate::{VirtualNode, VirtualNodeText};
+use crate::{VirtualNode, VText};
 
 /// Apply all of the patches to our old root node in order to create the new root node
 /// that we desire.

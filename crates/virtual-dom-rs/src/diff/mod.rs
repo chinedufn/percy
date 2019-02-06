@@ -1,5 +1,5 @@
 use crate::Patch;
-use crate::{VirtualNode, VirtualNodeElement};
+use crate::{VirtualNode, VElement};
 use std::cmp::min;
 use std::collections::HashMap;
 use std::mem;

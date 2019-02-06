@@ -53,21 +53,21 @@ lazy_static! {
 ///
 /// TODO: Make all of these fields private and create accessor methods
 /// TODO: Create a builder to create instances of VirtualNode::Element with
-/// props and children without having to explicitly create a VirtualNodeElement
+/// props and children without having to explicitly create a VElement
 #[derive(Debug, PartialEq)]
 pub enum VirtualNode {
     /// An element node (node type `ELEMENT_NODE`).
-    Element(VirtualNodeElement),
+    Element(VElement),
     /// A text node (node type `TEXT_NODE`).
     ///
-    /// Note: This wraps a `VirtualNodeText` instead of a plain `String` in
+    /// Note: This wraps a `VText` instead of a plain `String` in
     /// order to enable custom methods like `create_text_node()` on the
     /// wrapped type.
-    Text(VirtualNodeText),
+    Text(VText),
 }
 
 #[derive(PartialEq)]
-pub struct VirtualNodeElement {
+pub struct VElement {
     /// The HTML tag, such as "div"
     pub tag: String,
     /// HTML props such as id, class, style, etc
@@ -80,7 +80,7 @@ pub struct VirtualNodeElement {
 }
 
 #[derive(PartialEq)]
-pub struct VirtualNodeText {
+pub struct VText {
     pub text: String,
 }
 
@@ -95,7 +95,7 @@ impl VirtualNode {
     /// let div = VirtualNode::element("div");
     /// ```
     pub fn element<S>(tag: S) -> Self where S: Into<String> {
-        VirtualNode::Element(VirtualNodeElement::new(tag))
+        VirtualNode::Element(VElement::new(tag))
     }
 
     /// Create a new virtual text node with the given text.
@@ -111,68 +111,68 @@ impl VirtualNode {
         VirtualNode::Text(text.into())
     }
 
-    /// Create a new [`VirtualNodeElement`] with the specified tag name.
+    /// Create a new [`VElement`] with the specified tag name.
     ///
     /// This is the variant that is contained inside [`VirtualNode::Element`].
     /// It can be turned into a [`VirtualNode`] using the from/into.
     ///
     /// [`VirtualNode`]: enum.VirtualNode.html
     /// [`VirtualNode::Element`]: enum.VirtualNode.html#variant.Element
-    /// [`VirtualNodeElement`]: struct.VirtualNodeElement.html
-    pub fn element_variant<S: Into<String>>(tag: S) -> VirtualNodeElement {
-        VirtualNodeElement::new(tag)
+    /// [`VElement`]: struct.VElement.html
+    pub fn element_variant<S: Into<String>>(tag: S) -> VElement {
+        VElement::new(tag)
     }
 
-    /// Create a new [`VirtualNodeText`] with the specified text content.
+    /// Create a new [`VText`] with the specified text content.
     ///
     /// This is the variant that is contained inside [`VirtualNode::Text`]. It
     /// can be turned into a [`VirtualNode`] using the from/into.
     ///
     /// [`VirtualNode`]: enum.VirtualNode.html
     /// [`VirtualNode::Text`]: enum.VirtualNode.html#variant.Text
-    /// [`VirtualNodeText`]: struct.VirtualNodeText.html
-    pub fn text_variant<S: Into<String>>(text: S) -> VirtualNodeText {
-        VirtualNodeText { text: text.into() }
+    /// [`VText`]: struct.VText.html
+    pub fn text_variant<S: Into<String>>(text: S) -> VText {
+        VText { text: text.into() }
     }
 
-    /// Cast into a [`VirtualNodeElement`] reference, if this is an [`Element`] variant.
+    /// Cast into a [`VElement`] reference, if this is an [`Element`] variant.
     ///
-    /// [`VirtualNodeElement`]: struct.VirtualNodeElement.html
+    /// [`VElement`]: struct.VElement.html
     /// [`Element`]: enum.VirtualNode.html#variant.Element
-    pub fn as_element_variant_ref(&self) -> Option<&VirtualNodeElement> {
+    pub fn as_element_variant_ref(&self) -> Option<&VElement> {
         match self {
             VirtualNode::Element(ref element_node) => Some(element_node),
             _ => None,
         }
     }
 
-    /// Cast into a mutable [`VirtualNodeElement`] reference, if this is an [`Element`] variant.
+    /// Cast into a mutable [`VElement`] reference, if this is an [`Element`] variant.
     ///
-    /// [`VirtualNodeElement`]: struct.VirtualNodeElement.html
+    /// [`VElement`]: struct.VElement.html
     /// [`Element`]: enum.VirtualNode.html#variant.Element
-    pub fn as_element_variant_mut(&mut self) -> Option<&mut VirtualNodeElement> {
+    pub fn as_element_variant_mut(&mut self) -> Option<&mut VElement> {
         match self {
             VirtualNode::Element(ref mut element_node) => Some(element_node),
             _ => None,
         }
     }
 
-    /// Cast into a [`VirtualNodeText`] reference, if this is an [`Text`] variant.
+    /// Cast into a [`VText`] reference, if this is an [`Text`] variant.
     ///
-    /// [`VirtualNodeText`]: struct.VirtualNodeText.html
+    /// [`VText`]: struct.VText.html
     /// [`Text`]: enum.VirtualNode.html#variant.Text
-    pub fn as_text_variant_ref(&self) -> Option<&VirtualNodeText> {
+    pub fn as_text_variant_ref(&self) -> Option<&VText> {
         match self {
             VirtualNode::Text(ref text_node) => Some(text_node),
             _ => None,
         }
     }
 
-    /// Cast into a mutable [`VirtualNodeText`] reference, if this is an [`Text`] variant.
+    /// Cast into a mutable [`VText`] reference, if this is an [`Text`] variant.
     ///
-    /// [`VirtualNodeText`]: struct.VirtualNodeText.html
+    /// [`VText`]: struct.VText.html
     /// [`Text`]: enum.VirtualNode.html#variant.Text
-    pub fn as_text_variant_mut(&mut self) -> Option<&mut VirtualNodeText> {
+    pub fn as_text_variant_mut(&mut self) -> Option<&mut VText> {
         match self {
             VirtualNode::Text(ref mut text_node) => Some(text_node),
             _ => None,
@@ -198,9 +198,9 @@ impl VirtualNode {
     }
 }
 
-impl VirtualNodeElement {
+impl VElement {
     pub fn new<S>(tag: S) -> Self where S: Into<String> {
-        VirtualNodeElement {
+        VElement {
             tag: tag.into(),
             props: HashMap::new(),
             events: Events(HashMap::new()),
@@ -300,7 +300,7 @@ impl VirtualNodeElement {
 
 }
 
-impl VirtualNodeText {
+impl VText {
     /// Return a `Text` element from a `VirtualNode`, typically right before adding it
     /// into the DOM.
     pub fn create_text_node(&self) -> Text {
@@ -355,27 +355,27 @@ fn create_unique_identifier() -> u32 {
     *elem_unique_id
 }
 
-impl From<VirtualNodeText> for VirtualNode {
-    fn from(other: VirtualNodeText) -> Self {
+impl From<VText> for VirtualNode {
+    fn from(other: VText) -> Self {
         VirtualNode::Text(other)
     }
 }
 
-impl From<VirtualNodeElement> for VirtualNode {
-    fn from(other: VirtualNodeElement) -> Self {
+impl From<VElement> for VirtualNode {
+    fn from(other: VElement) -> Self {
         VirtualNode::Element(other)
     }
 }
 
-impl From<&str> for VirtualNodeText {
+impl From<&str> for VText {
     fn from(text: &str) -> Self {
-        VirtualNodeText { text: text.to_string() }
+        VText { text: text.to_string() }
     }
 }
 
-impl From<String> for VirtualNodeText {
+impl From<String> for VText {
     fn from(text: String) -> Self {
-        VirtualNodeText { text }
+        VText { text }
     }
 }
 
@@ -389,7 +389,7 @@ impl IntoIterator for VirtualNode {
     }
 }
 
-impl fmt::Debug for VirtualNodeElement {
+impl fmt::Debug for VElement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -399,14 +399,14 @@ impl fmt::Debug for VirtualNodeElement {
     }
 }
 
-impl fmt::Debug for VirtualNodeText {
+impl fmt::Debug for VText {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Text({})", self.text)
     }
 }
 
-impl fmt::Display for VirtualNodeElement {
-    // Turn a VirtualNodeElement and all of it's children (recursively) into an HTML string
+impl fmt::Display for VElement {
+    // Turn a VElement and all of it's children (recursively) into an HTML string
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "<{}", self.tag).unwrap();
 
@@ -428,8 +428,8 @@ impl fmt::Display for VirtualNodeElement {
     }
 }
 
-// Turn a VirtualNodeText into an HTML string
-impl fmt::Display for VirtualNodeText {
+// Turn a VText into an HTML string
+impl fmt::Display for VText {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.text)
     }
