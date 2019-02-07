@@ -5,24 +5,23 @@ rendering your virtual DOM to a `String` and responding to a client with
 that `String`.
 
 ```rust
-#[macro_use]
-extern crate virtual_dom_rs;
+use virtual_dom_rs::prelude::*;
 use std::cell::Cell;
 
 fn main () {
   let count_cell = Cell::new(5);
 
   let app = html! {
-    <div id='app',>
-      <button !onclick=|_ev| { *count+= 1; },>
-        { "Hello world" }
+    <div id="app">
+      <button onclick=|_ev| { *count+= 1; }>
+        Hello world
       </button>
     </div>
   };
 
 
   let html_to_serve = app.to_string();
-  // <div id='app'><button>Hello world</button></div>
+  // <div id="app"><button>Hello world</button></div>
 
   // .. server string to client (http response) ...
 }
