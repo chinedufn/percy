@@ -54,7 +54,7 @@ lazy_static! {
 /// TODO: Make all of these fields private and create accessor methods
 /// TODO: Create a builder to create instances of VirtualNode::Element with
 /// props and children without having to explicitly create a VElement
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub enum VirtualNode {
     /// An element node (node type `ELEMENT_NODE`).
     Element(VElement),
@@ -358,6 +358,15 @@ impl IntoIterator for VirtualNode {
 
     fn into_iter(self) -> Self::IntoIter {
         vec![self].into_iter()
+    }
+}
+
+impl fmt::Debug for VirtualNode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            VirtualNode::Element(e) => write!(f, "Node::{:?}", e),
+            VirtualNode::Text(t) => write!(f, "Node::{:?}", t),
+        }
     }
 }
 
