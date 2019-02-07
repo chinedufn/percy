@@ -31,7 +31,7 @@ One downside to this approach is that a user must wait until the script begins r
 Let's illustrate:
 
 ```
-Client side rendeiring
+Client side rendering
 without server side rendering:
 
 ┌─────────────────────────────────────┐
