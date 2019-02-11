@@ -39,17 +39,6 @@ For more on the `html!` macro see [html macro](virtual-dom-rs/src/html_macro.rs)
 use virtual_dom_rs::prelude::*;
 use css_rs_macro::css;
 
-static SOME_COMPONENT_CSS: &'static str = css! {"
-:host {
-    font-size: 30px;
-    font-weight: bold;
-}
-
-:host > span {
-    color: blue;
-}
-"};
-
 fn main () {
     let count = Rc::new(Cell::new(0));
 
@@ -74,6 +63,17 @@ fn main () {
 
     // Check out the DomUpdater for client side rendering
 }
+
+static SOME_COMPONENT_CSS: &'static str = css! {"
+:host {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+:host > span {
+    color: blue;
+}
+"};
 ```
 
 ## Examples
