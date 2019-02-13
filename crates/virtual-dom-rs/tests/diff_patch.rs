@@ -179,5 +179,16 @@ fn text_root_node() {
         new: html! { New text },
         override_expected: None,
     }
-        .test();
+    .test();
+}
+
+#[wasm_bindgen_test]
+fn replace_text_with_element() {
+    DiffPatchTest {
+        desc: "Replacing a text node with an element works",
+        old: html! { <div>a</div> },
+        new: html! { <div><br></div> },
+        override_expected: None,
+    }
+    .test();
 }

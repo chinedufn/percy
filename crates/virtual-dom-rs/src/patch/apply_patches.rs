@@ -6,8 +6,6 @@ use std::collections::HashSet;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node, Text};
 
-use crate::{VirtualNode, VText};
-
 /// Apply all of the patches to our old root node in order to create the new root node
 /// that we desire.
 /// This is usually used after diffing two virtual nodes.
@@ -177,8 +175,9 @@ fn apply_text_patch(node: &Text, patch: &Patch) {
         Patch::ChangeText(_node_idx, new_node) => {
             node.set_node_value(Some(&new_node.text));
         }
-        _ => unreachable!(
-            "Nodes should only receive change text patches. All other patches go to Element's"
+        other => unreachable!(
+            "Nodes should only receive change text patches, not {:?}.
+             All other patches go to Elements", other,
         ),
     }
 }
