@@ -27,6 +27,7 @@ features = [
     "Node",
     "NodeList",
     "Text",
+    "CharacterData",
     "Window",
 ]
 

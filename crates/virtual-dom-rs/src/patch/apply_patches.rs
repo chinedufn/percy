@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use wasm_bindgen::JsCast;
-use web_sys::{Element, Node, Text};
+use web_sys::{Element, Node, Text, CharacterData};
 
 /// Apply all of the patches to our old root node in order to create the new root node
 /// that we desire.
@@ -165,8 +165,8 @@ fn apply_element_patch(node: &Element, patch: &Patch) {
             }
         }
         Patch::ChangeText(_node_idx, _new_node) => unreachable!(
-            "Elements should not receive ChangeText patches. Those should go to Node's"
-        ),
+            "Elements should not receive ChangeText patches."
+        )
     }
 }
 
@@ -175,9 +175,12 @@ fn apply_text_patch(node: &Text, patch: &Patch) {
         Patch::ChangeText(_node_idx, new_node) => {
             node.set_node_value(Some(&new_node.text));
         }
+        Patch::Replace(_node_idx, new_node) => {
+            node.replace_with_with_node_1(&new_node.create_dom_node().node)
+                .expect("Replacing node failed");
+        }
         other => unreachable!(
-            "Nodes should only receive change text patches, not {:?}.
-             All other patches go to Elements", other,
-        ),
+            "Text nodes should only receive ChangeText or Replace patches, not {:?}.", other,
+        )
     }
 }
