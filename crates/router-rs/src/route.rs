@@ -144,7 +144,7 @@ mod tests {
 
     impl View for MyView {
         fn render(&self) -> VirtualNode {
-            let id = VirtualNode::text(&self.id.to_string());
+            let id = VirtualNode::text(self.id.to_string());
             html! { <div> {id} </div> }
         }
     }

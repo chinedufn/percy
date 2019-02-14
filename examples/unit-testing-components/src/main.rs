@@ -24,7 +24,7 @@ fn struggling_water_bottle(percent_full: f32) -> VirtualNode {
         "Please fill me up :( I am only {} percent full :(",
         percent_full
     );
-    let message = VirtualNode::text(&message);
+    let message = VirtualNode::text(&*message);
 
     html! {
         <div label="struggle-water">

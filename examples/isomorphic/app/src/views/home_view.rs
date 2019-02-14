@@ -1,7 +1,6 @@
 use crate::store::Store;
 use crate::views::nav_bar_view::ActivePage;
 use crate::views::nav_bar_view::NavBarView;
-use crate::Msg;
 
 use virtual_dom_rs::prelude::*;
 
@@ -25,7 +24,7 @@ impl View for HomeView {
         let store = Rc::clone(&self.store);
 
         let click_count = self.store.borrow().click_count();
-        let click_count = &click_count.to_string();
+        let click_count = &*click_count.to_string();
 
         let click_component =
             html! { <strong style="font-size: 30px">{ text!(click_count) }</strong> };
