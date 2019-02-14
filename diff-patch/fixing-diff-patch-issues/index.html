@@ -1,0 +1,382 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Fixing diff/patch issues - Percy - Isomorphic Web Apps in Rust</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body class="light">
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../../";
+            var default_theme = "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { } 
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            document.body.className = theme;
+            document.querySelector('html').className = theme + ' js';
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <ol class="chapter"><li class="affix"><a href="../../introduction.html">Introduction</a></li><li class="spacer"></li><li><a href="../../views/index.html"><strong aria-hidden="true">1.</strong> Rendering Views</a></li><li><ol class="section"><li><a href="../../html-macro/index.html"><strong aria-hidden="true">1.1.</strong> Writing html!</a></li><li><ol class="section"><li><a href="../../html-macro/html-macro.html"><strong aria-hidden="true">1.1.1.</strong> Writing html!</a></li><li><a href="../../html-macro/compile-time-errors.html"><strong aria-hidden="true">1.1.2.</strong> Compile Time Errors</a></li></ol></li><li><a href="../../virtual-dom/index.html"><strong aria-hidden="true">1.2.</strong> Virtual DOM</a></li><li><ol class="section"><li><a href="../../virtual-dom/unit-testing-views.html"><strong aria-hidden="true">1.2.1.</strong> Unit Testing your Views</a></li></ol></li><li><a href="../../views/server-side-rendering/index.html"><strong aria-hidden="true">1.3.</strong> Server Side Rendering (SSR)</a></li><li><ol class="section"><li><a href="../../views/server-side-rendering/why-ssr.html"><strong aria-hidden="true">1.3.1.</strong> Why SSR</a></li><li><a href="../../views/server-side-rendering/how-to-ssr.html"><strong aria-hidden="true">1.3.2.</strong> How to SSR</a></li></ol></li></ol></li><li><a href="../../router/index.html"><strong aria-hidden="true">2.</strong> Router</a></li><li><a href="../../css-in-rust.html"><strong aria-hidden="true">3.</strong> CSS in Rust</a></li><li><a href="../../contributing/index.html"><strong aria-hidden="true">4.</strong> Contributing</a></li><li><ol class="section"><li><a href="../../contributing/getting-started.html"><strong aria-hidden="true">4.1.</strong> Getting Started</a></li><li><a href="../../contributing/ways-to-contribute.html"><strong aria-hidden="true">4.2.</strong> Types of Contributions</a></li><li><a href="../../contributing/internal-design/index.html"><strong aria-hidden="true">4.3.</strong> Internal Design</a></li><li><ol class="section"><li><a href="../../diff-patch/index.html"><strong aria-hidden="true">4.3.1.</strong> Diff / Patch Algorithm</a></li><li><ol class="section"><li><a href="../../diff-patch/diff-patch-walkthrough/index.html"><strong aria-hidden="true">4.3.1.1.</strong> Diff / Patch Walkthrough</a></li><li><a href="../../diff-patch/fixing-diff-patch-issues/index.html" class="active"><strong aria-hidden="true">4.3.1.2.</strong> Fixing diff/patch issues</a></li></ol></li><li><a href="../../contributing/internal-design/sibling-text-nodes.html"><strong aria-hidden="true">4.3.2.</strong> Handling text siblings</a></li></ol></li></ol></li></ol>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">Percy - Isomorphic Web Apps in Rust</h1> 
+
+                        <div class="right-buttons">
+                            <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <a class="header" href="#fixing-diffpatch-issues" id="fixing-diffpatch-issues"><h1>Fixing diff/patch issues</h1></a>
+<p>As our virtual dom implementation ages it will become more and more resilient, but while we're still
+an experimental library it's possible that the diff/patch algorithm could fail in some scenarios.</p>
+<p>If you notice a failure the first step is to open a new issue.</p>
+<p>Ideally you include an example start node and end node that isn't working properly.</p>
+<p>Let's make up an example here.</p>
+<pre><code># Example things that you'd include in your issue.
+
+start: html! { &lt;div&gt; &lt;/div&gt;  }
+
+end: html! { &lt;span&gt; &lt;/span&gt; }
+
+Observed error: It somehow ends up as &lt;b&gt;&lt;/b&gt; in my browser!
+</code></pre>
+<hr />
+<p>If you've opened this issue you've already made a big contribution!</p>
+<p>If you'd like to go further, here's how to get to the root of the problem.</p>
+<a class="header" href="#debugging-failed-diff" id="debugging-failed-diff"><h2>Debugging Failed Diff</h2></a>
+<p>The easiest place to start is by adding a new diff test and seeing what patches you get.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+
+#fn main() {
+use crate::diff::diff;
+use crate::patch::Patch;
+use virtual_node::VirtualNode;
+
+/// Test that we generate the right Vec&lt;Patch&gt; for some start and end virtual dom.
+pub struct DiffTestCase&lt;'a&gt; {
+    // ex: &quot;Patching root level nodes works&quot;
+    pub description: &amp;'static str,
+    // ex: html! { &lt;div&gt; &lt;/div&gt; }
+    pub old: VirtualNode,
+    // ex: html! { &lt;strong&gt; &lt;/strong&gt; }
+    pub new: VirtualNode,
+    // ex: vec![Patch::Replace(0, &amp;html! { &lt;strong&gt;&lt;/strong&gt; })],
+    pub expected: Vec&lt;Patch&lt;'a&gt;&gt;,
+}
+
+impl&lt;'a&gt; DiffTestCase&lt;'a&gt; {
+    pub fn test(&amp;self) {
+        // ex: vec![Patch::Replace(0, &amp;html! { &lt;strong&gt;&lt;/strong&gt; })],
+        let patches = diff(&amp;self.old, &amp;self.new);
+
+        assert_eq!(patches, self.expected, &quot;{}&quot;, self.description);
+    }
+}
+#}</code></pre></pre>
+<p>Diff patch tests get added in <code>diff.rs</code>. Here's an example:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// diff.rs
+
+#[test]
+fn add_children() {
+   DiffTestCase {
+       old: html! { &lt;div&gt; &lt;b&gt;&lt;/b&gt; &lt;/div&gt; },
+       new: html! { &lt;div&gt; &lt;b&gt;&lt;/b&gt; &lt;new&gt;&lt;/new&gt; &lt;/div&gt; },
+       expected: vec![Patch::AppendChildren(0, vec![&amp;html! { &lt;new&gt;&lt;/new&gt; }])],
+       description: &quot;Added a new node to the root node&quot;,
+   }.test();
+}
+#}</code></pre></pre>
+<p>To run your new test case:</p>
+<pre><code class="language-sh"># To run just your new diff test
+cargo test -p virtual-dom-rs --lib my_new_test_name_here
+
+# To run all diff tests
+cargo test -p virtual-dom-rs --lib diff::tests
+</code></pre>
+<p>If things are failing then you've found the issue!</p>
+<p>Please comment back on your original issue with your findings.</p>
+<p>If everything is passing, then it must be a patching issue.</p>
+<a class="header" href="#debugging-failed-patch" id="debugging-failed-patch"><h2>Debugging Failed Patch</h2></a>
+<p>If the diff checked out, then the issue must be in the patching process.</p>
+<p>Patches are tested in <code>crates/virtual-dom-rs/tests/diff_patch.rs</code></p>
+<p>A patch test case looks like this:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+//! Kept in its own file to more easily import into the book
+
+use console_error_panic_hook;
+use virtual_dom_rs::prelude::*;
+use wasm_bindgen::JsCast;
+use web_sys::{Node, Element};
+
+/// A test case that both diffing and patching are working in a real browser
+pub struct DiffPatchTest&lt;'a&gt; {
+    /// Description of the test case.
+    pub desc: &amp;'static str,
+    /// The old virtual node.
+    pub old: VirtualNode,
+    /// The new virtual node.
+    pub new: VirtualNode,
+    /// By default we generate the expected based on `new.to_string()`. You can
+    /// use this field to override the expected HTML after patching.
+    pub override_expected: Option&lt;&amp;'a str&gt;,
+}
+
+impl&lt;'a&gt; DiffPatchTest&lt;'a&gt; {
+    pub fn test(&amp;mut self) {
+        console_error_panic_hook::set_once();
+
+        let document = web_sys::window().unwrap().document().unwrap();
+
+        // Create a DOM node of the virtual root node
+        let root_node: Node = self.old.create_dom_node().node;
+
+        // Clone since virtual_dom_rs::patch takes ownership of the root node.
+        let patched_root_node: Node = root_node.clone();
+
+        // Generate patches
+        let patches = virtual_dom_rs::diff(&amp;self.old, &amp;self.new);
+
+        // Patch our root node. It should now look like `self.new`
+        virtual_dom_rs::patch(root_node, &amp;patches);
+
+        // Determine the expected outer HTML
+        let expected_outer_html = match self.override_expected {
+            Some(ref expected) =&gt; expected.to_string(),
+            None =&gt; self.new.to_string(),
+        };
+
+        let actual_outer_html = match patched_root_node.node_type() {
+            Node::ELEMENT_NODE =&gt; patched_root_node.unchecked_into::&lt;Element&gt;().outer_html(),
+            Node::TEXT_NODE =&gt; patched_root_node.text_content().unwrap_or(&quot;&quot;.into()),
+            _ =&gt; panic!(&quot;Unhandled node type&quot;),
+        };
+
+        assert_eq!(
+            &amp;actual_outer_html,
+            &amp;expected_outer_html,
+            &quot;{}&quot;,
+            self.desc
+        );
+    }
+}
+
+#}</code></pre></pre>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// Example diff patch test case.
+// Found in `crates/virtual-dom-rs/tests/diff_patch.rs`
+
+
+wasm_bindgen_test_configure!(run_in_browser);
+
+mod diff_patch_test_case;
+use self::diff_patch_test_case::DiffPatchTest;
+
+#[wasm_bindgen_test]
+fn replace_child() {
+    DiffPatchTest {
+        desc: &quot;Replace a root node attribute attribute and a child text node&quot;,
+        old: html! {
+         &lt;div&gt;
+           Original element
+         &lt;/div&gt;
+#}</code></pre></pre>
+<pre><code># Run just your new diff patch test
+wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch my_test_name_here
+
+# Run all diff patch tests that contain the word replace
+wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch replace
+
+# Run all diff patch tests
+wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch
+</code></pre>
+<p>Create your new test case and run it to see if things fail.</p>
+<p>If they do, update your original issue with your findings.</p>
+<a class="header" href="#fixing-the-problem" id="fixing-the-problem"><h2>Fixing the problem</h2></a>
+<p>Look at the documentation for the diff algorithm and the patch algorithm to get a good sense of where and how our
+diffing and patching is implemented. Fixing the problem will require you to dive into that code.</p>
+<p>As you go, if you see opportunities to make the code more understandable, DRY or better commented, seize them!</p>
+<p>Look through your errors and try to pinpoint the exact place that the bug is stemming from. If you're stuck, continue
+to update your issue with your questions and progress and someone will get back to you.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../../diff-patch/diff-patch-walkthrough/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="../../contributing/internal-design/sibling-text-nodes.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a href="../../diff-patch/diff-patch-walkthrough/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="../../contributing/internal-design/sibling-text-nodes.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script src="../../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>
