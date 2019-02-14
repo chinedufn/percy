@@ -108,7 +108,7 @@ impl VirtualNode {
     /// let div = VirtualNode::text("div");
     /// ```
     pub fn text<S>(text: S) -> Self where S: Into<String> {
-        VirtualNode::Text(VElement::new(text.into()))
+        VirtualNode::Text(VText::new(text.into()))
     }
 
     /// Return a [`VElement`] reference, if this is an [`Element`] variant.
