@@ -1,5 +1,7 @@
-Percy [![Build Status](https://travis-ci.org/chinedufn/percy.svg?branch=master)](https://travis-ci.org/chinedufn/percy)
-===============
+Percy
+=====
+
+[![Build status](https://circleci.com/gh/chinedufn/percy.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/chinedufn/percy)
 
 > A modular toolkit for building [isomorphic web apps][isomorphic-web-apps] with Rust + WebAssembly
 
