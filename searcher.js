@@ -9,14 +9,7 @@ window.search = window.search || {};
     if (!Mark || !elasticlunr) {
         return;
     }
-
-    //IE 11 Compatibility from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
-    if (!String.prototype.startsWith) {
-        String.prototype.startsWith = function(search, pos) {
-            return this.substr(!pos || pos < 0 ? 0 : +pos, search.length) === search;
-        };
-    }
-
+    
     var search_wrap = document.getElementById('search-wrapper'),
         searchbar = document.getElementById('searchbar'),
         searchbar_outer = document.getElementById('searchbar-outer'),
@@ -27,12 +20,11 @@ window.search = window.search || {};
         content = document.getElementById('content'),
 
         searchindex = null,
-        doc_urls = [],
-        results_options = {
+        resultsoptions = {
             teaser_word_count: 30,
             limit_results: 30,
         },
-        search_options = {
+        searchoptions = {
             bool: "AND",
             expand: true,
             fields: {
@@ -140,12 +132,12 @@ window.search = window.search || {};
         teaser_count++;
 
         // The ?URL_MARK_PARAM= parameter belongs inbetween the page and the #heading-anchor
-        var url = doc_urls[result.ref].split("#");
+        var url = result.ref.split("#");
         if (url.length == 1) { // no anchor found
             url.push("");
         }
 
-        return '<a href="' + path_to_root + url[0] + '?' + URL_MARK_PARAM + '=' + searchterms + '#' + url[1]
+        return '<a href="' + url[0] + '?' + URL_MARK_PARAM + '=' + searchterms + '#' + url[1]
             + '" aria-details="teaser_' + teaser_count + '">' + result.doc.breadcrumbs + '</a>'
             + '<span class="teaser" id="teaser_' + teaser_count + '" aria-label="Search Result Teaser">' 
             + teaser + '</span>';
@@ -197,7 +189,7 @@ window.search = window.search || {};
         }
 
         var window_weight = [];
-        var window_size = Math.min(weighted.length, results_options.teaser_word_count);
+        var window_size = Math.min(weighted.length, resultsoptions.teaser_word_count);
 
         var cur_sum = 0;
         for (var wordindex = 0; wordindex < window_size; wordindex++) {
@@ -247,12 +239,11 @@ window.search = window.search || {};
         return teaser_split.join('');
     }
 
-    function init(config) {
-        results_options = config.results_options;
-        search_options = config.search_options;
-        searchbar_outer = config.searchbar_outer;
-        doc_urls = config.doc_urls;
-        searchindex = elasticlunr.Index.load(config.index);
+    function init() {
+        resultsoptions = window.search.resultsoptions;
+        searchoptions = window.search.searchoptions;
+        searchbar_outer = window.search.searchbar_outer;
+        searchindex = elasticlunr.Index.load(window.search.index);
 
         // Set up events
         searchicon.addEventListener('click', function(e) { searchIconClickHandler(); }, false);
@@ -443,8 +434,8 @@ window.search = window.search || {};
         if (searchindex == null) { return; }
 
         // Do the actual search
-        var results = searchindex.search(searchterm, search_options);
-        var resultcount = Math.min(results.length, results_options.limit_results);
+        var results = searchindex.search(searchterm, searchoptions);
+        var resultcount = Math.min(results.length, resultsoptions.limit_results);
 
         // Display search metrics
         searchresults_header.innerText = formatSearchMetric(resultcount, searchterm);
@@ -462,16 +453,7 @@ window.search = window.search || {};
         showResults(true);
     }
 
-    fetch(path_to_root + 'searchindex.json')
-        .then(response => response.json())
-        .then(json => init(json))        
-        .catch(error => { // Try to load searchindex.js if fetch failed
-            var script = document.createElement('script');
-            script.src = path_to_root + 'searchindex.js';
-            script.onload = () => init(window.search);
-            document.head.appendChild(script);
-        });
-
+    init();
     // Exported functions
     search.hasFocus = hasFocus;
 })(window.search);

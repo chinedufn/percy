@@ -9,18 +9,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
-        <link rel="shortcut icon" href="favicon.png">
-        <link rel="stylesheet" href="css/variables.css">
-        <link rel="stylesheet" href="css/general.css">
-        <link rel="stylesheet" href="css/chrome.css">
-        <link rel="stylesheet" href="css/print.css" media="print">
+        <base href="">
 
-        <!-- Fonts -->
-        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="book.css">
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
 
-        <!-- Highlight.js Stylesheets -->
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
         <link rel="stylesheet" href="ayu-highlight.css">
@@ -29,14 +28,9 @@
         
 
         
+
     </head>
     <body class="light">
-        <!-- Provide site root to javascript -->
-        <script type="text/javascript">
-            var path_to_root = "";
-            var default_theme = "light";
-        </script>
-
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script type="text/javascript">
             try {
@@ -57,7 +51,7 @@
         <script type="text/javascript">
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { } 
-            if (theme === null || theme === undefined) { theme = default_theme; }
+            if (theme === null || theme === undefined) { theme = 'light'; }
             document.body.className = theme;
             document.querySelector('html').className = theme + ' js';
         </script>
@@ -92,7 +86,7 @@
                                 <i class="fa fa-paint-brush"></i>
                             </button>
                             <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light <span class="default">(default)</span></button></li>
                                 <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                                 <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                                 <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
@@ -111,7 +105,6 @@
                             <a href="print.html" title="Print this book" aria-label="Print this book">
                                 <i id="print-button" class="fa fa-print"></i>
                             </a>
-                            
                         </div>
                     </div>
                 </div>
@@ -140,7 +133,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <a class="header" href="#introduction" id="introduction"><h1>Introduction</h1></a>
+                        <a class="header" href="print.html#introduction" id="introduction"><h1>Introduction</h1></a>
 <blockquote>
 <p>Note: The book is a work in progress. Some chapters are empty placeholders that will be filled in over time.</p>
 </blockquote>
@@ -151,7 +144,7 @@ parts of the <code>Percy</code> toolkit with third party implementation that bet
 of your single page applications.</p>
 <p><code>Percy</code> is not yet ready for production (unless you're incredibly brave), but if you're
 interested in using it for real things you can <a href="https://github.com/chinedufn/percy/watchers">watch the development progress.</a>.</p>
-<a class="header" href="#a-snippet" id="a-snippet"><h3>A snippet</h3></a>
+<a class="header" href="print.html#a-snippet" id="a-snippet"><h3>A snippet</h3></a>
 <pre><pre class="playpen"><code class="language-rust">#![feature(proc_macro_hygiene)]
 
 use virtual_dom_rs::prelude::*;
@@ -171,7 +164,7 @@ fn main () {
   println!(&quot;{}&quot;, html_string);
 }
 </code></pre></pre>
-<a class="header" href="#roadmap" id="roadmap"><h3>Roadmap</h3></a>
+<a class="header" href="print.html#roadmap" id="roadmap"><h3>Roadmap</h3></a>
 <p><code>Percy</code> is very young and going through the early stages of development. Our roadmap is
 is mainly led by Real World Driven Development.</p>
 <p>This means that we're using <code>Percy</code> to build a real, production web app and ironing out
@@ -181,7 +174,7 @@ applications we'll publish a CLI for generating a production-grade starter proje
 everything that you need to get up and running.</p>
 <p>Check out the <a href="https://github.com/chinedufn/percy/issues">Percy issue tracker</a> and
 maybe open a couple of your own!</p>
-<a class="header" href="#notable-features" id="notable-features"><h3>Notable Features</h3></a>
+<a class="header" href="print.html#notable-features" id="notable-features"><h3>Notable Features</h3></a>
 <p><code>Percy</code> is still young, so the feature set is still growing and maturing. At the moment:</p>
 <ul>
 <li>
@@ -193,14 +186,16 @@ on the frontend or a <code>String</code> on the backend.</p>
 of in separate CSS/Sass/etc files.</p>
 </li>
 </ul>
-<a class="header" href="#rendering-views" id="rendering-views"><h1>Rendering Views</h1></a>
+<a class="header" href="print.html#other" id="other"><h3>Other</h3></a>
+<p>This is a new book build.</p>
+<a class="header" href="print.html#rendering-views" id="rendering-views"><h1>Rendering Views</h1></a>
 <p>Almost all front-end web applications seek to display some (often times interactive)
 content to a user.</p>
 <p>This section will dive into how to render content with <code>Percy</code>.</p>
-<a class="header" href="#html-macro" id="html-macro"><h1>HTML Macro</h1></a>
+<a class="header" href="print.html#html-macro" id="html-macro"><h1>HTML Macro</h1></a>
 <p>This chapter discusses rendering HTML using the <code>html!</code> macro</p>
-<a class="header" href="#writing-html" id="writing-html"><h1>Writing html!</h1></a>
-<a class="header" href="#static-text" id="static-text"><h3>Static text</h3></a>
+<a class="header" href="print.html#writing-html" id="writing-html"><h1>Writing html!</h1></a>
+<a class="header" href="print.html#static-text" id="static-text"><h3>Static text</h3></a>
 <p>Text that will never change can be typed right into your HTML</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -211,7 +206,7 @@ html!{
   &lt;div&gt; Text goes here &lt;/div&gt;
 };
 #}</code></pre></pre>
-<a class="header" href="#text-variables" id="text-variables"><h3>Text variables</h3></a>
+<a class="header" href="print.html#text-variables" id="text-variables"><h3>Text variables</h3></a>
 <p>Text variables must be wrapped in the <code>text!</code> macro.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -224,7 +219,7 @@ html! {
   Hello { text!(text_var) }
 }
 #}</code></pre></pre>
-<a class="header" href="#attributes" id="attributes"><h3>Attributes</h3></a>
+<a class="header" href="print.html#attributes" id="attributes"><h3>Attributes</h3></a>
 <p>Attributes work just like regular HTML.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -233,7 +228,7 @@ let view = html!{
   &lt;div id='my-id' class='big wide'&gt;&lt;/div&gt;
 };
 #}</code></pre></pre>
-<a class="header" href="#event-handlers" id="event-handlers"><h3>Event Handlers</h3></a>
+<a class="header" href="print.html#event-handlers" id="event-handlers"><h3>Event Handlers</h3></a>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
@@ -247,7 +242,7 @@ html! {
     &lt;/button&gt;
 }
 #}</code></pre></pre>
-<a class="header" href="#nested-components" id="nested-components"><h3>Nested components</h3></a>
+<a class="header" href="print.html#nested-components" id="nested-components"><h3>Nested components</h3></a>
 <p><code>html!</code> calls can be nested.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -272,7 +267,7 @@ let html_string = parent_view.to_string();
 // Here's what the String looks like:
 // &lt;div&gt;&lt;em&gt;&lt;/em&gt;&lt;span&gt;&lt;/span&gt;Nested html! call&lt;/div&gt;
 #}</code></pre></pre>
-<a class="header" href="#iterable-children" id="iterable-children"><h3>Iterable Children</h3></a>
+<a class="header" href="print.html#iterable-children" id="iterable-children"><h3>Iterable Children</h3></a>
 <p>Any type that implements IntoIter<VirtualNode> can be used as a child element within a block.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -290,7 +285,7 @@ html! {
   &lt;ul&gt; { list } &gt;/ul&gt;
 }
 #}</code></pre></pre>
-<a class="header" href="#comments" id="comments"><h3>Comments</h3></a>
+<a class="header" href="print.html#comments" id="comments"><h3>Comments</h3></a>
 <p>You can use Rust comments within your HTML</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -305,12 +300,12 @@ html! {
   &lt;/div&gt;
 }
 #}</code></pre></pre>
-<a class="header" href="#compile-time-errors" id="compile-time-errors"><h1>Compile Time Errors</h1></a>
+<a class="header" href="print.html#compile-time-errors" id="compile-time-errors"><h1>Compile Time Errors</h1></a>
 <p>The <code>html-macro</code> provides compile time errors to help catch mistakes.</p>
 <p>Every compile time error is tested in <code>crates/html-macro-ui</code> using the <a href="https://github.com/laumann/compiletest-rs">compiletest-rs</a>
 crate.</p>
 <p>If you have an idea for an error that you don't see here <a href="https://github.com/chinedufn/percy/issues/new">open an issue!</a></p>
-<a class="header" href="#wrong-closing-tag" id="wrong-closing-tag"><h4>Wrong closing tag</h4></a>
+<a class="header" href="print.html#wrong-closing-tag" id="wrong-closing-tag"><h4>Wrong closing tag</h4></a>
 <p>You've opened with one tag but are attempting to close with another.</p>
 <pre><pre class="playpen"><code class="language-rust">#![feature(proc_macro_hygiene)]
 
@@ -334,7 +329,7 @@ error: aborting due to previous error
 
 
 </code></pre>
-<a class="header" href="#should-be-self-closing-tag" id="should-be-self-closing-tag"><h4>Should be self closing tag</h4></a>
+<a class="header" href="print.html#should-be-self-closing-tag" id="should-be-self-closing-tag"><h4>Should be self closing tag</h4></a>
 <p>The tag that you are trying to use is a self closing tagl</p>
 <pre><pre class="playpen"><code class="language-rust">#![feature(proc_macro_hygiene)]
 
@@ -359,7 +354,7 @@ error: aborting due to previous error
 
 
 </code></pre>
-<a class="header" href="#virtual-dom" id="virtual-dom"><h1>Virtual DOM</h1></a>
+<a class="header" href="print.html#virtual-dom" id="virtual-dom"><h1>Virtual DOM</h1></a>
 <p>At the heart of the <code>Percy</code> toolkit is <code>virtual-dom-rs</code>, a crate that provides a virtual dom
 implementation that allows you to write functional front-end applications.</p>
 <p>This same <code>virtual-dom-rs</code> also works on the backend by rendering to a String instead of a DOM element.
@@ -373,7 +368,7 @@ fn main () {
   // &lt;div id=&quot;my-id&quot;&gt;Hello world&lt;/div&gt;
 }
 </code></pre></pre>
-<a class="header" href="#unit-testing-your-views" id="unit-testing-your-views"><h1>Unit Testing your Views</h1></a>
+<a class="header" href="print.html#unit-testing-your-views" id="unit-testing-your-views"><h1>Unit Testing your Views</h1></a>
 <p>Percy's testing story is very much a work in progress, so please give feedback as you write tests!</p>
 <p>Here's an example of unit testing your views. You can find it in the examples directory at <a href="https://github.com/chinedufn/percy/tree/master/examples/unit-testing-views">examples/unit-testing-views</a>.</p>
 <pre><pre class="playpen"><code class="language-rust">#![feature(proc_macro_hygiene)]
@@ -449,9 +444,9 @@ mod tests {
 }
 
 </code></pre></pre>
-<a class="header" href="#server-side-rendering" id="server-side-rendering"><h1>Server Side Rendering</h1></a>
+<a class="header" href="print.html#server-side-rendering" id="server-side-rendering"><h1>Server Side Rendering</h1></a>
 <p>This section outlines Percy's server side rendering support.</p>
-<a class="header" href="#why-use-server-side-rendering" id="why-use-server-side-rendering"><h1>Why use Server Side Rendering</h1></a>
+<a class="header" href="print.html#why-use-server-side-rendering" id="why-use-server-side-rendering"><h1>Why use Server Side Rendering</h1></a>
 <p>In recent years it has become popular for just about all of a web application to be rendered on the client.</p>
 <p>Applications will often serve almost nothing but a <code>&lt;script&gt;</code> tag that loads up some front-end code (<code>JavaScript</code> and/or <code>WebAssembly</code>)
 and that front-end code is responsible for rendering the application's <code>HTML</code> and interactions.</p>
@@ -559,7 +554,7 @@ takes over rendering:
 </code></pre>
 <p>Server side rendering allows you to some <em>something</em> to your users more quickly,
 especially so for users with slower machines and/or bandwidth.</p>
-<a class="header" href="#how-to-ssr" id="how-to-ssr"><h1>How to SSR</h1></a>
+<a class="header" href="print.html#how-to-ssr" id="how-to-ssr"><h1>How to SSR</h1></a>
 <p>In the most simple case, server side rendering in <code>Percy</code> boils down to
 rendering your virtual DOM to a <code>String</code> and responding to a client with
 that <code>String</code>.</p>
@@ -584,7 +579,7 @@ fn main () {
   // .. server string to client (http response) ...
 }
 </code></pre></pre>
-<a class="header" href="#hydrating-initial-state" id="hydrating-initial-state"><h2>Hydrating initial state</h2></a>
+<a class="header" href="print.html#hydrating-initial-state" id="hydrating-initial-state"><h2>Hydrating initial state</h2></a>
 <p>You'll usually want your views to be rendered based on some application state. So, typically, your server will</p>
 <ol>
 <li>Receive a request from the client</li>
@@ -701,7 +696,7 @@ pub fn serve() {
 #}</code></pre></pre>
 <p>And then the client would use <code>serde</code> to deserialize the <code>initialState</code>
 into a State struct and begin rendering using that State.</p>
-<a class="header" href="#router" id="router"><h1>Router</h1></a>
+<a class="header" href="print.html#router" id="router"><h1>Router</h1></a>
 <p>We're working on tooling for view routing. Here's a preview of how it could look:</p>
 <p>(Note that we're still thinking through the API so this is just a rough draft)</p>
 <p>In the meantime definitely share your thoughts in the <a href="https://github.com/chinedufn/percy/issues/28">Router tracking issue!</a></p>
@@ -870,10 +865,10 @@ impl MyPage {
   }
 }
 </code></pre></pre>
-<a class="header" href="#css-in-rust" id="css-in-rust"><h1>CSS in Rust</h1></a>
-<a class="header" href="#contributing" id="contributing"><h1>Contributing</h1></a>
+<a class="header" href="print.html#css-in-rust" id="css-in-rust"><h1>CSS in Rust</h1></a>
+<a class="header" href="print.html#contributing" id="contributing"><h1>Contributing</h1></a>
 <p>This section is meant to help you get up to speed with how you can contribute to the <code>Percy</code> project.</p>
-<a class="header" href="#getting-started" id="getting-started"><h1>Getting Started</h1></a>
+<a class="header" href="print.html#getting-started" id="getting-started"><h1>Getting Started</h1></a>
 <ol>
 <li>
 <p>Rust Nightly.</p>
@@ -893,9 +888,9 @@ cd percy
 </code></pre>
 </li>
 </ol>
-<a class="header" href="#types-of-contributions" id="types-of-contributions"><h1>Types of Contributions</h1></a>
+<a class="header" href="print.html#types-of-contributions" id="types-of-contributions"><h1>Types of Contributions</h1></a>
 <p>There are three main types of contributions to <code>Percy</code>, all of which are equally important.</p>
-<a class="header" href="#documentation--book-contributions--examples" id="documentation--book-contributions--examples"><h3>Documentation / Book Contributions / Examples</h3></a>
+<a class="header" href="print.html#documentation--book-contributions--examples" id="documentation--book-contributions--examples"><h3>Documentation / Book Contributions / Examples</h3></a>
 <p>Our documentation is the first thing that anyone interested in using <code>Percy</code> will see.
 Before installing the tools, running the examples or starting up their own project they'll
 peruse the documentation to get a sense of <code>Percy</code>'s design and how to get started.</p>
@@ -903,10 +898,10 @@ peruse the documentation to get a sense of <code>Percy</code>'s design and how t
 <p>While it's common for projects to dismiss typo fixes as unimportant contributions, we feel
 the complete opposite. We strive for getting as close to &quot;perfect documentation&quot; as possible,
 and anything that brings us a step closer matters.</p>
-<a class="header" href="#documentation" id="documentation"><h5>Documentation</h5></a>
+<a class="header" href="print.html#documentation" id="documentation"><h5>Documentation</h5></a>
 <p>Scroll around the codebase. If you don't instantly understand something then it is poorly
 documented. Open up an issue or PR with your ideas on how it can be better communicated.</p>
-<a class="header" href="#book-contributions" id="book-contributions"><h5>Book Contributions</h5></a>
+<a class="header" href="print.html#book-contributions" id="book-contributions"><h5>Book Contributions</h5></a>
 <p>If there's a section that you think is missing from the book, PR the title of that section
 with some placeholder text.</p>
 <p>We're totally fine with not having book contributions fully fleshed out right away!</p>
@@ -915,12 +910,12 @@ and start hitting the keyboard.</p>
 <pre><code class="language-sh"># To view the book locally as you edit
 cd book &amp;&amp; mdbook serve --open
 </code></pre>
-<a class="header" href="#examples" id="examples"><h5>Examples</h5></a>
+<a class="header" href="print.html#examples" id="examples"><h5>Examples</h5></a>
 <p>If you can't figure out how exactly to implement something within 5 minutes that might mean
 that you were underserved by the <code>examples</code> directory.</p>
 <p>Open up an issue with your question or an idea with how to craft an example that would have
 answered it!</p>
-<a class="header" href="#building-something-with-percy" id="building-something-with-percy"><h3>Building Something with Percy</h3></a>
+<a class="header" href="print.html#building-something-with-percy" id="building-something-with-percy"><h3>Building Something with Percy</h3></a>
 <p>When you're building a real application you run into problems, trade-offs and considerations
 that you never could have thought of up front.</p>
 <p>We want to uncover those problems and either address them in the main toolkit or point
@@ -930,12 +925,12 @@ fix and/or suggest approaches for.</p>
 <p>If you have an idea for something that you can build with <code>Percy</code> then get started. Feel
 free to open up an issue with any questions or thoughts that you might have. Also open
 issues / PRs as you run into problems / annoyances.</p>
-<a class="header" href="#design-of-percy" id="design-of-percy"><h1>Design of <code>percy</code></h1></a>
+<a class="header" href="print.html#design-of-percy" id="design-of-percy"><h1>Design of <code>percy</code></h1></a>
 <p>This section is intended to be a deep dive into how <code>percy</code>'s different internal pieces work today.</p>
-<a class="header" href="#diff--patch-algorithm" id="diff--patch-algorithm"><h1>Diff / Patch Algorithm</h1></a>
+<a class="header" href="print.html#diff--patch-algorithm" id="diff--patch-algorithm"><h1>Diff / Patch Algorithm</h1></a>
 <p>This section discusses the design of the diffing and patching algorithms as well as how
 to troubleshoot and fix issues that might arise.</p>
-<a class="header" href="#diff--patch-walkthrough" id="diff--patch-walkthrough"><h1>Diff / Patch Walkthrough</h1></a>
+<a class="header" href="print.html#diff--patch-walkthrough" id="diff--patch-walkthrough"><h1>Diff / Patch Walkthrough</h1></a>
 <p>From a user's perspective, rendering on the client side looks roughly like this:</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -968,7 +963,7 @@ dom_updater.update(new_vdom);
 that the user sees.</p>
 </li>
 </ol>
-<a class="header" href="#diffing" id="diffing"><h2>Diffing</h2></a>
+<a class="header" href="print.html#diffing" id="diffing"><h2>Diffing</h2></a>
 <p>Let's say that you have an old virtual dom that you want to update using a new virtual dom.</p>
 <pre><code class="language-ignore">    Old vdom             New vdom
 
@@ -1019,7 +1014,7 @@ Nodes are traversed depth first by recursively diffing children before proceedin
   `─'      `─'    ( 5 ) ( 6 ) ( 7 )
                    `─'   `─'   `─'
 </code></pre>
-<a class="header" href="#patching" id="patching"><h2>Patching</h2></a>
+<a class="header" href="print.html#patching" id="patching"><h2>Patching</h2></a>
 <p>There are several different types of patches that are described in our <code>Patch</code> enum.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -1106,7 +1101,7 @@ impl&lt;'a&gt; Patch&lt;'a&gt; {
 traverse the real DOM in order to find the corresponding DOM element.</p>
 <p>So if a patch applies to the node with index 4, we'll start at our root node (node 0) and crawl it's children
 and it's children's children until we've gone through node 1, 2 and 3.</p>
-<a class="header" href="#fixing-diffpatch-issues" id="fixing-diffpatch-issues"><h1>Fixing diff/patch issues</h1></a>
+<a class="header" href="print.html#fixing-diffpatch-issues" id="fixing-diffpatch-issues"><h1>Fixing diff/patch issues</h1></a>
 <p>As our virtual dom implementation ages it will become more and more resilient, but while we're still
 an experimental library it's possible that the diff/patch algorithm could fail in some scenarios.</p>
 <p>If you notice a failure the first step is to open a new issue.</p>
@@ -1123,7 +1118,7 @@ Observed error: It somehow ends up as &lt;b&gt;&lt;/b&gt; in my browser!
 <hr />
 <p>If you've opened this issue you've already made a big contribution!</p>
 <p>If you'd like to go further, here's how to get to the root of the problem.</p>
-<a class="header" href="#debugging-failed-diff" id="debugging-failed-diff"><h2>Debugging Failed Diff</h2></a>
+<a class="header" href="print.html#debugging-failed-diff" id="debugging-failed-diff"><h2>Debugging Failed Diff</h2></a>
 <p>The easiest place to start is by adding a new diff test and seeing what patches you get.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -1180,7 +1175,7 @@ cargo test -p virtual-dom-rs --lib diff::tests
 <p>If things are failing then you've found the issue!</p>
 <p>Please comment back on your original issue with your findings.</p>
 <p>If everything is passing, then it must be a patching issue.</p>
-<a class="header" href="#debugging-failed-patch" id="debugging-failed-patch"><h2>Debugging Failed Patch</h2></a>
+<a class="header" href="print.html#debugging-failed-patch" id="debugging-failed-patch"><h2>Debugging Failed Patch</h2></a>
 <p>If the diff checked out, then the issue must be in the patching process.</p>
 <p>Patches are tested in <code>crates/virtual-dom-rs/tests/diff_patch.rs</code></p>
 <p>A patch test case looks like this:</p>
@@ -1279,13 +1274,13 @@ wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch
 </code></pre>
 <p>Create your new test case and run it to see if things fail.</p>
 <p>If they do, update your original issue with your findings.</p>
-<a class="header" href="#fixing-the-problem" id="fixing-the-problem"><h2>Fixing the problem</h2></a>
+<a class="header" href="print.html#fixing-the-problem" id="fixing-the-problem"><h2>Fixing the problem</h2></a>
 <p>Look at the documentation for the diff algorithm and the patch algorithm to get a good sense of where and how our
 diffing and patching is implemented. Fixing the problem will require you to dive into that code.</p>
 <p>As you go, if you see opportunities to make the code more understandable, DRY or better commented, seize them!</p>
 <p>Look through your errors and try to pinpoint the exact place that the bug is stemming from. If you're stuck, continue
 to update your issue with your questions and progress and someone will get back to you.</p>
-<a class="header" href="#sibling-text-nodes" id="sibling-text-nodes"><h1>Sibling text nodes</h1></a>
+<a class="header" href="print.html#sibling-text-nodes" id="sibling-text-nodes"><h1>Sibling text nodes</h1></a>
 <p>If you render two text nodes next to them the browser will see them as just
 one text node.</p>
 <p>For example, when you have a component that looks like this:</p>
@@ -1348,6 +1343,9 @@ did not get merged in with any other text nodes.</p>
 
         
 
+        
+        <script src="searchindex.js" type="text/javascript" charset="utf-8"></script>
+        
         
         <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
