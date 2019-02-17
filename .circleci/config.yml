@@ -1,0 +1,165 @@
+version: 2
+
+jobs:
+
+  test:
+    docker:
+      - image: rust:latest
+    steps:
+      - checkout
+
+      # Load cargo target from cache if possible.
+      # Multiple caches are used to increase the chance of a cache hit.
+      #
+      # Explanation: If you create a new branch, then there won't be a cache
+      # for that branch yet. (The branch is in the name of the cache key to
+      # prevent two branches overwriting each other's caches.)
+      #
+      # However, if you create a new branch, you could still use the latest
+      # cache of any other branch as a starting point. You probably won't be
+      # able to reuse everything, but – as long as cache invalidation works
+      # properly – you'll still be faster than if you don't have any cache
+      # at all.
+      - restore_cache:
+          keys:
+            - v1-cargo-cache-test-{{ arch }}-{{ .Branch }}
+            - v1-cargo-cache-test-{{ arch }}
+
+      # Install nightly & wasm
+      - run:
+          name: Install Rust nightly
+          command: rustup update nightly && rustup default nightly
+      - run:
+          name: Add wasm32 target
+          command: rustup target add wasm32-unknown-unknown
+
+      # Install wasm tools
+      - run:
+          name: Install wasm-pack
+          command: >
+            curl -L https://github.com/rustwasm/wasm-pack/releases/download/v0.6.0/wasm-pack-v0.6.0-x86_64-unknown-linux-musl.tar.gz
+            | tar --strip-components=1 --wildcards -xzf - "*/wasm-pack"
+            && chmod +x wasm-pack
+            && mv wasm-pack $CARGO_HOME/bin/
+
+      # Install browsers
+      - run:
+          name: Install latest firefox
+          command: >
+            apt-get update
+            && apt-get install -y libgtk-3-0 libdbus-glib-1-2
+            && wget -q -O - "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
+            |  tar xj
+
+      # Show versions
+      - run:
+          name: Show versions
+          command: rustc --version && cargo --version && wasm-pack --version && firefox/firefox --version
+
+      # Run tests
+      - run:
+          name: Run all tests
+          command: PATH=$(pwd)/firefox:$PATH ./test.sh
+
+      # Save cache
+      - save_cache:
+          key: v1-cargo-cache-test-{{ arch }}-{{ .Branch }}
+          paths:
+            - target
+            - /usr/local/cargo
+      - save_cache:
+          key: v1-cargo-cache-test-{{ arch }}
+          paths:
+            - target
+            - /usr/local/cargo
+
+  docs-build:
+    docker:
+      - image: rust:latest
+    steps:
+      - checkout
+      # Load cargo target from cache if possible.
+      # Multiple caches are used to increase the chance of a cache hit.
+      - restore_cache:
+          keys:
+            - v1-cargo-cache-docs-{{ arch }}-{{ .Branch }}
+            - v1-cargo-cache-docs-{{ arch }}
+
+      # Install nightly
+      - run:
+          name: Install Rust nightly
+          command: rustup update nightly && rustup default nightly
+
+      # Show versions
+      - run:
+          name: Show versions
+          command: rustc --version && cargo --version
+
+      # Install mdbook
+      - run:
+          name: Install mdbook
+          command: >
+            (test -x $CARGO_HOME/bin/cargo-install-update || cargo install cargo-update)
+            && (test -x $CARGO_HOME/bin/mdbook || cargo install --vers "^0.1" mdbook)
+            && mv ~/.gitconfig ~/.gitconfig.disabled  # Workaround for https://github.com/nabijaczleweli/cargo-update/issues/100
+            && cargo install-update -a
+            && mv ~/.gitconfig.disabled ~/.gitconfig
+
+      # Build docs
+      - run:
+          name: Build docs
+          command: >
+            (cd book && mdbook build)
+            && cargo doc --no-deps -p virtual-dom-rs -p css-rs-macro -p html-macro
+            && cp -R target/doc book/book/api
+      - persist_to_workspace:
+          root: book
+          paths: book 
+
+      # Save cache
+      - save_cache:
+          key: v1-cargo-cache-docs-{{ arch }}-{{ .Branch }}
+          paths:
+            - target
+            - /usr/local/cargo
+      - save_cache:
+          key: v1-cargo-cache-docs-{{ arch }}
+          paths:
+            - target
+            - /usr/local/cargo
+
+  docs-deploy:
+    docker:
+      - image: node:10
+    steps:
+      - checkout
+      - attach_workspace:
+          at: book
+      - run:
+          name: Disable jekyll builds
+          command: touch book/book/.nojekyll
+      - run:
+          name: Install and configure dependencies
+          command: >
+            npm install -g gh-pages@2
+            && git config user.email "ci-build@circleci"
+            && git config user.name "ci-build"
+      - add_ssh_keys:
+          fingerprints:
+            - "71:95:d0:f5:0d:f6:fe:2a:9d:62:d7:4e:9a:6f:8e:8d"
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: gh-pages --dotfiles --message "[skip ci] Updates" --dist book/book
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test
+      - docs-build
+      - docs-deploy:
+          requires:
+            - docs-build
+          filters:
+            branches:
+              only: master
