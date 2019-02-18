@@ -983,7 +983,7 @@ of patches that looks like this:</p>
 # #![allow(unused_variables)]
 #fn main() {
 // Our patches would look something like this:
-let patches = veec![
+let patches = vec![
     // The real generated patch won't use the `html!` macro,
     // this is just for illustration.
     Patch::Replace(1, html! { &lt;span&gt; &lt;/span&gt; }),
