@@ -56,7 +56,7 @@ of patches that looks like this:
 
 ```rust
 // Our patches would look something like this:
-let patches = veec![
+let patches = vec![
     // The real generated patch won't use the `html!` macro,
     // this is just for illustration.
     Patch::Replace(1, html! { <span> </span> }),
