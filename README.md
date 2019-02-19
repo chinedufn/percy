@@ -43,7 +43,13 @@ very basic examples to get your feet wet with.
 
 ### Client Side Rendering
 
-Create a new project using
+You can create applications that only have server side rendering, client side rendering, or both!
+
+Here's a quick working example of client side rendering.
+
+---
+
+First, Create a new project using
 
 ```
 cargo new client-side-web-app --lib
