@@ -3,7 +3,7 @@
 use console_error_panic_hook;
 use virtual_dom_rs::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{Node, Element};
+use web_sys::{Element, Node};
 
 /// A test case that both diffing and patching are working in a real browser
 pub struct DiffPatchTest<'a> {
@@ -48,11 +48,6 @@ impl<'a> DiffPatchTest<'a> {
             _ => panic!("Unhandled node type"),
         };
 
-        assert_eq!(
-            &actual_outer_html,
-            &expected_outer_html,
-            "{}",
-            self.desc
-        );
+        assert_eq!(&actual_outer_html, &expected_outer_html, "{}", self.desc);
     }
 }

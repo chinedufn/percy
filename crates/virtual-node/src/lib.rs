@@ -9,13 +9,13 @@
 //
 // Around in order to get rid of dependencies that we don't need in non wasm32 targets
 
-use std::collections::{HashSet,HashMap};
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::rc::Rc;
 
 pub mod virtual_node_test_utils;
 
-use web_sys::{self, Text, Element, Node, EventTarget};
+use web_sys::{self, Element, EventTarget, Node, Text};
 
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -25,18 +25,19 @@ use lazy_static::lazy_static;
 use std::ops::Deref;
 use std::sync::Mutex;
 
-
 // Used to uniquely identify elements that contain closures so that the DomUpdater can
 // look them up by their unique id.
 // When the DomUpdater sees that the element no longer exists it will drop all of it's
 // Rc'd Closures for those events.
 lazy_static! {
     static ref ELEM_UNIQUE_ID: Mutex<u32> = Mutex::new(0);
-
     static ref SELF_CLOSING_TAGS: HashSet<&'static str> = [
-        "area", "base", "br", "col", "hr", "img", "input", "link", "meta",
-        "param", "command", "keygen", "source",
-    ].iter().cloned().collect();
+        "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
+        "keygen", "source",
+    ]
+    .iter()
+    .cloned()
+    .collect();
 }
 
 /// When building your views you'll typically use the `html!` macro to generate
@@ -94,7 +95,10 @@ impl VirtualNode {
     ///
     /// let div = VirtualNode::element("div");
     /// ```
-    pub fn element<S>(tag: S) -> Self where S: Into<String> {
+    pub fn element<S>(tag: S) -> Self
+    where
+        S: Into<String>,
+    {
         VirtualNode::Element(VElement::new(tag))
     }
 
@@ -107,7 +111,10 @@ impl VirtualNode {
     ///
     /// let div = VirtualNode::text("div");
     /// ```
-    pub fn text<S>(text: S) -> Self where S: Into<String> {
+    pub fn text<S>(text: S) -> Self
+    where
+        S: Into<String>,
+    {
         VirtualNode::Text(VText::new(text.into()))
     }
 
@@ -159,14 +166,19 @@ impl VirtualNode {
     /// together with potentially related closures) for this virtual node.
     pub fn create_dom_node(&self) -> CreatedNode<Node> {
         match self {
-            VirtualNode::Text(text_node) => CreatedNode::without_closures(text_node.create_text_node()),
+            VirtualNode::Text(text_node) => {
+                CreatedNode::without_closures(text_node.create_text_node())
+            }
             VirtualNode::Element(element_node) => element_node.create_element_node().into(),
         }
     }
 }
 
 impl VElement {
-    pub fn new<S>(tag: S) -> Self where S: Into<String> {
+    pub fn new<S>(tag: S) -> Self
+    where
+        S: Into<String>,
+    {
         VElement {
             tag: tag.into(),
             props: HashMap::new(),
@@ -248,7 +260,7 @@ impl VElement {
                         .unwrap();
 
                     previous_node_was_text = true;
-                },
+                }
                 VirtualNode::Element(element_node) => {
                     previous_node_was_text = false;
 
@@ -258,18 +270,23 @@ impl VElement {
                     closures.extend(child.closures);
 
                     element.append_child(&child_elem).unwrap();
-                },
+                }
             }
         });
 
-        CreatedNode { node: element, closures }
+        CreatedNode {
+            node: element,
+            closures,
+        }
     }
-
 }
 
 impl VText {
     /// Create an new `VText` instance with the specified text.
-    pub fn new<S>(text: S) -> Self where S: Into<String> {
+    pub fn new<S>(text: S) -> Self
+    where
+        S: Into<String>,
+    {
         VText { text: text.into() }
     }
 
@@ -341,7 +358,9 @@ impl From<VElement> for VirtualNode {
 
 impl From<&str> for VText {
     fn from(text: &str) -> Self {
-        VText { text: text.to_string() }
+        VText {
+            text: text.to_string(),
+        }
     }
 }
 

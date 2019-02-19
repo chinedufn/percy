@@ -3,7 +3,7 @@
 
 use html_macro::{html, text};
 use std::collections::HashMap;
-use virtual_node::{VirtualNode, VElement};
+use virtual_node::{VElement, VirtualNode};
 
 struct HtmlMacroTest<'a> {
     desc: &'a str,
