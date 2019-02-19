@@ -201,9 +201,12 @@ npm install -g http-server
 
 ## Contributing
 
-Please open issues / PRs explaining your intended use case and let's see if we should or shouldn't make `percy` support it!
+Always feel very free to open issues and PRs with any questions / thoughts that you have!
 
-Also feel free to open issues and PRs with any questions / thoughts that you have!
+Even if it feels basic or simple - if there's a question on your mind that you can't quickly answer yourself then that's a failure
+in the documentation.
+
+Much more information on how to contribute to the codebase can be found in the [contributing section](https://chinedufn.github.io/percy/contributing/getting-started.html) of The Percy Book!
 
 ## To Test
 
