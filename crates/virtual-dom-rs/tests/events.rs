@@ -15,8 +15,9 @@ use virtual_dom_rs::prelude::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
+// Make sure that we successfully attach an event listener and see it work.
 #[wasm_bindgen_test]
-fn on_input_custom() {
+fn on_input() {
     let text = Rc::new(RefCell::new("Start Text".to_string()));
     let text_clone = Rc::clone(&text);
 

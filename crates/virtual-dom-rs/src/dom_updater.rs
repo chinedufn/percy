@@ -6,9 +6,20 @@ use crate::patch::Patch;
 use std::collections::HashMap;
 use virtual_node::DynClosure;
 use virtual_node::VirtualNode;
-use web_sys::{Node, Element};
+use web_sys::{Element, Node};
 
-type ActiveClosures = HashMap<u32, Vec<DynClosure>>;
+/// Closures that we are holding on to to make sure that they don't get invalidated after a
+/// VirtualNode is dropped.
+///
+/// The u32 is a unique identifier that is associated with the DOM element that this closure is
+/// attached to.
+///
+/// TODO: Periodically check if the DOM element is still there, and if not drop the closure.
+///   Maybe whenever a DOM node is replaced or truncated we figure out all of it's
+///   descendants somehow and invalidate those closures..? Need to plan this out..
+///   At it stands now this hashmap will grow anytime a new element with closures is
+///   appended or replaced and we will never free those closures.
+pub type ActiveClosures = HashMap<u32, Vec<DynClosure>>;
 
 /// Used for keeping a real DOM node up to date based on the current VirtualNode
 /// and a new incoming VirtualNode that represents our latest DOM state.
@@ -18,7 +29,8 @@ pub struct DomUpdater {
     ///
     /// We keep these around so that they don't get dropped (and thus stop working);
     ///
-    /// TODO: Drop them when the element is no longer in the page
+    /// FIXME: Drop them when the element is no longer in the page. Need to figure out
+    /// a good strategy for when to do this.
     pub active_closures: ActiveClosures,
     root_node: Node,
 }
@@ -42,7 +54,8 @@ impl DomUpdater {
     /// in mount element.
     pub fn new_append_to_mount(current_vdom: VirtualNode, mount: &Element) -> DomUpdater {
         let created_node = current_vdom.create_dom_node();
-        mount.append_child(&created_node.node)
+        mount
+            .append_child(&created_node.node)
             .expect("Could not append child to mount");
         DomUpdater {
             current_vdom,
@@ -57,7 +70,8 @@ impl DomUpdater {
     /// element.
     pub fn new_replace_mount(current_vdom: VirtualNode, mount: Element) -> DomUpdater {
         let created_node = current_vdom.create_dom_node();
-        mount.replace_with_with_node_1(&created_node.node)
+        mount
+            .replace_with_with_node_1(&created_node.node)
             .expect("Could not replace mount element");
         DomUpdater {
             current_vdom,
@@ -73,7 +87,11 @@ impl DomUpdater {
     pub fn update(&mut self, new_vdom: VirtualNode) {
         let patches = diff(&self.current_vdom, &new_vdom);
 
-        patch(self.root_node.clone(), &patches);
+        let active_closures = patch(self.root_node.clone(), &patches).unwrap();
+
+        self.active_closures.extend(active_closures);
+
+        let closures = format!("{}", self.active_closures.len());
 
         self.current_vdom = new_vdom;
     }
@@ -84,13 +102,5 @@ impl DomUpdater {
         // Note that we're cloning the `web_sys::Node`, not the DOM element.
         // So we're effectively cloning a pointer here, which is fast.
         self.root_node.clone()
-    }
-}
-
-impl DomUpdater {
-    // FIXME: Implement this... Get the active_closures from our patches and merge them
-    // into our active closures.
-    fn update_active_closures(&mut self, patches: &Vec<Patch>) {
-        for _patch in patches.iter() {}
     }
 }
