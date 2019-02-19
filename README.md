@@ -184,6 +184,7 @@ cargo install wasm-pack
 # Or any other static file server that supports the application/wasm mime type
 npm install -g http-server
 ./build.sh
+http-server public --open
 # Visit localhost:8080 in your browser
 ```
 
