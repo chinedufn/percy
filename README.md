@@ -3,11 +3,11 @@ Percy
 
 [![Build status](https://circleci.com/gh/chinedufn/percy.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/chinedufn/percy)
 
-> A modular toolkit for building [isomorphic web apps][isomorphic-web-apps] with Rust + WebAssembly
+> A modular toolkit for building isomorphic web apps with Rust + WebAssembly
 
-## The Percy Book
+## [The Percy Book](https://chinedufn.github.io/percy/)
 
-[The Percy book](https://chinedufn.github.io/percy/)
+[The Percy Book](https://chinedufn.github.io/percy/)
 
 ## Live Demo
 
@@ -16,9 +16,12 @@ Percy
 ---
 
 ## What is an isomorphic web app?
-[isomorphic-web-apps]: #isomorphic-web-apps
 
 An isomorphic web application allows the same application code (in our case Rust code) to be run on both the server-side and the client-side (usually a web browser).
+
+So the server would render the application into a `String` of HTML and send that down to the client.
+
+Then the client would take over, re-rendering the application to a DOM `Node` whenever application state changes.
 
 In a browser our application renders to an `HtmlElement`, and on the server our application renders to a `String`.
 
@@ -30,55 +33,164 @@ In a browser our application renders to an `HtmlElement`, and on the server our 
 
 ## Getting Started
 
-For an example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic) or
+For a full example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic) or
 view [the isomorphic web app example live.](https://percy-isomorphic.now.sh/)
 
-For more on the `html!` macro see [html macro](virtual-dom-rs/src/html_macro.rs)
+---
 
-```rust
-#![feature(proc_macro_hygiene)]
+The best way to get up to speed is by checking out [The Percy Book](https://chinedufn.github.io/percy/), but here are some
+very basic examples to get your feet wet with.
 
-use virtual_dom_rs::prelude::*;
-use css_rs_macro::css;
+### Client Side Rendering
 
-fn main () {
-    let count = Rc::new(Cell::new(0));
+You can create applications that only have server side rendering, client side rendering, or both!
 
-    let count_clone = Rc::clone(count);
+Here's a quick working example of client side rendering.
 
-    let html = html! {
-      <div id="hello-world" class=SOME_COMPONENT_CSS>
-        <span>Hey there!</span>
-        <button
-          onclick=|_event: web_sys::MouseEvent| { count_clone.set(count_clone.get() + 1); },
-          // CSS in Rust isn't required. You can use regular old
-          /* classes just fine! */
-          class="btn-bs4 btn-bs4-success"
-        >
-          Click Me!
-        </button>
-      </div>
-    };
+---
 
-    // Used for server side rendering
-    println!("{}", html.to_string());
+First, Create a new project using
 
-    // Check out the DomUpdater for client side rendering
-}
-
-static SOME_COMPONENT_CSS: &'static str = css! {"
-:host {
-    font-size: 30px;
-    font-weight: bold;
-}
-
-:host > span {
-    color: blue;
-}
-"};
+```
+cargo new client-side-web-app --lib
 ```
 
-## Examples
+Add these files to your project
+
+
+```sh
+# contents of build.sh
+
+#!/bin/bash
+
+cd "$(dirname "$0")"
+
+mkdir -p public
+
+OUTPUT_CSS="public/app.css" wasm-pack build --no-typescript --dev --target no-modules --out-dir ./public
+cp index.html public/
+```
+
+```rust
+// contents of src/lib.rs
+
+#![feature(proc_macro_hygiene)]
+
+use wasm_bindgen::prelude::*;
+use web_sys;
+
+use css_rs_macro::css;
+use virtual_dom_rs::prelude::*;
+use std::cell::Cell;
+
+#[wasm_bindgen(start)]
+pub fn start() {
+    let start_view = html! { <div> Hello </div> };
+
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let body = document.body().unwrap();
+
+    let mut dom_updater = DomUpdater::new_append_to_mount(start_view, &body);
+
+    let end_view = html! {
+       <div class="big blue">
+          <strong>Hello, World!</strong>
+
+          <button
+            class=MY_COMPONENT_CSS
+            onclick=|_event: web_sys::MouseEvent| {
+               web_sys::console::log_1(&"Button Clicked!".into());
+            }
+          >
+            Click me and check your console
+          </button>
+       </div>
+    };
+
+
+    dom_updater.update(end_view);
+}
+
+static MY_COMPONENT_CSS: &'static str = css!{r#"
+:host {
+    font-size: 24px;
+    font-weight: bold;
+}
+"#};
+
+static _MORE_CSS: &'static str = css!{r#"
+.big {
+  font-size: 30px;
+}
+
+.blue {
+  color: blue;
+}
+"#};
+```
+
+```toml
+# contents of Cargo.toml
+
+[package]
+name = "browser"
+version = "0.1.0"
+authors = ["Friends of Percy"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"] # Don't forget this!
+
+[dependencies]
+wasm-bindgen = "0.2.37"
+js-sys = "0.3.14"
+virtual-dom-rs = "0.6.0"
+css-rs-macro = "0.1.0"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "Document",
+    "MouseEvent",
+    "Window",
+    "console"
+]
+```
+
+```html
+<!-- contents of public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="app.css"/>
+        <title>PSD demo</title>
+    </head>
+    <body style='margin: 0; padding: 0; width: 100%; height: 100%;'>
+        <script src='/browser.js'></script>
+        <script>
+            window.wasm_bindgen(`/browser_bg.wasm`).then(() => {})
+        </script>
+    </body>
+</html>
+```
+
+Now run
+
+```sh
+cargo install wasm-pack
+# Or any other static file server that supports the application/wasm mime type
+npm install -g http-server
+./build.sh
+http-server public --open
+# Visit localhost:8080 in your browser
+```
+
+![Client side example](./example.png)
+
+## More Examples
 
 - [Isomorphic web app](examples/isomorphic)
 
@@ -90,9 +202,12 @@ static SOME_COMPONENT_CSS: &'static str = css! {"
 
 ## Contributing
 
-Please open issues / PRs explaining your intended use case and let's see if we should or shouldn't make `percy` support it!
+Always feel very free to open issues and PRs with any questions / thoughts that you have!
 
-Also feel free to open issues and PRs with any questions / thoughts that you have!
+Even if it feels basic or simple - if there's a question on your mind that you can't quickly answer yourself then that's a failure
+in the documentation.
+
+Much more information on how to contribute to the codebase can be found in the [contributing section](https://chinedufn.github.io/percy/contributing/getting-started.html) of The Percy Book!
 
 ## To Test
 
