@@ -170,7 +170,7 @@ features = [
 ```
 
 ```html
-<!-- contents of public/index.html -->
+<!-- contents of index.html -->
 <!DOCTYPE html>
 <html lang="en">
     <head>
