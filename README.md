@@ -177,7 +177,7 @@ features = [
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="app.css"/>
-        <title>PSD demo</title>
+        <title>Client Side Demo</title>
     </head>
     <body style='margin: 0; padding: 0; width: 100%; height: 100%;'>
         <script src='/browser.js'></script>
@@ -199,7 +199,11 @@ http-server public --open
 # Visit localhost:8080 in your browser
 ```
 
+And you should see the following:
+
 ![Client side example](./example.png)
+
+Nice work!
 
 ## More Examples
 
