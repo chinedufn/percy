@@ -55,8 +55,18 @@ First, Create a new project using
 cargo new client-side-web-app --lib
 ```
 
-Add these files to your project
+Add the following files to your project. Here's the end directory structure:
 
+```sh
+.
+├── Cargo.toml
+├── build.sh
+├── index.html
+└── src
+    └── lib.rs
+```
+
+Now edit each file with the following contents:
 
 ```sh
 # contents of build.sh
