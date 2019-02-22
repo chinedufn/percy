@@ -6,7 +6,7 @@ use std::cell::Cell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
-use web_sys::{Event, MouseEvent, EventTarget, Element};
+use web_sys::{Element, Event, EventTarget, MouseEvent};
 
 use virtual_dom_rs::prelude::*;
 

@@ -22,8 +22,13 @@ jobs:
       # at all.
       - restore_cache:
           keys:
-            - v1-cargo-cache-test-{{ arch }}-{{ .Branch }}
-            - v1-cargo-cache-test-{{ arch }}
+
+             # When we bump the versions of virtual-dom-rs / virtual-node of the `html-macro-test` ui tests can fail.
+             # This is just because we use [compiletest-rs](https://github.com/laumann/compiletest-rs) which can break down in this case and just requires `cargo clean`.
+             # Or, in the case of CI, just bumping the version prefix of our cache in this file. So if you see `html-macro-test` errors that pass locally after you run `cargo clean` try bumping the CircleCI cache version.
+             # `vN` becomes `vN+1`
+            - v2-cargo-cache-test-{{ arch }}-{{ .Branch }}
+            - v2-cargo-cache-test-{{ arch }}
 
       # Install nightly & wasm
       - run:
@@ -63,12 +68,12 @@ jobs:
 
       # Save cache
       - save_cache:
-          key: v1-cargo-cache-test-{{ arch }}-{{ .Branch }}
+          key: v2-cargo-cache-test-{{ arch }}-{{ .Branch }}
           paths:
             - target
             - /usr/local/cargo
       - save_cache:
-          key: v1-cargo-cache-test-{{ arch }}
+          key: v2-cargo-cache-test-{{ arch }}
           paths:
             - target
             - /usr/local/cargo
@@ -82,8 +87,8 @@ jobs:
       # Multiple caches are used to increase the chance of a cache hit.
       - restore_cache:
           keys:
-            - v1-cargo-cache-docs-{{ arch }}-{{ .Branch }}
-            - v1-cargo-cache-docs-{{ arch }}
+            - v2-cargo-cache-docs-{{ arch }}-{{ .Branch }}
+            - v2-cargo-cache-docs-{{ arch }}
 
       # Install nightly
       - run:
@@ -118,12 +123,12 @@ jobs:
 
       # Save cache
       - save_cache:
-          key: v1-cargo-cache-docs-{{ arch }}-{{ .Branch }}
+          key: v2-cargo-cache-docs-{{ arch }}-{{ .Branch }}
           paths:
             - target
             - /usr/local/cargo
       - save_cache:
-          key: v1-cargo-cache-docs-{{ arch }}
+          key: v2-cargo-cache-docs-{{ arch }}
           paths:
             - target
             - /usr/local/cargo

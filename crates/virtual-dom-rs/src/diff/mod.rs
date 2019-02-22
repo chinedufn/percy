@@ -100,7 +100,8 @@ fn diff_recursive<'a, 'b>(
             let new_child_count = new_element.children.len();
 
             if new_child_count > old_child_count {
-                let append_patch: Vec<&'a VirtualNode> = new_element.children[old_child_count..].iter().collect();
+                let append_patch: Vec<&'a VirtualNode> =
+                    new_element.children[old_child_count..].iter().collect();
                 patches.push(Patch::AppendChildren(*cur_node_idx, append_patch))
             }
 
@@ -121,8 +122,8 @@ fn diff_recursive<'a, 'b>(
                 }
             }
         }
-        (VirtualNode::Text(_), VirtualNode::Element(_)) |
-        (VirtualNode::Element(_), VirtualNode::Text(_)) => {
+        (VirtualNode::Text(_), VirtualNode::Element(_))
+        | (VirtualNode::Element(_), VirtualNode::Text(_)) => {
             unreachable!("Unequal variant discriminants should already have been handled");
         }
     };
@@ -148,7 +149,7 @@ use self::diff_test_case::*;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{html, VirtualNode, VText};
+    use crate::{html, VText, VirtualNode};
     use std::collections::HashMap;
 
     #[test]

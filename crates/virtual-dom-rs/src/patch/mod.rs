@@ -1,7 +1,7 @@
 //! Our Patch enum is intentionally kept in it's own file for easy inclusion into
 //! The Percy Book.
 
-use crate::{VirtualNode, VText};
+use crate::{VText, VirtualNode};
 use std::collections::HashMap;
 
 mod apply_patches;

@@ -1,6 +1,6 @@
 //! A collection of functions that are useful for unit testing your html! views.
 
-use crate::{VirtualNode, VElement};
+use crate::{VElement, VirtualNode};
 
 impl VirtualNode {
     /// Get a vector of all of the VirtualNode children / grandchildren / etc of
@@ -31,27 +31,23 @@ impl VirtualNode {
         // Get descendants recursively
         let mut descendants: Vec<&'a VirtualNode> = vec![];
         match self {
-            VirtualNode::Text(_) => { /* nothing to do */ },
+            VirtualNode::Text(_) => { /* nothing to do */ }
             VirtualNode::Element(element_node) => {
                 for child in element_node.children.iter() {
                     get_descendants(&mut descendants, child);
                 }
-            },
+            }
         }
 
         // Filter descendants
         descendants
             .into_iter()
-            .filter(|vn: &&'a VirtualNode| {
-                match vn {
-                    VirtualNode::Text(_) => false,
-                    VirtualNode::Element(element_node) => {
-                        match element_node.props.get("label") {
-                            Some(label) => filter(label),
-                            None => false,
-                        }
-                    },
-                }
+            .filter(|vn: &&'a VirtualNode| match vn {
+                VirtualNode::Text(_) => false,
+                VirtualNode::Element(element_node) => match element_node.props.get("label") {
+                    Some(label) => filter(label),
+                    None => false,
+                },
             })
             .collect()
     }
@@ -83,12 +79,12 @@ impl VirtualNode {
 fn get_descendants<'a>(descendants: &mut Vec<&'a VirtualNode>, node: &'a VirtualNode) {
     descendants.push(node);
     match node {
-        VirtualNode::Text(_) => { /* nothing to do */ },
+        VirtualNode::Text(_) => { /* nothing to do */ }
         VirtualNode::Element(element_node) => {
             for child in element_node.children.iter() {
                 get_descendants(descendants, child);
             }
-        },
+        }
     }
 }
 
