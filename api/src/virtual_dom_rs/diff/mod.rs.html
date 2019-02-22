@@ -325,6 +325,7 @@
 <span id="325">325</span>
 <span id="326">326</span>
 <span id="327">327</span>
+<span id="328">328</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">Patch</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">VirtualNode</span>;
@@ -428,7 +429,8 @@
             <span class="kw">let</span> <span class="ident">new_child_count</span> <span class="op">=</span> <span class="ident">new_element</span>.<span class="ident">children</span>.<span class="ident">len</span>();
 
             <span class="kw">if</span> <span class="ident">new_child_count</span> <span class="op">&gt;</span> <span class="ident">old_child_count</span> {
-                <span class="kw">let</span> <span class="ident">append_patch</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">VirtualNode</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">new_element</span>.<span class="ident">children</span>[<span class="ident">old_child_count</span>..].<span class="ident">iter</span>().<span class="ident">collect</span>();
+                <span class="kw">let</span> <span class="ident">append_patch</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">VirtualNode</span><span class="op">&gt;</span> <span class="op">=</span>
+                    <span class="ident">new_element</span>.<span class="ident">children</span>[<span class="ident">old_child_count</span>..].<span class="ident">iter</span>().<span class="ident">collect</span>();
                 <span class="ident">patches</span>.<span class="ident">push</span>(<span class="ident">Patch</span>::<span class="ident">AppendChildren</span>(<span class="kw-2">*</span><span class="ident">cur_node_idx</span>, <span class="ident">append_patch</span>))
             }
 
@@ -449,8 +451,8 @@
                 }
             }
         }
-        (<span class="ident">VirtualNode</span>::<span class="ident">Text</span>(<span class="kw">_</span>), <span class="ident">VirtualNode</span>::<span class="ident">Element</span>(<span class="kw">_</span>)) <span class="op">|</span>
-        (<span class="ident">VirtualNode</span>::<span class="ident">Element</span>(<span class="kw">_</span>), <span class="ident">VirtualNode</span>::<span class="ident">Text</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {
+        (<span class="ident">VirtualNode</span>::<span class="ident">Text</span>(<span class="kw">_</span>), <span class="ident">VirtualNode</span>::<span class="ident">Element</span>(<span class="kw">_</span>))
+        <span class="op">|</span> (<span class="ident">VirtualNode</span>::<span class="ident">Element</span>(<span class="kw">_</span>), <span class="ident">VirtualNode</span>::<span class="ident">Text</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {
             <span class="macro">unreachable</span><span class="macro">!</span>(<span class="string">&quot;Unequal variant discriminants should already have been handled&quot;</span>);
         }
     };
@@ -476,7 +478,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">html</span>, <span class="ident">VirtualNode</span>, <span class="ident">VText</span>};
+    <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">html</span>, <span class="ident">VText</span>, <span class="ident">VirtualNode</span>};
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>

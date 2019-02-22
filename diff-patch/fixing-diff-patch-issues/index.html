@@ -219,7 +219,7 @@ cargo test -p virtual-dom-rs --lib diff::tests
 use console_error_panic_hook;
 use virtual_dom_rs::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{Node, Element};
+use web_sys::{Element, Node};
 
 /// A test case that both diffing and patching are working in a real browser
 pub struct DiffPatchTest&lt;'a&gt; {
@@ -264,12 +264,7 @@ impl&lt;'a&gt; DiffPatchTest&lt;'a&gt; {
             _ =&gt; panic!(&quot;Unhandled node type&quot;),
         };
 
-        assert_eq!(
-            &amp;actual_outer_html,
-            &amp;expected_outer_html,
-            &quot;{}&quot;,
-            self.desc
-        );
+        assert_eq!(&amp;actual_outer_html, &amp;expected_outer_html, &quot;{}&quot;, self.desc);
     }
 }
 
