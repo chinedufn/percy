@@ -157,8 +157,8 @@ crate-type = ["cdylib"] # Don't forget this!
 [dependencies]
 wasm-bindgen = "0.2.37"
 js-sys = "0.3.14"
-virtual-dom-rs = "0.6.0"
-css-rs-macro = "0.1.0"
+virtual-dom-rs = "0.6"
+css-rs-macro = "0.1"
 
 [dependencies.web-sys]
 version = "0.3"
