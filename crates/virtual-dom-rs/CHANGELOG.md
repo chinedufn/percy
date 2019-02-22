@@ -19,4 +19,4 @@ _Here we list notable things that have been merged into the master branch but ha
 
 - [fixed] Fix DomUpdater not storing closures for nodes that were created during `Patch::AppendChildren`
  and `Patch::Replace`
- - [Issue](https://github.com/chinedufn/percy/issues/70)
+  - [Issue](https://github.com/chinedufn/percy/issues/70)
