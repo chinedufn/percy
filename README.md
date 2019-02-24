@@ -9,10 +9,6 @@ Percy
 
 [The Percy Book](https://chinedufn.github.io/percy/)
 
-## Live Demo
-
-[View the isomorphic web app example live](https://percy-isomorphic.now.sh/?init=42)
-
 ---
 
 ## What is an isomorphic web app?
@@ -33,8 +29,7 @@ In a browser our application renders to an `HtmlElement`, and on the server our 
 
 ## Getting Started
 
-For a full example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic) or
-view [the isomorphic web app example live.](https://percy-isomorphic.now.sh/)
+For a full example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic).
 
 ---
 

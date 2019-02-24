@@ -1,8 +1,6 @@
 # isomorphic web app example
 
-## Viewing a live version
-
-[View the example online](https://percy-isomorphic.now.sh/)
+*TODO: Find a service where we can host a live version of the demo for free or cheaply.*
 
 ## Running Locally
 
@@ -51,27 +49,3 @@ wrapper around your app crate, allowing you to run your code in the browser.
 
 Seperating the web `client` logic from the `app` makes it easy for you to add other clients in the
 future, such as an `electron` client.
-
-## Changing the now.sh Dockerfile
-
-We use a `Dockerfile` to deploy to `now.sh` (currently stored in the root directory but in the future we might move that)
-
-To run it
-
-```sh
-docker build -t percy-isomorphic .
-docker run -d -p 7878:7878 percy-isomorphic
-# Visit localhost:7878 in your web browser
-```
-
-You can also do a release build outside docker, for that you will need `musl-tools` and the `x86_64-unknown-linux-musl` target.
-
-```sh
-sudo apt install musl-tools
-rustup target add x86_64-unknown-linux-musl
-```
-
-```sh
-./examples/isomorphic/build.release.sh
-./examples/isomorphic/run.release.sh
-```
