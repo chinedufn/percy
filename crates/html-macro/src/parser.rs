@@ -84,7 +84,7 @@ impl HtmlParser {
                                   let closure = wasm_bindgen::prelude::Closure::wrap(
                                       Box::new(#value) as Box<FnMut(_)>
                                   );
-                                  let closure_rc = Rc::new(closure);
+                                  let closure_rc = std::rc::Rc::new(closure);
                                   #var_name_node.as_velement_mut().expect("Not an element")
                                       .events.0.insert(#key.to_string(), closure_rc);
                                 }
