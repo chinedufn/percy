@@ -155,27 +155,27 @@ mod tests {
     #[test]
     fn replace_node() {
         DiffTestCase {
+            description: "Replace the root if the tag changed",
             old: html! { <div> </div> },
             new: html! { <span> </span> },
             expected: vec![Patch::Replace(0, &html! { <span></span> })],
-            description: "Replace the root if the tag changed",
         }
         .test();
         DiffTestCase {
+            description: "Replace a child node",
             old: html! { <div> <b></b> </div> },
             new: html! { <div> <strong></strong> </div> },
             expected: vec![Patch::Replace(1, &html! { <strong></strong> })],
-            description: "Replace a child node",
         }
         .test();
         DiffTestCase {
+            description: "Replace node with a child",
             old: html! { <div> <b>1</b> <b></b> </div> },
             new: html! { <div> <i>1</i> <i></i> </div>},
             expected: vec![
                 Patch::Replace(1, &html! { <i>1</i> }),
                 Patch::Replace(3, &html! { <i></i> }),
             ], //required to check correct index
-            description: "Replace node with a child",
         }
         .test();
     }
@@ -183,10 +183,10 @@ mod tests {
     #[test]
     fn add_children() {
         DiffTestCase {
+            description: "Added a new node to the root node",
             old: html! { <div> <b></b> </div> },
             new: html! { <div> <b></b> <new></new> </div> },
             expected: vec![Patch::AppendChildren(0, vec![&html! { <new></new> }])],
-            description: "Added a new node to the root node",
         }
         .test();
     }
@@ -194,13 +194,14 @@ mod tests {
     #[test]
     fn remove_nodes() {
         DiffTestCase {
+            description: "Remove all child nodes at and after child sibling index 1",
             old: html! { <div> <b></b> <span></span> </div> },
             new: html! { <div> </div> },
             expected: vec![Patch::TruncateChildren(0, 0)],
-            description: "Remove all child nodes at and after child sibling index 1",
         }
         .test();
         DiffTestCase {
+            description: "Remove a child and a grandchild node",
             old: html! {
             <div>
              <span>
@@ -218,17 +219,16 @@ mod tests {
              </span>
             </div> },
             expected: vec![Patch::TruncateChildren(0, 1), Patch::TruncateChildren(1, 1)],
-            description: "Remove a child and a grandchild node",
         }
         .test();
         DiffTestCase {
+            description: "Removing child and change next node after parent",
             old: html! { <div> <b> <i></i> <i></i> </b> <b></b> </div> },
             new: html! { <div> <b> <i></i> </b> <i></i> </div>},
             expected: vec![
                 Patch::TruncateChildren(1, 1),
                 Patch::Replace(4, &html! { <i></i> }),
             ], //required to check correct index
-            description: "Removing child and change next node after parent",
         }
         .test();
     }
@@ -272,10 +272,10 @@ mod tests {
         attributes.insert("id", "changed");
 
         DiffTestCase {
+            description: "Add attributes",
             old: html! { <div id="hey-there"></div> },
             new: html! { <div id="changed"> </div> },
             expected: vec![Patch::AddAttributes(0, attributes)],
-            description: "Add attributes",
         }
         .test();
     }
@@ -283,12 +283,26 @@ mod tests {
     #[test]
     fn replace_text_node() {
         DiffTestCase {
+            description: "Replace text node",
             old: html! { Old },
             new: html! { New },
             expected: vec![Patch::ChangeText(0, &VText::new("New"))],
-            description: "Replace text node",
         }
         .test();
+    }
+
+    // Initially motivated by having two elements where all that changed was an event listener
+    // because right now we don't patch event listeners. So.. until we have a solution
+    // for that we can just give them different keys to force a replace.
+    #[test]
+    fn replace_if_different_keys() {
+        DiffTestCase {
+            description: "If two nodes have different keys always generate a full replace.",
+            old: html! { <div key="1"> </div> },
+            new: html! { <div key="2"> </div> },
+            expected: vec![Patch::Replace(0, &html! {<div key="2"> </div>})],
+        }
+        .test()
     }
 
     //    // TODO: Key support
