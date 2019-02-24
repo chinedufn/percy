@@ -400,7 +400,7 @@
                                   <span class="kw">let</span> <span class="ident">closure</span> <span class="op">=</span> <span class="ident">wasm_bindgen</span>::<span class="ident">prelude</span>::<span class="ident">Closure</span>::<span class="ident">wrap</span>(
                                       <span class="ident">Box</span>::<span class="ident">new</span>(#<span class="ident">value</span>) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">FnMut</span>(<span class="kw">_</span>)<span class="op">&gt;</span>
                                   );
-                                  <span class="kw">let</span> <span class="ident">closure_rc</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">closure</span>);
+                                  <span class="kw">let</span> <span class="ident">closure_rc</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">closure</span>);
                                   #<span class="ident">var_name_node</span>.<span class="ident">as_velement_mut</span>().<span class="ident">expect</span>(<span class="string">&quot;Not an element&quot;</span>)
                                       .<span class="ident">events</span>.<span class="number">0</span>.<span class="ident">insert</span>(#<span class="ident">key</span>.<span class="ident">to_string</span>(), <span class="ident">closure_rc</span>);
                                 }
