@@ -23,9 +23,19 @@ fn diff_recursive<'a, 'b>(
         replace = true;
     }
 
-    // Different element tags, replace!
     if let (VirtualNode::Element(old_element), VirtualNode::Element(new_element)) = (old, new) {
+        // Replace if there are different element tags
         if old_element.tag != new_element.tag {
+            replace = true;
+        }
+
+        // Replace if two elements have different keys
+        // TODO: More robust key support. This is just an early stopgap to allow you to force replace
+        // an element... say if it's event changed. Just change the key name for now.
+        // In the future we want keys to be used to create a Patch::ReOrder to re-order siblings
+        if old_element.props.get("key").is_some()
+            && old_element.props.get("key") != new_element.props.get("key")
+        {
             replace = true;
         }
     }
