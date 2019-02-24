@@ -93,7 +93,6 @@ use web_sys;
 
 use css_rs_macro::css;
 use virtual_dom_rs::prelude::*;
-use std::cell::Cell;
 
 #[wasm_bindgen(start)]
 pub fn start() {
