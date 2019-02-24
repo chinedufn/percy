@@ -193,11 +193,15 @@ Now run
 
 ```sh
 cargo install wasm-pack
+
 # Or any other static file server that supports the application/wasm mime type
 npm install -g http-server
+
+chmod +x ./build.sh
 ./build.sh
-http-server public --open
+
 # Visit localhost:8080 in your browser
+http-server public --open
 ```
 
 And you should see the following:
