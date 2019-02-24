@@ -326,6 +326,20 @@
 <span id="326">326</span>
 <span id="327">327</span>
 <span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">Patch</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">VirtualNode</span>;
@@ -484,27 +498,27 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">replace_node</span>() {
         <span class="ident">DiffTestCase</span> {
+            <span class="ident">description</span>: <span class="string">&quot;Replace the root if the tag changed&quot;</span>,
             <span class="ident">old</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">new</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">span</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">span</span><span class="op">&gt;</span> },
             <span class="ident">expected</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Patch</span>::<span class="ident">Replace</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">span</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">span</span><span class="op">&gt;</span> })],
-            <span class="ident">description</span>: <span class="string">&quot;Replace the root if the tag changed&quot;</span>,
         }
         .<span class="ident">test</span>();
         <span class="ident">DiffTestCase</span> {
+            <span class="ident">description</span>: <span class="string">&quot;Replace a child node&quot;</span>,
             <span class="ident">old</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">b</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">new</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">strong</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">strong</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">expected</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Patch</span>::<span class="ident">Replace</span>(<span class="number">1</span>, <span class="kw-2">&amp;</span><span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">strong</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">strong</span><span class="op">&gt;</span> })],
-            <span class="ident">description</span>: <span class="string">&quot;Replace a child node&quot;</span>,
         }
         .<span class="ident">test</span>();
         <span class="ident">DiffTestCase</span> {
+            <span class="ident">description</span>: <span class="string">&quot;Replace node with a child&quot;</span>,
             <span class="ident">old</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">b</span><span class="op">&gt;</span><span class="number">1</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">b</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">new</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">i</span><span class="op">&gt;</span><span class="number">1</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">i</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">i</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">i</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span>},
             <span class="ident">expected</span>: <span class="macro">vec</span><span class="macro">!</span>[
                 <span class="ident">Patch</span>::<span class="ident">Replace</span>(<span class="number">1</span>, <span class="kw-2">&amp;</span><span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">i</span><span class="op">&gt;</span><span class="number">1</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">i</span><span class="op">&gt;</span> }),
                 <span class="ident">Patch</span>::<span class="ident">Replace</span>(<span class="number">3</span>, <span class="kw-2">&amp;</span><span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">i</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">i</span><span class="op">&gt;</span> }),
             ], <span class="comment">//required to check correct index</span>
-            <span class="ident">description</span>: <span class="string">&quot;Replace node with a child&quot;</span>,
         }
         .<span class="ident">test</span>();
     }
@@ -512,10 +526,10 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">add_children</span>() {
         <span class="ident">DiffTestCase</span> {
+            <span class="ident">description</span>: <span class="string">&quot;Added a new node to the root node&quot;</span>,
             <span class="ident">old</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">b</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">new</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">b</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">new</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">new</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">expected</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Patch</span>::<span class="ident">AppendChildren</span>(<span class="number">0</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="kw-2">&amp;</span><span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">new</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">new</span><span class="op">&gt;</span> }])],
-            <span class="ident">description</span>: <span class="string">&quot;Added a new node to the root node&quot;</span>,
         }
         .<span class="ident">test</span>();
     }
@@ -523,13 +537,14 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">remove_nodes</span>() {
         <span class="ident">DiffTestCase</span> {
+            <span class="ident">description</span>: <span class="string">&quot;Remove all child nodes at and after child sibling index 1&quot;</span>,
             <span class="ident">old</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">b</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">span</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">span</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">new</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">expected</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Patch</span>::<span class="ident">TruncateChildren</span>(<span class="number">0</span>, <span class="number">0</span>)],
-            <span class="ident">description</span>: <span class="string">&quot;Remove all child nodes at and after child sibling index 1&quot;</span>,
         }
         .<span class="ident">test</span>();
         <span class="ident">DiffTestCase</span> {
+            <span class="ident">description</span>: <span class="string">&quot;Remove a child and a grandchild node&quot;</span>,
             <span class="ident">old</span>: <span class="macro">html</span><span class="macro">!</span> {
             <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span>
              <span class="op">&lt;</span><span class="ident">span</span><span class="op">&gt;</span>
@@ -547,17 +562,16 @@
              <span class="op">&lt;</span><span class="op">/</span><span class="ident">span</span><span class="op">&gt;</span>
             <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">expected</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Patch</span>::<span class="ident">TruncateChildren</span>(<span class="number">0</span>, <span class="number">1</span>), <span class="ident">Patch</span>::<span class="ident">TruncateChildren</span>(<span class="number">1</span>, <span class="number">1</span>)],
-            <span class="ident">description</span>: <span class="string">&quot;Remove a child and a grandchild node&quot;</span>,
         }
         .<span class="ident">test</span>();
         <span class="ident">DiffTestCase</span> {
+            <span class="ident">description</span>: <span class="string">&quot;Removing child and change next node after parent&quot;</span>,
             <span class="ident">old</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">i</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">i</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">i</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">i</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">b</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">new</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">i</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">i</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">b</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="ident">i</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">i</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span>},
             <span class="ident">expected</span>: <span class="macro">vec</span><span class="macro">!</span>[
                 <span class="ident">Patch</span>::<span class="ident">TruncateChildren</span>(<span class="number">1</span>, <span class="number">1</span>),
                 <span class="ident">Patch</span>::<span class="ident">Replace</span>(<span class="number">4</span>, <span class="kw-2">&amp;</span><span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">i</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">i</span><span class="op">&gt;</span> }),
             ], <span class="comment">//required to check correct index</span>
-            <span class="ident">description</span>: <span class="string">&quot;Removing child and change next node after parent&quot;</span>,
         }
         .<span class="ident">test</span>();
     }
@@ -601,10 +615,10 @@
         <span class="ident">attributes</span>.<span class="ident">insert</span>(<span class="string">&quot;id&quot;</span>, <span class="string">&quot;changed&quot;</span>);
 
         <span class="ident">DiffTestCase</span> {
+            <span class="ident">description</span>: <span class="string">&quot;Add attributes&quot;</span>,
             <span class="ident">old</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span> <span class="ident">id</span><span class="op">=</span><span class="string">&quot;hey-there&quot;</span><span class="op">&gt;</span><span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">new</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span> <span class="ident">id</span><span class="op">=</span><span class="string">&quot;changed&quot;</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
             <span class="ident">expected</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Patch</span>::<span class="ident">AddAttributes</span>(<span class="number">0</span>, <span class="ident">attributes</span>)],
-            <span class="ident">description</span>: <span class="string">&quot;Add attributes&quot;</span>,
         }
         .<span class="ident">test</span>();
     }
@@ -612,12 +626,26 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">replace_text_node</span>() {
         <span class="ident">DiffTestCase</span> {
+            <span class="ident">description</span>: <span class="string">&quot;Replace text node&quot;</span>,
             <span class="ident">old</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="ident">Old</span> },
             <span class="ident">new</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="ident">New</span> },
             <span class="ident">expected</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Patch</span>::<span class="ident">ChangeText</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">VText</span>::<span class="ident">new</span>(<span class="string">&quot;New&quot;</span>))],
-            <span class="ident">description</span>: <span class="string">&quot;Replace text node&quot;</span>,
         }
         .<span class="ident">test</span>();
+    }
+
+    <span class="comment">// Initially motivated by having two elements where all that changed was an event listener</span>
+    <span class="comment">// because right now we don&#39;t patch event listeners. So.. until we have a solution</span>
+    <span class="comment">// for that we can just give them different keys to force a replace.</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">replace_if_different_keys</span>() {
+        <span class="ident">DiffTestCase</span> {
+            <span class="ident">description</span>: <span class="string">&quot;If two nodes have different keys always generate a full replace.&quot;</span>,
+            <span class="ident">old</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span> <span class="ident">key</span><span class="op">=</span><span class="string">&quot;1&quot;</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
+            <span class="ident">new</span>: <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span> <span class="ident">key</span><span class="op">=</span><span class="string">&quot;2&quot;</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> },
+            <span class="ident">expected</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Patch</span>::<span class="ident">Replace</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="macro">html</span><span class="macro">!</span> {<span class="op">&lt;</span><span class="ident">div</span> <span class="ident">key</span><span class="op">=</span><span class="string">&quot;2&quot;</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span>})],
+        }
+        .<span class="ident">test</span>()
     }
 
     <span class="comment">//    // TODO: Key support</span>
