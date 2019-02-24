@@ -22,13 +22,10 @@ jobs:
       # at all.
       - restore_cache:
           keys:
-
-             # When we bump the versions of virtual-dom-rs / virtual-node of the `html-macro-test` ui tests can fail.
-             # This is just because we use [compiletest-rs](https://github.com/laumann/compiletest-rs) which can break down in this case and just requires `cargo clean`.
-             # Or, in the case of CI, just bumping the version prefix of our cache in this file. So if you see `html-macro-test` errors that pass locally after you run `cargo clean` try bumping the CircleCI cache version.
-             # `vN` becomes `vN+1`
-            - v3-cargo-cache-test-{{ arch }}-{{ .Branch }}
-            - v3-cargo-cache-test-{{ arch }}
+            # Checksum ensures that when we update versions for our `html-macro` dependencies we clear our cache, otherwise
+            # compiletest-rs can error when the target directory has multiple versions of a crate.
+            - v3-cargo-cache-test-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}
+            - v3-cargo-cache-test-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}
 
       # Install nightly & wasm
       - run:
@@ -68,12 +65,12 @@ jobs:
 
       # Save cache
       - save_cache:
-          key: v3-cargo-cache-test-{{ arch }}-{{ .Branch }}
+          key: v3-cargo-cache-test-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}
           paths:
             - target
             - /usr/local/cargo
       - save_cache:
-          key: v3-cargo-cache-test-{{ arch }}
+          key: v3-cargo-cache-test-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}
           paths:
             - target
             - /usr/local/cargo
@@ -87,8 +84,8 @@ jobs:
       # Multiple caches are used to increase the chance of a cache hit.
       - restore_cache:
           keys:
-            - v3-cargo-cache-docs-{{ arch }}-{{ .Branch }}
-            - v3-cargo-cache-docs-{{ arch }}
+            - v3-cargo-cache-docs-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}
+            - v3-cargo-cache-docs-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}
 
       # Install nightly
       - run:
@@ -119,16 +116,16 @@ jobs:
             && cp -R target/doc book/book/api
       - persist_to_workspace:
           root: book
-          paths: book 
+          paths: book
 
       # Save cache
       - save_cache:
-          key: v3-cargo-cache-docs-{{ arch }}-{{ .Branch }}
+          key: v3-cargo-cache-docs-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}
           paths:
             - target
             - /usr/local/cargo
       - save_cache:
-          key: v3-cargo-cache-docs-{{ arch }}
+          key: v3-cargo-cache-docs-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}
           paths:
             - target
             - /usr/local/cargo
