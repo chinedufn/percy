@@ -411,7 +411,7 @@
                         <span class="kw">_</span> <span class="op">=&gt;</span> {
                             <span class="kw">let</span> <span class="ident">insert_attribute</span> <span class="op">=</span> <span class="macro">quote</span><span class="macro">!</span> {
                                 #<span class="ident">var_name_node</span>.<span class="ident">as_velement_mut</span>().<span class="ident">expect</span>(<span class="string">&quot;Not an element&quot;</span>)
-                                    .<span class="ident">props</span>.<span class="ident">insert</span>(#<span class="ident">key</span>.<span class="ident">to_string</span>(), #<span class="ident">value</span>.<span class="ident">to_string</span>());
+                                    .<span class="ident">attrs</span>.<span class="ident">insert</span>(#<span class="ident">key</span>.<span class="ident">to_string</span>(), #<span class="ident">value</span>.<span class="ident">to_string</span>());
                             };
                             <span class="ident">tokens</span>.<span class="ident">push</span>(<span class="ident">insert_attribute</span>);
                         }
