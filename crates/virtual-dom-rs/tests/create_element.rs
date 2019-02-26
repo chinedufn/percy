@@ -21,7 +21,7 @@ fn nested_divs() {
 }
 
 #[wasm_bindgen_test]
-fn div_with_properties() {
+fn div_with_attributes() {
     let vdiv = html! { <div id="id-here" class="two classes"></div> };
     let div: Element = vdiv.create_dom_node().node.unchecked_into();
 

@@ -123,10 +123,10 @@ mod tests {
     fn label_equals() {
         let span = VirtualNode::element("span");
 
-        let mut props = HashMap::new();
-        props.insert("label".to_string(), "hello".to_string());
+        let mut attrs = HashMap::new();
+        attrs.insert("label".to_string(), "hello".to_string());
         let mut em = VElement::new("em");
-        em.attrs = props;
+        em.attrs = attrs;
 
         let mut html = VElement::new("div");
         html.children.push(span);

@@ -54,7 +54,7 @@ lazy_static! {
 ///
 /// TODO: Make all of these fields private and create accessor methods
 /// TODO: Create a builder to create instances of VirtualNode::Element with
-/// props and children without having to explicitly create a VElement
+/// attrs and children without having to explicitly create a VElement
 #[derive(PartialEq)]
 pub enum VirtualNode {
     /// An element node (node type `ELEMENT_NODE`).
@@ -71,7 +71,7 @@ pub enum VirtualNode {
 pub struct VElement {
     /// The HTML tag, such as "div"
     pub tag: String,
-    /// HTML props such as id, class, style, etc
+    /// HTML attributes such as id, class, style, etc
     pub attrs: HashMap<String, String>,
     /// Events that will get added to your real DOM element via `.addEventListener`
     pub events: Events,
@@ -393,7 +393,7 @@ impl fmt::Debug for VElement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "Element(<{}>, props: {:?}, children: {:?})",
+            "Element(<{}>, attrs: {:?}, children: {:?})",
             self.tag, self.attrs, self.children,
         )
     }
@@ -410,8 +410,8 @@ impl fmt::Display for VElement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "<{}", self.tag).unwrap();
 
-        for (prop, value) in self.attrs.iter() {
-            write!(f, r#" {}="{}""#, prop, value)?;
+        for (attr, value) in self.attrs.iter() {
+            write!(f, r#" {}="{}""#, attr, value)?;
         }
 
         write!(f, ">")?;
