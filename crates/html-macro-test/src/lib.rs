@@ -29,14 +29,14 @@ fn empty_div() {
 }
 
 #[test]
-fn one_prop() {
-    let mut props = HashMap::new();
-    props.insert("id".to_string(), "hello-world".to_string());
+fn one_attr() {
+    let mut attrs = HashMap::new();
+    attrs.insert("id".to_string(), "hello-world".to_string());
     let mut expected = VElement::new("div");
-    expected.props = props;
+    expected.attrs = attrs;
 
     HtmlMacroTest {
-        desc: "One property",
+        desc: "One attribute",
         generated: html! { <div id="hello-world"></div> },
         expected: expected.into(),
     }

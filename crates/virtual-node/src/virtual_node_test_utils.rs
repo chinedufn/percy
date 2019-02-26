@@ -44,7 +44,7 @@ impl VirtualNode {
             .into_iter()
             .filter(|vn: &&'a VirtualNode| match vn {
                 VirtualNode::Text(_) => false,
-                VirtualNode::Element(element_node) => match element_node.props.get("label") {
+                VirtualNode::Element(element_node) => match element_node.attrs.get("label") {
                     Some(label) => filter(label),
                     None => false,
                 },
@@ -123,10 +123,10 @@ mod tests {
     fn label_equals() {
         let span = VirtualNode::element("span");
 
-        let mut props = HashMap::new();
-        props.insert("label".to_string(), "hello".to_string());
+        let mut attrs = HashMap::new();
+        attrs.insert("label".to_string(), "hello".to_string());
         let mut em = VElement::new("em");
-        em.props = props;
+        em.attrs = attrs;
 
         let mut html = VElement::new("div");
         html.children.push(span);

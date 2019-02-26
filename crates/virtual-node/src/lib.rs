@@ -54,7 +54,7 @@ lazy_static! {
 ///
 /// TODO: Make all of these fields private and create accessor methods
 /// TODO: Create a builder to create instances of VirtualNode::Element with
-/// props and children without having to explicitly create a VElement
+/// attrs and children without having to explicitly create a VElement
 #[derive(PartialEq)]
 pub enum VirtualNode {
     /// An element node (node type `ELEMENT_NODE`).
@@ -71,8 +71,8 @@ pub enum VirtualNode {
 pub struct VElement {
     /// The HTML tag, such as "div"
     pub tag: String,
-    /// HTML props such as id, class, style, etc
-    pub props: HashMap<String, String>,
+    /// HTML attributes such as id, class, style, etc
+    pub attrs: HashMap<String, String>,
     /// Events that will get added to your real DOM element via `.addEventListener`
     pub events: Events,
     /// The children of this `VirtualNode`. So a <div> <em></em> </div> structure would
@@ -181,7 +181,7 @@ impl VElement {
     {
         VElement {
             tag: tag.into(),
-            props: HashMap::new(),
+            attrs: HashMap::new(),
             events: Events(HashMap::new()),
             children: vec![],
         }
@@ -200,7 +200,7 @@ impl VElement {
         let element = document.create_element(&self.tag).unwrap();
         let mut closures = HashMap::new();
 
-        self.props.iter().for_each(|(name, value)| {
+        self.attrs.iter().for_each(|(name, value)| {
             element
                 .set_attribute(name, value)
                 .expect("Set element attribute in create element");
@@ -393,8 +393,8 @@ impl fmt::Debug for VElement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "Element(<{}>, props: {:?}, children: {:?})",
-            self.tag, self.props, self.children,
+            "Element(<{}>, attrs: {:?}, children: {:?})",
+            self.tag, self.attrs, self.children,
         )
     }
 }
@@ -410,8 +410,8 @@ impl fmt::Display for VElement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "<{}", self.tag).unwrap();
 
-        for (prop, value) in self.props.iter() {
-            write!(f, r#" {}="{}""#, prop, value)?;
+        for (attr, value) in self.attrs.iter() {
+            write!(f, r#" {}="{}""#, attr, value)?;
         }
 
         write!(f, ">")?;

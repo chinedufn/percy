@@ -33,8 +33,8 @@ fn diff_recursive<'a, 'b>(
         // TODO: More robust key support. This is just an early stopgap to allow you to force replace
         // an element... say if it's event changed. Just change the key name for now.
         // In the future we want keys to be used to create a Patch::ReOrder to re-order siblings
-        if old_element.props.get("key").is_some()
-            && old_element.props.get("key") != new_element.props.get("key")
+        if old_element.attrs.get("key").is_some()
+            && old_element.attrs.get("key") != new_element.attrs.get("key")
         {
             replace = true;
         }
@@ -68,33 +68,33 @@ fn diff_recursive<'a, 'b>(
             let mut remove_attributes: Vec<&str> = vec![];
 
             // TODO: -> split out into func
-            for (new_prop_name, new_prop_val) in new_element.props.iter() {
-                match old_element.props.get(new_prop_name) {
-                    Some(ref old_prop_val) => {
-                        if old_prop_val != &new_prop_val {
-                            add_attributes.insert(new_prop_name, new_prop_val);
+            for (new_attr_name, new_attr_val) in new_element.attrs.iter() {
+                match old_element.attrs.get(new_attr_name) {
+                    Some(ref old_attr_val) => {
+                        if old_attr_val != &new_attr_val {
+                            add_attributes.insert(new_attr_name, new_attr_val);
                         }
                     }
                     None => {
-                        add_attributes.insert(new_prop_name, new_prop_val);
+                        add_attributes.insert(new_attr_name, new_attr_val);
                     }
                 };
             }
 
             // TODO: -> split out into func
-            for (old_prop_name, old_prop_val) in old_element.props.iter() {
-                if add_attributes.get(&old_prop_name[..]).is_some() {
+            for (old_attr_name, old_attr_val) in old_element.attrs.iter() {
+                if add_attributes.get(&old_attr_name[..]).is_some() {
                     continue;
                 };
 
-                match new_element.props.get(old_prop_name) {
-                    Some(ref new_prop_val) => {
-                        if new_prop_val != &old_prop_val {
-                            remove_attributes.push(old_prop_name);
+                match new_element.attrs.get(old_attr_name) {
+                    Some(ref new_attr_val) => {
+                        if new_attr_val != &old_attr_val {
+                            remove_attributes.push(old_attr_name);
                         }
                     }
                     None => {
-                        remove_attributes.push(old_prop_name);
+                        remove_attributes.push(old_attr_name);
                     }
                 };
             }
