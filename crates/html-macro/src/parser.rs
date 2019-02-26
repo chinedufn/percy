@@ -95,7 +95,7 @@ impl HtmlParser {
                         _ => {
                             let insert_attribute = quote! {
                                 #var_name_node.as_velement_mut().expect("Not an element")
-                                    .props.insert(#key.to_string(), #value.to_string());
+                                    .attrs.insert(#key.to_string(), #value.to_string());
                             };
                             tokens.push(insert_attribute);
                         }

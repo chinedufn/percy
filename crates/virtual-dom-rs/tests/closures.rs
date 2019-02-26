@@ -31,7 +31,7 @@ fn closure_not_dropped() {
         input
             .as_velement_mut()
             .expect("Not an element")
-            .props
+            .attrs
             .insert("id".into(), "old-input-elem".into());
 
         let mount = document.create_element("div").unwrap();
@@ -55,7 +55,7 @@ fn closure_not_dropped() {
         new_node
             .as_velement_mut()
             .expect("Not an element")
-            .props
+            .attrs
             .insert("id".into(), "new-input-elem".into());
 
         dom_updater.update(new_node);

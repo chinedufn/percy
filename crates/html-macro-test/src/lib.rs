@@ -33,7 +33,7 @@ fn one_prop() {
     let mut props = HashMap::new();
     props.insert("id".to_string(), "hello-world".to_string());
     let mut expected = VElement::new("div");
-    expected.props = props;
+    expected.attrs = props;
 
     HtmlMacroTest {
         desc: "One property",
