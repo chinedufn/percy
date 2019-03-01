@@ -94,6 +94,13 @@ impl Route {
                         }
                     }
                 };
+            } else {
+                // Compare segments on the same level
+                let incoming_segment = incoming_segments[index];
+
+                if defined_segment != &incoming_segment {
+                    return false;
+                }
             }
         }
 
