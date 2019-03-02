@@ -81,4 +81,64 @@ mod tests {
             html! { <div> second </div>}
         );
     }
+
+    #[test]
+    fn match_top_level_routes() {
+        let mut router = Router::default();
+
+        let mut param_types = HashMap::new();
+        param_types.insert("id".to_string(), ParamType::U64);
+
+        let view_creator = Box::new(|_| Box::new(TestView { kind: "users" }) as Box<View>);
+        let first_route = Route::new("/users", param_types, view_creator);
+
+        let mut param_types = HashMap::new();
+        param_types.insert("id".to_string(), ParamType::U64);
+
+        let view_creator = Box::new(|_| Box::new(TestView { kind: "posts" }) as Box<View>);
+        let second_route = Route::new("/posts", param_types, view_creator);
+
+        router.add_route(first_route);
+        router.add_route(second_route);
+
+        assert_eq!(
+            router.view("/users").unwrap().render(),
+            html! { <div> users </div>}
+        );
+
+        assert_eq!(
+            router.view("/posts").unwrap().render(),
+            html! { <div> posts </div>}
+        );
+    }
+
+    #[test]
+    fn match_nested_routes() {
+        let mut router = Router::default();
+
+        let mut param_types = HashMap::new();
+        param_types.insert("id".to_string(), ParamType::U64);
+
+        let view_creator = Box::new(|_| Box::new(TestView { kind: "users" }) as Box<View>);
+        let first_route = Route::new("/api/users", param_types, view_creator);
+
+        let mut param_types = HashMap::new();
+        param_types.insert("id".to_string(), ParamType::U64);
+
+        let view_creator = Box::new(|_| Box::new(TestView { kind: "posts" }) as Box<View>);
+        let second_route = Route::new("/api/posts", param_types, view_creator);
+
+        router.add_route(first_route);
+        router.add_route(second_route);
+
+        assert_eq!(
+            router.view("/api/users").unwrap().render(),
+            html! { <div> users </div>}
+        );
+
+        assert_eq!(
+            router.view("/api/posts").unwrap().render(),
+            html! { <div> posts </div>}
+        );
+    }
 }
