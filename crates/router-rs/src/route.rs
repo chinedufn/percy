@@ -1,38 +1,93 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 use virtual_dom_rs::View;
+use virtual_dom_rs::VirtualNode;
+use virtual_dom_rs::VText;
 
-type ViewFn = Box<Fn(HashMap<String, String>) -> Box<View>>;
-type ParamTypes = HashMap<String, ParamType>;
+//type ViewFn = Box<Fn(HashMap<String, String>) -> Box<View>>;
+
+/// Enables a type to be used as a route paramer
+///
+/// ```ignore
+/// // Example of a route param that only matches id's that are less than
+/// // 10 characters long
+///
+/// #[route(path = "/path/to/:id")
+/// fn my_route (id: ShortId) -> VirtualNode {
+/// }
+///
+/// struct ShortId {
+///     id: String,
+///     length: usize
+/// }
+///
+/// impl RouteParam for MyCustomType {
+///     fn from_str (param: &str) -> Result<MyCustomType, ()> {
+///         if param.len() > 10 {
+///             Ok(MyCustomType {
+///                 length: param.len(), id: param.to_string()
+///             })
+///         } else {
+///             Err(())
+///         }
+///     }
+/// }
+/// ```
+pub trait RouteParam {
+    fn from_str_param(param: &str) -> Result<Self, ()>
+    where
+        Self: Sized;
+}
+
+impl<T> RouteParam for T
+where
+    T: FromStr,
+{
+    fn from_str_param(param: &str) -> Result<T, ()> {
+        match param.parse::<T>() {
+            Ok(parsed) => Ok(parsed),
+            Err(_) => Err(()),
+        }
+    }
+}
+
+//impl RouteParam for u32 {
+//    fn from_str(param: &str) -> Result<Self, ()> {
+//        match param.parse::<u32>() {
+//            Ok(number) => Ok(number),
+//            Err(_) => Err(()),
+//        }
+//    }
+//}
+//
+//impl RouteParam for u64 {
+//    fn from_str(param: &str) -> Result<Self, ()> {
+//        match param.parse::<u64>() {
+//            Ok(number) => Ok(number),
+//            Err => Err(()),
+//        }
+//    }
+//}
+
+/// Given a param_key &str and a param_val &str, get the corresponding route parameter
+///
+/// ex: ("friend_count", "30")
+pub type GetRouteParam = Box<Fn(&str, &str) -> Option<Box<dyn RouteParam>>>;
 
 /// A route specifies a path to match against. When a match is found a `view_creator` is used
 /// to return an `impl View` that can be used to render the appropriate content for that route.
 pub struct Route {
     route_definition: &'static str,
-    param_types: ParamTypes,
-    view_creator: ViewFn,
-}
-
-/// All of the parameters that our routes can have. This is how we would distinguish "id" in
-/// /users/:id
-/// from being a u32, u8, or some other value
-#[cfg_attr(test, derive(PartialEq, Debug))]
-pub enum ParamType {
-    U32,
-    U64,
+    get_route_param: GetRouteParam,
 }
 
 impl Route {
     /// Create a new Route. You'll usually later call route.match(...) in order to see if a given
     /// the path in the browser URL matches your route's path definition.
-    pub fn new(
-        route_definition: &'static str,
-        param_types: ParamTypes,
-        view_creator: ViewFn,
-    ) -> Route {
+    pub fn new(route_definition: &'static str, get_route_param: GetRouteParam) -> Route {
         Route {
             route_definition,
-            param_types,
-            view_creator,
+            get_route_param,
         }
     }
 }
@@ -43,6 +98,8 @@ impl Route {
     /// # Example
     ///
     /// ```rust,ignore
+    /// // path = "/food/:food_type"
+    ///
     /// route.matches("/food/tacos");
     /// ```
     pub fn matches(&self, path: &str) -> bool {
@@ -59,10 +116,14 @@ impl Route {
             .filter(|segment| segment.len() > 0)
             .collect::<Vec<&str>>();
 
+        // If we defined a certain number of segments and we don't see the same amount in
+        // the incoming route, we know that it isn't a match
         if defined_segments.len() != incoming_segments.len() {
             return false;
         }
 
+        // Iterate through all of the segments and verify that they match, or if it's a
+        // RouteParam segment verify that we can parse it
         for (index, defined_segment) in defined_segments.iter().enumerate() {
             if defined_segment.len() == 0 {
                 continue;
@@ -74,33 +135,20 @@ impl Route {
 
             // ex: ":food_type"
             if first_char == ':' {
+                // food_type
                 let param_name = chars.collect::<String>();
-                // ex: ParamType::String
-                let param_type = self.param_types.get(&param_name).unwrap();
 
+                // tacos
                 let incoming_param_value = incoming_segments[index];
 
-                // Make sure that it is possible to convert the String that the user provided
-                // into the parameter type that we expect (u32, u8, i8, etc)
-                match param_type {
-                    ParamType::U32 => {
-                        if incoming_param_value.parse::<u32>().is_err() {
-                            return false;
-                        }
-                    }
-                    ParamType::U64 => {
-                        if incoming_param_value.parse::<u64>().is_err() {
-                            return false;
-                        }
-                    }
-                };
-            } else {
-                // Compare segments on the same level
-                let incoming_segment = incoming_segments[index];
+                // TODO: See if the incoming param value matches the type of the param name
+            }
 
-                if defined_segment != &incoming_segment {
-                    return false;
-                }
+            // Compare segments on the same level
+            let incoming_segment = incoming_segments[index];
+
+            if defined_segment != &incoming_segment {
+                return false;
             }
         }
 
@@ -113,27 +161,8 @@ impl Route {
     /// and our incoming path is `/users/5`
     ///
     /// Our view will end up getting created with `id: 5`
-    pub fn view(&self, incoming_path: &str) -> Box<View> {
-        (self.view_creator)(self.params(incoming_path))
-    }
-
-    fn params(&self, incoming_path: &str) -> HashMap<String, String> {
-        let incoming_path = incoming_path.split("/").collect::<Vec<&str>>();
-
-        self.route_definition
-            .split("/")
-            .collect::<Vec<&str>>()
-            .iter()
-            .enumerate()
-            .filter(|(_index, segment)| {
-                if segment.len() == 0 {
-                    return false;
-                }
-
-                segment.chars().next().unwrap() == ':'
-            })
-            .map(|(index, segment)| (segment.to_string(), incoming_path[index].to_string()))
-            .collect::<HashMap<String, String>>()
+    pub fn view(&self, incoming_path: &str) -> VirtualNode {
+        VirtualNode::Text(VText::new("TODO: Implement this"))
     }
 }
 
@@ -153,38 +182,6 @@ mod tests {
         fn render(&self) -> VirtualNode {
             let id = VirtualNode::text(self.id.to_string());
             html! { <div> {id} </div> }
-        }
-    }
-
-    struct MatchRouteTestCase {
-        desc: &'static str,
-        route_definition: &'static str,
-        // (route ... should it match ... description of test)
-        matches: Vec<(&'static str, bool, &'static str)>,
-    }
-
-    impl MatchRouteTestCase {
-        fn test(&self) {
-            let view_creator = |params: HashMap<String, String>| {
-                Box::new(MyView {
-                    id: params.get(":id").unwrap().parse::<u32>().unwrap(),
-                }) as Box<View>
-            };
-
-            let mut param_types = HashMap::new();
-            param_types.insert("id".to_string(), ParamType::U32);
-
-            let route = Route::new(self.route_definition, param_types, Box::new(view_creator));
-
-            for match_case in self.matches.iter() {
-                assert_eq!(
-                    route.matches(match_case.0),
-                    match_case.1,
-                    "{}\n{}",
-                    self.desc,
-                    match_case.2
-                );
-            }
         }
     }
 
@@ -211,50 +208,41 @@ mod tests {
         .test();
     }
 
-    #[test]
-    fn create_view() {
-        assert_eq!(
-            create_test_route().view("/users/300").render(),
-            html! {<div> 300 </div>},
-            "Creates a view from a provided route"
-        );
+    struct MatchRouteTestCase {
+        desc: &'static str,
+        route_definition: &'static str,
+        // (route ... should it match ... description of test)
+        matches: Vec<(&'static str, bool, &'static str)>,
     }
 
-    fn create_test_route() -> Route {
-        let view_creator = |params: HashMap<String, String>| {
-            Box::new(MyView {
-                id: params.get(":id").unwrap().parse::<u32>().unwrap(),
-            }) as Box<View>
-        };
+    impl MatchRouteTestCase {
+        fn test(&self) {
+            fn get_param (param_key: &str, param_val: &str) -> Option<Box<dyn RouteParam>> {
+                // /some/route/path/:id/
+                match param_key {
+                    "id" => {
+                        match u32::from_str_param(param_val) {
+                            Ok(num) => Some(Box::new(num)),
+                            Err(_) => None
 
-        let mut param_types = HashMap::new();
-        param_types.insert("id".to_string(), ParamType::U32);
+                        }
+                    },
+                    _ => None,
+                }
+            }
 
-        let route = Route::new("/users/:id", param_types, Box::new(view_creator));
+            let route = Route::new(self.route_definition, Box::new(get_param));
 
-        route
+            for match_case in self.matches.iter() {
+                assert_eq!(
+                    route.matches(match_case.0),
+                    match_case.1,
+                    "{}\n{}",
+                    self.desc,
+                    match_case.2
+                );
+            }
+        }
     }
 
-    // TODO:
-    #[test]
-    fn macro_works() {
-        //        let route = MyView::route();
-        //
-        //        assert!(route.matches("/users/5"));
-        //        assert!(!route.matches("/users/not_a_u32"));
-    }
-
-    struct Store {}
-
-    // TODO: Plan out how to provide a state store to routes on paper. Probably some sort of generic
-    // StateStore<T> where T is your applications Store
-    //    #[route(path = "/users/:id")]
-    struct ViewWithStore {
-        id: u32,
-        store: Rc<RefCell<Store>>,
-    }
-
-    // TODO
-    #[test]
-    fn provide_state_store() {}
 }

@@ -1,22 +1,31 @@
-//! Work in progress.. not finished..
-
 extern crate proc_macro;
-#[macro_use]
-extern crate quote;
-#[macro_use]
-extern crate syn;
-use proc_macro2::*;
+
+use quote::quote;
+use syn;
 
 use self::proc_macro::TokenStream;
-use syn::token::Token;
-use syn::{parse_macro_input, DeriveInput};
+use syn::parse_macro_input;
 
-use std::collections::HashSet;
+use syn::parse::{Parse, ParseStream, Result as SynResult};
+use syn::{Ident, Token, Lit};
 
-use quote::{ToTokens, TokenStreamExt};
-use syn::parse::{Error, Parse, ParseStream, Result as SynResult};
-use syn::punctuated::Punctuated;
-use syn::{Expr, Field, Fields, Ident, ItemFn, Local, Pat, Stmt};
+#[proc_macro_attribute]
+pub fn route(args: TokenStream, input: TokenStream) -> TokenStream {
+    //    let input = parse_macro_input!(input as Token![struct]);
+
+    let mut args = parse_macro_input!(args as RouteAttrs);
+
+    return input.into();
+
+    eprintln!("args = {:#?}", args);
+
+    TokenStream::from(quote!())
+}
+
+#[proc_macro]
+pub fn create_routes(input: TokenStream) -> TokenStream {
+    TokenStream::from(quote!(vec![]))
+}
 
 /// Parsed attributes from a `#[route(..)]`.
 #[derive(Default, Debug)]
@@ -40,37 +49,24 @@ impl Parse for RouteAttrs {
 
 #[derive(Debug, PartialEq, Eq)]
 enum RouteAttr {
-    Path,
+    Path(Lit),
 }
 
 impl Parse for RouteAttr {
     fn parse(input: ParseStream) -> SynResult<Self> {
         let original = input.fork();
-        let attr: Ident = input.parse()?;
-        eprintln!("attr = {:#?}", attr);
 
-        if attr == "path" {
-            println!("WORKED");
-            return Ok(RouteAttr::Path);
+        // path = "/my/route/here"
+        let path_key = input.parse::<Ident>()?;
+        let equals = input.parse::<Token![=]>()?;
+        let path_val = input.parse::<Lit>()?;
+
+        if path_key == "path" {
+            return Ok(RouteAttr::Path(path_val));
         }
-
-        println!("NO WORK");
 
         Err(original.error("unknown attribute"))
     }
-}
-
-#[proc_macro_attribute]
-pub fn route(args: TokenStream, input: TokenStream) -> TokenStream {
-    //    let input = parse_macro_input!(input as Token![struct]);
-
-    let mut args = parse_macro_input!(args as RouteAttrs);
-
-    return input.into();
-
-    eprintln!("args = {:#?}", args);
-
-    TokenStream::from(quote!())
 }
 
 #[cfg(test)]

@@ -1,0 +1,10 @@
+[package]
+name = "router-rs-macro-test"
+version = "0.1.0"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+router-rs-macro = {path = "../router-rs-macro"}
+virtual-node = {path = "../virtual-node"}
+router-rs = {path = "../router-rs"}

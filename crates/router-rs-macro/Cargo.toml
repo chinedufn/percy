@@ -8,6 +8,6 @@ edition = "2018"
 proc-macro = true
 
 [dependencies]
-syn = {version = "0.15"}
-quote = "0.6"
-proc-macro2 = {version = "0.4", features = ["nightly"]}
+syn = "0.15.27"
+quote = "0.6.11"
+proc-macro2 = {version = "0.4.27", features = ["nightly"]}
