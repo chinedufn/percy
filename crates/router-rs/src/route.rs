@@ -72,22 +72,22 @@ where
 /// Given a param_key &str and a param_val &str, get the corresponding route parameter
 ///
 /// ex: ("friend_count", "30")
-pub type GetRouteParam = Box<Fn(&str, &str) -> Option<Box<dyn RouteParam>>>;
+pub type ParseRouteParam = Box<Fn(&str, &str) -> Option<Box<dyn RouteParam>>>;
 
 /// A route specifies a path to match against. When a match is found a `view_creator` is used
 /// to return an `impl View` that can be used to render the appropriate content for that route.
 pub struct Route {
     route_definition: &'static str,
-    get_route_param: GetRouteParam,
+    route_param_parser: ParseRouteParam,
 }
 
 impl Route {
     /// Create a new Route. You'll usually later call route.match(...) in order to see if a given
     /// the path in the browser URL matches your route's path definition.
-    pub fn new(route_definition: &'static str, get_route_param: GetRouteParam) -> Route {
+    pub fn new(route_definition: &'static str, route_param_parser: ParseRouteParam) -> Route {
         Route {
             route_definition,
-            get_route_param,
+            route_param_parser,
         }
     }
 }
@@ -141,7 +141,7 @@ impl Route {
                 // tacos
                 let incoming_param_value = incoming_segments[index];
 
-                // TODO: See if the incoming param value matches the type of the param name
+                return (self.route_param_parser)(param_name.as_str(), incoming_param_value).is_some();
             }
 
             // Compare segments on the same level
@@ -191,8 +191,8 @@ mod tests {
             desc: "Typed route parameters",
             route_definition: "/users/:id",
             matches: vec![
-                ("/users/5", true, "5 is a u32"),
-                ("/users/foo", false, "foo is not a u32"),
+                ("/users/5", true, "5 should match since it is a u32"),
+                ("/users/foo", false, "foo should not match since it is not a u32"),
             ],
         }
         .test();
