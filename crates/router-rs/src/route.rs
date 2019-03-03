@@ -48,7 +48,7 @@ pub trait RouteParam {
     ///   /route/path/55
     ///
     /// If Self is a u32 we would return 55
-    fn from_str_param(param: &str) -> Result<Self, ()>
+    fn from_str_param(param: &str) -> Result<Self, &str>
     where
         Self: Sized;
 }
@@ -57,10 +57,10 @@ impl<T> RouteParam for T
 where
     T: FromStr,
 {
-    fn from_str_param(param: &str) -> Result<T, ()> {
+    fn from_str_param(param: &str) -> Result<T, &str> {
         match param.parse::<T>() {
             Ok(parsed) => Ok(parsed),
-            Err(_) => Err(()),
+            Err(_) => Err(param),
         }
     }
 }
@@ -92,6 +92,8 @@ pub type ParseRouteParam = Box<Fn(&str, &str) -> Option<Box<dyn RouteParam>>>;
 /// to return an `impl View` that can be used to render the appropriate content for that route.
 pub struct Route {
     route_definition: &'static str,
+    // FIXME: Do we need this to return the RouteParam ... or do we really just need a bool
+    // to check if the route exists? Seems like we're only using the boolean
     route_param_parser: ParseRouteParam,
 }
 

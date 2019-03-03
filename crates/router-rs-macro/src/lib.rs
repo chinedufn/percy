@@ -98,6 +98,8 @@ pub fn route(
                 .collect(),
             _ => unimplemented!(""),
         };
+        let path_params2 = path_params.clone();
+        let param_types2 = route_handler_param_types.clone();
 
         let route_creator = quote! {
             fn #route_creator_fn() -> Route {
@@ -105,12 +107,14 @@ pub fn route(
                     // TODO: Generate this based on the attributes in the path and the arguments
                     // in the function.
                     match param_key {
-                        "id" => {
-                            return Some(Box::new(
-                                u32::from_str_param(param_val).unwrap()
-                            ));
-                        }
-                        _ => panic!("TODO: ")
+                        #(
+                            #path_params2 => {
+                                return Some(Box::new(
+                                    #param_types2::from_str_param(param_val).expect("Macro parsed param")
+                                ));
+                            }
+                        )*
+                        _ => panic!("TODO: Think about when this case gets hit... 2am coding ...")
                     };
 
                     // TODO: Generate a quote_spanned! error if we specify an attribute in the
@@ -158,7 +162,11 @@ pub fn route(
                         )*
 
                         #route_fn_name(
-                          #(#route_handler_param_types::from_str_param(#route_handler_param_idents2).unwrap()),*
+                          #(
+                            #route_handler_param_types::from_str_param(
+                              #route_handler_param_idents2
+                            ).expect("Calling route function, error parsing parameter")
+                          ),*
                         )
                     }
                 }

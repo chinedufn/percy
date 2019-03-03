@@ -50,12 +50,3 @@ impl Router {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn foo() {
-        // TODO: Add some routes and then make sure that `router.view` works
-    }
-}
