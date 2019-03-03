@@ -10,6 +10,7 @@ use syn::ItemFn;
 use syn::Pat;
 use syn::Type;
 use syn::{Ident, Lit, Token};
+use std::collections::HashMap;
 
 pub fn route(
     args: proc_macro::TokenStream,
@@ -36,6 +37,11 @@ pub fn route(
 
     let types = as_param_types(&params);
 
+    let mut type_indices = HashMap::new();
+    for (idx, param) in as_param_idents(&params).iter().enumerate() {
+        type_indices.insert(format!("{}", param), idx);
+    }
+
     // TODO: Don't force the path to be the first argument .. just getting tests passing ..
     if let RouteAttr::Path(ref path) = args.attrs[0] {
         // vec![":id", ":name", ...]
@@ -55,6 +61,12 @@ pub fn route(
             .collect();
         let path_params_map: HashSet<String> = path_params.clone().into_iter().collect();
 
+        let mut path_param_types = vec![];
+        for path_param in path_params.iter() {
+            let type_idx = type_indices.get(path_param).unwrap();
+            path_param_types.push(types[*type_idx]);
+        }
+
         let route_creator = quote! {
             fn #create_route() -> Route {
                 fn route_param_parser (param_key: &str, param_val: &str) -> Option<Box<dyn RouteParam>> {
@@ -64,7 +76,7 @@ pub fn route(
                         #(
                             #path_params => {
                                 return Some(Box::new(
-                                    #types::from_str_param(param_val).expect("Macro parsed param")
+                                    #path_param_types::from_str_param(param_val).expect("Macro parsed param")
                                 ));
                             }
                         )*
@@ -114,6 +126,7 @@ fn gen_route_handler_mod(
 
     let param_ident_strings: Vec<String> = as_param_idents(params)
         .iter()
+        .filter(|param| path_params_map.contains(&format!("{}", param)))
         .map(|ident| format!("{}", ident))
         .collect();
 
@@ -127,9 +140,6 @@ fn gen_route_handler_mod(
 
     for (idx, arg_type) in types.iter().enumerate() {
         let param = param_idents[idx];
-        let param_clone1 = param.clone();
-        let param_clone2 = param.clone();
-        let param_clone3 = param.clone();
 
         if path_params_map.contains(&format!("{}", param)) {
             arguments.push(quote! {
@@ -139,22 +149,12 @@ fn gen_route_handler_mod(
         }
 
         // This is not a route parameter, so it must be a provided parameter
-        let mut param_string = format!("{}", param);
-
-        // Provided<SomeType>
-        let provided_ident = Ident::new(&param_string, param.span());
-
-        // Provided<SomeType
-        let type_kind = param_string.truncate(param_string.len() - 1);
-        // SomeType
-        let type_kind_string = param_string.split("Provided<").next().unwrap();
-        let type_kind_ident = Ident::new(&type_kind_string, param.span());
 
         argument_definitions.push(quote! {
-        let #param_clone1 = self
+        let #param = self
             .provided()
             .borrow();
-        let #param_clone2 = #param_clone1
+        let #param = #param
             .get(&std::any::TypeId::of::<#arg_type>())
             .unwrap()
             .downcast_ref::<#arg_type>()
@@ -162,16 +162,12 @@ fn gen_route_handler_mod(
         });
 
         arguments.push(quote! {
-            Provided::clone(#param_clone2)
+            Provided::clone(#param)
         });
 
         // TODO: If this isn't a provided parameter or a route param.
         // Generate a compiler error. Test this with our ui crate.
     }
-
-    let arguments = quote! {
-         #( #arguments ),*
-    };
 
     let route_handler_mod = quote! {
         // Kept it it's own module so that we can enable non camel case types only
@@ -219,7 +215,9 @@ fn gen_route_handler_mod(
 
                     #(#argument_definitions)*
 
-                    #route_fn_name(#arguments)
+                    #route_fn_name(
+                        #( #arguments ),*
+                    )
                 }
             }
         }

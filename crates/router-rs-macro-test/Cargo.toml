@@ -6,5 +6,5 @@ edition = "2018"
 
 [dependencies]
 router-rs-macro = {path = "../router-rs-macro"}
-virtual-node = {path = "../virtual-node"}
+virtual-dom-rs = {path = "../virtual-dom-rs"}
 router-rs = {path = "../router-rs"}

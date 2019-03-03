@@ -16,4 +16,7 @@ pub mod prelude {
     pub use crate::router::Router;
     pub use crate::provided::Provided;
     pub use crate::router::ProvidedMap;
+    pub use router_rs_macro::route;
+    pub use router_rs_macro::create_routes;
+    pub use crate::route::ParseRouteParam;
 }

@@ -1,8 +1,10 @@
 #![feature(proc_macro_hygiene)]
 
 use router_rs::prelude::*;
-use router_rs_macro::{create_routes, route};
-use virtual_node::VirtualNode;
+use std::str::FromStr;
+use virtual_dom_rs::prelude::*;
+
+//mod book_example;
 
 // No Params
 
@@ -114,25 +116,46 @@ fn provided_two_data() {
 // Route with Provided Data And Param
 
 struct SomeState {
-    happy: bool
+    happy: bool,
 }
 
 #[route(path = "/users/:id")]
-fn route_data_and_param (id: u16, state: Provided<SomeState>) -> VirtualNode {
+fn route_param_and_data(id: u16, state: Provided<SomeState>) -> VirtualNode {
     VirtualNode::Text(format!("User: {}. Happy: {}", id, state.happy).into())
+}
+
+#[test]
+fn provided_param_and_data() {
+    let mut router = Router::default();
+
+    router.provide(SomeState { happy: true });
+
+    router.set_route_handlers(create_routes![route_param_and_data]);
+
+    assert_eq!(
+        router.view("/users/12345").unwrap(),
+        VirtualNode::Text("User: 12345. Happy: true".into())
+    );
+}
+
+// Route with Provided Data And Param
+
+#[route(path = "/players/:id")]
+fn route_data_and_param(state: Provided<SomeState>, id: u32, ) -> VirtualNode {
+    VirtualNode::Text(format!("Player: {}. Happy: {}", id, state.happy).into())
 }
 
 #[test]
 fn provided_data_and_param() {
     let mut router = Router::default();
 
-    router.provide(SomeState { happy: true });
+    router.provide(SomeState { happy: false });
 
     router.set_route_handlers(create_routes![route_data_and_param]);
 
     assert_eq!(
-        router.view("/users/12345").unwrap(),
-        VirtualNode::Text("User: 12345. Happy: true".into())
+        router.view("/players/998").unwrap(),
+        VirtualNode::Text("Player: 998. Happy: false".into())
     );
 }
 
