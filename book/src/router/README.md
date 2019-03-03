@@ -5,10 +5,7 @@
 Let's take a look:
 
 ```rust
-// Imported from crates/router-rs-macro-test/src/lib.rs
+// Imported from crates/router-rs-macro-test/src/book_example.rs
 
-{{#include ../../../crates/router-rs-macro-test/src/lib.rs:116:137}}
+{{#include ../../../crates/router-rs-macro-test/src/book_example.rs}}
 ```
-
-> NOTE: that we used `VirtualNode::new` in this snippet but you'd
-typically use the `html!` macro to generate a `VirtualNode`

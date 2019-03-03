@@ -4,7 +4,7 @@ use router_rs::prelude::*;
 use std::str::FromStr;
 use virtual_dom_rs::prelude::*;
 
-//mod book_example;
+mod book_example;
 
 // No Params
 

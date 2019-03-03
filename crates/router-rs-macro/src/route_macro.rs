@@ -12,6 +12,9 @@ use syn::Type;
 use syn::{Ident, Lit, Token};
 use std::collections::HashMap;
 
+// FIXME: Clean up to use consistent temrminology:
+// route_def_colon_param, route_fn_param_ident, route_fn_param_ty
+
 pub fn route(
     args: proc_macro::TokenStream,
     input: proc_macro::TokenStream,
