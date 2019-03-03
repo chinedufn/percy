@@ -10,21 +10,46 @@ use syn::parse::{Parse, ParseStream, Result as SynResult};
 use syn::{Ident, Token, Lit};
 
 #[proc_macro_attribute]
-pub fn route(args: TokenStream, input: TokenStream) -> TokenStream {
-    //    let input = parse_macro_input!(input as Token![struct]);
-
+pub fn route(args: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let mut args = parse_macro_input!(args as RouteAttrs);
 
-    return input.into();
+    let mut tokens = vec![];
 
-    eprintln!("args = {:#?}", args);
+    for attr in args.attrs {
+        if let RouteAttr::Path(path) = attr {
+            let route_handler = quote! {
+                fn create_root_route() -> Route {
+                    fn route_param_parser (param_key: &str, param_val: &str) -> Option<Box<dyn RouteParam>> {
+                        // TODO: Generate this based on the attributes in the path and the arguments
+                        // in the function.
 
-    TokenStream::from(quote!())
+                        // TODO: Generate a quote_spanned! error if we specify an attribute in the
+                        // path that isn't in the arguments
+
+                        None
+                    }
+
+                    Route::new("/", Box::new(route_param_parser))
+                }
+            };
+
+            tokens.push(route_handler);
+        }
+    }
+
+    let tokens = quote! {
+        #(#tokens)*
+    };
+    tokens.into()
 }
 
 #[proc_macro]
-pub fn create_routes(input: TokenStream) -> TokenStream {
-    TokenStream::from(quote!(vec![]))
+pub fn create_routes(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let tokens = quote! {
+        vec![]
+    };
+
+    tokens.into()
 }
 
 /// Parsed attributes from a `#[route(..)]`.

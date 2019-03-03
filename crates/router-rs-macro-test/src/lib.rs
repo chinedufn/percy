@@ -1,6 +1,6 @@
 #![feature(proc_macro_hygiene)]
 
-use router_rs::Router;
+use router_rs::prelude::*;
 use router_rs_macro::{create_routes, route};
 use std::vec::IntoIter;
 use virtual_node::VText;
@@ -18,22 +18,17 @@ fn root_path() {
     router.set_routes(create_routes![root_route]);
 
     assert_eq!(
-        router.view("/").unwrap().render(),
+        router.view("/").unwrap(),
         VirtualNode::Text(VText::new("hello world"))
     );
 }
 
-pub mod __root_route_module__ {
-
-    #[allow(non_camel_case_types)]
-
-    pub struct root_route {
-        pub route: router_rs::Route,
-    }
-}
-
-//pub struct Route {
-//    route_definition: &'static str,
-//    param_types: ParamTypes,
-//    view_creator: ViewFn,
+//pub mod __root_route_module__ {
+//
+//    #[allow(non_camel_case_types)]
+//
+//    pub struct root_route {
+//        pub route: router_rs::Route,
+//    }
 //}
+

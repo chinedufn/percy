@@ -15,6 +15,10 @@ pub struct Router {
     routes: Vec<Route>,
 }
 
+pub trait RouteHandler {
+    fn view(&self, incoming_route: &str) -> VirtualNode;
+}
+
 impl Router {
     /// Append a route to our vector of Route's. The order that you add routes matters, as
     /// we'll start from the beginning of the vector when matching routes and return the
@@ -49,7 +53,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn foo () {
+    fn foo() {
         // TODO: Add some routes and then make sure that `router.view` works
     }
 }

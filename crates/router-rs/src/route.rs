@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::str::FromStr;
+use virtual_dom_rs::VText;
 use virtual_dom_rs::View;
 use virtual_dom_rs::VirtualNode;
-use virtual_dom_rs::VText;
 
 //type ViewFn = Box<Fn(HashMap<String, String>) -> Box<View>>;
 
@@ -34,6 +34,17 @@ use virtual_dom_rs::VText;
 /// }
 /// ```
 pub trait RouteParam {
+    /// Given some parameter, return Self
+    ///
+    /// For example, for the route path:
+    ///
+    ///   /route/path/:id
+    ///
+    /// And incoming path
+    ///
+    ///   /route/path/55
+    ///
+    /// If Self is a u32 we would return 55
     fn from_str_param(param: &str) -> Result<Self, ()>
     where
         Self: Sized;
@@ -141,7 +152,8 @@ impl Route {
                 // tacos
                 let incoming_param_value = incoming_segments[index];
 
-                return (self.route_param_parser)(param_name.as_str(), incoming_param_value).is_some();
+                return (self.route_param_parser)(param_name.as_str(), incoming_param_value)
+                    .is_some();
             }
 
             // Compare segments on the same level
@@ -192,7 +204,11 @@ mod tests {
             route_definition: "/users/:id",
             matches: vec![
                 ("/users/5", true, "5 should match since it is a u32"),
-                ("/users/foo", false, "foo should not match since it is not a u32"),
+                (
+                    "/users/foo",
+                    false,
+                    "foo should not match since it is not a u32",
+                ),
             ],
         }
         .test();
@@ -217,15 +233,12 @@ mod tests {
 
     impl MatchRouteTestCase {
         fn test(&self) {
-            fn get_param (param_key: &str, param_val: &str) -> Option<Box<dyn RouteParam>> {
+            fn get_param(param_key: &str, param_val: &str) -> Option<Box<dyn RouteParam>> {
                 // /some/route/path/:id/
                 match param_key {
-                    "id" => {
-                        match u32::from_str_param(param_val) {
-                            Ok(num) => Some(Box::new(num)),
-                            Err(_) => None
-
-                        }
+                    "id" => match u32::from_str_param(param_val) {
+                        Ok(num) => Some(Box::new(num)),
+                        Err(_) => None,
                     },
                     _ => None,
                 }
