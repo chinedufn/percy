@@ -15,6 +15,9 @@ use syn::{Ident, Lit, Token};
 // FIXME: Clean up to use consistent temrminology:
 // route_def_colon_param, route_fn_param_ident, route_fn_param_ty
 
+// FIXME: Needs clean up / organization ... but we can circle back to this since we have
+// tests in place. Got about halfway through cleanup.
+
 /// Parse the #[route(...)] macro
 ///
 /// Throughout our parsing we'll leave comments showing what things might look like if
