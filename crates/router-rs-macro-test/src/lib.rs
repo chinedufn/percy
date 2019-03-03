@@ -2,13 +2,13 @@
 
 use router_rs::prelude::*;
 use router_rs_macro::{create_routes, route};
-use virtual_node::{VirtualNode,VText};
+use virtual_node::VirtualNode;
 
 // No Params
 
 #[route(path = "/")]
 fn no_params() -> VirtualNode {
-    VirtualNode::Text(VText::new("hello world"))
+    VirtualNode::Text("hello world".into())
 }
 
 #[test]
@@ -19,7 +19,7 @@ fn root_path() {
 
     assert_eq!(
         router.view("/").unwrap(),
-        VirtualNode::Text(VText::new("hello world"))
+        VirtualNode::Text("hello world".into())
     );
 }
 
@@ -27,7 +27,7 @@ fn root_path() {
 
 #[route(path = "/:id")]
 fn route_one_param(id: u32) -> VirtualNode {
-    VirtualNode::Text(VText::new(format!("{}", id).as_str()))
+    VirtualNode::Text(format!("{}", id).into())
 }
 
 #[test]
@@ -36,17 +36,14 @@ fn one_param() {
 
     router.set_route_handlers(create_routes![route_one_param]);
 
-    assert_eq!(
-        router.view("/10").unwrap(),
-        VirtualNode::Text(VText::new("10"))
-    );
+    assert_eq!(router.view("/10").unwrap(), VirtualNode::Text("10".into()));
 }
 
 // Route With Two Params
 
 #[route(path = "/user/:user_id/buddies/:buddy_id")]
-fn route_two_params(user_id: u64, buddy_id: u64) -> VirtualNode {
-    VirtualNode::Text(VText::new(format!("User {}. Buddy {}", user_id, buddy_id).as_str()))
+fn route_two_params(user_id: u64, buddy_id: u32) -> VirtualNode {
+    VirtualNode::Text(format!("User {}. Buddy {}", user_id, buddy_id).into())
 }
 
 #[test]
@@ -57,8 +54,38 @@ fn two_params() {
 
     assert_eq!(
         router.view("/user/50/buddies/90").unwrap(),
-        VirtualNode::Text(VText::new("User 50. Buddy 90"))
+        VirtualNode::Text("User 50. Buddy 90".into())
     );
 }
 
-// TODO: Compile time error if the route doesn't start with a `/`
+// Route with Provided Data
+
+//struct State {
+//    count: u8
+//}
+//
+//#[route(path = "/")]
+//fn route_provided_data(state: ProvidedData<State>) -> VirtualNode {
+//    VirtualNode::Text(VText::new(format!("Count: {}", state.count).as_str()))
+//}
+//
+//#[test]
+//fn provided_data() {
+//    let mut router = Router::default();
+//
+//    router.provide(State {count: 50});
+//
+//    router.set_route_handlers(create_routes![route_provided_data]);
+//
+//    assert_eq!(
+//        router.view("/").unwrap(),
+//        VirtualNode::Text(VText::new("Count: 50"))
+//    );
+//}
+
+// TODO: Compile time error if the route doesn't start with a `/`.
+// Test this with a router-rs-macro-ui crate that uses compiletest-rs
+
+// TODO: Compile time error if the route defines segments that the function
+// does not have.
+// Test this with a router-rs-macro-ui crate that uses compiletest-rs
