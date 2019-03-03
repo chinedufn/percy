@@ -61,7 +61,7 @@ fn two_params() {
 // Route with Provided Data
 
 struct State {
-    count: u8
+    count: u8,
 }
 
 #[route(path = "/")]
@@ -73,13 +73,66 @@ fn route_provided_data(state: Provided<State>) -> VirtualNode {
 fn provided_data() {
     let mut router = Router::default();
 
-    router.provide(State {count: 50});
+    router.provide(State { count: 50 });
 
     router.set_route_handlers(create_routes![route_provided_data]);
 
     assert_eq!(
         router.view("/").unwrap(),
         VirtualNode::Text("Count: 50".into())
+    );
+}
+
+// Route with Two Provided Data
+
+struct Count {
+    count: u8,
+}
+
+struct Money(u64);
+
+#[route(path = "/")]
+fn route_provided_two_data(count: Provided<Count>, dollars: Provided<Money>) -> VirtualNode {
+    VirtualNode::Text(format!("Count: {}. Dollars: {}", count.count, dollars.0).into())
+}
+
+#[test]
+fn provided_two_data() {
+    let mut router = Router::default();
+
+    router.provide(Count { count: 8 });
+    router.provide(Money(99));
+
+    router.set_route_handlers(create_routes![route_provided_two_data]);
+
+    assert_eq!(
+        router.view("/").unwrap(),
+        VirtualNode::Text("Count: 8. Dollars: 99".into())
+    );
+}
+
+// Route with Provided Data And Param
+
+struct SomeState {
+    happy: bool
+}
+
+#[route(path = "/users/:id")]
+fn route_data_and_param (id: u16, state: Provided<SomeState>) -> VirtualNode {
+    VirtualNode::Text(format!("User: {}. Happy: {}", id, state.happy).into())
+}
+
+#[test]
+fn provided_data_and_param() {
+    let mut router = Router::default();
+
+    router.provide(SomeState { happy: true });
+
+    router.set_route_handlers(create_routes![route_data_and_param]);
+
+    assert_eq!(
+        router.view("/users/12345").unwrap(),
+        VirtualNode::Text("User: 12345. Happy: true".into())
     );
 }
 
