@@ -60,13 +60,13 @@ fn two_params() {
 
 // Route with Provided Data
 
-//struct State {
-//    count: u8
-//}
-//
+struct State {
+    count: u8
+}
+
 //#[route(path = "/")]
-//fn route_provided_data(state: ProvidedData<State>) -> VirtualNode {
-//    VirtualNode::Text(VText::new(format!("Count: {}", state.count).as_str()))
+//fn route_provided_data(state: Provided<State>) -> VirtualNode {
+//    VirtualNode::Text(format!("Count: {}", state.count).into())
 //}
 //
 //#[test]
@@ -79,7 +79,7 @@ fn two_params() {
 //
 //    assert_eq!(
 //        router.view("/").unwrap(),
-//        VirtualNode::Text(VText::new("Count: 50"))
+//        VirtualNode::Text("Count: 50".into())
 //    );
 //}
 

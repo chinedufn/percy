@@ -19,6 +19,12 @@ pub fn route(
 
     let route_fn: RouteFn = parse_macro_input!(input as RouteFn);
 
+    let mut tokens = vec![];
+
+    // Push the original function, without the #[route(...)] attribute now that we've
+    // parsed it.
+    tokens.push(original_fn.into());
+
     let route_fn_name = route_fn.route_fn.ident;
 
     let create_route = format!("create_{}", route_fn_name);
@@ -27,8 +33,6 @@ pub fn route(
     let params = route_fn.route_fn.decl.inputs;
 
     let types = as_param_types(&params);
-
-    let mut tokens = vec![];
 
     // TODO: Don't force the path to be the first argument .. just getting tests passing ..
     if let RouteAttr::Path(ref path) = args.attrs[0] {
@@ -75,10 +79,6 @@ pub fn route(
         tokens.push(route_handler_mod);
     }
 
-    // Push the original function, without the #[route(...)] attribute now that we've
-    // parsed it.
-    tokens.push(original_fn.into());
-
     let tokens = quote! {
         #(#tokens)*
     };
@@ -101,9 +101,10 @@ fn gen_route_handler_mod(
     let param_idents = as_param_idents(params);
     let param_idents2 = as_param_idents(params);
 
-    let param_ident_strings: Vec<String> = as_param_idents(params).iter().map(|ident| {
-        format!("{}", ident)
-    }).collect();
+    let param_ident_strings: Vec<String> = as_param_idents(params)
+        .iter()
+        .map(|ident| format!("{}", ident))
+        .collect();
 
     let types = as_param_types(&params);
 
@@ -131,19 +132,30 @@ fn gen_route_handler_mod(
             use super::*;
 
             pub struct #route_fn_handler {
-                pub route: Route
+                route: Route,
+                provided: Option<ProvidedMap>
             }
 
             impl #route_fn_handler {
                 pub fn new () -> #route_fn_handler {
                         #route_fn_handler {
-                            route: #create_route()
+                            route: #create_route(),
+                            provided: None
                         }
                 }
             }
 
             impl RouteHandler for #route_fn_handler {
                 fn route (&self) -> &Route { &self.route }
+
+                fn set_provided (&mut self, provided: ProvidedMap) {
+                    self.provided = Some(provided);
+                }
+
+                fn provided (&self) -> &ProvidedMap {
+                    &self.provided.as_ref().unwrap()
+                }
+
                 fn view (&self, incoming_route: &str) -> VirtualNode {
                     // example:
                     //   let id = self.route().find_route_param(incoming_route, "id").unwrap();

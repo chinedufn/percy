@@ -196,7 +196,6 @@ impl Route {
         let mut incoming_segments = incoming_path.split("/");
 
         for (idx, defined_segment) in self.route_definition.split("/").enumerate() {
-
             if defined_segment == &param_key {
                 for _ in 0..idx {
                     incoming_segments.next().unwrap();
