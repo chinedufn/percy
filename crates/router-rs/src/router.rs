@@ -12,24 +12,26 @@ use virtual_dom_rs::prelude::*;
 /// Then if we find a matching route we'll return it.
 #[derive(Default)]
 pub struct Router {
-    routes: Vec<Route>,
+    route_handlers: Vec<Box<dyn RouteHandler>>,
 }
 
+/// Used by router-rs-macro during code generation when turning your
+///
+/// #[route(path="/...")] macro into a struct.
 pub trait RouteHandler {
+    fn route(&self) -> &Route;
+
     fn view(&self, incoming_route: &str) -> VirtualNode;
+
+    fn matches(&self, incoming_path: &str) -> bool {
+        self.route().matches(incoming_path)
+    }
 }
 
 impl Router {
-    /// Append a route to our vector of Route's. The order that you add routes matters, as
-    /// we'll start from the beginning of the vector when matching routes and return the
-    /// first route that matches.
-    pub fn add_route(&mut self, route: Route) {
-        self.routes.push(route);
-    }
-
     /// Push a vector of Routes into the Router
-    pub fn set_routes(&mut self, routes: Vec<Route>) {
-        self.routes = routes;
+    pub fn set_route_handlers(&mut self, route_handlers: Vec<Box<dyn RouteHandler>>) {
+        self.route_handlers = route_handlers;
     }
 
     /// Get the first route in our routes vector view that handles this `incoming_route`
@@ -38,9 +40,9 @@ impl Router {
     /// You'll typically call this when trying to render the correct view based on the
     /// page URL or after clicking on an anchor tag.
     pub fn view(&self, incoming_route: &str) -> Option<VirtualNode> {
-        for route in self.routes.iter() {
-            if route.matches(incoming_route) {
-                return Some(route.view(incoming_route));
+        for route_handler in self.route_handlers.iter() {
+            if route_handler.matches(incoming_route) {
+                return Some(route_handler.view(incoming_route));
             }
         }
 

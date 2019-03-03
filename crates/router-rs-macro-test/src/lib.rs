@@ -2,20 +2,21 @@
 
 use router_rs::prelude::*;
 use router_rs_macro::{create_routes, route};
-use std::vec::IntoIter;
 use virtual_node::VText;
 use virtual_node::VirtualNode;
 
+// No Params
+
+#[route(path = "/")]
+fn no_params() -> VirtualNode {
+    VirtualNode::Text(VText::new("hello world"))
+}
+
 #[test]
 fn root_path() {
-    #[route(path = "/")]
-    fn root_route() -> VirtualNode {
-        VirtualNode::Text(VText::new("hello world"))
-    }
-
     let mut router = Router::default();
 
-    router.set_routes(create_routes![root_route]);
+    router.set_route_handlers(create_routes![no_params]);
 
     assert_eq!(
         router.view("/").unwrap(),
@@ -23,12 +24,21 @@ fn root_path() {
     );
 }
 
-//pub mod __root_route_module__ {
-//
-//    #[allow(non_camel_case_types)]
-//
-//    pub struct root_route {
-//        pub route: router_rs::Route,
-//    }
-//}
+// Route With One Param
 
+#[route(path = "/:id")]
+fn route_one_param(id: u32) -> VirtualNode {
+    VirtualNode::Text(VText::new(format!("{}", id).as_str()))
+}
+
+#[test]
+fn one_param() {
+    let mut router = Router::default();
+
+    router.set_route_handlers(create_routes![route_one_param]);
+
+    assert_eq!(
+        router.view("/10").unwrap(),
+        VirtualNode::Text(VText::new("10"))
+    );
+}

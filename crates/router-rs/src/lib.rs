@@ -13,4 +13,5 @@ pub mod prelude {
     pub use crate::route::Route;
     pub use crate::route::RouteParam;
     pub use crate::router::Router;
+    pub use crate::router::RouteHandler;
 }

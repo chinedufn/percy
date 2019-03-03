@@ -1,4 +1,7 @@
 use std::collections::HashMap;
+use std::fmt::Debug;
+use std::fmt::Error;
+use std::fmt::Formatter;
 use std::str::FromStr;
 use virtual_dom_rs::VText;
 use virtual_dom_rs::View;
@@ -92,6 +95,13 @@ pub struct Route {
     route_param_parser: ParseRouteParam,
 }
 
+impl Debug for Route {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        f.write_str(self.route_definition);
+        Ok(())
+    }
+}
+
 impl Route {
     /// Create a new Route. You'll usually later call route.match(...) in order to see if a given
     /// the path in the browser URL matches your route's path definition.
@@ -176,6 +186,25 @@ impl Route {
     pub fn view(&self, incoming_path: &str) -> VirtualNode {
         VirtualNode::Text(VText::new("TODO: Implement this"))
     }
+
+    /// Given an incoming path and a param_key, get the RouteParam
+    pub fn find_route_param<'a>(&self, incoming_path: &'a str, param_key: &str) -> Option<&'a str> {
+        let param_key = format!(":{}", param_key);
+
+        let mut incoming_segments = incoming_path.split("/");
+
+        for (idx, defined_segment) in self.route_definition.split("/").enumerate() {
+
+            if defined_segment == &param_key {
+                for _ in 0..idx {
+                    incoming_segments.next().unwrap();
+                }
+                return Some(incoming_segments.next().unwrap());
+            }
+        }
+
+        None
+    }
 }
 
 #[cfg(test)]
@@ -222,6 +251,22 @@ mod tests {
             matches: vec![("/foo", false, "routes should not match additional segments")],
         }
         .test();
+    }
+
+    #[test]
+    fn find_route_param() {
+        let route = Route::new(
+            "/:id",
+            Box::new(|param_key, param_val| {
+                if param_key == "id" {
+                    Some(Box::new(u32::from_str_param(param_val).unwrap()));
+                }
+
+                None
+            }),
+        );
+
+        assert_eq!(route.find_route_param("/5", "id"), Some("5"));
     }
 
     struct MatchRouteTestCase {
