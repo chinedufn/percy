@@ -64,24 +64,24 @@ struct State {
     count: u8
 }
 
-//#[route(path = "/")]
-//fn route_provided_data(state: Provided<State>) -> VirtualNode {
-//    VirtualNode::Text(format!("Count: {}", state.count).into())
-//}
-//
-//#[test]
-//fn provided_data() {
-//    let mut router = Router::default();
-//
-//    router.provide(State {count: 50});
-//
-//    router.set_route_handlers(create_routes![route_provided_data]);
-//
-//    assert_eq!(
-//        router.view("/").unwrap(),
-//        VirtualNode::Text("Count: 50".into())
-//    );
-//}
+#[route(path = "/")]
+fn route_provided_data(state: Provided<State>) -> VirtualNode {
+    VirtualNode::Text(format!("Count: {}", state.count).into())
+}
+
+#[test]
+fn provided_data() {
+    let mut router = Router::default();
+
+    router.provide(State {count: 50});
+
+    router.set_route_handlers(create_routes![route_provided_data]);
+
+    assert_eq!(
+        router.view("/").unwrap(),
+        VirtualNode::Text("Count: 50".into())
+    );
+}
 
 // TODO: Compile time error if the route doesn't start with a `/`.
 // Test this with a router-rs-macro-ui crate that uses compiletest-rs

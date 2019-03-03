@@ -1,4 +1,6 @@
+use proc_macro2::Span;
 use quote::quote;
+use std::collections::HashSet;
 use syn;
 use syn::parse::{Parse, ParseStream, Result as SynResult};
 use syn::parse_macro_input;
@@ -46,6 +48,12 @@ pub fn route(
                 .collect(),
             _ => unimplemented!(""),
         };
+        let path_params2 = path_params
+            .clone()
+            .into_iter()
+            .map(|ident| Ident::new(&ident, Span::call_site()))
+            .collect();
+        let path_params_map: HashSet<String> = path_params.clone().into_iter().collect();
 
         let route_creator = quote! {
             fn #create_route() -> Route {
@@ -75,7 +83,8 @@ pub fn route(
 
         tokens.push(route_creator);
 
-        let route_handler_mod = gen_route_handler_mod(route_fn_name, &params);
+        let route_handler_mod =
+            gen_route_handler_mod(route_fn_name, &params, &path_params_map, path_params2);
         tokens.push(route_handler_mod);
     }
 
@@ -88,6 +97,8 @@ pub fn route(
 fn gen_route_handler_mod(
     route_fn_name: Ident,
     params: &Punctuated<FnArg, Token![,]>,
+    path_params_map: &HashSet<String>,
+    path_params2: Vec<Ident>,
 ) -> proc_macro2::TokenStream {
     let route_fn_mod = format!("__{}_mod__", route_fn_name);
     let route_fn_mod = Ident::new(&route_fn_mod, route_fn_name.span());
@@ -108,14 +119,54 @@ fn gen_route_handler_mod(
 
     let types = as_param_types(&params);
 
+    // let state: Provided<State> = ... ;
+    // let more_data: Provided<Foo> = ...;
+    let mut argument_definitions = vec![];
+
     let mut arguments = vec![];
 
     for (idx, arg_type) in types.iter().enumerate() {
         let param = param_idents[idx];
+        let param_clone1 = param.clone();
+        let param_clone2 = param.clone();
+        let param_clone3 = param.clone();
+
+        if path_params_map.contains(&format!("{}", param)) {
+            arguments.push(quote! {
+                #arg_type::from_str_param(#param).expect(&format!("Error parsing param {}", #param))
+            });
+            continue;
+        }
+
+        // This is not a route parameter, so it must be a provided parameter
+        let mut param_string = format!("{}", param);
+
+        // Provided<SomeType>
+        let provided_ident = Ident::new(&param_string, param.span());
+
+        // Provided<SomeType
+        let type_kind = param_string.truncate(param_string.len() - 1);
+        // SomeType
+        let type_kind_string = param_string.split("Provided<").next().unwrap();
+        let type_kind_ident = Ident::new(&type_kind_string, param.span());
+
+        argument_definitions.push(quote! {
+        let #param_clone1 = self
+            .provided()
+            .borrow();
+        let #param_clone2 = #param_clone1
+            .get(&std::any::TypeId::of::<#arg_type>())
+            .unwrap()
+            .downcast_ref::<#arg_type>()
+            .expect("Downcast param");
+        });
 
         arguments.push(quote! {
-            #arg_type::from_str_param(#param).expect(&format!("Error parsing param {}", #param))
+            Provided::clone(#param_clone2)
         });
+
+        // TODO: If this isn't a provided parameter or a route param.
+        // Generate a compiler error. Test this with our ui crate.
     }
 
     let arguments = quote! {
@@ -160,11 +211,13 @@ fn gen_route_handler_mod(
                     // example:
                     //   let id = self.route().find_route_param(incoming_route, "id").unwrap();
                     #(
-                      let #param_idents =
+                      let #path_params2 =
                        self.route().find_route_param(
                          incoming_route, #param_ident_strings
                        ).expect("Finding route param");
                     )*
+
+                    #(#argument_definitions)*
 
                     #route_fn_name(#arguments)
                 }
