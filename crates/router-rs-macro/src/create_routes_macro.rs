@@ -2,8 +2,24 @@ use quote::quote;
 use syn;
 use syn::parse::{Parse, ParseStream, Result as SynResult};
 use syn::parse_macro_input;
-use syn::{Ident, };
+use syn::Ident;
 
+/// Creates Vec<RouteHandler> from a series of function names.
+///
+/// These functions should be anotated with the #[route(...)] macro,
+/// since the #[route(...)] macro will generate the modules and route
+/// handler creator functions that create_routes' generated code will use.
+///
+/// #### Macro
+///
+/// create_routes![a_route, another_route]
+///
+/// #### Generated Code
+///
+/// vec![
+///     __a_route_mod__::a_route_handler::new(),
+///     __another_route_mod__::another_route_handler::new(),
+/// ]
 pub fn create_routes(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let mut routes_to_create = parse_macro_input!(input as RoutesToCreate);
 

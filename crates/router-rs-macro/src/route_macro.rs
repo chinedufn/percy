@@ -1,5 +1,6 @@
 use proc_macro2::Span;
 use quote::quote;
+use std::collections::HashMap;
 use std::collections::HashSet;
 use syn;
 use syn::parse::{Parse, ParseStream, Result as SynResult};
@@ -10,42 +11,64 @@ use syn::ItemFn;
 use syn::Pat;
 use syn::Type;
 use syn::{Ident, Lit, Token};
-use std::collections::HashMap;
 
 // FIXME: Clean up to use consistent temrminology:
 // route_def_colon_param, route_fn_param_ident, route_fn_param_ty
 
+/// Parse the #[route(...)] macro
+///
+/// Throughout our parsing we'll leave comments showing what things might look like if
+/// we were parsing the following:
+///
+/// ```ignore
+/// #[route(path = "/:id")]
+/// fn my_route (id: u8, state: Provided<MyAppState>) -> VirtualNode {
+///     html! { <div> Hello World </div>
+/// }
+/// ```
+///
 pub fn route(
     args: proc_macro::TokenStream,
     input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
+    // Throughout our parsing we'll build a Vec<TokenStream>, then at the end
+    // we'll concatenate these TokenStream's and return them to the compiler.
+    let mut tokens = vec![];
+
+    // #[route(path = "/:id")]
     let mut args = parse_macro_input!(args as RouteAttrs);
 
+    // The TokenStream for the original function
+    //
+    // fn my_route (id: u8, state: Provided<MyAppState>) -> VirtualNode {
+    //     html! { <div> Hello World </div>
+    // }
     let original_fn = input.clone();
-
-    let route_fn: RouteFn = parse_macro_input!(input as RouteFn);
-
-    let mut tokens = vec![];
 
     // Push the original function, without the #[route(...)] attribute now that we've
     // parsed it.
+    // If we didn't return these tokens to the compiler we wouldn't be able to call our route
+    // in order to render our VirtualNode!
     tokens.push(original_fn.into());
 
+    // Parse our function into a syn::ItemFn (stored inside of our RouteFn)
+    let route_fn: RouteFn = parse_macro_input!(input as RouteFn);
+
+    // my_route
     let route_fn_name = route_fn.route_fn.ident;
 
+    // Create a new identifier called `create_my_route`
     let create_route = format!("create_{}", route_fn_name);
     let create_route = Ident::new(&create_route, route_fn_name.span());
 
+    // [id: u8, state: Provided<MyAppState>]
     let params = route_fn.route_fn.decl.inputs;
 
+    // [u8, Provided<MyAppState>]
     let types = as_param_types(&params);
 
-    let mut type_indices = HashMap::new();
-    for (idx, param) in as_param_idents(&params).iter().enumerate() {
-        type_indices.insert(format!("{}", param), idx);
-    }
-
-    // TODO: Don't force the path to be the first argument .. just getting tests passing ..
+    // TODO: Don't assume that the path is the first argument. Fine for now since we only
+    // accept one argument
     if let RouteAttr::Path(ref path) = args.attrs[0] {
         // vec![":id", ":name", ...]
         let path_params: Vec<String> = match path {
@@ -64,38 +87,7 @@ pub fn route(
             .collect();
         let path_params_map: HashSet<String> = path_params.clone().into_iter().collect();
 
-        let mut path_param_types = vec![];
-        for path_param in path_params.iter() {
-            let type_idx = type_indices.get(path_param).unwrap();
-            path_param_types.push(types[*type_idx]);
-        }
-
-        let route_creator = quote! {
-            fn #create_route() -> Route {
-                fn route_param_parser (param_key: &str, param_val: &str) -> Option<Box<dyn RouteParam>> {
-                    // TODO: Generate this based on the attributes in the path and the arguments
-                    // in the function.
-                    match param_key {
-                        #(
-                            #path_params => {
-                                return Some(Box::new(
-                                    #path_param_types::from_str_param(param_val).expect("Macro parsed param")
-                                ));
-                            }
-                        )*
-                        _ => panic!("TODO: Think about when this case gets hit... 2am coding ...")
-                    };
-
-                    // TODO: Generate a quote_spanned! error if we specify an attribute in the
-                    // path that isn't in the arguments
-
-                    None
-                }
-
-                Route::new(#path, Box::new(route_param_parser))
-            }
-        };
-
+        let route_creator = gen_route_creator(&params, &path, create_route);
         tokens.push(route_creator);
 
         let route_handler_mod =
@@ -107,6 +99,68 @@ pub fn route(
         #(#tokens)*
     };
     tokens.into()
+}
+
+fn gen_route_creator(
+    params: &Punctuated<FnArg, Token![,]>,
+    path: &Lit,
+    create_route: Ident,
+) -> proc_macro2::TokenStream {
+    let types = as_param_types(&params);
+
+    // Keep track of where our types are stored in our Vec<&Type> so that we can later look
+    // up a type's index by name in this map and then find it in the Vec<&Type>
+    //
+    //   id => 0
+    //   Provided<MyAppState> => 1
+    let mut type_indices = HashMap::new();
+    for (idx, param) in as_param_idents(&params).iter().enumerate() {
+        type_indices.insert(format!("{}", param), idx);
+    }
+
+    // vec![":id", ":name", ...]
+    let path_params: Vec<String> = match path {
+        Lit::Str(path) => path
+            .value()
+            .split("/")
+            .filter(|segment| segment.starts_with(":"))
+            .map(|segment| without_first(segment).to_string())
+            .collect(),
+        _ => unimplemented!(""),
+    };
+    let path_params_map: HashSet<String> = path_params.clone().into_iter().collect();
+
+    let mut path_param_types = vec![];
+    for path_param in path_params.iter() {
+        let type_idx = type_indices.get(path_param).unwrap();
+        path_param_types.push(types[*type_idx]);
+    }
+
+    let route_creator = quote! {
+        fn #create_route() -> Route {
+            fn route_param_parser (param_key: &str, param_val: &str) -> Option<Box<dyn RouteParam>> {
+                match param_key {
+                    #(
+                        #path_params => {
+                            return Some(Box::new(
+                                #path_param_types::from_str_param(param_val).expect("Macro parsed param")
+                            ));
+                        }
+                    )*
+                    _ => panic!("TODO: Think about when this case gets hit... 2am coding ...")
+                };
+
+                // TODO: Generate a quote_spanned! error if we specify an attribute in the
+                // path that isn't in the arguments
+
+                None
+            }
+
+            Route::new(#path, Box::new(route_param_parser))
+        }
+    };
+
+    route_creator
 }
 
 fn gen_route_handler_mod(
