@@ -141,7 +141,7 @@ fn provided_param_and_data() {
 // Route with Provided Data And Param
 
 #[route(path = "/players/:id")]
-fn route_data_and_param(state: Provided<SomeState>, id: u32, ) -> VirtualNode {
+fn route_data_and_param(state: Provided<SomeState>, id: u32) -> VirtualNode {
     VirtualNode::Text(format!("Player: {}. Happy: {}", id, state.happy).into())
 }
 

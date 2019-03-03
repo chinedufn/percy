@@ -43,4 +43,5 @@ pub mod prelude {
     pub use crate::VirtualNode;
     pub use html_macro::html;
     pub use html_macro::text;
+    pub use std::vec::IntoIter;
 }

@@ -7,8 +7,6 @@ use virtual_dom_rs::VText;
 use virtual_dom_rs::View;
 use virtual_dom_rs::VirtualNode;
 
-//type ViewFn = Box<Fn(HashMap<String, String>) -> Box<View>>;
-
 /// Enables a type to be used as a route paramer
 ///
 /// ```ignore
@@ -64,24 +62,6 @@ where
         }
     }
 }
-
-//impl RouteParam for u32 {
-//    fn from_str(param: &str) -> Result<Self, ()> {
-//        match param.parse::<u32>() {
-//            Ok(number) => Ok(number),
-//            Err(_) => Err(()),
-//        }
-//    }
-//}
-//
-//impl RouteParam for u64 {
-//    fn from_str(param: &str) -> Result<Self, ()> {
-//        match param.parse::<u64>() {
-//            Ok(number) => Ok(number),
-//            Err => Err(()),
-//        }
-//    }
-//}
 
 /// Given a param_key &str and a param_val &str, get the corresponding route parameter
 ///

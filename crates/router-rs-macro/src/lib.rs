@@ -69,4 +69,3 @@ pub fn route(
 pub fn create_routes(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     create_routes_macro::create_routes(input)
 }
-

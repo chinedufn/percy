@@ -1,32 +1,22 @@
 #![feature(proc_macro_hygiene)]
 
 #[macro_use]
-extern crate virtual_dom_rs;
-
-use virtual_dom_rs::prelude::*;
-
-pub use virtual_dom_rs::VirtualNode;
-
-use router_rs::prelude::*;
-
-use serde;
-
-#[macro_use]
 extern crate serde_derive;
 
+use router_rs::prelude::*;
+use serde;
 use serde_json;
-
 use std::cell::RefCell;
 use std::rc::Rc;
-
+use virtual_dom_rs::prelude::*;
+pub use virtual_dom_rs::VirtualNode;
 mod store;
-pub use crate::store::*;
-
-mod state;
 pub use crate::state::*;
+pub use crate::store::*;
 use crate::views::*;
 use std::collections::HashMap;
 
+mod state;
 mod views;
 
 pub struct App {
@@ -60,34 +50,26 @@ impl App {
         #[allow(unused_variables)] // Compiler doesn't see it inside html macro
         let store = Rc::clone(&self.store);
 
-        self.router
-            .view(self.store.borrow().path())
-            .unwrap()
-            .render()
+        self.router.view(self.store.borrow().path()).unwrap()
     }
+}
+
+#[route(path = "/")]
+fn home_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
+    HomeView::new(Rc::clone(&store)).render()
+}
+
+#[route(path = "/contributors")]
+fn contributors_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
+    ContributorsView::new(Rc::clone(&store)).render()
 }
 
 fn make_router(store: Rc<RefCell<Store>>) -> Router {
     let mut router = Router::default();
 
-    let store_clone = Rc::clone(&store);
+    router.provide(store);
 
-    let param_types = HashMap::new();
-    let home_route = Route::new(
-        "/",
-        param_types,
-        Box::new(move |params| Box::new(HomeView::new(Rc::clone(&store_clone))) as Box<View>),
-    );
-
-    router.add_route(home_route);
-
-    let param_types = HashMap::new();
-    let contributors_route = Route::new(
-        "/contributors",
-        param_types,
-        Box::new(move |params| Box::new(ContributorsView::new(Rc::clone(&store))) as Box<View>),
-    );
-    router.add_route(contributors_route);
+    router.set_route_handlers(create_routes![home_route, contributors_route]);
 
     router
 }
