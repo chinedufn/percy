@@ -69,7 +69,7 @@
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <ol class="chapter"><li class="affix"><a href="introduction.html">Introduction</a></li><li class="spacer"></li><li><a href="views/index.html"><strong aria-hidden="true">1.</strong> Rendering Views</a></li><li><ol class="section"><li><a href="html-macro/index.html"><strong aria-hidden="true">1.1.</strong> Writing html!</a></li><li><ol class="section"><li><a href="html-macro/html-macro.html"><strong aria-hidden="true">1.1.1.</strong> Writing html!</a></li><li><a href="html-macro/compile-time-errors.html"><strong aria-hidden="true">1.1.2.</strong> Compile Time Errors</a></li></ol></li><li><a href="virtual-dom/index.html"><strong aria-hidden="true">1.2.</strong> Virtual DOM</a></li><li><ol class="section"><li><a href="virtual-dom/unit-testing-views.html"><strong aria-hidden="true">1.2.1.</strong> Unit Testing your Views</a></li></ol></li><li><a href="views/server-side-rendering/index.html"><strong aria-hidden="true">1.3.</strong> Server Side Rendering (SSR)</a></li><li><ol class="section"><li><a href="views/server-side-rendering/why-ssr.html"><strong aria-hidden="true">1.3.1.</strong> Why SSR</a></li><li><a href="views/server-side-rendering/how-to-ssr.html"><strong aria-hidden="true">1.3.2.</strong> How to SSR</a></li></ol></li></ol></li><li><a href="router/index.html"><strong aria-hidden="true">2.</strong> Router</a></li><li><a href="css-in-rust.html"><strong aria-hidden="true">3.</strong> CSS in Rust</a></li><li><a href="contributing/index.html"><strong aria-hidden="true">4.</strong> Contributing</a></li><li><ol class="section"><li><a href="contributing/getting-started.html"><strong aria-hidden="true">4.1.</strong> Getting Started</a></li><li><a href="contributing/ways-to-contribute.html"><strong aria-hidden="true">4.2.</strong> Types of Contributions</a></li><li><a href="contributing/internal-design/index.html"><strong aria-hidden="true">4.3.</strong> Internal Design</a></li><li><ol class="section"><li><a href="diff-patch/index.html"><strong aria-hidden="true">4.3.1.</strong> Diff / Patch Algorithm</a></li><li><ol class="section"><li><a href="diff-patch/diff-patch-walkthrough/index.html"><strong aria-hidden="true">4.3.1.1.</strong> Diff / Patch Walkthrough</a></li><li><a href="diff-patch/fixing-diff-patch-issues/index.html"><strong aria-hidden="true">4.3.1.2.</strong> Fixing diff/patch issues</a></li></ol></li><li><a href="contributing/internal-design/sibling-text-nodes.html"><strong aria-hidden="true">4.3.2.</strong> Handling text siblings</a></li></ol></li></ol></li></ol>
+            <ol class="chapter"><li class="affix"><a href="introduction.html">Introduction</a></li><li class="spacer"></li><li><a href="views/index.html"><strong aria-hidden="true">1.</strong> Rendering Views</a></li><li><ol class="section"><li><a href="html-macro/index.html"><strong aria-hidden="true">1.1.</strong> Writing html!</a></li><li><ol class="section"><li><a href="html-macro/html-macro.html"><strong aria-hidden="true">1.1.1.</strong> Writing html!</a></li><li><a href="html-macro/compile-time-errors.html"><strong aria-hidden="true">1.1.2.</strong> Compile Time Errors</a></li></ol></li><li><a href="virtual-dom/index.html"><strong aria-hidden="true">1.2.</strong> Virtual DOM</a></li><li><ol class="section"><li><a href="virtual-dom/unit-testing-views.html"><strong aria-hidden="true">1.2.1.</strong> Unit Testing your Views</a></li></ol></li><li><a href="views/server-side-rendering/index.html"><strong aria-hidden="true">1.3.</strong> Server Side Rendering (SSR)</a></li><li><ol class="section"><li><a href="views/server-side-rendering/why-ssr.html"><strong aria-hidden="true">1.3.1.</strong> Why SSR</a></li><li><a href="views/server-side-rendering/how-to-ssr.html"><strong aria-hidden="true">1.3.2.</strong> How to SSR</a></li></ol></li></ol></li><li><a href="router/index.html"><strong aria-hidden="true">2.</strong> Router</a></li><li><a href="css-in-rust.html"><strong aria-hidden="true">3.</strong> CSS in Rust</a></li><li><a href="contributing/index.html"><strong aria-hidden="true">4.</strong> Contributing</a></li><li><ol class="section"><li><a href="contributing/getting-started.html"><strong aria-hidden="true">4.1.</strong> Getting Started</a></li><li><a href="contributing/ways-to-contribute.html"><strong aria-hidden="true">4.2.</strong> Types of Contributions</a></li><li><a href="contributing/internal-design/index.html"><strong aria-hidden="true">4.3.</strong> Internal Design</a></li><li><ol class="section"><li><a href="diff-patch/index.html"><strong aria-hidden="true">4.3.1.</strong> Diff / Patch Algorithm</a></li><li><ol class="section"><li><a href="diff-patch/diff-patch-walkthrough/index.html"><strong aria-hidden="true">4.3.1.1.</strong> Diff / Patch Walkthrough</a></li><li><a href="diff-patch/fixing-diff-patch-issues/index.html"><strong aria-hidden="true">4.3.1.2.</strong> Fixing diff/patch issues</a></li></ol></li><li><a href="contributing/internal-design/sibling-text-nodes.html"><strong aria-hidden="true">4.3.2.</strong> Handling text siblings</a></li><li><a href="contributing/router/index.html"><strong aria-hidden="true">4.3.3.</strong> Router</a></li><li><ol class="section"><li><a href="contributing/router/macro/index.html"><strong aria-hidden="true">4.3.3.1.</strong> route macro</a></li></ol></li></ol></li></ol></li></ol>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -1209,6 +1209,245 @@ let sibling_text_nodes = html! { &lt;div&gt; hello {different_text} } &lt;/div&g
 </code></pre>
 <p>Our <code>virtual_dom_rs</code> patch function would be able to find the old &quot;World&quot; text node since we've ensured that it
 did not get merged in with any other text nodes.</p>
+<a class="header" href="print.html#router-1" id="router-1"><h1>Router</h1></a>
+<p>Percy provides a route that can be used for deciding which views to render
+based on, say, the route that the user has visited in their browser.</p>
+<p>Here's an example</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// Imported from crates/router-rs-macro-test/src/book_example.rs
+
+//! Note: Intentionally kept in it's own file for easy inclusion into The Percy Book
+
+#![feature(proc_macro_hygiene)]
+
+use router_rs::prelude::*;
+use std::str::FromStr;
+use virtual_dom_rs::prelude::*;
+
+#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;)]
+fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
+    let id = format!(&quot;{}&quot;, id);
+    let meal = text!(format!(&quot;{:#?}&quot;, meal));
+
+    html! {
+        &lt;div&gt; User { text!(id) } loves { meal} &lt;/div&gt;
+    }
+}
+
+#[test]
+fn provided_data_and_param() {
+    let mut router = Router::default();
+
+    router.provide(SomeState { happy: true });
+
+    router.set_route_handlers(create_routes![route_data_and_param]);
+
+    assert_eq!(
+        &amp;router
+            .view(&quot;/users/10/favorite-meal/breakfast&quot;)
+            .unwrap()
+            .to_string(),
+        // TODO: This is a bug with our text implementation. Will fix...
+        // We want this to be &lt;div&gt; User 10 loves breakfast &lt;/div&gt;
+        &quot;&lt;div&gt;User10lovesBreakfast&lt;/div&gt;&quot;
+    );
+}
+
+struct SomeState {
+    happy: bool,
+}
+
+#[derive(Debug)]
+enum Meal {
+    Breakfast,
+    Lunch,
+    Dinner,
+}
+
+impl FromStr for Meal {
+    type Err = ();
+
+    fn from_str(s: &amp;str) -&gt; Result&lt;Self, Self::Err&gt; {
+        Ok(match s {
+            &quot;breakfast&quot; =&gt; Meal::Breakfast,
+            &quot;lunch&quot; =&gt; Meal::Lunch,
+            &quot;dinner&quot; =&gt; Meal::Dinner,
+            _ =&gt; Err(())?,
+        })
+    }
+}
+
+#}</code></pre></pre>
+<p>This section will dive into how that works.</p>
+<a class="header" href="print.html#route-macro" id="route-macro"><h1>route macro</h1></a>
+<p>The <code>#[route(...)]</code> attribute macro is used to annotate functions that we cant to get called
+when we visit a certain route.</p>
+<p>Before diving into how it works, let's take a look at what code the macro generates for you.</p>
+<p>Seeing the end result will make it easier to understand what we're doing and why we do it.</p>
+<a class="header" href="print.html#generated-code" id="generated-code"><h2>Generated Code</h2></a>
+<p>Let's say that you have a file that looks like this:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// Imported from crates/router-rs-macro-test/src/book_example.rs
+
+//! Note: Intentionally kept in it's own file for easy inclusion into The Percy Book
+
+#![feature(proc_macro_hygiene)]
+
+use router_rs::prelude::*;
+use std::str::FromStr;
+use virtual_dom_rs::prelude::*;
+
+#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;)]
+fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
+    let id = format!(&quot;{}&quot;, id);
+    let meal = text!(format!(&quot;{:#?}&quot;, meal));
+
+    html! {
+        &lt;div&gt; User { text!(id) } loves { meal} &lt;/div&gt;
+    }
+}
+
+#[test]
+fn provided_data_and_param() {
+    let mut router = Router::default();
+
+    router.provide(SomeState { happy: true });
+
+    router.set_route_handlers(create_routes![route_data_and_param]);
+
+    assert_eq!(
+        &amp;router
+            .view(&quot;/users/10/favorite-meal/breakfast&quot;)
+            .unwrap()
+            .to_string(),
+        // TODO: This is a bug with our text implementation. Will fix...
+        // We want this to be &lt;div&gt; User 10 loves breakfast &lt;/div&gt;
+        &quot;&lt;div&gt;User10lovesBreakfast&lt;/div&gt;&quot;
+    );
+}
+
+struct SomeState {
+    happy: bool,
+}
+
+#[derive(Debug)]
+enum Meal {
+    Breakfast,
+    Lunch,
+    Dinner,
+}
+
+impl FromStr for Meal {
+    type Err = ();
+
+    fn from_str(s: &amp;str) -&gt; Result&lt;Self, Self::Err&gt; {
+        Ok(match s {
+            &quot;breakfast&quot; =&gt; Meal::Breakfast,
+            &quot;lunch&quot; =&gt; Meal::Lunch,
+            &quot;dinner&quot; =&gt; Meal::Dinner,
+            _ =&gt; Err(())?,
+        })
+    }
+}
+
+#}</code></pre></pre>
+<p>The <code>#[route(...)]</code> macro above will automatically generate the following code (some unimportant bits have been removed for brevity):</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// TODO:: This code example isn't imported from a real file so it might go stale over time.
+
+fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
+  // ... removed ...
+}
+fn create_route_data_and_param() -&gt; Route {
+    fn route_param_parser(param_key: &amp;str, param_val: &amp;str) -&gt; Option&lt;Box&lt;dyn RouteParam&gt;&gt; {
+        match param_key {
+            &quot;id&quot; =&gt; {
+                return Some(Box::new(
+                    u16::from_str_param(param_val).expect(&quot;Macro parsed param&quot;),
+                ));
+            }
+            &quot;meal&quot; =&gt; {
+                return Some(Box::new(
+                    Meal::from_str_param(param_val).expect(&quot;Macro parsed param&quot;),
+                ));
+            }
+            _ =&gt; panic!(&quot;TODO: Handle this case...&quot;),
+        };
+        None
+    }
+    Route::new(
+        &quot;/users/:id/favorite-meal/:meal&quot;,
+        Box::new(route_param_parser),
+    )
+}
+pub mod __route_data_and_param_mod__ {
+    #![deny(warnings)]
+    #![allow(non_camel_case_types)]
+    use super::*;
+    pub struct route_data_and_param_handler {
+        route: Route,
+        provided: Option&lt;ProvidedMap&gt;,
+    }
+    impl route_data_and_param_handler {
+        pub fn new() -&gt; route_data_and_param_handler {
+            route_data_and_param_handler {
+                route: create_route_data_and_param(),
+                provided: None,
+            }
+        }
+    }
+    impl RouteHandler for route_data_and_param_handler {
+        fn route(&amp;self) -&gt; &amp;Route {
+            &amp;self.route
+        }
+        fn set_provided(&amp;mut self, provided: ProvidedMap) {
+            self.provided = Some(provided);
+        }
+        fn provided(&amp;self) -&gt; &amp;ProvidedMap {
+            &amp;self.provided.as_ref().unwrap()
+        }
+        fn view(&amp;self, incoming_route: &amp;str) -&gt; VirtualNode {
+            let id = self
+                .route()
+                .find_route_param(incoming_route, &quot;id&quot;)
+                .expect(&quot;Finding route param&quot;);
+            let meal = self
+                .route()
+                .find_route_param(incoming_route, &quot;meal&quot;)
+                .expect(&quot;Finding route param&quot;);
+            let state = self.provided().borrow();
+            let state = state
+                .get(&amp;std::any::TypeId::of::&lt;Provided&lt;SomeState&gt;&gt;())
+                .unwrap()
+                .downcast_ref::&lt;Provided&lt;SomeState&gt;&gt;()
+                .expect(&quot;Downcast param&quot;);
+            route_data_and_param(
+                u16::from_str_param(id).expect(
+                    // ... removed ...
+                )),
+                Provided::clone(state),
+                Meal::from_str_param(meal).expect(
+                  // ... removed ...
+                ),
+            )
+        }
+    }
+}
+fn provided_data_and_param() {
+    let mut router = Router::default();
+    router.provide(SomeState { happy: true });
+    router.set_route_handlers(&lt;[_]&gt;::into_vec(box [Box::new(
+        self::__route_data_and_param_mod__::route_data_and_param_handler::new(),
+    )]));
+    // ... removed ...
+}
+#}</code></pre></pre>
 
                     </main>
 
