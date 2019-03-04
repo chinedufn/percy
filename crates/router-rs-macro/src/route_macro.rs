@@ -229,10 +229,10 @@ fn gen_route_handler_mod(
         // Generate a compiler error. Test this with our ui crate.
     }
 
+    // Kept it it's own module so that we can enable non camel case types only
+    // for this module. This way we don't need to worry as much about transforming
+    // the generated struct name.
     let route_handler_mod = quote! {
-        // Kept it it's own module so that we can enable non camel case types only
-        // for this module. This way we don't need to worry as much about transforming
-        // the generated struct name.
         pub mod #route_fn_mod {
             #![deny(warnings)]
             #![allow(non_camel_case_types)]

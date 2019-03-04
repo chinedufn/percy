@@ -26,3 +26,5 @@
       - [Diff / Patch Walkthrough](./diff-patch/diff-patch-walkthrough/README.md)
       - [Fixing diff/patch issues](./diff-patch/fixing-diff-patch-issues/README.md)
     - [Handling text siblings](./contributing/internal-design/sibling-text-nodes.md)
+    - [Router](./contributing/router/README.md)
+      - [route macro](./contributing/router/macro/README.md)
