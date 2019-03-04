@@ -380,6 +380,12 @@ impl IntoIterator for VirtualNode {
     }
 }
 
+impl Into<::std::vec::IntoIter<VirtualNode>> for VirtualNode {
+    fn into(self) -> ::std::vec::IntoIter<VirtualNode> {
+        self.into_iter()
+    }
+}
+
 impl fmt::Debug for VirtualNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {

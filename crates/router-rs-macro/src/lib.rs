@@ -1,82 +1,71 @@
-//! Work in progress.. not finished..
-
+#![recursion_limit = "128"]
+#[deny(missing_docs)]
 extern crate proc_macro;
-#[macro_use]
-extern crate quote;
-#[macro_use]
-extern crate syn;
-use proc_macro2::*;
 
 use self::proc_macro::TokenStream;
-use syn::token::Token;
-use syn::{parse_macro_input, DeriveInput};
+use syn;
 
-use std::collections::HashSet;
+mod create_routes_macro;
+mod route_macro;
 
-use quote::{ToTokens, TokenStreamExt};
-use syn::parse::{Error, Parse, ParseStream, Result as SynResult};
-use syn::punctuated::Punctuated;
-use syn::{Expr, Field, Fields, Ident, ItemFn, Local, Pat, Stmt};
-
-/// Parsed attributes from a `#[route(..)]`.
-#[derive(Default, Debug)]
-struct RouteAttrs {
-    attrs: Vec<RouteAttr>,
-}
-
-impl Parse for RouteAttrs {
-    fn parse(input: ParseStream) -> SynResult<Self> {
-        if input.is_empty() {
-            return Ok(RouteAttrs { attrs: vec![] });
-        }
-
-        let opts = syn::punctuated::Punctuated::<_, syn::token::Comma>::parse_terminated(input)?;
-
-        Ok(RouteAttrs {
-            attrs: opts.into_iter().collect(),
-        })
-    }
-}
-
-#[derive(Debug, PartialEq, Eq)]
-enum RouteAttr {
-    Path,
-}
-
-impl Parse for RouteAttr {
-    fn parse(input: ParseStream) -> SynResult<Self> {
-        let original = input.fork();
-        let attr: Ident = input.parse()?;
-        eprintln!("attr = {:#?}", attr);
-
-        if attr == "path" {
-            println!("WORKED");
-            return Ok(RouteAttr::Path);
-        }
-
-        println!("NO WORK");
-
-        Err(original.error("unknown attribute"))
-    }
-}
-
+/// An attribute that turns a function into a view route
+///
+/// ```ignore
+/// #[route(path = "/users/:user_id")]
+/// fn my_route(user_id: u32) -> VirtualNode {
+///     let user_id = format!("{}", user_id);
+///     html! { <div id=user_id> World </div> }
+/// }
+///
+/// fn main() {
+///     let mut router = Router::default();
+///
+///     router.set_route_handlers(create_routes![
+///         my_route,
+///     ]);
+///
+///     assert_eq!(
+///         router.view("/users/5").unwrap(),
+///         html! { <div id="5"> Hello World </div> }
+///     );
+///
+/// }
+/// ```
 #[proc_macro_attribute]
-pub fn route(args: TokenStream, input: TokenStream) -> TokenStream {
-    //    let input = parse_macro_input!(input as Token![struct]);
-
-    let mut args = parse_macro_input!(args as RouteAttrs);
-
-    return input.into();
-
-    eprintln!("args = {:#?}", args);
-
-    TokenStream::from(quote!())
+pub fn route(
+    args: proc_macro::TokenStream,
+    input: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    route_macro::route(args, input)
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
+/// ```ignore
+/// #[route(path = "/")]
+/// fn my_route() -> VirtualNode {
+///     html! { Hello World }
+/// }
+///
+/// #[route(path = "/:id")]
+/// fn route2(id: u8) -> VirtualNode {
+///     html! { Route number 2 }
+/// }
+///
+/// fn main() {
+///     let mut router = Router::default();
+///
+///     router.set_route_handlers(create_routes![
+///         my_route,
+///         route2
+///     ]);
+///
+///     assert_eq!(
+///         router.view("/").unwrap(),
+///         html! { Hello World }
+///     );
+///
+/// }
+/// ```
+#[proc_macro]
+pub fn create_routes(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    create_routes_macro::create_routes(input)
 }

@@ -1,11 +1,12 @@
 [package]
 name = "router-rs"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 edition = "2018"
 
 [dependencies]
 virtual-dom-rs = { path = "../virtual-dom-rs", version = "0.6.0"}
+router-rs-macro = { path = "../router-rs-macro", version = "0.1.0" }
 
 [dev-dependencies]
 router-rs-macro = {path = "../router-rs-macro"}
