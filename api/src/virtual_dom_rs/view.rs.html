@@ -5,16 +5,12 @@
 <span id="5">5</span>
 <span id="6">6</span>
 <span id="7">7</span>
-<span id="8">8</span>
-<span id="9">9</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">VirtualNode</span>;
 
 <span class="doccomment">/// A trait with common functionality for rendering front-end views.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// TODO: VirtualNode::from(impl View)</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">View</span> {
-    <span class="doccomment">/// Render a VirtualNode</span>
+    <span class="doccomment">/// Render a VirtualNode, or any IntoIter&lt;VirtualNode&gt;</span>
     <span class="kw">fn</span> <span class="ident">render</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">VirtualNode</span>;
 }
 </pre></div>
