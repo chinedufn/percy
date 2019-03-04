@@ -4,11 +4,10 @@
 
 `Percy` is a modular toolkit for building isomorphic web apps with Rust + WebAssembly.
 
+Percy supports server side rendering out of the box.
+
 Modular in the sense that a big design focus is being able to replace different
 parts of the `Percy` toolkit with third party implementation that better suit your needs.
-
-Isomorphic in the sense that it has out of the box support for server side rendering
-of your single page applications.
 
 `Percy` is not yet ready for production (unless you're incredibly brave), but if you're
 interested in using it for real things you can [watch the development progress.](https://github.com/chinedufn/percy/watchers).

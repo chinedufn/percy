@@ -2,7 +2,7 @@
 name = "percy"
 version = "0.0.1"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
-description = "A modular toolkit for building isomorphic web apps with Rust + WebAssembly"
+description = "A modular toolkit for building interactive frontend browser apps with Rust + WebAssembly. Supports server side rendering."
 keywords = ["virtual", "dom", "wasm", "css", "webassembly"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/chinedufn/percy"

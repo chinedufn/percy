@@ -3,7 +3,7 @@ Percy
 
 [![Build status](https://circleci.com/gh/chinedufn/percy.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/chinedufn/percy)
 
-> A modular toolkit for building isomorphic web apps with Rust + WebAssembly
+> A modular toolkit for building interactive frontend browser apps with Rust + WebAssembly. Supports server side rendering.
 
 ## [The Percy Book](https://chinedufn.github.io/percy/)
 
