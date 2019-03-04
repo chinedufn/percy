@@ -234,7 +234,8 @@ fn gen_route_handler_mod(
         // for this module. This way we don't need to worry as much about transforming
         // the generated struct name.
         pub mod #route_fn_mod {
-            #[allow(non_camel_case_types)]
+            #![deny(warnings)]
+            #![allow(non_camel_case_types)]
 
             use super::*;
 
