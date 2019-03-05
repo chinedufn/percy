@@ -212,11 +212,13 @@ impl HtmlParser {
                     //
                     // html { { some_node }  }
                     let node = quote! {
-                        let node_0 = #stmt;
+                        let node_0: VirtualNode = #stmt.into();
                     };
                     tokens.push(node);
                 } else {
-                    // Here we handle a block being a descendant within some html! call
+                    // Here we handle a block being a descendant within some html! call.
+                    //
+                    // The descendant should implement Into<IterableNodes>
                     //
                     // html { <div> { some_node } </div> }
 
@@ -224,7 +226,7 @@ impl HtmlParser {
                     let node_name = Ident::new(node_name.as_str(), stmt.span());
 
                     let nodes = quote! {
-                        let #node_name = #stmt;
+                        let #node_name: IterableNodes = #stmt.into();
                     };
                     tokens.push(nodes);
 
@@ -247,7 +249,6 @@ impl HtmlParser {
     ///  3. Append the children to this node
     ///  4. Move on to the next node (as in, go back to step 1)
     pub fn finish(&mut self) -> proc_macro2::TokenStream {
-        let parent_stack = &mut self.parent_stack;
         let node_order = &mut self.node_order;
         let parent_to_children = &mut self.parent_to_children;
         let tokens = &mut self.tokens;

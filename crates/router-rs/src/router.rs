@@ -1,12 +1,10 @@
 //! Powers routing for frontend web applications
 
-use crate::provided::Provided;
 use crate::Route;
 use std::any::Any;
 use std::any::TypeId;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::mem::Discriminant;
 use std::rc::Rc;
 use virtual_dom_rs::prelude::*;
 

@@ -2,22 +2,11 @@ extern crate proc_macro;
 
 use crate::parser::HtmlParser;
 use crate::tag::Tag;
-use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{parse_macro_input, Expr};
+use syn::parse_macro_input;
 
 mod parser;
 mod tag;
-
-#[proc_macro]
-pub fn text(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let text: Expr = syn::parse(input).expect("Text variable");
-    let text = quote! {
-        VirtualNode::text(#text)
-    };
-
-    text.into()
-}
 
 /// Used to generate VirtualNode's from a TokenStream.
 ///

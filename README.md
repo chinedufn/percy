@@ -25,7 +25,12 @@ In a browser our application renders to an `HtmlElement`, and on the server our 
 
 - [virtual-dom-rs API docs](https://chinedufn.github.io/percy/api/virtual_dom_rs/macro.html.html)
 
+- [html-macro API docs](https://chinedufn.github.io/percy/api/html_rs_macro)
+
 - [css-rs-macro API docs](https://chinedufn.github.io/percy/api/css_rs_macro)
+
+- [router-rs-macro API docs](https://chinedufn.github.io/percy/api/router_rs_macro)
+
 
 ## Getting Started
 

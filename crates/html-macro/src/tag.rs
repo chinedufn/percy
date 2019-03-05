@@ -170,7 +170,7 @@ fn parse_block(input: &mut ParseStream) -> Result<Tag> {
 
 fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
     // Continue parsing tokens until we see a closing tag <
-    let mut text_tokens = TokenStream::new();
+    let text_tokens = TokenStream::new();
 
     let mut text = "".to_string();
 
@@ -181,12 +181,7 @@ fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
             break;
         }
 
-        let is_comma = input.peek(Token![,]);
-
-        // TODO: If we peek a token that we aren't confident that we can choose the correct
-        // spacing for almost all of the time just print a compiler error telling the user
-        // to use the text macro instead of text tokens...
-        //  { text!("My text") }
+        // TODO: Ditch this and build text with proper spacing by using span start/end locations
         if input.peek(Token![,]) {
             let _: TokenTree = input.parse()?;
             text += ",";

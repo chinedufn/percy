@@ -112,7 +112,7 @@ jobs:
           name: Build docs
           command: >
             (cd book && mdbook build)
-            && cargo doc --no-deps -p virtual-dom-rs -p css-rs-macro -p html-macro
+            && cargo doc --no-deps -p virtual-dom-rs -p css-rs-macro -p html-macro -p router-rs-macro
             && cp -R target/doc book/book/api
       - persist_to_workspace:
           root: book

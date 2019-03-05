@@ -15,6 +15,17 @@ _Here we list notable things that have been merged into the master branch but ha
 
 - ...
 
+## 0.6.5 - Mar 4, 2019
+
+- [added] Start supporting braced text in the `html!` macro
+- [removed] Removed the `text!` macro
+
+ ```rust
+ let hello = "hello world";
+ html! { {hello} }
+ ```
+
+
 ## 0.6.4 - Feb 24, 2019
 
 - [fixed] Using the `html!` macro to create an event now uses the fully qualified path to `std::rc::Rc`

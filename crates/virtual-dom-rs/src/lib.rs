@@ -30,7 +30,6 @@ mod view;
 pub use crate::view::*;
 
 pub use html_macro::html;
-pub use html_macro::text;
 
 mod dom_updater;
 pub use self::dom_updater::DomUpdater;
@@ -42,6 +41,6 @@ pub mod prelude {
     pub use crate::view::View;
     pub use crate::VirtualNode;
     pub use html_macro::html;
-    pub use html_macro::text;
     pub use std::vec::IntoIter;
+    pub use virtual_node::IterableNodes;
 }

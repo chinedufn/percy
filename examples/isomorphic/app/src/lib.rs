@@ -4,8 +4,6 @@
 extern crate serde_derive;
 
 use router_rs::prelude::*;
-use serde;
-use serde_json;
 use std::cell::RefCell;
 use std::rc::Rc;
 use virtual_dom_rs::prelude::*;
@@ -14,7 +12,6 @@ mod store;
 pub use crate::state::*;
 pub use crate::store::*;
 use crate::views::*;
-use std::collections::HashMap;
 
 mod state;
 mod views;
