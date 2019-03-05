@@ -156,10 +156,10 @@ use virtual_dom_rs::prelude::*;
 #[route(path = &quot;/users/:id/favorite-meal/:meal&quot;)]
 fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
     let id = format!(&quot;{}&quot;, id);
-    let meal = text!(format!(&quot;{:#?}&quot;, meal));
+    let meal = format!(&quot;{:#?}&quot;, meal);
 
     html! {
-        &lt;div&gt; User { text!(id) } loves { meal} &lt;/div&gt;
+        &lt;div&gt; User { id } loves { meal } &lt;/div&gt;
     }
 }
 

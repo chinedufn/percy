@@ -146,16 +146,16 @@ html!{
 };
 #}</code></pre></pre>
 <a class="header" href="html-macro/html-macro.html#text-variables" id="text-variables"><h3>Text variables</h3></a>
-<p>Text variables must be wrapped in the <code>text!</code> macro.</p>
+<p>Text variables must be wrapped in braces.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
 use virtual_dom_rs::prelude::*;
 
-let text_var = &quot; world&quot;
+let text_var = &quot; world&quot;;
 
 html! {
-  Hello { text!(text_var) }
+  Hello { &lt;div&gt; { text_var } &lt;/div&gt; }
 }
 #}</code></pre></pre>
 <a class="header" href="html-macro/html-macro.html#attributes" id="attributes"><h3>Attributes</h3></a>
@@ -215,7 +215,7 @@ let list = vec![&quot;1&quot;, &quot;2&quot;, &quot;3&quot;]
     .map(|item_num| {
       html! { 
         &lt;li&gt;
-          List item number { text!(item_num) }
+          List item number { item_num }
         &lt;/li&gt;
       }
     });

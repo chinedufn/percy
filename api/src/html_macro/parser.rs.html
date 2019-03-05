@@ -313,6 +313,7 @@
 <span id="313">313</span>
 <span id="314">314</span>
 <span id="315">315</span>
+<span id="316">316</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">Tag</span>;
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">quote</span>, <span class="ident">quote_spanned</span>};
@@ -528,11 +529,13 @@
                     <span class="comment">//</span>
                     <span class="comment">// html { { some_node }  }</span>
                     <span class="kw">let</span> <span class="ident">node</span> <span class="op">=</span> <span class="macro">quote</span><span class="macro">!</span> {
-                        <span class="kw">let</span> <span class="ident">node_0</span> <span class="op">=</span> #<span class="ident">stmt</span>;
+                        <span class="kw">let</span> <span class="ident">node_0</span>: <span class="ident">VirtualNode</span> <span class="op">=</span> #<span class="ident">stmt</span>.<span class="ident">into</span>();
                     };
                     <span class="ident">tokens</span>.<span class="ident">push</span>(<span class="ident">node</span>);
                 } <span class="kw">else</span> {
-                    <span class="comment">// Here we handle a block being a descendant within some html! call</span>
+                    <span class="comment">// Here we handle a block being a descendant within some html! call.</span>
+                    <span class="comment">//</span>
+                    <span class="comment">// The descendant should implement Into&lt;IterableNodes&gt;</span>
                     <span class="comment">//</span>
                     <span class="comment">// html { &lt;div&gt; { some_node } &lt;/div&gt; }</span>
 
@@ -540,7 +543,7 @@
                     <span class="kw">let</span> <span class="ident">node_name</span> <span class="op">=</span> <span class="ident">Ident</span>::<span class="ident">new</span>(<span class="ident">node_name</span>.<span class="ident">as_str</span>(), <span class="ident">stmt</span>.<span class="ident">span</span>());
 
                     <span class="kw">let</span> <span class="ident">nodes</span> <span class="op">=</span> <span class="macro">quote</span><span class="macro">!</span> {
-                        <span class="kw">let</span> #<span class="ident">node_name</span> <span class="op">=</span> #<span class="ident">stmt</span>;
+                        <span class="kw">let</span> #<span class="ident">node_name</span>: <span class="ident">IterableNodes</span> <span class="op">=</span> #<span class="ident">stmt</span>.<span class="ident">into</span>();
                     };
                     <span class="ident">tokens</span>.<span class="ident">push</span>(<span class="ident">nodes</span>);
 
@@ -563,7 +566,6 @@
     <span class="doccomment">///  3. Append the children to this node</span>
     <span class="doccomment">///  4. Move on to the next node (as in, go back to step 1)</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">finish</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">proc_macro2</span>::<span class="ident">TokenStream</span> {
-        <span class="kw">let</span> <span class="ident">parent_stack</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">parent_stack</span>;
         <span class="kw">let</span> <span class="ident">node_order</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">node_order</span>;
         <span class="kw">let</span> <span class="ident">parent_to_children</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">parent_to_children</span>;
         <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">tokens</span>;

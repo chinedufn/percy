@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["html","Used to generate VirtualNode's from a TokenStream."],["text",""]]});
+initSidebarItems({"macro":[["html","Used to generate VirtualNode's from a TokenStream."]]});

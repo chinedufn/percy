@@ -142,7 +142,7 @@ one text node.</p>
 #fn main() {
 use virtual_dom_rs::prelude::*;
 
-let world = text!(&quot;world&quot;);
+let world = &quot;world&quot;;
 
 let sibling_text_nodes = html! { &lt;div&gt; hello {world} &lt;/div&gt; };
 #}</code></pre></pre>
@@ -163,7 +163,7 @@ We'd have no way of knowing how to find the original, individual strings that we
 <li>Appended a real &quot;World&quot; Text node into the <code>&lt;div&gt;</code></li>
 </ol>
 <p>If we later wanted to patch the DOM with a new component</p>
-<pre><code>let different_text = text!(&quot;there&quot;);
+<pre><code>let different_text = &quot;there&quot;;
 let sibling_text_nodes = html! { &lt;div&gt; hello {different_text} } &lt;/div&gt; };
 </code></pre>
 <p>Our <code>virtual_dom_rs</code> patch function would be able to find the old &quot;World&quot; text node since we've ensured that it

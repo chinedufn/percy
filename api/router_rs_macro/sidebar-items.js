@@ -1,0 +1,1 @@
+initSidebarItems({"attr":[["route","An attribute that turns a function into a view route"]],"macro":[["create_routes",""]]});
