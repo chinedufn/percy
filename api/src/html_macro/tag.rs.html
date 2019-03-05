@@ -205,14 +205,6 @@
 <span id="205">205</span>
 <span id="206">206</span>
 <span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">TokenStream</span>, <span class="ident">TokenTree</span>};
 <span class="kw">use</span> <span class="ident">syn</span>::<span class="ident">parse</span>::{<span class="ident">Parse</span>, <span class="ident">ParseStream</span>, <span class="prelude-ty">Result</span>};
@@ -224,11 +216,7 @@
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Tag</span> {
     <span class="doccomment">/// &lt;div id=&quot;app&quot; class=*CSS&gt;</span>
     <span class="doccomment">/// &lt;br /&gt;</span>
-    <span class="ident">Open</span> {
-        <span class="ident">name</span>: <span class="ident">Ident</span>,
-        <span class="ident">attrs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attr</span><span class="op">&gt;</span>,
-        <span class="ident">has_trailing_slash</span>: <span class="ident">bool</span>,
-    },
+    <span class="ident">Open</span> { <span class="ident">name</span>: <span class="ident">Ident</span>, <span class="ident">attrs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attr</span><span class="op">&gt;</span> },
     <span class="doccomment">/// &lt;/div&gt;</span>
     <span class="ident">Close</span> { <span class="ident">name</span>: <span class="ident">Ident</span> },
     <span class="doccomment">/// html! { &lt;div&gt; Hello World &lt;/div&gt; }</span>
@@ -298,16 +286,12 @@
 
     <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">has_trailing_slash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">/</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">has_trailing_slash</span> <span class="op">=</span> <span class="ident">has_trailing_slash</span>.<span class="ident">is_some</span>();
+    <span class="kw">let</span> <span class="ident">_maybe_trailing_slash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">/</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+    <span class="comment">//    let has_trailing_slash = has_trailing_slash.is_some();</span>
 
     <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">&gt;</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(<span class="ident">Tag</span>::<span class="ident">Open</span> {
-        <span class="ident">name</span>,
-        <span class="ident">attrs</span>,
-        <span class="ident">has_trailing_slash</span>,
-    })
+    <span class="prelude-val">Ok</span>(<span class="ident">Tag</span>::<span class="ident">Open</span> { <span class="ident">name</span>, <span class="ident">attrs</span> })
 }
 
 <span class="doccomment">/// Parse the attributes starting from something like:</span>
@@ -386,7 +370,7 @@
 
 <span class="kw">fn</span> <span class="ident">parse_text_node</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ParseStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span> {
     <span class="comment">// Continue parsing tokens until we see a closing tag &lt;</span>
-    <span class="kw">let</span> <span class="ident">text_tokens</span> <span class="op">=</span> <span class="ident">TokenStream</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="ident">_text_tokens</span> <span class="op">=</span> <span class="ident">TokenStream</span>::<span class="ident">new</span>();
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">text</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>();
 
