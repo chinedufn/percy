@@ -14,15 +14,15 @@ html!{
 
 ### Text variables
 
-Text variables must be wrapped in the `text!` macro.
+Text variables must be wrapped in braces.
 
 ```rust
 use virtual_dom_rs::prelude::*;
 
-let text_var = " world"
+let text_var = " world";
 
 html! {
-  Hello { text!(text_var) }
+  Hello { <div> { text_var } </div> }
 }
 ```
 
@@ -85,7 +85,7 @@ let list = vec!["1", "2", "3"]
     .map(|item_num| {
       html! { 
         <li>
-          List item number { text!(item_num) }
+          List item number { item_num }
         </li>
       }
     });

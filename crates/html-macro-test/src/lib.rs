@@ -1,9 +1,9 @@
 #![feature(proc_macro_hygiene)]
 #![cfg(test)]
 
-use html_macro::{html, text};
+use html_macro::html;
 use std::collections::HashMap;
-use virtual_node::{VElement, VirtualNode};
+use virtual_node::{IterableNodes, VElement, VirtualNode};
 
 struct HtmlMacroTest<'a> {
     desc: &'a str,
@@ -237,13 +237,25 @@ fn type_attribute() {
 }
 
 #[test]
-fn text_macro() {
-    let text_var = "some text";
+fn text_variable_root() {
+    let text = "hello world";
 
     HtmlMacroTest {
-        desc: "text! creates text from variables",
-        generated: text!(text_var),
-        expected: VirtualNode::text("some text"),
+        desc: "Text variable root",
+        generated: html! { { text } },
+        expected: VirtualNode::text("hello world"),
+    }
+    .test()
+}
+
+#[test]
+fn text_variable_child() {
+    let text = "world";
+
+    HtmlMacroTest {
+        desc: "Text variable child",
+        generated: html! { <div> { text } </div> },
+        expected: html! { <div> world </div> },
     }
     .test()
 }

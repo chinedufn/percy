@@ -15,6 +15,6 @@ _Here we list notable things that have been merged into the master branch but ha
 
 - ...
 
-## 0.2.0
+## 0.2.0 - Mar 4, 2019
 
 - [added] Introduced the `#[route(path = "/...")]` macro in [#95](https://github.com/chinedufn/percy/pull/95)

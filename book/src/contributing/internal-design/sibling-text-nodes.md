@@ -8,7 +8,7 @@ For example, when you have a component that looks like this:
 ```rust
 use virtual_dom_rs::prelude::*;
 
-let world = text!("world");
+let world = "world";
 
 let sibling_text_nodes = html! { <div> hello {world} </div> };
 ```
@@ -40,7 +40,7 @@ Note the new `<!--ptns-->` comment node. Here's what `virtual_dom_rs`'s `createE
 If we later wanted to patch the DOM with a new component
 
 ```
-let different_text = text!("there");
+let different_text = "there";
 let sibling_text_nodes = html! { <div> hello {different_text} } </div> };
 ```
 

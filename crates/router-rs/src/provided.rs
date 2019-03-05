@@ -1,11 +1,6 @@
 use crate::router::Router;
 use std::any::TypeId;
-use std::cell::Ref;
-use std::cell::RefCell;
-use std::mem::discriminant;
-use std::mem::Discriminant;
 use std::ops::Deref;
-use std::ops::DerefMut;
 use std::rc::Rc;
 
 /// Data that was provided by the developer.

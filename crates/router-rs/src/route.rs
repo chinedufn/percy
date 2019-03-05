@@ -1,10 +1,8 @@
-use std::collections::HashMap;
 use std::fmt::Debug;
 use std::fmt::Error;
 use std::fmt::Formatter;
 use std::str::FromStr;
 use virtual_dom_rs::VText;
-use virtual_dom_rs::View;
 use virtual_dom_rs::VirtualNode;
 
 /// Enables a type to be used as a route paramer
@@ -79,7 +77,7 @@ pub struct Route {
 
 impl Debug for Route {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-        f.write_str(self.route_definition);
+        f.write_str(self.route_definition)?;
         Ok(())
     }
 }
@@ -157,16 +155,6 @@ impl Route {
         }
 
         true
-    }
-
-    /// Given an incoming path, create the `View` that uses that path data.
-    ///
-    /// For example.. if our defined path is `/users/:id`
-    /// and our incoming path is `/users/5`
-    ///
-    /// Our view will end up getting created with `id: 5`
-    pub fn view(&self, incoming_path: &str) -> VirtualNode {
-        VirtualNode::Text(VText::new("TODO: Implement this"))
     }
 
     /// Given an incoming path and a param_key, get the RouteParam

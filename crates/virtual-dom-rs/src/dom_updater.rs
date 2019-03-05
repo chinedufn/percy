@@ -2,7 +2,6 @@
 
 use crate::diff::diff;
 use crate::patch::patch;
-use crate::patch::Patch;
 use std::collections::HashMap;
 use virtual_node::DynClosure;
 use virtual_node::VirtualNode;
@@ -90,8 +89,6 @@ impl DomUpdater {
         let active_closures = patch(self.root_node.clone(), &patches).unwrap();
 
         self.active_closures.extend(active_closures);
-
-        let closures = format!("{}", self.active_closures.len());
 
         self.current_vdom = new_vdom;
     }

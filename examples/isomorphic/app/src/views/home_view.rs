@@ -26,8 +26,7 @@ impl View for HomeView {
         let click_count = self.store.borrow().click_count();
         let click_count = &*click_count.to_string();
 
-        let click_component =
-            html! { <strong style="font-size: 30px">{ text!(click_count) }</strong> };
+        let click_component = html! { <strong style="font-size: 30px">{ click_count }</strong> };
 
         html! {
         <div>
@@ -38,7 +37,7 @@ impl View for HomeView {
           <button onclick=move|_: u8| { store.borrow_mut().msg(&Msg::Click) }>
             Click me!
           </button>
-          <div> In this time Ferris has made { text!(click_count) } new friends. </div>
+          <div> In this time Ferris has made { click_count } new friends. </div>
 
         </div>
         }

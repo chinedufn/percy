@@ -12,7 +12,7 @@ fn main () {
        <div onclick=|_ev: web_sys::MouseEvent| {}>
           You can type text right into the elements
           { component }
-          { text!(text_var) }
+          { text_var }
        </div>
     };
     println!("{}", node);

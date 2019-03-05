@@ -22,7 +22,9 @@ use wasm_bindgen::JsValue;
 
 use lazy_static::lazy_static;
 
+use std::iter::FromIterator;
 use std::ops::Deref;
+use std::option::Iter;
 use std::sync::Mutex;
 
 // Used to uniquely identify elements that contain closures so that the DomUpdater can
@@ -344,6 +346,48 @@ fn create_unique_identifier() -> u32 {
     *elem_unique_id
 }
 
+/// Used by the html! macro for all braced child nodes so that we can use any type
+/// that implements Into<IterableNodes>
+///
+/// html! { <div> { nodes } </div> }
+///
+/// nodes can be a String .. VirtualNode .. Vec<VirtualNode> ... etc
+pub struct IterableNodes(Vec<VirtualNode>);
+
+impl IntoIterator for IterableNodes {
+    type Item = VirtualNode;
+    // TODO: Is this possible with an array [VirtualNode] instead of a vec?
+    type IntoIter = ::std::vec::IntoIter<VirtualNode>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+impl From<VirtualNode> for IterableNodes {
+    fn from(other: VirtualNode) -> Self {
+        IterableNodes(vec![other])
+    }
+}
+
+impl From<&str> for IterableNodes {
+    fn from(other: &str) -> Self {
+        IterableNodes(vec![VirtualNode::text(other)])
+    }
+}
+
+impl From<String> for IterableNodes {
+    fn from(other: String) -> Self {
+        IterableNodes(vec![VirtualNode::text(other.as_str())])
+    }
+}
+
+impl From<Vec<VirtualNode>> for IterableNodes {
+    fn from(other: Vec<VirtualNode>) -> Self {
+        IterableNodes(other)
+    }
+}
+
 impl From<VText> for VirtualNode {
     fn from(other: VText) -> Self {
         VirtualNode::Text(other)
@@ -353,6 +397,18 @@ impl From<VText> for VirtualNode {
 impl From<VElement> for VirtualNode {
     fn from(other: VElement) -> Self {
         VirtualNode::Element(other)
+    }
+}
+
+impl From<&str> for VirtualNode {
+    fn from(other: &str) -> Self {
+        VirtualNode::text(other)
+    }
+}
+
+impl From<String> for VirtualNode {
+    fn from(other: String) -> Self {
+        VirtualNode::text(other.as_str())
     }
 }
 

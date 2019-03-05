@@ -4,10 +4,9 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use crate::dom_updater::ActiveClosures;
-use virtual_node::DynClosure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{CharacterData, Element, Node, Text};
+use web_sys::{Element, Node, Text};
 
 /// Apply all of the patches to our old root node in order to create the new root node
 /// that we desire.
@@ -47,7 +46,7 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<Active
         }
 
         if let Some(text_node) = text_nodes_to_patch.get(&patch_node_idx) {
-            apply_text_patch(&text_node, &patch);
+            apply_text_patch(&text_node, &patch)?;
             continue;
         }
 
@@ -123,7 +122,7 @@ fn find_nodes(
 }
 
 fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, JsValue> {
-    let mut active_closures = HashMap::new();
+    let active_closures = HashMap::new();
 
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
