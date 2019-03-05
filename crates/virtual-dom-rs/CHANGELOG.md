@@ -17,7 +17,7 @@ _Here we list notable things that have been merged into the master branch but ha
 
 ## 0.6.5 - Mar 4, 2019
 
-- [added] Start supporting braced text in the `html!` macro
+- [added] Start supporting braced text in the `html!` macro [#96](https://github.com/chinedufn/percy/pull/96)
 - [removed] Removed the `text!` macro
 
  ```rust
