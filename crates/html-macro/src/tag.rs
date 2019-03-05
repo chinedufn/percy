@@ -8,11 +8,7 @@ use syn::{braced, Block, Expr, Ident, Token};
 pub enum Tag {
     /// <div id="app" class=*CSS>
     /// <br />
-    Open {
-        name: Ident,
-        attrs: Vec<Attr>,
-        has_trailing_slash: bool,
-    },
+    Open { name: Ident, attrs: Vec<Attr> },
     /// </div>
     Close { name: Ident },
     /// html! { <div> Hello World </div> }
@@ -82,16 +78,12 @@ fn parse_open_tag(input: &mut ParseStream) -> Result<Tag> {
 
     let attrs = parse_attributes(input)?;
 
-    let has_trailing_slash: Option<Token![/]> = input.parse()?;
-    let has_trailing_slash = has_trailing_slash.is_some();
+    let _maybe_trailing_slash: Option<Token![/]> = input.parse()?;
+    //    let has_trailing_slash = has_trailing_slash.is_some();
 
     input.parse::<Token![>]>()?;
 
-    Ok(Tag::Open {
-        name,
-        attrs,
-        has_trailing_slash,
-    })
+    Ok(Tag::Open { name, attrs })
 }
 
 /// Parse the attributes starting from something like:

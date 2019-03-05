@@ -260,6 +260,52 @@ fn text_variable_child() {
     .test()
 }
 
+//#[test]
+//fn text_space_after_start_tag () {
+//    assert_eq!(
+//        &html! { <div> Hello</div> }.to_string(),
+//        "<div> Hello</div>"
+//    )
+//}
+//
+//#[test]
+//fn text_space_beore_end_tag () {
+//    assert_eq!(
+//        &html! { <div>Hello </div> }.to_string(),
+//        "<div>Hello </div>"
+//    )
+//}
+//
+//#[test]
+//fn text_space_before_block() {
+//    let text = "Hello";
+//
+//    assert_eq!(
+//        &html! { <div> {text}</div> }.to_string(),
+//        "<div>Hello </div>"
+//    )
+//}
+//
+//#[test]
+//fn text_space_after_block() {
+//    let text = "Hello";
+//
+//    assert_eq!(
+//        &html! { <div>{text} </div> }.to_string(),
+//        "<div> Hello</div>"
+//    )
+//}
+//
+//#[test]
+//fn text_space_in_block_ignored() {
+//    let text = "Hello";
+//
+//    assert_eq!(
+//        &html! { <div>{ text }</div> }.to_string(),
+//        "<div>Hello</div>"
+//    )
+//}
+
 // Verify that all of our self closing tags work as both.
 // Self closing tags can be written as either <tag> and <tag />
 #[test]
