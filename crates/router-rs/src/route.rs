@@ -181,8 +181,7 @@ mod tests {
     use super::*;
     use std::cell::RefCell;
     use std::rc::Rc;
-    use virtual_dom_rs::html;
-    use virtual_dom_rs::VirtualNode;
+    use virtual_dom_rs::prelude::*;
 
     struct MyView {
         id: u32,
