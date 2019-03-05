@@ -212,7 +212,7 @@ impl HtmlParser {
                     //
                     // html { { some_node }  }
                     let node = quote! {
-                        let node_0 = #stmt.into();
+                        let node_0: VirtualNode = #stmt.into();
                     };
                     tokens.push(node);
                 } else {
