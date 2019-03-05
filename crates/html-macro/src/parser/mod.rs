@@ -3,9 +3,7 @@ use proc_macro2::LineColumn;
 use quote::{quote, quote_spanned};
 use std::collections::HashMap;
 use syn::export::Span;
-use syn::group::parse_braces;
-use syn::spanned::Spanned;
-use syn::{Expr, Ident};
+use syn::Ident;
 
 mod braced;
 mod close_tag;
@@ -56,12 +54,6 @@ impl HtmlParser {
     /// Generate the tokens for the incoming Tag and update our parser's heuristics that keep
     /// track of information about what we've parsed.
     pub fn push_tag(&mut self, tag: Tag) {
-        let idx = &mut self.current_idx;
-        let parent_stack = &mut self.parent_stack;
-        let node_order = &mut self.node_order;
-        let parent_to_children = &mut self.parent_to_children;
-        let tokens = &mut self.tokens;
-
         match tag {
             Tag::Open { name, attrs } => {
                 self.parse_open_tag(name, attrs);
@@ -129,6 +121,29 @@ impl HtmlParser {
         };
         node
     }
+
+    /// Set the location of the most recent start tag's ending LineColumn
+    fn set_most_recent_start_tag_end (&mut self, span: Span) {
+    }
+
+    /// Set the location of the most recent start tag's ending LineColumn
+    fn set_most_recent_block_start (&mut self, span: Span) {
+    }
+}
+
+/// Keep track of the locations of different kinds of tokens that we encounter.
+///
+/// This helps us determine whether or not to insert space before or after text tokens
+/// in cases such as:
+///
+/// ```ignore
+/// html! { <div> { Hello World } </div>
+/// html! { <div>{Hello World}</div>
+/// ```
+#[derive(Default)]
+struct RecentSpanLocations {
+    most_recent_start_tag_end: Option<LineColumn>,
+    most_recent_block_start: Option<LineColumn>,
 }
 
 // TODO: Cache this as a HashSet inside of our parser
@@ -145,19 +160,4 @@ fn is_self_closing(tag: &str) -> bool {
     }
 
     return false;
-}
-
-/// Keep track of the locations of different kinds of tokens that we encounter.
-///
-/// This helps us determine whether or not to insert space before or after text tokens
-/// in cases such as:
-///
-/// ```ignore
-/// html! { <div> { Hello World } </div>
-/// html! { <div>{Hello World}</div>
-/// ```
-#[derive(Default)]
-struct RecentSpanLocations {
-    most_recent_start_tag_end: Option<LineColumn>,
-    most_recent_block_start: Option<LineColumn>,
 }

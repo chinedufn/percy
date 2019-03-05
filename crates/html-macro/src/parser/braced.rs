@@ -1,9 +1,8 @@
-use crate::parser::{is_self_closing, HtmlParser};
-use crate::tag::{Attr, Tag};
-use proc_macro2::{Ident, Span};
-use quote::{quote, quote_spanned};
+use crate::parser::HtmlParser;
+use proc_macro2::Ident;
+use quote::quote;
 use syn::spanned::Spanned;
-use syn::{Block, Expr};
+use syn::Block;
 
 impl HtmlParser {
     /// Parse an incoming Tag::Braced text node

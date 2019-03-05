@@ -162,7 +162,7 @@ fn parse_block(input: &mut ParseStream) -> Result<Tag> {
 
 fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
     // Continue parsing tokens until we see a closing tag <
-    let text_tokens = TokenStream::new();
+    let _text_tokens = TokenStream::new();
 
     let mut text = "".to_string();
 

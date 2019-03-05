@@ -1,5 +1,5 @@
 use crate::parser::{is_self_closing, HtmlParser};
-use crate::tag::{Attr, Tag};
+use crate::tag::Attr;
 use proc_macro2::Ident;
 use quote::quote;
 use syn::Expr;

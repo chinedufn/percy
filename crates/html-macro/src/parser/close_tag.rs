@@ -1,17 +1,12 @@
 use crate::parser::{is_self_closing, HtmlParser};
-use crate::tag::{Attr, Tag};
 use proc_macro2::Ident;
-use quote::{quote, quote_spanned};
-use syn::Expr;
+use quote::quote_spanned;
 
 impl HtmlParser {
     /// Parse an incoming Tag::Close
     pub(crate) fn parse_close_tag(&mut self, name: Ident) {
-        let idx = &mut self.current_idx;
-        let parent_to_children = &mut self.parent_to_children;
         let parent_stack = &mut self.parent_stack;
         let tokens = &mut self.tokens;
-        let node_order = &mut self.node_order;
 
         let close_span = name.span();
         let close_tag = name.to_string();
