@@ -33,7 +33,7 @@ impl HtmlParser {
                 Expr::Closure(closure) => {
                     // TODO: Use this to decide Box<FnMut(_, _, _, ...)
                     // After we merge the DomUpdater
-                    let arg_count = closure.inputs.len();
+                    let _arg_count = closure.inputs.len();
 
                     let add_closure = quote! {
                         #[cfg(target_arch = "wasm32")]

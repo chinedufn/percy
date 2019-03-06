@@ -1,6 +1,6 @@
 use crate::parser::HtmlParser;
 use crate::tag::{Tag, TagKind};
-use proc_macro2::{Ident, Span};
+use proc_macro2::Span;
 use quote::quote;
 use syn::spanned::Spanned;
 use syn::Block;

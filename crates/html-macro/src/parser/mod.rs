@@ -1,6 +1,5 @@
 use crate::tag::TagKind;
 use crate::Tag;
-use proc_macro2::{LineColumn, TokenStream};
 use quote::{quote, quote_spanned};
 use std::collections::HashMap;
 use syn::export::Span;
@@ -74,11 +73,8 @@ impl HtmlParser {
                 self.parse_open_tag(name, closing_bracket_span, attrs);
                 self.last_tag_kind = Some(TagKind::Open);
             }
-            Tag::Close {
-                name,
-                first_angle_bracket_span,
-            } => {
-                self.parse_close_tag(name, first_angle_bracket_span);
+            Tag::Close { name, .. } => {
+                self.parse_close_tag(name);
                 self.last_tag_kind = Some(TagKind::Close);
             }
             Tag::Text {

@@ -2,7 +2,6 @@ use crate::parser::HtmlParser;
 use crate::tag::{Tag, TagKind};
 use proc_macro2::{Ident, Span};
 use quote::quote;
-use std::cmp::max;
 
 impl HtmlParser {
     /// Parse an incoming Tag::Text text node

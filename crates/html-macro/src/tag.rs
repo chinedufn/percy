@@ -1,5 +1,4 @@
 use proc_macro2::{Span, TokenStream, TokenTree};
-use std::thread::current;
 use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
 use syn::token::Brace;
