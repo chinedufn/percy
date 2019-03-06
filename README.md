@@ -104,9 +104,11 @@ pub fn start() {
 
     let mut dom_updater = DomUpdater::new_append_to_mount(start_view, &body);
 
+    let greetings = "Hello, World!";
+
     let end_view = html! {
        <div class="big blue">
-          <strong>Hello, World!</strong>
+          <strong>{ greetings }</strong>
 
           <button
             class=MY_COMPONENT_CSS
@@ -118,7 +120,6 @@ pub fn start() {
           </button>
        </div>
     };
-
 
     dom_updater.update(end_view);
 }
