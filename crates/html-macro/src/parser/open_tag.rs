@@ -1,13 +1,13 @@
 use crate::parser::{is_self_closing, HtmlParser};
 use crate::tag::Attr;
-use proc_macro2::Ident;
+use proc_macro2::{Ident, Span};
 use quote::quote;
 use syn::Expr;
 
 impl HtmlParser {
     /// Parse an incoming Tag::Open
-    pub(crate) fn parse_open_tag(&mut self, name: &Ident, attrs: &Vec<Attr>) {
-        self.set_most_recent_open_tag_end(&name.span());
+    pub(crate) fn parse_open_tag(&mut self, name: &Ident, closing_span: &Span, attrs: &Vec<Attr>) {
+        self.set_most_recent_open_tag_end(closing_span);
 
         let idx = &mut self.current_node_idx;
         let parent_to_children = &mut self.parent_to_children;

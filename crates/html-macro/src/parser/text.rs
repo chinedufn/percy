@@ -80,7 +80,6 @@ impl HtmlParser {
             .recent_span_locations
             .most_recent_open_tag_end
             .is_none()
-            && self.recent_span_locations.most_recent_block_start.is_none()
         {
             return false;
         }
@@ -90,9 +89,21 @@ impl HtmlParser {
             .most_recent_open_tag_end
             .as_ref()
             .unwrap();
+        let (mut end_line, mut end_col) = (
+            most_recent_open_tag_end.line,
+            most_recent_open_tag_end.column,
+        );
 
-        return start_span.start().line != most_recent_open_tag_end.line
-            || start_span.start().column - most_recent_open_tag_end.column > 1;
+        if let Some(block_end) = self.recent_span_locations.most_recent_block_end.as_ref() {
+            if block_end.line >= end_line {
+                if block_end.column > most_recent_open_tag_end.column {
+                    end_line = block_end.line;
+                    end_col = block_end.column;
+                }
+            }
+        }
+
+        return start_span.start().line != end_line || start_span.start().column - end_col > 0;
     }
 
     fn should_insert_space_after_text(
@@ -105,15 +116,6 @@ impl HtmlParser {
             return true;
         }
 
-        if adjust_span_rustc_bug {
-            // TODO: The angle bracket has an incorrect span that has a column that is
-            // one less than what it's supposed to be so we use the token after the span
-            // instead. We can use the angle bracket again after rust-lang/rust #58958
-            // https://github.com/rust-lang/rust/issues/58958
-            // Once the issue closes we can delete this if and keep the else clause
-            return next_span.start().column - text_end.end().column > 0;
-        } else {
-            return next_span.start().column - text_end.end().column > 1;
-        }
+        return next_span.start().column - text_end.end().column > 0;
     }
 }

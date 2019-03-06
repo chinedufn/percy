@@ -101,7 +101,7 @@ impl HtmlParser {
                 if stmt_idx == 0 && !last_tag_kind_was_text && !last_tag_kind_was_brace {
                     if let Some(open_tag_end) = open_tag_end {
                         if open_tag_end.0 != brace_span.start().line
-                            || brace_span.start().column - open_tag_end.1 > 1
+                            || brace_span.start().column - open_tag_end.1 > 0
                         {
                             // FIXME BEFORE MERGE: Add a method to generate a new node that
                             // increments our node_idx. Pass a span to that method

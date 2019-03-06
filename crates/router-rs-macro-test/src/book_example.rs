@@ -29,9 +29,7 @@ fn provided_data_and_param() {
             .view("/users/10/favorite-meal/breakfast")
             .unwrap()
             .to_string(),
-        // TODO: This is a bug with our text implementation. Will fix...
-        // We want this to be <div> User 10 loves breakfast </div>
-        "<div>User10lovesBreakfast</div>"
+        "<div> User 10 loves Breakfast </div>"
     );
 }
 
