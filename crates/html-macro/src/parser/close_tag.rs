@@ -6,14 +6,7 @@ use quote::{quote, quote_spanned};
 impl HtmlParser {
     /// Parse an incoming Tag::Close
     pub(crate) fn parse_close_tag(&mut self, name: &Ident, first_angle_bracket_span: &Span) {
-        let node_idx = &mut self.current_node_idx;
-        let parent_to_children = &mut self.parent_to_children;
         let parent_stack = &mut self.parent_stack;
-        let tokens = &mut self.tokens;
-        let node_order = &mut self.node_order;
-
-        let parent_stack = &mut self.parent_stack;
-        let tokens = &mut self.tokens;
 
         let close_span = name.span();
         let close_tag = name.to_string();
@@ -28,18 +21,18 @@ impl HtmlParser {
                 compile_error!(#error);
             }};
 
-            tokens.push(error);
+            self.push_tokens(error);
             return;
         }
 
         let last_open_tag = parent_stack.pop().expect("Last open tag");
 
-        // TODO: join open and close span. Need to figure out how to enable that.
-        //                let open_span = last_open_tag.1.span();
-
         let last_open_tag = last_open_tag.1.to_string();
 
-        // if div != strong
+        // TODO: 2 compile_error!'s one pointing tot he open tag and one pointing to the
+        // closing tag. Update the ui test accordingly
+        //
+        // ex: if div != strong
         if last_open_tag != close_tag {
             let error = format!(
                 r#"Wrong closing tag. Try changing "{}" into "{}""#,
@@ -51,7 +44,7 @@ impl HtmlParser {
             }};
             // TODO: Abort early if we find an error. So we should be returning
             // a Result.
-            tokens.push(error);
+            self.push_tokens(error);
         }
     }
 }

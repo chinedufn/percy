@@ -40,14 +40,6 @@ impl HtmlParser {
             _ => false,
         };
 
-        // We ignore this check if the last tag kind was text since the text
-        // parser will already handle inserting spaces before and after text.
-        let last_tag_kind_was_text = self.last_tag_kind == Some(TagKind::Text);
-
-        // We ignore this check if the last tag kind was brace since the previous brace
-        // parser will already handle inserting spaces before this current brace if needed.
-        let last_tag_kind_was_brace = self.last_tag_kind == Some(TagKind::Braced);
-
         // TODO: Only allow one statement per block. Put a quote_spanned! compiler error if
         // there is more than 1 statement. Add a UI test for this.
         block.stmts.iter().for_each(|stmt| {
