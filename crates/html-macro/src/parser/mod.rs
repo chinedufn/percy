@@ -11,7 +11,7 @@ mod close_tag;
 mod open_tag;
 mod text;
 
-/// Used to parse [Tag]'s that we've parsed and build a tree of VirtualNode's
+/// Used to parse [`Tag`]s that we've parsed and build a tree of `VirtualNode`s
 ///
 /// [Tag]: enum.Tag.html
 pub struct HtmlParser {
