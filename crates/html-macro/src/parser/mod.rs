@@ -1,10 +1,11 @@
 use crate::tag::TagKind;
 use crate::Tag;
-use proc_macro2::LineColumn;
+use proc_macro2::{LineColumn, TokenStream};
 use quote::{quote, quote_spanned};
 use std::collections::HashMap;
 use syn::export::Span;
-use syn::Ident;
+use syn::spanned::Spanned;
+use syn::{Ident, Stmt};
 
 mod braced;
 mod close_tag;
@@ -148,15 +149,19 @@ impl HtmlParser {
         node
     }
 
-    /// Set the location of the most recent start tag's ending LineColumn
-    fn set_most_recent_open_tag_end(&mut self, span: &Span) {
-        self.recent_span_locations.most_recent_open_tag_end = Some(span.end());
+    /// Add more tokens to our tokens that we'll eventually return to the compiler.
+    fn push_tokens(&mut self, tokens: proc_macro2::TokenStream) {
+        self.tokens.push(tokens);
     }
 
     /// Set the location of the most recent start tag's ending LineColumn
-    fn set_most_recent_block_start(&mut self, span: &Span) {
-        self.recent_span_locations.most_recent_block_start = Some(span.start());
-        self.recent_span_locations.most_recent_block_end = Some(span.end());
+    fn set_most_recent_open_tag_end(&mut self, span: Span) {
+        self.recent_span_locations.most_recent_open_tag_end = Some(span);
+    }
+
+    /// Set the location of the most recent start tag's ending LineColumn
+    fn set_most_recent_block_start(&mut self, span: Span) {
+        self.recent_span_locations.most_recent_block_start = Some(span);
     }
 
     /// Determine whether or not there is any space between the end of the first
@@ -174,6 +179,68 @@ impl HtmlParser {
 
         second_span.start().column - first_span.end().column > 0
     }
+
+    /// Create a new identifier for a VirtualNode and increment our node_idx so that next
+    /// time we call this our node will get a different name.
+    fn new_virtual_node_ident(&mut self, span: Span) -> Ident {
+        let node_name = format!("node_{}", self.current_node_idx);
+        let node_ident = Ident::new(node_name.as_str(), span);
+
+        self.current_node_idx += 1;
+
+        node_ident
+    }
+
+    /// Push tokens that will insert a VirtualNode::text(" ") into our TokenStream
+    /// that we will pass back to the compiler.
+    ///
+    /// It will be assigned to the current parent node (whatever the last Tag::Open was)
+    ///
+    /// TODO: Nearly identical with push_iterable_nodes. Make them call some DRY function
+    fn push_virtual_text_space_tokens(&mut self, span: Span) {
+        let node_idx = self.current_node_idx;
+
+        let node_ident = self.new_virtual_node_ident(span);
+
+        let space = quote! {
+            let #node_ident: IterableNodes = VirtualNode::text(" ").into();
+        };
+        self.push_tokens(space);
+
+        let parent_idx = *&self.parent_stack[self.parent_stack.len() - 1].0;
+
+        self.parent_to_children
+            .get_mut(&parent_idx)
+            .expect("Parent of this text node")
+            .push(node_idx);
+        self.node_order.push(node_idx);
+    }
+
+    /// Generate virtual node tokens for a statement that came from in between braces
+    ///
+    /// examples:
+    ///
+    /// html! { <div> { some_var_in_braces } </div>
+    /// html! { <div> { some_other_variable } </div>
+    ///
+    /// TODO: Nearly identical with push_virtual_node_space_tokens. Make them call some DRY function
+    fn push_iterable_nodes(&mut self, stmt: &Stmt) {
+        let node_idx = self.current_node_idx;
+        let node_ident = self.new_virtual_node_ident(stmt.span());
+
+        let nodes = quote! {
+            let #node_ident: IterableNodes = #stmt.into();
+        };
+        self.push_tokens(nodes);
+
+        let parent_idx = *&self.parent_stack[self.parent_stack.len() - 1].0;
+
+        self.parent_to_children
+            .get_mut(&parent_idx)
+            .expect("Parent of this text node")
+            .push(node_idx);
+        self.node_order.push(node_idx);
+    }
 }
 
 /// Keep track of the locations of different kinds of tokens that we encounter.
@@ -187,9 +254,8 @@ impl HtmlParser {
 /// ```
 #[derive(Default)]
 struct RecentSpanLocations {
-    most_recent_open_tag_end: Option<LineColumn>,
-    most_recent_block_start: Option<LineColumn>,
-    most_recent_block_end: Option<LineColumn>,
+    most_recent_open_tag_end: Option<Span>,
+    most_recent_block_start: Option<Span>,
 }
 
 // TODO: Cache this as a HashSet inside of our parser

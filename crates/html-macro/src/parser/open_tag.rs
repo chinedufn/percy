@@ -7,7 +7,7 @@ use syn::Expr;
 impl HtmlParser {
     /// Parse an incoming Tag::Open
     pub(crate) fn parse_open_tag(&mut self, name: &Ident, closing_span: &Span, attrs: &Vec<Attr>) {
-        self.set_most_recent_open_tag_end(closing_span);
+        self.set_most_recent_open_tag_end(closing_span.clone());
 
         let idx = &mut self.current_node_idx;
         let parent_to_children = &mut self.parent_to_children;

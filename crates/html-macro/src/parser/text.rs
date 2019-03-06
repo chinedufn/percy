@@ -1,5 +1,5 @@
 use crate::parser::HtmlParser;
-use crate::tag::Tag;
+use crate::tag::{Tag, TagKind};
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use std::cmp::max;
@@ -23,9 +23,9 @@ impl HtmlParser {
             Some(Tag::Close {
                 first_angle_bracket_span,
                 ..
-            }) => self.should_insert_space_after_text(&text_end, first_angle_bracket_span, true),
+            }) => self.separated_by_whitespace(&text_end, first_angle_bracket_span),
             Some(Tag::Braced { brace_span, .. }) => {
-                self.should_insert_space_after_text(&text_end, brace_span, false)
+                self.separated_by_whitespace(&text_end, brace_span)
             }
             _ => false,
         };
@@ -73,49 +73,22 @@ impl HtmlParser {
         *idx += 1;
     }
 
-    fn should_insert_space_before_text(&self, start_span: &Span) -> bool {
-        // If the first thing that we encounter in our HTML macro is test we don't
-        // need to insert any space before it.
-        if self
-            .recent_span_locations
-            .most_recent_open_tag_end
-            .is_none()
-        {
-            return false;
+    /// If the last TagKind was a block or an open tag we check to see if there is space
+    /// between this text and that tag. If so we insert some space before this text.
+    fn should_insert_space_before_text(&self, text_start: &Span) -> bool {
+        if self.last_tag_kind == Some(TagKind::Braced) {
+            let most_recent_block_start = self.recent_span_locations.most_recent_block_start;
+            let most_recent_block_start = most_recent_block_start.as_ref().unwrap();
+
+            self.separated_by_whitespace(most_recent_block_start, text_start)
+        } else if self.last_tag_kind == Some(TagKind::Open) {
+            let most_recent_open_tag_end =
+                self.recent_span_locations.most_recent_open_tag_end.as_ref();
+            let most_recent_open_tag_end = most_recent_open_tag_end.unwrap();
+
+            self.separated_by_whitespace(most_recent_open_tag_end, text_start)
+        } else {
+            false
         }
-
-        let most_recent_open_tag_end = self
-            .recent_span_locations
-            .most_recent_open_tag_end
-            .as_ref()
-            .unwrap();
-        let (mut end_line, mut end_col) = (
-            most_recent_open_tag_end.line,
-            most_recent_open_tag_end.column,
-        );
-
-        if let Some(block_end) = self.recent_span_locations.most_recent_block_end.as_ref() {
-            if block_end.line >= end_line {
-                if block_end.column > most_recent_open_tag_end.column {
-                    end_line = block_end.line;
-                    end_col = block_end.column;
-                }
-            }
-        }
-
-        return start_span.start().line != end_line || start_span.start().column - end_col > 0;
-    }
-
-    fn should_insert_space_after_text(
-        &self,
-        text_end: &Span,
-        next_span: &Span,
-        adjust_span_rustc_bug: bool,
-    ) -> bool {
-        if text_end.end().line != next_span.start().line {
-            return true;
-        }
-
-        return next_span.start().column - text_end.end().column > 0;
     }
 }
