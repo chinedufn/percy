@@ -14,7 +14,7 @@ struct HtmlMacroTest<'a> {
 impl<'a> HtmlMacroTest<'a> {
     /// Ensure that the generated and the expected virtual node are equal.
     fn test(self) {
-        assert_eq!(self.generated, self.expected, "{}", self.desc);
+        assert_eq!(self.expected, self.generated, "{}", self.desc);
     }
 }
 
@@ -115,7 +115,13 @@ fn nested_macro() {
     let child_2 = html! { <b></b> };
 
     let mut expected = VElement::new("div");
-    expected.children = vec![VirtualNode::element("span"), VirtualNode::element("b")];
+    expected.children = vec![
+        VirtualNode::text(" "),
+        VirtualNode::element("span"),
+        VirtualNode::text(" "),
+        VirtualNode::element("b"),
+        VirtualNode::text(" "),
+    ];
 
     HtmlMacroTest {
         desc: "Nested macros",
@@ -152,8 +158,9 @@ fn text_next_to_block() {
 
     let mut expected = VElement::new("div");
     expected.children = vec![
-        VirtualNode::text("A bit of text"),
+        VirtualNode::text(" A bit of text "),
         VirtualNode::element("ul"),
+        VirtualNode::text(" "),
     ];
 
     HtmlMacroTest {
@@ -169,37 +176,14 @@ fn text_next_to_block() {
     .test();
 }
 
+/// Ensure that we maintain the correct spacing around punctuation tokens
 #[test]
-fn punctuation_comma() {
+fn punctuation_token() {
     let text = "Hello, World";
 
     HtmlMacroTest {
-        desc: "Comma",
-        generated: html! { Hello, World},
-        expected: VirtualNode::text(text),
-    }
-    .test()
-}
-
-#[test]
-fn punctuation_exclamation() {
-    let text = "Hello World!";
-
-    HtmlMacroTest {
-        desc: "Exclamation point",
-        generated: html! { Hello World! },
-        expected: VirtualNode::text(text),
-    }
-    .test()
-}
-
-#[test]
-fn punctuation_period() {
-    let text = "Hello.";
-
-    HtmlMacroTest {
-        desc: "Period",
-        generated: html! { Hello. },
+        desc: "Punctuation token spacing",
+        generated: html! { Hello, World },
         expected: VirtualNode::text(text),
     }
     .test()
@@ -210,7 +194,12 @@ fn vec_of_nodes() {
     let children = vec![html! { <div> </div>}, html! { <strong> </strong>}];
 
     let mut expected = VElement::new("div");
-    expected.children = vec![VirtualNode::element("div"), VirtualNode::element("strong")];
+    expected.children = vec![
+        VirtualNode::text(" "),
+        VirtualNode::element("div"),
+        VirtualNode::element("strong"),
+        VirtualNode::text(" "),
+    ];
 
     HtmlMacroTest {
         desc: "Vec of nodes",
@@ -219,6 +208,9 @@ fn vec_of_nodes() {
     }
     .test();
 }
+
+// FIXME: Move text tests into a separate file and import into book under
+// html! section
 
 #[test]
 fn text_root_node() {
@@ -252,59 +244,101 @@ fn text_variable_root() {
 fn text_variable_child() {
     let text = "world";
 
-    HtmlMacroTest {
-        desc: "Text variable child",
-        generated: html! { <div> { text } </div> },
-        expected: html! { <div> world </div> },
-    }
-    .test()
+    assert_eq!(
+        &html! { <div>{ text }</div> }.to_string(),
+        "<div>world</div>"
+    )
 }
 
-//#[test]
-//fn text_space_after_start_tag () {
-//    assert_eq!(
-//        &html! { <div> Hello</div> }.to_string(),
-//        "<div> Hello</div>"
-//    )
-//}
-//
-//#[test]
-//fn text_space_beore_end_tag () {
-//    assert_eq!(
-//        &html! { <div>Hello </div> }.to_string(),
-//        "<div>Hello </div>"
-//    )
-//}
-//
-//#[test]
-//fn text_space_before_block() {
-//    let text = "Hello";
-//
-//    assert_eq!(
-//        &html! { <div> {text}</div> }.to_string(),
-//        "<div>Hello </div>"
-//    )
-//}
-//
-//#[test]
-//fn text_space_after_block() {
-//    let text = "Hello";
-//
-//    assert_eq!(
-//        &html! { <div>{text} </div> }.to_string(),
-//        "<div> Hello</div>"
-//    )
-//}
-//
-//#[test]
-//fn text_space_in_block_ignored() {
-//    let text = "Hello";
-//
-//    assert_eq!(
-//        &html! { <div>{ text }</div> }.to_string(),
-//        "<div>Hello</div>"
-//    )
-//}
+#[test]
+fn text_space_after_start_tag() {
+    assert_eq!(
+        &html! { <div> After Start Tag</div> }.to_string(),
+        "<div> After Start Tag</div>"
+    )
+}
+
+#[test]
+fn text_space_before_end_tag() {
+    assert_eq!(
+        &html! { <div>Before End Tag </div> }.to_string(),
+        "<div>Before End Tag </div>"
+    )
+}
+
+#[test]
+fn text_space_before_block() {
+    let text = "Before Block";
+
+    assert_eq!(
+        &html! { <div> {text}</div> }.to_string(),
+        "<div> Before Block</div>"
+    )
+}
+
+#[test]
+fn text_space_after_block() {
+    let text = "Hello";
+
+    assert_eq!(
+        &html! { <div>{text} </div> }.to_string(),
+        "<div>Hello </div>"
+    )
+}
+
+#[test]
+fn text_space_in_block_ignored() {
+    let text = "Hello";
+
+    assert_eq!(
+        &html! { <div>{ text }</div> }.to_string(),
+        "<div>Hello</div>"
+    )
+}
+
+#[test]
+fn text_multiple_text_no_space_between() {
+    let hello = "Hello";
+    let world = "World";
+
+    assert_eq!(
+        &html! { <div>{ hello }{ world }</div> }.to_string(),
+        "<div>HelloWorld</div>"
+    )
+}
+
+#[test]
+fn text_multiple_text_space_between() {
+    let hello = "Hello";
+    let world = "World";
+
+    assert_eq!(
+        &html! { <div>{ hello } { world }</div> }.to_string(),
+        "<div>Hello World</div>"
+    )
+}
+
+#[test]
+fn text_multiple_text_space_around() {
+    let hello = "Hello";
+    let world = "World";
+
+    assert_eq!(
+        &html! { <div> { hello }{ world } </div> }.to_string(),
+        "<div> HelloWorld </div>"
+    )
+}
+
+#[test]
+fn text_multiple_text_space_between_around() {
+    let hello = "Hello";
+    let world = "World";
+
+    assert_eq!(
+        &html! { <div> { hello } { world } </div> }.to_string(),
+        "<div> Hello World </div>"
+    )
+}
 
 // Verify that all of our self closing tags work as both.
 // Self closing tags can be written as either <tag> and <tag />
