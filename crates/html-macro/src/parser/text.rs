@@ -27,6 +27,9 @@ impl HtmlParser {
             Some(Tag::Braced { brace_span, .. }) => {
                 self.separated_by_whitespace(&text_end, brace_span)
             }
+            Some(Tag::Open {
+                open_bracket_span, ..
+            }) => self.separated_by_whitespace(&text_end, open_bracket_span),
             _ => false,
         };
         if should_insert_space_after_text {

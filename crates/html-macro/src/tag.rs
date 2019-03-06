@@ -15,6 +15,7 @@ pub enum Tag {
     Open {
         name: Ident,
         attrs: Vec<Attr>,
+        open_bracket_span: Span,
         closing_bracket_span: Span,
     },
     /// </div>
@@ -87,7 +88,7 @@ impl Parse for Tag {
             let is_open_tag = optional_close.is_none();
 
             if is_open_tag {
-                return parse_open_tag(&mut input);
+                return parse_open_tag(&mut input, first_angle_bracket_span);
             } else {
                 return parse_close_tag(&mut input, first_angle_bracket_span);
             }
@@ -103,7 +104,7 @@ impl Parse for Tag {
 }
 
 /// `<div id="app" class=*CSS>`
-fn parse_open_tag(input: &mut ParseStream) -> Result<Tag> {
+fn parse_open_tag(input: &mut ParseStream, open_bracket_span: Span) -> Result<Tag> {
     let name: Ident = input.parse()?;
 
     let attrs = parse_attributes(input)?;
@@ -117,6 +118,7 @@ fn parse_open_tag(input: &mut ParseStream) -> Result<Tag> {
     Ok(Tag::Open {
         name,
         attrs,
+        open_bracket_span,
         closing_bracket_span,
     })
 }

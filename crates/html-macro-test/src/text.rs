@@ -157,3 +157,19 @@ fn text_tokens_in_between_vars_space_around_between() {
         "<div> Hello Space World </div>"
     )
 }
+
+#[test]
+fn text_space_before_next_open_tag() {
+    assert_eq!(
+        &html! { <div>Hello <img /> world</div> }.to_string(),
+        "<div>Hello <img> world</div>"
+    )
+}
+
+#[test]
+fn text_no_space_before_open_tag() {
+    assert_eq!(
+        &html! { <div>Hello<img /> world</div> }.to_string(),
+        "<div>Hello<img> world</div>"
+    )
+}

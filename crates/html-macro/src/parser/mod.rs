@@ -69,6 +69,7 @@ impl HtmlParser {
                 name,
                 attrs,
                 closing_bracket_span,
+                ..
             } => {
                 self.parse_open_tag(name, closing_bracket_span, attrs);
                 self.last_tag_kind = Some(TagKind::Open);
