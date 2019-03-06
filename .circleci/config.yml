@@ -24,8 +24,8 @@ jobs:
           keys:
             # Checksum ensures that when we update versions for our `html-macro` dependencies we clear our cache, otherwise
             # compiletest-rs can error when the target directory has multiple versions of a crate.
-            - v4-cargo-cache-test-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
-            - v4-cargo-cache-test-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
+            - v5-cargo-cache-test-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
+            - v5-cargo-cache-test-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
 
       # Install nightly & wasm
       - run:
@@ -65,12 +65,12 @@ jobs:
 
       # Save cache
       - save_cache:
-          key: v4-cargo-cache-test-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
+          key: v5-cargo-cache-test-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
           paths:
             - target
             - /usr/local/cargo
       - save_cache:
-          key: v4-cargo-cache-test-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
+          key: v5-cargo-cache-test-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
           paths:
             - target
             - /usr/local/cargo
@@ -84,8 +84,8 @@ jobs:
       # Multiple caches are used to increase the chance of a cache hit.
       - restore_cache:
           keys:
-            - v4-cargo-cache-docs-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
-            - v4-cargo-cache-docs-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
+            - v5-cargo-cache-docs-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
+            - v5-cargo-cache-docs-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
 
       # Install nightly
       - run:
@@ -120,12 +120,12 @@ jobs:
 
       # Save cache
       - save_cache:
-          key: v4-cargo-cache-docs-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
+          key: v5-cargo-cache-docs-{{ arch }}-{{ .Branch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
           paths:
             - target
             - /usr/local/cargo
       - save_cache:
-          key: v4-cargo-cache-docs-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
+          key: v5-cargo-cache-docs-{{ arch }}-{{ checksum "./crates/html-macro/Cargo.toml" }}-{{ checksum "./crates/virtual-dom-rs/Cargo.toml" }}
           paths:
             - target
             - /usr/local/cargo
