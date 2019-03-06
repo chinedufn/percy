@@ -28,7 +28,7 @@ impl HtmlParser {
 
         let last_open_tag = last_open_tag.1.to_string();
 
-        // TODO: 2 compile_error!'s one pointing tot he open tag and one pointing to the
+        // TODO: 2 compile_error!'s one pointing to the open tag and one pointing to the
         // closing tag. Update the ui test accordingly
         //
         // ex: if div != strong
