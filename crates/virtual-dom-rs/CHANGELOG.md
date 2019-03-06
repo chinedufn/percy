@@ -13,7 +13,7 @@ Types of changes:
 
 _Here we list notable things that have been merged into the master branch but have not been released yet._
 
-- ...
+- [fixed] Proper spacing in between text nodes and elements in all cases [PR](TODO: Link here)
 
 ## 0.6.5 - Mar 4, 2019
 

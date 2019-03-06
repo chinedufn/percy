@@ -19,6 +19,10 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let parsed_tags_len = parsed.tags.len();
 
+    // Iterate over all of our parsed tags and push them into our HtmlParser one by one.
+    //
+    // As we go out HtmlParser will maintain some heuristics about what we've done so far
+    // since that will sometimes inform how to parse the next token.
     for (idx, tag) in parsed.tags.iter().enumerate() {
         let mut next_tag = None;
 

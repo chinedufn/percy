@@ -177,7 +177,8 @@ fn text_next_to_block() {
     .test();
 }
 
-/// Ensure that we maintain the correct spacing around punctuation tokens
+/// Ensure that we maintain the correct spacing around punctuation tokens, since
+/// they resolve into a separate TokenStream during parsing.
 #[test]
 fn punctuation_token() {
     let text = "Hello, World";

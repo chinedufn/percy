@@ -11,7 +11,9 @@ mod close_tag;
 mod open_tag;
 mod text;
 
-/// Iterate over Tag's that we've parsed and build a tree of VirtualNode's
+/// Used to parse [Tag]'s that we've parsed and build a tree of VirtualNode's
+///
+/// [Tag]: enum.Tag.html
 pub struct HtmlParser {
     /// As we parse our macro tokens we'll generate new tokens to return back into the compiler
     /// when we're done.
@@ -155,6 +157,22 @@ impl HtmlParser {
     fn set_most_recent_block_start(&mut self, span: &Span) {
         self.recent_span_locations.most_recent_block_start = Some(span.start());
         self.recent_span_locations.most_recent_block_end = Some(span.end());
+    }
+
+    /// Determine whether or not there is any space between the end of the first
+    /// span and the beginning of the second span.
+    ///
+    /// There is space if they are on separate lines or if they have different columns.
+    ///
+    /// html! { <div>Hello</div> } <--- no space between end of div and Hello
+    ///
+    /// html! { <div> Hello</div> } <--- space between end of div and Hello
+    fn separated_by_whitespace(&self, first_span: &Span, second_span: &Span) -> bool {
+        if first_span.end().line != second_span.end().line {
+            return true;
+        }
+
+        second_span.start().column - first_span.end().column > 0
     }
 }
 

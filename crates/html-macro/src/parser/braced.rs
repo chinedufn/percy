@@ -13,6 +13,33 @@ impl HtmlParser {
         brace_span: &Span,
         next_tag: Option<&Tag>,
     ) {
+        // If
+        //   1. The next tag is a closing bracket or another brace
+        //   2. There is space between this brace and that next tag
+        //
+        // Then
+        //   We'll insert some spacing after this brace.
+        //
+        // This ensures that we properly maintain spacing between two neighboring braced
+        // text nodes
+        //
+        // html! { <div>{ This Brace } { Space WILL be inserted }</div>
+        //   -> <div>This Brace Space WILL be inserted</div>
+        //
+        // html! { <div>{ This Brace }{ Space WILL NOT be inserted }</div>
+        //   -> <div>This BraceSpace WILL NOT be inserted</div>
+        let should_insert_space_after = match next_tag {
+            Some(Tag::Close {
+                first_angle_bracket_span,
+                ..
+            }) => self.separated_by_whitespace(brace_span, &first_angle_bracket_span),
+            Some(Tag::Braced {
+                brace_span: next_brace_span,
+                ..
+            }) => self.separated_by_whitespace(brace_span, &next_brace_span),
+            _ => false,
+        };
+
         let node_idx = &mut self.current_node_idx;
         let parent_to_children = &mut self.parent_to_children;
         let parent_stack = &mut self.parent_stack;
@@ -22,49 +49,6 @@ impl HtmlParser {
         let open_tag_end = match self.recent_span_locations.most_recent_open_tag_end.as_ref() {
             Some(open_tag_end) => Some((open_tag_end.line, open_tag_end.column)),
             None => None,
-        };
-
-        let mut should_insert_space_after = false;
-
-        // FIXME: Move into function
-        if let Some(next_tag) = next_tag {
-            if let Tag::Close {
-                first_angle_bracket_span,
-                ..
-            } = next_tag
-            {
-                let spans_on_different_lines =
-                    first_angle_bracket_span.start().line != brace_span.end().line;
-
-                if spans_on_different_lines {
-                    should_insert_space_after = true;
-                } else {
-                    let space_between_spans =
-                        first_angle_bracket_span.start().column - brace_span.end().column > 0;
-                    if space_between_spans {
-                        should_insert_space_after = true;
-                    }
-                }
-            }
-
-            if let Tag::Braced {
-                brace_span: next_brace_span,
-                ..
-            } = next_tag
-            {
-                let spans_on_different_lines =
-                    next_brace_span.start().line != brace_span.end().line;
-
-                if spans_on_different_lines {
-                    should_insert_space_after = true;
-                } else {
-                    let space_between_spans =
-                        next_brace_span.start().column - brace_span.end().column > 0;
-                    if space_between_spans {
-                        should_insert_space_after = true;
-                    }
-                }
-            }
         };
 
         // We ignore this check if the last tag kind was text since the text

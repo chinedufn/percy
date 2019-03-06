@@ -1,25 +1,33 @@
 # Working with Text
 
-Rather than needing you to wrap your text in `"` quotation marks,
-the `html-macro` will work with raw unquoted text.
+One of the most popular types of nodes in the DOM is the [Text] node, and the `html! macro
+focuses heavily on making them as easy to create as possible.
+
+You can just type unquoted text into the `html!` macro and neighboring text will get combined into a single `Text` node, much
+like the way that web browsers handle text from html documents.
 
 ```rust
 fn main () {
-    let interpolated_var = "interpolate text variables.";
+    let interpolated_text = "interpolate text variables.";
 
     let example = html! {
        <div>
             Text can be typed directly into your HTML.
-            <div>Or you can also {interpolated_var}</div>
+            <div>Or you can also {interpolated_text}</div>
        </div>
     };
 }
 ```
 
-You should always get the same spacing (or lack there of) between text and/or elements as you would
+## Preserving Space Between Blocks
+
+You should always get the same spacing (or lack there of) between text and other elements as you would
 if you were working in a regular old `.html` file.
 
-When it comes to interpolated variables, we base spacing on the spacing outside of the brackets.
+When it comes to interpolated variables, we base spacing on the spacing outside of the braces, not the
+inside.
+
+Let's illustrate:
 
 ```rust
 fn main () {
@@ -46,3 +54,5 @@ text nodes / variables / elements.
 
 {{ #include ../../../../crates/html-macro-test/src/text.rs }}
 ```
+
+[Text]: https://developer.mozilla.org/en-US/docs/Web/API/Text
