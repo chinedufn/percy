@@ -7,24 +7,22 @@ use virtual_node::{IterableNodes, VElement, VirtualNode};
 
 #[test]
 fn text_root_node() {
-    HtmlMacroTest {
-        desc: "Text as root node",
-        generated: html! { some text },
-        expected: VirtualNode::text("some text"),
-    }
-    .test()
+    assert_eq!(&html! { some text }.to_string(), "some text");
 }
 
 #[test]
 fn text_variable_root() {
     let text = "hello world";
 
-    HtmlMacroTest {
-        desc: "Text variable root",
-        generated: html! { { text } },
-        expected: VirtualNode::text("hello world"),
-    }
-    .test()
+    assert_eq!(&html! { { text } }.to_string(), "hello world");
+}
+
+#[test]
+fn raw_string_literal() {
+    assert_eq!(
+        &html! { <div>{ r#"Hello World"# }</div> }.to_string(),
+        "<div>Hello World</div>"
+    );
 }
 
 #[test]
