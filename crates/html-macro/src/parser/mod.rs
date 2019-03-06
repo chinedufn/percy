@@ -13,7 +13,7 @@ mod text;
 
 /// Used to parse [`Tag`]s that we've parsed and build a tree of `VirtualNode`s
 ///
-/// [Tag]: enum.Tag.html
+/// [`Tag`]: enum.Tag.html
 pub struct HtmlParser {
     /// As we parse our macro tokens we'll generate new tokens to return back into the compiler
     /// when we're done.
