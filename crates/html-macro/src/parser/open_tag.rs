@@ -1,13 +1,15 @@
 use crate::parser::{is_self_closing, HtmlParser};
 use crate::tag::Attr;
-use proc_macro2::Ident;
+use proc_macro2::{Ident, Span};
 use quote::quote;
 use syn::Expr;
 
 impl HtmlParser {
     /// Parse an incoming Tag::Open
-    pub(crate) fn parse_open_tag(&mut self, name: Ident, attrs: Vec<Attr>) {
-        let idx = &mut self.current_idx;
+    pub(crate) fn parse_open_tag(&mut self, name: &Ident, closing_span: &Span, attrs: &Vec<Attr>) {
+        self.set_most_recent_open_tag_end(closing_span.clone());
+
+        let idx = &mut self.current_node_idx;
         let parent_to_children = &mut self.parent_to_children;
         let parent_stack = &mut self.parent_stack;
         let tokens = &mut self.tokens;
@@ -31,7 +33,7 @@ impl HtmlParser {
                 Expr::Closure(closure) => {
                     // TODO: Use this to decide Box<FnMut(_, _, _, ...)
                     // After we merge the DomUpdater
-                    let arg_count = closure.inputs.len();
+                    let _arg_count = closure.inputs.len();
 
                     let add_closure = quote! {
                         #[cfg(target_arch = "wasm32")]
@@ -63,7 +65,7 @@ impl HtmlParser {
             node_order.push(0);
 
             if !is_self_closing(&html_tag) {
-                parent_stack.push((0, name));
+                parent_stack.push((0, name.clone()));
             }
 
             *idx += 1;
@@ -73,7 +75,7 @@ impl HtmlParser {
         let parent_idx = *&parent_stack[parent_stack.len() - 1].0;
 
         if !is_self_closing(&html_tag) {
-            parent_stack.push((*idx, name));
+            parent_stack.push((*idx, name.clone()));
         }
         node_order.push(*idx);
 

@@ -1,25 +1,28 @@
+use crate::tag::TagKind;
 use crate::Tag;
-use proc_macro2::LineColumn;
 use quote::{quote, quote_spanned};
 use std::collections::HashMap;
 use syn::export::Span;
-use syn::Ident;
+use syn::spanned::Spanned;
+use syn::{Ident, Stmt};
 
 mod braced;
 mod close_tag;
 mod open_tag;
 mod text;
 
-/// Iterate over Tag's that we've parsed and build a tree of VirtualNode's
+/// Used to parse [`Tag`]s that we've parsed and build a tree of `VirtualNode`s
+///
+/// [`Tag`]: enum.Tag.html
 pub struct HtmlParser {
     /// As we parse our macro tokens we'll generate new tokens to return back into the compiler
     /// when we're done.
     tokens: Vec<proc_macro2::TokenStream>,
-    /// Everytime we encounter a new node we'll use the current_idx to name it.
+    /// Everytime we encounter a new node we'll use the current_node_idx to name it.
     /// Then we'll increment the current_idx by one.
     /// This gives every node that we encounter a unique name that we can use to find
     /// it later when we want to push child nodes into parent nodes
-    current_idx: usize,
+    current_node_idx: usize,
     /// The order that we encountered nodes while parsing.
     node_order: Vec<usize>,
     /// Each time we encounter a new node that could possible be a parent node
@@ -30,7 +33,12 @@ pub struct HtmlParser {
     /// Key -> index of the parent node within the HTML tree
     /// Value -> vector of child node indices
     parent_to_children: HashMap<usize, Vec<usize>>,
+    /// The locations of the most recent spans that we parsed.
+    /// Used to determine whether or not to put space around text nodes.
     recent_span_locations: RecentSpanLocations,
+    /// The last kind of tag that we parsed.
+    /// Used to determine whether or not to put space around text nodes.
+    last_tag_kind: Option<TagKind>,
 }
 
 /// TODO: I've hit a good stopping point... but we can clean these methods up / split them up
@@ -43,28 +51,44 @@ impl HtmlParser {
 
         HtmlParser {
             tokens: vec![],
-            current_idx: 0,
+            current_node_idx: 0,
             node_order: vec![],
             parent_stack: vec![],
             parent_to_children,
             recent_span_locations: RecentSpanLocations::default(),
+            last_tag_kind: None,
         }
     }
 
     /// Generate the tokens for the incoming Tag and update our parser's heuristics that keep
     /// track of information about what we've parsed.
-    pub fn push_tag(&mut self, tag: Tag) {
+    pub fn push_tag(&mut self, tag: &Tag, next_tag: Option<&Tag>) {
         match tag {
-            Tag::Open { name, attrs } => {
-                self.parse_open_tag(name, attrs);
+            Tag::Open {
+                name,
+                attrs,
+                closing_bracket_span,
+                ..
+            } => {
+                self.parse_open_tag(name, closing_bracket_span, attrs);
+                self.last_tag_kind = Some(TagKind::Open);
             }
-            Tag::Close { name } => {
+            Tag::Close { name, .. } => {
                 self.parse_close_tag(name);
+                self.last_tag_kind = Some(TagKind::Close);
             }
-            Tag::Text { text } => {
-                self.parse_text(text);
+            Tag::Text {
+                text,
+                start_span,
+                end_span,
+            } => {
+                self.parse_text(text, start_span.unwrap(), end_span.unwrap(), next_tag);
+                self.last_tag_kind = Some(TagKind::Text);
             }
-            Tag::Braced { block } => self.parse_braced(block),
+            Tag::Braced { block, brace_span } => {
+                self.parse_braced(block, brace_span, next_tag);
+                self.last_tag_kind = Some(TagKind::Braced);
+            }
         };
     }
 
@@ -122,12 +146,101 @@ impl HtmlParser {
         node
     }
 
-    /// Set the location of the most recent start tag's ending LineColumn
-    fn set_most_recent_start_tag_end (&mut self, span: Span) {
+    /// Add more tokens to our tokens that we'll eventually return to the compiler.
+    fn push_tokens(&mut self, tokens: proc_macro2::TokenStream) {
+        self.tokens.push(tokens);
     }
 
     /// Set the location of the most recent start tag's ending LineColumn
-    fn set_most_recent_block_start (&mut self, span: Span) {
+    fn set_most_recent_open_tag_end(&mut self, span: Span) {
+        self.recent_span_locations.most_recent_open_tag_end = Some(span);
+    }
+
+    /// Set the location of the most recent start tag's ending LineColumn
+    fn set_most_recent_block_start(&mut self, span: Span) {
+        self.recent_span_locations.most_recent_block_start = Some(span);
+    }
+
+    /// Determine whether or not there is any space between the end of the first
+    /// span and the beginning of the second span.
+    ///
+    /// There is space if they are on separate lines or if they have different columns.
+    ///
+    /// html! { <div>Hello</div> } <--- no space between end of div and Hello
+    ///
+    /// html! { <div> Hello</div> } <--- space between end of div and Hello
+    fn separated_by_whitespace(&self, first_span: &Span, second_span: &Span) -> bool {
+        if first_span.end().line != second_span.end().line {
+            return true;
+        }
+
+        second_span.start().column - first_span.end().column > 0
+    }
+
+    /// Create a new identifier for a VirtualNode and increment our node_idx so that next
+    /// time we call this our node will get a different name.
+    fn new_virtual_node_ident(&mut self, span: Span) -> Ident {
+        let node_name = format!("node_{}", self.current_node_idx);
+        let node_ident = Ident::new(node_name.as_str(), span);
+
+        self.current_node_idx += 1;
+
+        node_ident
+    }
+
+    /// Push tokens that will insert a VirtualNode::text(" ") into our TokenStream
+    /// that we will pass back to the compiler.
+    ///
+    /// It will be assigned to the current parent node (whatever the last Tag::Open was)
+    ///
+    /// FIXME: Stop doing this! Instead of inserting text nodes just check how much white space
+    /// is between the block and the tag before it as well as the block and the tag after it.
+    /// Then, insert quote! tokens that take a mutable reference to the first element in the
+    /// iterable nodes and adds spacing / new lines before it if it is a VText variant.
+    /// Then take a mutable reference to the last element in the iterable nodes and add
+    /// spacing after it if it is a VText variant. Add methods to IterableNodes to easily
+    /// get an optional reference to the first or last element.
+    fn push_virtual_text_space_tokens(&mut self, span: Span) {
+        let node_idx = self.current_node_idx;
+
+        let node_ident = self.new_virtual_node_ident(span);
+
+        let space = quote! {
+            let #node_ident: IterableNodes = VirtualNode::text(" ").into();
+        };
+        self.push_tokens(space);
+
+        let parent_idx = *&self.parent_stack[self.parent_stack.len() - 1].0;
+
+        self.parent_to_children
+            .get_mut(&parent_idx)
+            .expect("Parent of this text node")
+            .push(node_idx);
+        self.node_order.push(node_idx);
+    }
+
+    /// Generate virtual node tokens for a statement that came from in between braces
+    ///
+    /// examples:
+    ///
+    /// html! { <div> { some_var_in_braces } </div>
+    /// html! { <div> { some_other_variable } </div>
+    fn push_iterable_nodes(&mut self, stmt: &Stmt) {
+        let node_idx = self.current_node_idx;
+        let node_ident = self.new_virtual_node_ident(stmt.span());
+
+        let nodes = quote! {
+            let #node_ident: IterableNodes = #stmt.into();
+        };
+        self.push_tokens(nodes);
+
+        let parent_idx = *&self.parent_stack[self.parent_stack.len() - 1].0;
+
+        self.parent_to_children
+            .get_mut(&parent_idx)
+            .expect("Parent of this text node")
+            .push(node_idx);
+        self.node_order.push(node_idx);
     }
 }
 
@@ -142,8 +255,8 @@ impl HtmlParser {
 /// ```
 #[derive(Default)]
 struct RecentSpanLocations {
-    most_recent_start_tag_end: Option<LineColumn>,
-    most_recent_block_start: Option<LineColumn>,
+    most_recent_open_tag_end: Option<Span>,
+    most_recent_block_start: Option<Span>,
 }
 
 // TODO: Cache this as a HashSet inside of our parser

@@ -17,8 +17,20 @@ pub fn html(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let mut html_parser = HtmlParser::new();
 
-    for tag in parsed.tags.into_iter() {
-        html_parser.push_tag(tag);
+    let parsed_tags_len = parsed.tags.len();
+
+    // Iterate over all of our parsed tags and push them into our HtmlParser one by one.
+    //
+    // As we go out HtmlParser will maintain some heuristics about what we've done so far
+    // since that will sometimes inform how to parse the next token.
+    for (idx, tag) in parsed.tags.iter().enumerate() {
+        let mut next_tag = None;
+
+        if parsed_tags_len - 1 > idx {
+            next_tag = Some(&parsed.tags[idx + 1])
+        }
+
+        html_parser.push_tag(tag, next_tag);
     }
 
     html_parser.finish().into()

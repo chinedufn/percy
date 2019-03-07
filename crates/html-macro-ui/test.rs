@@ -18,7 +18,6 @@ fn main() {
     config.mode = "ui".parse().expect("invalid mode");
     let mut me = env::current_exe().unwrap();
     me.pop();
-    eprintln!("me = {:#?}", me);
     config.target_rustcflags = Some(format!("-L {}", me.display()));
     let src = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     config.src_base = src;
