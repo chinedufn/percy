@@ -193,7 +193,13 @@ impl HtmlParser {
     ///
     /// It will be assigned to the current parent node (whatever the last Tag::Open was)
     ///
-    /// TODO: Nearly identical with push_iterable_nodes. Make them call some DRY function
+    /// FIXME: Stop doing this! Instead of inserting text nodes just check how much white space
+    /// is between the block and the tag before it as well as the block and the tag after it.
+    /// Then, insert quote! tokens that take a mutable reference to the first element in the
+    /// iterable nodes and adds spacing / new lines before it if it is a VText variant.
+    /// Then take a mutable reference to the last element in the iterable nodes and add
+    /// spacing after it if it is a VText variant. Add methods to IterableNodes to easily
+    /// get an optional reference to the first or last element.
     fn push_virtual_text_space_tokens(&mut self, span: Span) {
         let node_idx = self.current_node_idx;
 
@@ -219,8 +225,6 @@ impl HtmlParser {
     ///
     /// html! { <div> { some_var_in_braces } </div>
     /// html! { <div> { some_other_variable } </div>
-    ///
-    /// TODO: Nearly identical with push_virtual_node_space_tokens. Make them call some DRY function
     fn push_iterable_nodes(&mut self, stmt: &Stmt) {
         let node_idx = self.current_node_idx;
         let node_ident = self.new_virtual_node_ident(stmt.span());
