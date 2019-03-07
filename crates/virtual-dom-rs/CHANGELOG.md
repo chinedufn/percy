@@ -13,7 +13,12 @@ Types of changes:
 
 _Here we list notable things that have been merged into the master branch but have not been released yet._
 
-- [fixed] Proper spacing in between text nodes and elements in all cases [PR](TODO: Link here)
+- ...
+
+## 0.6.6 - Mar 6, 2019
+
+- [fixed] Proper spacing in between text nodes and elements in most use cases [PR](https://github.com/chinedufn/percy/pull/97)
+  - Still need to address [#98](https://github.com/chinedufn/percy/issues/98) and then we should have all cases handled.
 
 ## 0.6.5 - Mar 4, 2019
 
