@@ -205,24 +205,113 @@
 <span id="205">205</span>
 <span id="206">206</span>
 <span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">TokenStream</span>, <span class="ident">TokenTree</span>};
+<span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Span</span>, <span class="ident">TokenStream</span>, <span class="ident">TokenTree</span>};
 <span class="kw">use</span> <span class="ident">syn</span>::<span class="ident">parse</span>::{<span class="ident">Parse</span>, <span class="ident">ParseStream</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">syn</span>::<span class="ident">spanned</span>::<span class="ident">Spanned</span>;
 <span class="kw">use</span> <span class="ident">syn</span>::<span class="ident">token</span>::<span class="ident">Brace</span>;
 <span class="kw">use</span> <span class="ident">syn</span>::{<span class="ident">braced</span>, <span class="ident">Block</span>, <span class="ident">Expr</span>, <span class="ident">Ident</span>, <span class="ident">Token</span>};
 
+<span class="doccomment">/// The different kinds of tokens that we parse.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// TODO: A better name than tag since not all of these are tags</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Tag</span> {
     <span class="doccomment">/// &lt;div id=&quot;app&quot; class=*CSS&gt;</span>
     <span class="doccomment">/// &lt;br /&gt;</span>
-    <span class="ident">Open</span> { <span class="ident">name</span>: <span class="ident">Ident</span>, <span class="ident">attrs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attr</span><span class="op">&gt;</span> },
+    <span class="ident">Open</span> {
+        <span class="ident">name</span>: <span class="ident">Ident</span>,
+        <span class="ident">attrs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attr</span><span class="op">&gt;</span>,
+        <span class="ident">open_bracket_span</span>: <span class="ident">Span</span>,
+        <span class="ident">closing_bracket_span</span>: <span class="ident">Span</span>,
+    },
     <span class="doccomment">/// &lt;/div&gt;</span>
-    <span class="ident">Close</span> { <span class="ident">name</span>: <span class="ident">Ident</span> },
+    <span class="ident">Close</span> {
+        <span class="ident">name</span>: <span class="ident">Ident</span>,
+        <span class="ident">first_angle_bracket_span</span>: <span class="ident">Span</span>,
+    },
     <span class="doccomment">/// html! { &lt;div&gt; Hello World &lt;/div&gt; }</span>
     <span class="doccomment">///</span>
     <span class="doccomment">///  -&gt; Hello world</span>
-    <span class="ident">Text</span> { <span class="ident">text</span>: <span class="ident">String</span> },
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// start_span -&gt; the span for the first token within the text</span>
+    <span class="doccomment">/// end_span -&gt; the span for the last token within the text</span>
+    <span class="ident">Text</span> {
+        <span class="ident">text</span>: <span class="ident">String</span>,
+        <span class="ident">start_span</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Span</span><span class="op">&gt;</span>,
+        <span class="ident">end_span</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Span</span><span class="op">&gt;</span>,
+    },
     <span class="doccomment">/// let text_var = VirtualNode::text(&quot;3&quot;);</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// let iter_nodes =</span>
@@ -239,7 +328,18 @@
     <span class="doccomment">///     { html! { &lt;div&gt; &lt;/div&gt; }</span>
     <span class="doccomment">///   &lt;/div&gt;</span>
     <span class="doccomment">/// }</span>
-    <span class="ident">Braced</span> { <span class="ident">block</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span> },
+    <span class="ident">Braced</span> { <span class="ident">block</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>, <span class="ident">brace_span</span>: <span class="ident">Span</span> },
+}
+
+<span class="doccomment">/// The different kinds of tokens that we parse.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// TODO: A better name than tag since not all of these are tags</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">TagKind</span> {
+    <span class="ident">Open</span>,
+    <span class="ident">Close</span>,
+    <span class="ident">Text</span>,
+    <span class="ident">Braced</span>,
 }
 
 <span class="doccomment">/// id=&quot;my-id&quot;</span>
@@ -259,15 +359,16 @@
         <span class="comment">//   ex: &lt;div&gt;</span>
         <span class="comment">//   ex: &lt;/em&gt;</span>
         <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="op">&lt;</span>]) {
-            <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">&lt;</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">first_angle_bracket_span</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">&lt;</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">first_angle_bracket_span</span> <span class="op">=</span> <span class="ident">first_angle_bracket_span</span>.<span class="ident">span</span>();
 
             <span class="kw">let</span> <span class="ident">optional_close</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">/</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="ident">is_open_tag</span> <span class="op">=</span> <span class="ident">optional_close</span>.<span class="ident">is_none</span>();
 
             <span class="kw">if</span> <span class="ident">is_open_tag</span> {
-                <span class="kw">return</span> <span class="ident">parse_open_tag</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">input</span>);
+                <span class="kw">return</span> <span class="ident">parse_open_tag</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">input</span>, <span class="ident">first_angle_bracket_span</span>);
             } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="ident">parse_close_tag</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">input</span>);
+                <span class="kw">return</span> <span class="ident">parse_close_tag</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">input</span>, <span class="ident">first_angle_bracket_span</span>);
             }
         }
 
@@ -281,7 +382,7 @@
 }
 
 <span class="doccomment">/// `&lt;div id=&quot;app&quot; class=*CSS&gt;`</span>
-<span class="kw">fn</span> <span class="ident">parse_open_tag</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ParseStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_open_tag</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ParseStream</span>, <span class="ident">open_bracket_span</span>: <span class="ident">Span</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">name</span>: <span class="ident">Ident</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
@@ -289,9 +390,15 @@
     <span class="kw">let</span> <span class="ident">_maybe_trailing_slash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">/</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
     <span class="comment">//    let has_trailing_slash = has_trailing_slash.is_some();</span>
 
-    <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">&gt;</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">closing_bracket</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">&gt;</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">closing_bracket_span</span> <span class="op">=</span> <span class="ident">closing_bracket</span>.<span class="ident">span</span>();
 
-    <span class="prelude-val">Ok</span>(<span class="ident">Tag</span>::<span class="ident">Open</span> { <span class="ident">name</span>, <span class="ident">attrs</span> })
+    <span class="prelude-val">Ok</span>(<span class="ident">Tag</span>::<span class="ident">Open</span> {
+        <span class="ident">name</span>,
+        <span class="ident">attrs</span>,
+        <span class="ident">open_bracket_span</span>,
+        <span class="ident">closing_bracket_span</span>,
+    })
 }
 
 <span class="doccomment">/// Parse the attributes starting from something like:</span>
@@ -346,17 +453,22 @@
 }
 
 <span class="doccomment">/// &lt;/div&gt;</span>
-<span class="kw">fn</span> <span class="ident">parse_close_tag</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ParseStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_close_tag</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ParseStream</span>, <span class="ident">first_angle_bracket_span</span>: <span class="ident">Span</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">name</span>: <span class="ident">Ident</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
 
     <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">&gt;</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(<span class="ident">Tag</span>::<span class="ident">Close</span> { <span class="ident">name</span> })
+    <span class="prelude-val">Ok</span>(<span class="ident">Tag</span>::<span class="ident">Close</span> {
+        <span class="ident">name</span>,
+        <span class="ident">first_angle_bracket_span</span>,
+    })
 }
 
 <span class="kw">fn</span> <span class="ident">parse_block</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ParseStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">content</span>;
     <span class="kw">let</span> <span class="ident">brace_token</span> <span class="op">=</span> <span class="macro">braced</span><span class="macro">!</span>(<span class="ident">content</span> <span class="kw">in</span> <span class="ident">input</span>);
+
+    <span class="kw">let</span> <span class="ident">brace_span</span> <span class="op">=</span> <span class="ident">brace_token</span>.<span class="ident">span</span>;
 
     <span class="kw">let</span> <span class="ident">block_expr</span> <span class="op">=</span> <span class="ident">content</span>.<span class="ident">call</span>(<span class="ident">Block</span>::<span class="ident">parse_within</span>)<span class="question-mark">?</span>;
 
@@ -365,9 +477,21 @@
         <span class="ident">stmts</span>: <span class="ident">block_expr</span>,
     });
 
-    <span class="prelude-val">Ok</span>(<span class="ident">Tag</span>::<span class="ident">Braced</span> { <span class="ident">block</span> })
+    <span class="prelude-val">Ok</span>(<span class="ident">Tag</span>::<span class="ident">Braced</span> { <span class="ident">block</span>, <span class="ident">brace_span</span> })
 }
 
+<span class="doccomment">/// Parse a sequence of tokens until we run into a closing tag</span>
+<span class="doccomment">///   html! { &lt;div&gt; Hello World &lt;/div&gt; }</span>
+<span class="doccomment">/// or a brace</span>
+<span class="doccomment">///   html! { &lt;div&gt; Hello World { Braced } &lt;/div&gt;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// So, in the second case, there would be two VText nodes created. &quot;Hello World&quot; and &quot;Braced&quot;.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Later in parser/text.rs we&#39;ll look at how close the VText nodes are to their neighboring tags</span>
+<span class="doccomment">/// to determine whether or not to insert spacing.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// So, in the examples above, since the opening &quot;&lt;div&gt;&quot; has a space after it we&#39;ll later transform</span>
+<span class="doccomment">/// &quot;Hello World&quot; into &quot; Hello World&quot; in parser/tag.rs</span>
 <span class="kw">fn</span> <span class="ident">parse_text_node</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ParseStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span> {
     <span class="comment">// Continue parsing tokens until we see a closing tag &lt;</span>
     <span class="kw">let</span> <span class="ident">_text_tokens</span> <span class="op">=</span> <span class="ident">TokenStream</span>::<span class="ident">new</span>();
@@ -376,30 +500,44 @@
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">idx</span> <span class="op">=</span> <span class="number">0</span>;
 
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">start_span</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">most_recent_span</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Span</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+
     <span class="kw">loop</span> {
         <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">is_empty</span>() {
             <span class="kw">break</span>;
         }
 
-        <span class="comment">// TODO: Ditch this and build text with proper spacing by using span start/end locations</span>
-        <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[,]) {
-            <span class="kw">let</span> <span class="kw">_</span>: <span class="ident">TokenTree</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-            <span class="ident">text</span> <span class="op">+=</span> <span class="string">&quot;,&quot;</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="op">!</span>]) {
-            <span class="kw">let</span> <span class="kw">_</span>: <span class="ident">TokenTree</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-            <span class="ident">text</span> <span class="op">+=</span> <span class="string">&quot;!&quot;</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[.]) {
-            <span class="kw">let</span> <span class="kw">_</span>: <span class="ident">TokenTree</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-            <span class="ident">text</span> <span class="op">+=</span> <span class="string">&quot;.&quot;</span>;
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">tt</span>: <span class="ident">TokenTree</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">tt</span>: <span class="ident">TokenTree</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
 
-            <span class="kw">if</span> <span class="ident">idx</span> <span class="op">!=</span> <span class="number">0</span> {
-                <span class="ident">text</span> <span class="op">+=</span> <span class="string">&quot; &quot;</span>;
-            }
-
-            <span class="ident">text</span> <span class="op">+=</span> <span class="kw-2">&amp;</span><span class="ident">tt</span>.<span class="ident">to_string</span>();
+        <span class="kw">if</span> <span class="ident">idx</span> <span class="op">==</span> <span class="number">0</span> {
+            <span class="ident">start_span</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tt</span>.<span class="ident">span</span>());
+            <span class="ident">most_recent_span</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tt</span>.<span class="ident">span</span>());
         }
+
+        <span class="comment">// TODO: Properly handle whitespace and new lines</span>
+        <span class="comment">// https://github.com/chinedufn/percy/pull/97#discussion_r263039215</span>
+        <span class="kw">if</span> <span class="ident">idx</span> <span class="op">!=</span> <span class="number">0</span> {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">most_recent_span</span>) <span class="op">=</span> <span class="ident">most_recent_span</span> {
+                <span class="kw">let</span> <span class="ident">current_span_start</span> <span class="op">=</span> <span class="ident">tt</span>.<span class="ident">span</span>().<span class="ident">start</span>();
+                <span class="kw">let</span> <span class="ident">most_recent_span_end</span> <span class="op">=</span> <span class="ident">most_recent_span</span>.<span class="ident">end</span>();
+
+                <span class="kw">let</span> <span class="ident">spans_on_different_lines</span> <span class="op">=</span> <span class="ident">current_span_start</span>.<span class="ident">line</span> <span class="op">!=</span> <span class="ident">most_recent_span_end</span>.<span class="ident">line</span>;
+
+                <span class="comment">// Spans are on different lines, insert space</span>
+                <span class="kw">if</span> <span class="ident">spans_on_different_lines</span> {
+                    <span class="ident">text</span> <span class="op">+=</span> <span class="string">&quot; &quot;</span>;
+                    <span class="kw">break</span>;
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">current_span_start</span>.<span class="ident">column</span> <span class="op">-</span> <span class="ident">most_recent_span_end</span>.<span class="ident">column</span> <span class="op">&gt;</span> <span class="number">0</span> {
+                    <span class="ident">text</span> <span class="op">+=</span> <span class="string">&quot; &quot;</span>;
+                }
+            }
+        }
+
+        <span class="ident">text</span> <span class="op">+=</span> <span class="kw-2">&amp;</span><span class="ident">tt</span>.<span class="ident">to_string</span>();
+
+        <span class="ident">most_recent_span</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tt</span>.<span class="ident">span</span>());
 
         <span class="kw">let</span> <span class="ident">peek_closing_tag</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="op">&lt;</span>]);
         <span class="kw">let</span> <span class="ident">peek_start_block</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">Brace</span>);
@@ -411,7 +549,11 @@
         <span class="ident">idx</span> <span class="op">+=</span> <span class="number">1</span>;
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">Tag</span>::<span class="ident">Text</span> { <span class="ident">text</span> })
+    <span class="prelude-val">Ok</span>(<span class="ident">Tag</span>::<span class="ident">Text</span> {
+        <span class="ident">text</span>,
+        <span class="ident">start_span</span>,
+        <span class="ident">end_span</span>: <span class="ident">most_recent_span</span>,
+    })
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g., <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g., <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g., <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "html_macro";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
