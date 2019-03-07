@@ -24,6 +24,8 @@ fn main () {
 You should always get the same spacing (or lack there of) between text and other elements as you would
 if you were working in a regular old `.html` file.
 
+We'll preserve newline characters so that `white-space: pre-wrap` etc will work as expected.
+
 When it comes to interpolated variables, we base spacing on the spacing outside of the braces, not the
 inside.
 
@@ -40,19 +42,8 @@ fn main () {
     html! { <div> {hello} </div> }; // <div> hello </div>
 
     html! { <div>{hello} </div> }; // <div>hello </div>
-    html! { <div> {hello}</div> }; // <div> hello</div>
+    html! { <div>   {hello}</div> }; // <div>   hello</div>
 }
-```
-
-## More Examples
-
-Here are a bunch of examples showing you what happens when you try and mix
-text nodes / variables / elements.
-
-```rust
-// Imported into book from crates/html-macro-test/src/text.rs
-
-{{ #include ../../../../crates/html-macro-test/src/text.rs }}
 ```
 
 [Text]: https://developer.mozilla.org/en-US/docs/Web/API/Text

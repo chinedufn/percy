@@ -237,9 +237,8 @@ fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
             most_recent_span = Some(tt.span());
         }
 
-        // Insert necessary space in between the tokens in this text node that we're building.
-        // In the real browser DOM there's no difference between one space and many,
-        // so we just insert one.
+        // TODO: Properly handle whitespace and new lines
+        // https://github.com/chinedufn/percy/pull/97#discussion_r263039215
         if idx != 0 {
             if let Some(most_recent_span) = most_recent_span {
                 let current_span_start = tt.span().start();
