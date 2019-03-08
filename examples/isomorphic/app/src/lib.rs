@@ -3,17 +3,17 @@
 #[macro_use]
 extern crate serde_derive;
 
+pub use crate::state::*;
+pub use crate::store::*;
+use crate::views::*;
 use router_rs::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use virtual_dom_rs::prelude::*;
 pub use virtual_dom_rs::VirtualNode;
-mod store;
-pub use crate::state::*;
-pub use crate::store::*;
-use crate::views::*;
 
 mod state;
+mod store;
 mod views;
 
 pub struct App {

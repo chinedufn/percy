@@ -5,24 +5,36 @@ use std::ops::Deref;
 
 pub struct Store {
     state: StateWrapper,
+    after_route: Option<Box<Fn(&str) -> ()>>,
 }
 
 impl Store {
     pub fn new(state: State) -> Store {
         Store {
             state: StateWrapper(state),
+            after_route: None,
         }
     }
 
     pub fn msg(&mut self, msg: &Msg) {
         match msg {
-            Msg::Path(path) => self.state.msg(msg),
+            Msg::Path(path) => {
+                self.state.msg(msg);
+
+                if let Some(after_route) = &self.after_route {
+                    after_route(path.as_str());
+                }
+            }
             _ => self.state.msg(msg),
         }
     }
 
     pub fn subscribe(&mut self, callback: Box<Fn() -> ()>) {
         self.state.subscribe(callback);
+    }
+
+    pub fn set_after_route(&mut self, after_route: Box<Fn(&str) -> ()>) {
+        self.after_route = Some(after_route);
     }
 }
 
