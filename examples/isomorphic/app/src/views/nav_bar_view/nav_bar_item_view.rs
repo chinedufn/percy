@@ -1,4 +1,5 @@
 use crate::store::Store;
+use crate::Msg;
 use css_rs_macro::css;
 use std::cell::RefCell;
 use std::rc::Rc;

@@ -27,19 +27,24 @@ pub fn serve() {
         let app = actix_web::App::new();
         let app = app.resource("/", |r| r.f(index));
 
-        // Development
-        #[cfg(debug_assertions)]
-        let app = app.handler("/", fs::StaticFiles::new("./build").unwrap());
+        let build_dir = {
+            // Development
+            #[cfg(debug_assertions)]
+            {
+                format!("{}/../client/build", env!("CARGO_MANIFEST_DIR"))
+            }
 
-        // Production
-        #[cfg(not(debug_assertions))]
-        let app = app.handler("/", fs::StaticFiles::new("./dist").unwrap());
+            #[cfg(not(debug_assertions))]
+            {
+                // Production
+                format!("{}/../client/dist", env!("CARGO_MANIFEST_DIR"))
+            }
+        };
+
+        let app = app.handler("/", fs::StaticFiles::new(&build_dir).unwrap());
 
         app
     });
-
-    let path = std::env::current_dir().unwrap();
-    println!("The current directory is {}", path.display());
 
     let server = server.bind("0.0.0.0:7878").unwrap();
 
