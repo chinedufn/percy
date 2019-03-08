@@ -48,7 +48,6 @@ impl Client {
         }));
 
         app.store.borrow_mut().set_after_route(Box::new(|new_path| {
-            web_sys::console::log_1(&format!("{}", new_path).into());
             web_sys::window()
                 .unwrap()
                 .history()
