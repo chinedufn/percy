@@ -176,7 +176,7 @@ fn main () {
 &lt;head&gt;
     &lt;meta charset=&quot;UTF-8&quot;&gt;
     &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
-    &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;app.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;/static/app.css&quot;/&gt;
     &lt;title&gt;Rust Web App&lt;/title&gt;
 &lt;/head&gt;
 &lt;body style='margin: 0; padding: 0; width: 100%; height: 100%;'&gt;
@@ -184,9 +184,9 @@ fn main () {
       #HTML_INSERTED_HERE_BY_SERVER#
   &lt;/div&gt;
 
-  &lt;script src='./isomorphic_client.js'&gt;&lt;/script&gt;
+  &lt;script src='./static/isomorphic_client.js'&gt;&lt;/script&gt;
   &lt;script&gt;
-    window.wasm_bindgen(`/isomorphic_client_bg.wasm`).then(main)
+    window.wasm_bindgen(`/static/isomorphic_client_bg.wasm`).then(main)
 
     let client
     let updateScheduled = false
@@ -232,11 +232,14 @@ const HTML_PLACEHOLDER: &amp;str = &quot;#HTML_INSERTED_HERE_BY_SERVER#&quot;;
 const STATE_PLACEHOLDER: &amp;str = &quot;#INITIAL_STATE_JSON#&quot;;
 
 fn index(req: &amp;HttpRequest) -&gt; impl Responder {
+    let path = &quot;/&quot;.to_string() + req.match_info().get(&quot;path&quot;).unwrap_or(&quot;&quot;);
+
     let app = App::new(
         req.query()
             .get(&quot;init&quot;)
             .map(|string| string.parse().expect(&quot;bad param&quot;))
             .unwrap_or(1001),
+        path,
     );
     let state = app.store.borrow();
 
@@ -248,26 +251,28 @@ fn index(req: &amp;HttpRequest) -&gt; impl Responder {
 }
 
 pub fn serve() {
-    let server = actix_web::server::new(|| {
+    let build_dir = {
+        // Development
+        #[cfg(debug_assertions)]
+        {
+            format!(&quot;{}/../client/build&quot;, env!(&quot;CARGO_MANIFEST_DIR&quot;))
+        }
+
+        #[cfg(not(debug_assertions))]
+        {
+            // Production
+            format!(&quot;{}/../client/dist&quot;, env!(&quot;CARGO_MANIFEST_DIR&quot;))
+        }
+    };
+
+    let server = actix_web::server::new(move || {
         let app = actix_web::App::new();
-        let app = app.resource(&quot;/&quot;, |r| r.f(index));
-
-        let build_dir = {
-            // Development
-            #[cfg(debug_assertions)]
-            {
-                format!(&quot;{}/../client/build&quot;, env!(&quot;CARGO_MANIFEST_DIR&quot;))
-            }
-
-            #[cfg(not(debug_assertions))]
-            {
-                // Production
-                format!(&quot;{}/../client/dist&quot;, env!(&quot;CARGO_MANIFEST_DIR&quot;))
-            }
-        };
-
-        let app = app.handler(&quot;/&quot;, fs::StaticFiles::new(&amp;build_dir).unwrap());
-
+        let app = app
+            .resource(&quot;/&quot;, |r| r.f(index))
+            // Serve wasm and js files and any other assets
+            .handler(&quot;/static&quot;, fs::StaticFiles::new(&amp;build_dir).unwrap())
+            // All routes go back to our single index route since this is a single page app
+            .resource(&quot;/{path}&quot;, |r| r.f(index));
         app
     });
 
