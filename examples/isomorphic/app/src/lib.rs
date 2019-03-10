@@ -22,9 +22,11 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(count: u32) -> App {
+    pub fn new(count: u32, path: String) -> App {
         let state = State::new(count);
         let store = Rc::new(RefCell::new(Store::new(state)));
+
+        store.borrow_mut().msg(&Msg::Path(path));
 
         let router = make_router(Rc::clone(&store));
 

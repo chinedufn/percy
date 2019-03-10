@@ -7,11 +7,14 @@ const HTML_PLACEHOLDER: &str = "#HTML_INSERTED_HERE_BY_SERVER#";
 const STATE_PLACEHOLDER: &str = "#INITIAL_STATE_JSON#";
 
 fn index(req: &HttpRequest) -> impl Responder {
+    let path = "/".to_string() + req.match_info().get("path").unwrap_or("");
+
     let app = App::new(
         req.query()
             .get("init")
             .map(|string| string.parse().expect("bad param"))
             .unwrap_or(1001),
+        path,
     );
     let state = app.store.borrow();
 
@@ -23,26 +26,28 @@ fn index(req: &HttpRequest) -> impl Responder {
 }
 
 pub fn serve() {
-    let server = actix_web::server::new(|| {
+    let build_dir = {
+        // Development
+        #[cfg(debug_assertions)]
+        {
+            format!("{}/../client/build", env!("CARGO_MANIFEST_DIR"))
+        }
+
+        #[cfg(not(debug_assertions))]
+        {
+            // Production
+            format!("{}/../client/dist", env!("CARGO_MANIFEST_DIR"))
+        }
+    };
+
+    let server = actix_web::server::new(move || {
         let app = actix_web::App::new();
-        let app = app.resource("/", |r| r.f(index));
-
-        let build_dir = {
-            // Development
-            #[cfg(debug_assertions)]
-            {
-                format!("{}/../client/build", env!("CARGO_MANIFEST_DIR"))
-            }
-
-            #[cfg(not(debug_assertions))]
-            {
-                // Production
-                format!("{}/../client/dist", env!("CARGO_MANIFEST_DIR"))
-            }
-        };
-
-        let app = app.handler("/", fs::StaticFiles::new(&build_dir).unwrap());
-
+        let app = app
+            .resource("/", |r| r.f(index))
+            // Serve wasm and js files and any other assets
+            .handler("/static", fs::StaticFiles::new(&build_dir).unwrap())
+            // All routes go back to our single index route since this is a single page app
+            .resource("/{path}", |r| r.f(index));
         app
     });
 
