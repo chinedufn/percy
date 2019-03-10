@@ -34,7 +34,7 @@ impl View for HomeView {
 
           { nav_bar }
 
-          <span> The button has been clicked: { click_component } times!</span>
+          <span> The button has been clicked: { click_component } times! </span>
           <button onclick=move|_: u8| { store.borrow_mut().msg(&Msg::Click) }>
             Click me!
           </button>

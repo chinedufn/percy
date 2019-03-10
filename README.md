@@ -50,12 +50,19 @@ Here's a quick-and-easy working example of client side rendering that you can tr
 
 First, Create a new project using
 
-```
+```sh
 cargo new client-side-web-app --lib
 cd client-side-web-app
 ```
 
-Add the following files to your project. Here's the end directory structure:
+Add the following files to your project.
+
+```sh
+touch build.sh
+touch index.html
+```
+
+Here's the end directory structure:
 
 ```sh
 .
@@ -93,34 +100,44 @@ use web_sys;
 use css_rs_macro::css;
 use virtual_dom_rs::prelude::*;
 
-#[wasm_bindgen(start)]
-pub fn start() {
-    let start_view = html! { <div> Hello </div> };
+#[wasm_bindgen]
+struct App {
+  dom_updater: DomUpdater
+}
 
-    let window = web_sys::window().unwrap();
-    let document = window.document().unwrap();
-    let body = document.body().unwrap();
+#[wasm_bindgen]
+impl App {
+    #[wasm_bindgen(constructor)]
+    pub fn new () -> App {
+        let start_view = html! { <div> Hello </div> };
 
-    let mut dom_updater = DomUpdater::new_append_to_mount(start_view, &body);
+        let window = web_sys::window().unwrap();
+        let document = window.document().unwrap();
+        let body = document.body().unwrap();
 
-    let greetings = "Hello, World!";
+        let mut dom_updater = DomUpdater::new_append_to_mount(start_view, &body);
 
-    let end_view = html! {
-       <div class="big blue">
-          <strong>{ greetings }</strong>
+        let greetings = "Hello, World!";
 
-          <button
-            class=MY_COMPONENT_CSS
-            onclick=|_event: web_sys::MouseEvent| {
-               web_sys::console::log_1(&"Button Clicked!".into());
-            }
-          >
-            Click me and check your console
-          </button>
-       </div>
-    };
+        let end_view = html! {
+           <div class="big blue">
+              <strong>{ greetings }</strong>
 
-    dom_updater.update(end_view);
+              <button
+                class=MY_COMPONENT_CSS
+                onclick=|_event: web_sys::MouseEvent| {
+                   web_sys::console::log_1(&"Button Clicked!".into());
+                }
+              >
+                Click me and check your console
+              </button>
+           </div>
+        };
+
+        dom_updater.update(end_view);
+
+        App { dom_updater }
+    }
 }
 
 static MY_COMPONENT_CSS: &'static str = css!{r#"
@@ -182,7 +199,12 @@ features = [
     <body style='margin: 0; padding: 0; width: 100%; height: 100%;'>
         <script src='/browser.js'></script>
         <script>
-            window.wasm_bindgen(`/browser_bg.wasm`).then(() => {})
+            window.wasm_bindgen(`/browser_bg.wasm`).then(() => {
+                const { App } = window.wasm_bindgen
+                new App()
+            })
+        </script>
+        <script>
         </script>
     </body>
 </html>
