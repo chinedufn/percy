@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="app.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app.css"/>
     <title>Rust Web App</title>
 </head>
 <body style='margin: 0; padding: 0; width: 100%; height: 100%;'>
@@ -11,9 +11,9 @@
       #HTML_INSERTED_HERE_BY_SERVER#
   </div>
 
-  <script src='./isomorphic_client.js'></script>
+  <script src='./static/isomorphic_client.js'></script>
   <script>
-    window.wasm_bindgen(`/isomorphic_client_bg.wasm`).then(main)
+    window.wasm_bindgen(`/static/isomorphic_client_bg.wasm`).then(main)
 
     let client
     let updateScheduled = false

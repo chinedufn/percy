@@ -1,8 +1,8 @@
 //! A router implementation geared towards front-end web apps
 
 #![feature(proc_macro_hygiene)]
-mod provided;
 #[deny(missing_docs)]
+mod provided;
 mod route;
 mod router;
 
