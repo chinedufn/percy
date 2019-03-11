@@ -204,8 +204,6 @@ features = [
                 new App()
             })
         </script>
-        <script>
-        </script>
     </body>
 </html>
 ```
