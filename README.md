@@ -96,6 +96,7 @@ cp index.html public/
 
 use wasm_bindgen::prelude::*;
 use web_sys;
+use web_sys::MouseEvent;
 
 use css_rs_macro::css;
 use virtual_dom_rs::prelude::*;
@@ -120,15 +121,18 @@ impl App {
         let greetings = "Hello, World!";
 
         let end_view = html! {
+           // Use regular Rust comments within your html
            <div class="big blue">
+              /* Interpolate values using braces */
               <strong>{ greetings }</strong>
 
               <button
                 class=MY_COMPONENT_CSS
-                onclick=|_event: web_sys::MouseEvent| {
+                onclick=|_event: MouseEvent| {
                    web_sys::console::log_1(&"Button Clicked!".into());
                 }
               >
+                // No need to wrap text in quotation marks (:
                 Click me and check your console
               </button>
            </div>
