@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn click_msg() {
-        let app = App::new(5);
+        let app = App::new(5, "/".to_string());
 
         assert_eq!(app.store.borrow().click_count(), 5);
         app.store.borrow_mut().msg(&Msg::Click);
