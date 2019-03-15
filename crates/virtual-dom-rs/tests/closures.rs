@@ -1,5 +1,9 @@
 //! Ensure that our DomUpdater maintains Rc's to closures so that they work even
 //! after dropping virtual dom nodes.
+//!
+//! To run all tests in this file:
+//!
+//! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test closures
 
 #![feature(proc_macro_hygiene)]
 
@@ -84,6 +88,18 @@ fn closure_not_dropped() {
         1
     );
 }
+
+// We're just making sure that things compile - other tests give us confidence that the closure
+// will work just fine.
+//
+// https://github.com/chinedufn/percy/issues/81
+//
+//#[wasm_bindgen_test]
+//fn closure_with_no_params_compiles() {
+//    let _making_sure_this_works = html! {
+//        <div onclick=|| {}></div>
+//    };
+//}
 
 fn make_input_component(text_clone: Rc<RefCell<String>>) -> VirtualNode {
     html! {

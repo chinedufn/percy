@@ -1,3 +1,9 @@
+//! Tests for our html! procedural macro
+//!
+//! To run all tests in this library:
+//!
+//! cargo test --color=always --package html-macro-test --lib "" -- --nocapture
+
 #![feature(proc_macro_hygiene)]
 
 use html_macro::html;
