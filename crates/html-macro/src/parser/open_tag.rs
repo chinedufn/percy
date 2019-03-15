@@ -29,12 +29,15 @@ impl HtmlParser {
         for attr in attrs.iter() {
             let key = format!("{}", attr.key);
             let value = &attr.value;
+
             match value {
                 Expr::Closure(closure) => {
                     // TODO: Use this to decide Box<FnMut(_, _, _, ...)
                     // After we merge the DomUpdater
                     let _arg_count = closure.inputs.len();
 
+                    // NOTE: Closures don't work on non wasm32 targets so we only add
+                    // events on wasm32 targets.
                     let add_closure = quote! {
                         #[cfg(target_arch = "wasm32")]
                         {
