@@ -387,6 +387,19 @@ inside.</p>
     html! { &lt;div&gt;   {hello}&lt;/div&gt; }; // &lt;div&gt;   hello&lt;/div&gt;
 }
 </code></pre></pre>
+<a class="header" href="print.html#preserving-white-space" id="preserving-white-space"><h2>Preserving white-space</h2></a>
+<p>Certain CSS styles such as <code>white-space: pre-wrap</code> will preserve all space and new lines within text.</p>
+<p>The <code>html-macro</code> will treat all sequences of whitespace as a single whitespace, so in cases that you don't want that you'll need to
+use a text variable for your text.</p>
+<p>Fortunately this should be incredibly uncommon for almost all use cases.</p>
+<pre><pre class="playpen"><code class="language-rust">fn main () {
+    let text = r#&quot;This needs
+it's whitespace perfectly
+      preserved&quot;#;
+
+    html! { &lt;span style=&quot;white-space: pre-wrap&quot;&gt;{ text }&lt;/span&gt; };
+}
+</code></pre></pre>
 <a class="header" href="print.html#virtual-dom" id="virtual-dom"><h1>Virtual DOM</h1></a>
 <p>At the heart of the <code>Percy</code> toolkit is <code>virtual-dom-rs</code>, a crate that provides a virtual dom
 implementation that allows you to write functional front-end applications.</p>
@@ -463,16 +476,15 @@ mod tests {
 
         let water_view = water_bottle_view(0.2587);
 
-        // FIXME: Change this back to one after handling our whitespace issue
         assert_eq!(
             water_view
                 .as_velement_ref()
                 .expect(&quot;Not an element node&quot;)
-                .children[1]
+                .children[0]
                 .as_vtext_ref()
                 .expect(&quot;Not a text node&quot;)
                 .text,
-            &quot;Please fill me up :( I am only 0.2587 percent full :(&quot;
+            &quot; Please fill me up :( I am only 0.2587 percent full :( &quot;
         )
     }
 }
