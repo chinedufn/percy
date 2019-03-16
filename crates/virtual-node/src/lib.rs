@@ -174,6 +174,37 @@ impl VirtualNode {
             VirtualNode::Element(element_node) => element_node.create_element_node().into(),
         }
     }
+
+    /// Used by html-macro to insert space before text that is inside of a block that came after
+    /// an open tag.
+    ///
+    /// html! { <div> {world}</div> }
+    ///
+    /// So that we end up with <div> world</div> when we're finished parsing.
+    pub fn insert_space_before_text(&mut self) {
+        match self {
+            VirtualNode::Text(text_node) => {
+                text_node.text = " ".to_string() + &text_node.text;
+            }
+            _ => {}
+        }
+    }
+
+    /// Used by html-macro to insert space after braced text if we know that the next block is
+    /// another block or a closing tag.
+    ///
+    /// html! { <div>{Hello} {world}</div> } -> <div>Hello world</div>
+    /// html! { <div>{Hello} </div> } -> <div>Hello </div>
+    ///
+    /// So that we end up with <div>Hello world</div> when we're finished parsing.
+    pub fn insert_space_after_text(&mut self) {
+        match self {
+            VirtualNode::Text(text_node) => {
+                text_node.text += " ";
+            }
+            _ => {}
+        }
+    }
 }
 
 impl VElement {
@@ -353,6 +384,18 @@ fn create_unique_identifier() -> u32 {
 ///
 /// nodes can be a String .. VirtualNode .. Vec<VirtualNode> ... etc
 pub struct IterableNodes(Vec<VirtualNode>);
+
+impl IterableNodes {
+    /// Retrieve the first node mutably
+    pub fn first(&mut self) -> &mut VirtualNode {
+        self.0.first_mut().unwrap()
+    }
+
+    /// Retrieve the last node mutably
+    pub fn last(&mut self) -> &mut VirtualNode {
+        self.0.last_mut().unwrap()
+    }
+}
 
 impl IntoIterator for IterableNodes {
     type Item = VirtualNode;

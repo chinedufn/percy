@@ -181,42 +181,24 @@ impl HtmlParser {
     /// time we call this our node will get a different name.
     fn new_virtual_node_ident(&mut self, span: Span) -> Ident {
         let node_name = format!("node_{}", self.current_node_idx);
+
         let node_ident = Ident::new(node_name.as_str(), span);
 
+        // FIXME: before merge.. -> Increment before creating the new node, not after.
+        // This way the current virtual node ident won't need to do strange subtraction
         self.current_node_idx += 1;
 
         node_ident
     }
 
-    /// Push tokens that will insert a VirtualNode::text(" ") into our TokenStream
-    /// that we will pass back to the compiler.
-    ///
-    /// It will be assigned to the current parent node (whatever the last Tag::Open was)
-    ///
-    /// FIXME: Stop doing this! Instead of inserting text nodes just check how much white space
-    /// is between the block and the tag before it as well as the block and the tag after it.
-    /// Then, insert quote! tokens that take a mutable reference to the first element in the
-    /// iterable nodes and adds spacing / new lines before it if it is a VText variant.
-    /// Then take a mutable reference to the last element in the iterable nodes and add
-    /// spacing after it if it is a VText variant. Add methods to IterableNodes to easily
-    /// get an optional reference to the first or last element.
-    fn push_virtual_text_space_tokens(&mut self, span: Span) {
-        let node_idx = self.current_node_idx;
+    /// Get the Ident for the current (last created) virtual node, without incrementing
+    /// the node index.
+    fn current_virtual_node_ident(&self, span: Span) -> Ident {
+        // FIXME: before merge.. -> Increment before creating the new node, not after.
+        // This way the current virtual node ident won't need to do strange subtraction
+        let node_name = format!("node_{}", self.current_node_idx - 1);
 
-        let node_ident = self.new_virtual_node_ident(span);
-
-        let space = quote! {
-            let #node_ident: IterableNodes = VirtualNode::text(" ").into();
-        };
-        self.push_tokens(space);
-
-        let parent_idx = *&self.parent_stack[self.parent_stack.len() - 1].0;
-
-        self.parent_to_children
-            .get_mut(&parent_idx)
-            .expect("Parent of this text node")
-            .push(node_idx);
-        self.node_order.push(node_idx);
+        Ident::new(node_name.as_str(), span)
     }
 
     /// Generate virtual node tokens for a statement that came from in between braces
@@ -230,7 +212,7 @@ impl HtmlParser {
         let node_ident = self.new_virtual_node_ident(stmt.span());
 
         let nodes = quote! {
-            let #node_ident: IterableNodes = #stmt.into();
+            let mut #node_ident: IterableNodes = #stmt.into();
         };
         self.push_tokens(nodes);
 
@@ -238,7 +220,7 @@ impl HtmlParser {
 
         self.parent_to_children
             .get_mut(&parent_idx)
-            .expect("Parent of this text node")
+            .expect("Parent of these iterable nodes")
             .push(node_idx);
         self.node_order.push(node_idx);
     }

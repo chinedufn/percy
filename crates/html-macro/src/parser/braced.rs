@@ -13,9 +13,30 @@ impl HtmlParser {
         brace_span: &Span,
         next_tag: Option<&Tag>,
     ) {
+        // We'll check to see if there is a space between this block and the previous open
+        // tag's closing brace.
+        //
+        // If so we'll then check if the node in this block is a text node. If it is we'll
+        // insert a single white space before it.
+        //
+        // let some_var = "hello"
+        // let another_var = "world";
+        //
+        // html! { <span>{some_var}</span> }  -> would not get a " " inserted
+        //
+        // html! { <span> {some_var}</span> } -> would get a " " inserted
+        let mut insert_whitespace_before_text = false;
+        if let Some(open_tag_end) = self.recent_span_locations.most_recent_open_tag_end.as_ref() {
+            if self.last_tag_kind == Some(TagKind::Open)
+                && self.separated_by_whitespace(open_tag_end, brace_span)
+            {
+                insert_whitespace_before_text = true;
+            }
+        }
+
         // If
-        //   1. The next tag is a closing bracket or another brace
-        //   2. There is space between this brace and that next tag
+        //   1. The next tag is a closing tag or another braced block
+        //   2. There is space between this brace and that next tag / braced block
         //
         // Then
         //   We'll insert some spacing after this brace.
@@ -28,7 +49,7 @@ impl HtmlParser {
         //
         // html! { <div>{ This Brace }{ Space WILL NOT be inserted }</div>
         //   -> <div>This BraceSpace WILL NOT be inserted</div>
-        let should_insert_space_after = match next_tag {
+        let insert_whitespace_after_text = match next_tag {
             Some(Tag::Close {
                 first_angle_bracket_span,
                 ..
@@ -52,28 +73,6 @@ impl HtmlParser {
                 };
                 self.push_tokens(node);
             } else {
-                // We'll check to see if there is a space between this block and the previous open
-                // tag's closing brace.
-                //
-                // If so we'll insert a VirtualNode::text(" ") just in case the block contains
-                // a text element. This way there will be space before the text.
-                //
-                // let some_var = "hello"
-                // let another_var = "world";
-                //
-                // html! { <div>{some_var}</div> }  -> would not get a " " inserted
-                //
-                // html! { <div> {some_var}</div> } -> would get a " " inserted
-                if let Some(open_tag_end) =
-                    self.recent_span_locations.most_recent_open_tag_end.as_ref()
-                {
-                    if self.last_tag_kind == Some(TagKind::Open)
-                        && self.separated_by_whitespace(open_tag_end, brace_span)
-                    {
-                        self.push_virtual_text_space_tokens(stmt.span());
-                    }
-                }
-
                 // Here we handle a block being a descendant within some html! call.
                 //
                 // The descendant should implement Into<IterableNodes>
@@ -81,8 +80,24 @@ impl HtmlParser {
                 // html { <div> { some_node } </div> }
                 self.push_iterable_nodes(stmt);
 
-                if should_insert_space_after {
-                    self.push_virtual_text_space_tokens(stmt.span())
+                if insert_whitespace_before_text {
+                    let node = self.current_virtual_node_ident(stmt.span());
+
+                    let insert_whitespace = quote! {
+                        #node.first().insert_space_before_text();
+                    };
+
+                    self.push_tokens(insert_whitespace);
+                }
+
+                if insert_whitespace_after_text {
+                    let node = self.current_virtual_node_ident(stmt.span());
+
+                    let insert_whitespace = quote! {
+                        #node.last().insert_space_after_text();
+                    };
+
+                    self.push_tokens(insert_whitespace);
                 }
             }
         });

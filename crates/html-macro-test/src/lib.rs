@@ -6,6 +6,8 @@
 
 #![feature(proc_macro_hygiene)]
 
+// FIXME: Deny warnings
+
 use html_macro::html;
 use std::collections::HashMap;
 use virtual_node::{IterableNodes, VElement, VirtualNode};
@@ -123,11 +125,8 @@ fn nested_macro() {
 
     let mut expected = VElement::new("div");
     expected.children = vec![
-        VirtualNode::text(" "),
         VirtualNode::element("span"),
-        VirtualNode::text(" "),
         VirtualNode::element("b"),
-        VirtualNode::text(" "),
     ];
 
     HtmlMacroTest {
@@ -167,7 +166,6 @@ fn text_next_to_block() {
     expected.children = vec![
         VirtualNode::text(" A bit of text "),
         VirtualNode::element("ul"),
-        VirtualNode::text(" "),
     ];
 
     HtmlMacroTest {
@@ -203,10 +201,8 @@ fn vec_of_nodes() {
 
     let mut expected = VElement::new("div");
     expected.children = vec![
-        VirtualNode::text(" "),
         VirtualNode::element("div"),
         VirtualNode::element("strong"),
-        VirtualNode::text(" "),
     ];
 
     HtmlMacroTest {
