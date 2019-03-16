@@ -12,6 +12,7 @@ edition = "2018"
 [dependencies]
 js-sys = "0.3"
 wasm-bindgen = {version = "0.2.33", features = ["default", "nightly"]}
+html-validation = {path = "../html-validation", version = "0.1.0"}
 lazy_static = "1.0"
 
 [dependencies.web-sys]

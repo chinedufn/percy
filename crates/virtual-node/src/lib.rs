@@ -20,8 +20,6 @@ use web_sys::{self, Element, EventTarget, Node, Text};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 
-use lazy_static::lazy_static;
-
 use std::iter::FromIterator;
 use std::ops::Deref;
 use std::option::Iter;
@@ -31,15 +29,9 @@ use std::sync::Mutex;
 // look them up by their unique id.
 // When the DomUpdater sees that the element no longer exists it will drop all of it's
 // Rc'd Closures for those events.
+use lazy_static::lazy_static;
 lazy_static! {
     static ref ELEM_UNIQUE_ID: Mutex<u32> = Mutex::new(0);
-    pub static ref SELF_CLOSING_TAGS: HashSet<&'static str> = [
-        "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
-        "keygen", "source",
-    ]
-    .iter()
-    .cloned()
-    .collect();
 }
 
 /// When building your views you'll typically use the `html!` macro to generate
@@ -218,11 +210,6 @@ impl VElement {
             events: Events(HashMap::new()),
             children: vec![],
         }
-    }
-
-    /// Whether or not this is a self closing tag such as <br> or <img />
-    pub fn is_self_closing(&self) -> bool {
-        SELF_CLOSING_TAGS.contains(self.tag.as_str())
     }
 
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
@@ -525,7 +512,7 @@ impl fmt::Display for VElement {
             write!(f, "{}", child.to_string())?;
         }
 
-        if !self.is_self_closing() {
+        if !html_validation::is_self_closing(&self.tag) {
             write!(f, "</{}>", self.tag)?;
         }
 

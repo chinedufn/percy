@@ -241,7 +241,6 @@ struct RecentSpanLocations {
     most_recent_block_start: Option<Span>,
 }
 
-// TODO: Cache this as a HashSet inside of our parser
 fn is_self_closing(tag: &str) -> bool {
-    virtual_node::SELF_CLOSING_TAGS.contains(tag)
+    html_validation::is_self_closing(tag)
 }
