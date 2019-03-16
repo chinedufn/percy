@@ -6,7 +6,8 @@
 
 #![feature(proc_macro_hygiene)]
 
-// FIXME: Deny warnings
+// TODO: Deny warnings to ensure that the macro isn't creating any warnings.
+// #![deny(warnings)]
 
 use html_macro::html;
 use std::collections::HashMap;
