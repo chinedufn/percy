@@ -261,16 +261,5 @@ struct RecentSpanLocations {
 
 // TODO: Cache this as a HashSet inside of our parser
 fn is_self_closing(tag: &str) -> bool {
-    let whitelist = [
-        "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
-        "keygen", "source",
-    ];
-
-    for whitelisted in whitelist.iter() {
-        if &tag == whitelisted {
-            return true;
-        }
-    }
-
-    return false;
+    virtual_node::SELF_CLOSING_TAGS.contains(tag)
 }
