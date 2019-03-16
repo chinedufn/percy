@@ -33,7 +33,7 @@ use std::sync::Mutex;
 // Rc'd Closures for those events.
 lazy_static! {
     static ref ELEM_UNIQUE_ID: Mutex<u32> = Mutex::new(0);
-    static ref SELF_CLOSING_TAGS: HashSet<&'static str> = [
+    pub static ref SELF_CLOSING_TAGS: HashSet<&'static str> = [
         "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
         "keygen", "source",
     ]
