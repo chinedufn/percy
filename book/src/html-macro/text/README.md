@@ -47,3 +47,22 @@ fn main () {
 ```
 
 [Text]: https://developer.mozilla.org/en-US/docs/Web/API/Text
+
+## Preserving white-space
+
+Certain CSS styles such as `white-space: pre-wrap` will preserve all space and new lines within text.
+
+The `html-macro` will treat all sequences of whitespace as a single whitespace, so in cases that you don't want that you'll need to
+use a text variable for your text.
+
+Fortunately this should be incredibly uncommon for almost all use cases.
+
+```rust
+fn main () {
+    let text = r#"This needs
+it's whitespace perfectly
+      preserved"#;
+
+    html! { <span style="white-space: pre-wrap">{ text }</span> };
+}
+```
