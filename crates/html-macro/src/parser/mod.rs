@@ -184,7 +184,7 @@ impl HtmlParser {
 
         let node_ident = Ident::new(node_name.as_str(), span);
 
-        // FIXME: before merge.. -> Increment before creating the new node, not after.
+        // TODO: Increment before creating the new node, not after.
         // This way the current virtual node ident won't need to do strange subtraction
         self.current_node_idx += 1;
 
@@ -194,7 +194,7 @@ impl HtmlParser {
     /// Get the Ident for the current (last created) virtual node, without incrementing
     /// the node index.
     fn current_virtual_node_ident(&self, span: Span) -> Ident {
-        // FIXME: before merge.. -> Increment before creating the new node, not after.
+        // TODO: Increment before creating the new node, not after.
         // This way the current virtual node ident won't need to do strange subtraction
         let node_name = format!("node_{}", self.current_node_idx - 1);
 

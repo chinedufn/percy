@@ -57,16 +57,15 @@ mod tests {
 
         let water_view = water_bottle_view(0.2587);
 
-        // FIXME: Change this back to one after handling our whitespace issue
         assert_eq!(
             water_view
                 .as_velement_ref()
                 .expect("Not an element node")
-                .children[1]
+                .children[0]
                 .as_vtext_ref()
                 .expect("Not a text node")
                 .text,
-            "Please fill me up :( I am only 0.2587 percent full :("
+            " Please fill me up :( I am only 0.2587 percent full :( "
         )
     }
 }

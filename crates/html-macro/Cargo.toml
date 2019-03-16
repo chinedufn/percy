@@ -16,4 +16,5 @@ proc-macro = true
 proc-macro2 = { version = "0.4", features = ["span-locations"] }
 quote = "0.6.11"
 syn = { version = "0.15", features = ["full", "extra-traits"] }
-virtual-node = { path = "../../crates/virtual-node" }
+# TODO: Remove this in favor of crates/html-validation
+virtual-node = { path = "../virtual-node", version = "0.2.3" }

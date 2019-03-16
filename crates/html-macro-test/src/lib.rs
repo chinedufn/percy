@@ -124,10 +124,7 @@ fn nested_macro() {
     let child_2 = html! { <b></b> };
 
     let mut expected = VElement::new("div");
-    expected.children = vec![
-        VirtualNode::element("span"),
-        VirtualNode::element("b"),
-    ];
+    expected.children = vec![VirtualNode::element("span"), VirtualNode::element("b")];
 
     HtmlMacroTest {
         desc: "Nested macros",
@@ -200,10 +197,7 @@ fn vec_of_nodes() {
     let children = vec![html! { <div> </div>}, html! { <strong> </strong>}];
 
     let mut expected = VElement::new("div");
-    expected.children = vec![
-        VirtualNode::element("div"),
-        VirtualNode::element("strong"),
-    ];
+    expected.children = vec![VirtualNode::element("div"), VirtualNode::element("strong")];
 
     HtmlMacroTest {
         desc: "Vec of nodes",
