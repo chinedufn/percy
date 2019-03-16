@@ -13,8 +13,11 @@ Types of changes:
 
 _Here we list notable things that have been merged into the master branch but have not been released yet._
 
-- [fixed] Spacing between elements is done by inserting space before and after existing text nodes instead of creating new ones.
 - ...
+
+## 0.6.7 - Mar 16, 2019
+
+- [fixed] Spacing between elements is done by inserting space before and after existing text nodes instead of creating new ones.
 
 ## 0.6.6 - Mar 6, 2019
 

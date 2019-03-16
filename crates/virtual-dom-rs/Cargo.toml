@@ -1,6 +1,6 @@
 [package]
 name = "virtual-dom-rs"
-version = "0.6.6"
+version = "0.6.7"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A standalone Virtual DOM creation, diffing and patching implementation"
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
