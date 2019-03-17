@@ -29,17 +29,4 @@
 pub use self_closing::is_self_closing;
 
 mod self_closing;
-mod child_validation;
-mod content_kind;
 
-/// Holds just enough information about every type of element in order to power our validation.
-///
-/// For example, in order to know whether or not an anchor tag is an "interactive content"
-/// (from the html spec) we need to know if it has an `href` attribute.
-enum ElementTag<'a> {
-    A(Anchor<'a>)
-}
-
-struct Anchor<'a> {
-    href: Option<&'a str>
-}
