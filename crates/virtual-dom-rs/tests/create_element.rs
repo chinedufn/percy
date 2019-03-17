@@ -1,3 +1,10 @@
+//! Tests that ensure that we create the right DOM element from a VirtualNode
+//!
+//! To run all tests in this file:
+//!
+//! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element
+
+
 #![feature(proc_macro_hygiene)]
 
 extern crate wasm_bindgen_test;
