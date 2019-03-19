@@ -27,6 +27,8 @@
 #![deny(missing_docs)]
 
 pub use self_closing::is_self_closing;
+pub use svg_namespace::is_svg_namespace;
 
 mod self_closing;
+mod svg_namespace;
 
