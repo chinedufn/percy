@@ -94,9 +94,7 @@ lazy_static! {
     .cloned()
     .collect();
 }
-/// Return the namespace of this tag
-/// returns the svg namespace as of now,
-/// any other tags will have a `None` value
+/// Whether or not this tag is part svg elements
 /// ```
 /// use html_validation::is_svg_namespace;
 ///
