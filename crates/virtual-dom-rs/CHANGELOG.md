@@ -13,6 +13,7 @@ Types of changes:
 
 _Here we list notable things that have been merged into the master branch but have not been released yet._
 
+- [added] SVG support [#104](https://github.com/chinedufn/percy/pull/104)
 - ...
 
 ## 0.6.7 - Mar 16, 2019
