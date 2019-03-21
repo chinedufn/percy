@@ -28,6 +28,16 @@ fn nested_divs() {
 }
 
 #[wasm_bindgen_test]
+fn svg_element() {
+    let vdiv = html! { <div><svg xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="50"/>
+            </svg></div> };
+    let div: Element = vdiv.create_dom_node().node.unchecked_into();
+
+    assert_eq!(&div.inner_html(), r#"<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50"></circle></svg>"#);
+}
+
+#[wasm_bindgen_test]
 fn div_with_attributes() {
     let vdiv = html! { <div id="id-here" class="two classes"></div> };
     let div: Element = vdiv.create_dom_node().node.unchecked_into();
