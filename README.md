@@ -40,7 +40,7 @@ For a full example of an isomorphic web app in Rust check out the [isomorphic ex
 The best way to get up to speed is by checking out [The Percy Book](https://chinedufn.github.io/percy/), but here are some
 very basic examples to get your feet wet with.
 
-### Client Side Rendering
+### Quickstart - Getting your feet wet
 
 You can create applications that only have server side rendering, client side rendering, or both!
 
