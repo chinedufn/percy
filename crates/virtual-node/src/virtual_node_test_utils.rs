@@ -1,6 +1,6 @@
 //! A collection of functions that are useful for unit testing your html! views.
 
-use crate::{VElement, VirtualNode};
+use crate::VirtualNode;
 
 impl VirtualNode {
     /// Get a vector of all of the VirtualNode children / grandchildren / etc of
@@ -32,6 +32,7 @@ impl VirtualNode {
         let mut descendants: Vec<&'a VirtualNode> = vec![];
         match self {
             VirtualNode::Text(_) => { /* nothing to do */ }
+            VirtualNode::Comment(_) => { /* nothing to do */ }
             VirtualNode::Element(element_node) => {
                 for child in element_node.children.iter() {
                     get_descendants(&mut descendants, child);
@@ -44,6 +45,7 @@ impl VirtualNode {
             .into_iter()
             .filter(|vn: &&'a VirtualNode| match vn {
                 VirtualNode::Text(_) => false,
+                VirtualNode::Comment(_) => false,
                 VirtualNode::Element(element_node) => match element_node.attrs.get("label") {
                     Some(label) => filter(label),
                     None => false,
@@ -80,6 +82,7 @@ fn get_descendants<'a>(descendants: &mut Vec<&'a VirtualNode>, node: &'a Virtual
     descendants.push(node);
     match node {
         VirtualNode::Text(_) => { /* nothing to do */ }
+        VirtualNode::Comment(_) => { /* nothing to do */ }
         VirtualNode::Element(element_node) => {
             for child in element_node.children.iter() {
                 get_descendants(descendants, child);

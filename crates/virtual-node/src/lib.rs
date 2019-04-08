@@ -15,7 +15,7 @@ use std::rc::Rc;
 
 pub mod virtual_node_test_utils;
 
-use web_sys::{self, Element, EventTarget, Node, Text};
+use web_sys::{self, Element, EventTarget, Node, Text, Comment};
 
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -59,6 +59,12 @@ pub enum VirtualNode {
     /// order to enable custom methods like `create_text_node()` on the
     /// wrapped type.
     Text(VText),
+    /// A comment node (node type `COMMENT_NODE`).
+    ///
+    /// Note: This wraps a `VComment` instead of a plain `String` in
+    /// order to enable custom methods like `create_comment_node()` on the
+    /// wrapped type.
+    Comment(VComment),
 }
 
 #[derive(PartialEq)]
@@ -76,6 +82,11 @@ pub struct VElement {
 
 #[derive(PartialEq)]
 pub struct VText {
+    pub text: String,
+}
+
+#[derive(PartialEq)]
+pub struct VComment {
     pub text: String,
 }
 
@@ -110,6 +121,22 @@ impl VirtualNode {
         S: Into<String>,
     {
         VirtualNode::Text(VText::new(text.into()))
+    }
+
+    /// Create a new virtual comment node with the given text.
+    ///
+    /// These get patched into the DOM using `document.createComment`
+    ///
+    /// ```ignore
+    /// use virtual_dom_rs::VirtualNode;
+    ///
+    /// let comment = VirtualNode::comment("Header");
+    /// ```
+    pub fn comment<S>(text: S) -> Self
+    where
+        S: Into<String>,
+    {
+        VirtualNode::Comment(VComment::new(text.into()))
     }
 
     /// Return a [`VElement`] reference, if this is an [`Element`] variant.
@@ -156,12 +183,37 @@ impl VirtualNode {
         }
     }
 
+    /// Return a [`VComment`] reference, if this is an [`Comment`] variant.
+    ///
+    /// [`VComment`]: struct.VComment.html
+    /// [`Comment`]: enum.VirtualNode.html#variant.Comment
+    pub fn as_vcomment_ref(&self) -> Option<&VComment> {
+        match self {
+            VirtualNode::Comment(ref comment_node) => Some(comment_node),
+            _ => None,
+        }
+    }
+
+    /// Return a mutable [`VComment`] reference, if this is an [`Comment`] variant.
+    ///
+    /// [`VComment`]: struct.VComment.html
+    /// [`Comment`]: enum.VirtualNode.html#variant.Comment
+    pub fn as_vcomment_mut(&mut self) -> Option<&mut VComment> {
+        match self {
+            VirtualNode::Comment(ref mut comment_node) => Some(comment_node),
+            _ => None,
+        }
+    }
+
     /// Create and return a `CreatedNode` instance (containing a DOM `Node`
     /// together with potentially related closures) for this virtual node.
     pub fn create_dom_node(&self) -> CreatedNode<Node> {
         match self {
             VirtualNode::Text(text_node) => {
                 CreatedNode::without_closures(text_node.create_text_node())
+            }
+            VirtualNode::Comment(comment_node) => {
+                CreatedNode::without_closures(comment_node.create_comment_node())
             }
             VirtualNode::Element(element_node) => element_node.create_element_node().into(),
         }
@@ -285,6 +337,11 @@ impl VElement {
 
                     previous_node_was_text = true;
                 }
+                VirtualNode::Comment(comment_node) => {
+                    previous_node_was_text = false;
+                    let node = comment_node.create_comment_node();
+                    element.append_child(&node).unwrap();
+                }
                 VirtualNode::Element(element_node) => {
                     previous_node_was_text = false;
 
@@ -319,6 +376,23 @@ impl VText {
     pub fn create_text_node(&self) -> Text {
         let document = web_sys::window().unwrap().document().unwrap();
         document.create_text_node(&self.text)
+    }
+}
+
+impl VComment {
+    /// Create an new `VComment` instance with the specified text.
+    pub fn new<S>(text: S) -> Self
+    where
+        S: Into<String>,
+    {
+        VComment { text: text.into() }
+    }
+
+    /// Return a `Comment` element from a `VirtualNode`, typically right before adding it
+    /// into the DOM.
+    pub fn create_comment_node(&self) -> Comment {
+        let document = web_sys::window().unwrap().document().unwrap();
+        document.create_comment(&self.text)
     }
 }
 
@@ -428,6 +502,12 @@ impl From<VText> for VirtualNode {
     }
 }
 
+impl From<VComment> for VirtualNode {
+    fn from(other: VComment) -> Self {
+        VirtualNode::Comment(other)
+    }
+}
+
 impl From<VElement> for VirtualNode {
     fn from(other: VElement) -> Self {
         VirtualNode::Element(other)
@@ -481,6 +561,7 @@ impl fmt::Debug for VirtualNode {
         match self {
             VirtualNode::Element(e) => write!(f, "Node::{:?}", e),
             VirtualNode::Text(t) => write!(f, "Node::{:?}", t),
+            VirtualNode::Comment(c) => write!(f, "Node::{:?}", c),
         }
     }
 }
@@ -498,6 +579,12 @@ impl fmt::Debug for VElement {
 impl fmt::Debug for VText {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Text({})", self.text)
+    }
+}
+
+impl fmt::Debug for VComment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Comment({})", self.text)
     }
 }
 
@@ -531,12 +618,20 @@ impl fmt::Display for VText {
     }
 }
 
+// Turn a VComment into an HTML string
+impl fmt::Display for VComment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "<!--{}-->", self.text)
+    }
+}
+
 // Turn a VirtualNode into an HTML string (delegate impl to variants)
 impl fmt::Display for VirtualNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             VirtualNode::Element(element) => write!(f, "{}", element),
             VirtualNode::Text(text) => write!(f, "{}", text),
+            VirtualNode::Comment(comment) => write!(f, "{}", comment),
         }
     }
 }

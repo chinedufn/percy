@@ -62,6 +62,13 @@ fn diff_recursive<'a, 'b>(
             }
         }
 
+        // We're comparing two comment nodes
+        (VirtualNode::Comment(old_comment), VirtualNode::Comment(new_comment)) => {
+            if old_comment != new_comment {
+                patches.push(Patch::ChangeComment(*cur_node_idx, &new_comment));
+            }
+        }
+
         // We're comparing two element nodes
         (VirtualNode::Element(old_element), VirtualNode::Element(new_element)) => {
             let mut add_attributes: HashMap<&str, &str> = HashMap::new();
@@ -132,8 +139,12 @@ fn diff_recursive<'a, 'b>(
                 }
             }
         }
-        (VirtualNode::Text(_), VirtualNode::Element(_))
-        | (VirtualNode::Element(_), VirtualNode::Text(_)) => {
+        (VirtualNode::Text(_), VirtualNode::Element(_)) |
+        (VirtualNode::Text(_), VirtualNode::Comment(_)) |
+        (VirtualNode::Comment(_), VirtualNode::Element(_)) |
+        (VirtualNode::Comment(_), VirtualNode::Text(_)) |
+        (VirtualNode::Element(_), VirtualNode::Text(_)) |
+        (VirtualNode::Element(_), VirtualNode::Comment(_)) => {
             unreachable!("Unequal variant discriminants should already have been handled");
         }
     };

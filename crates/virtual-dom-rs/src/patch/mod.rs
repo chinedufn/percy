@@ -1,7 +1,7 @@
 //! Our Patch enum is intentionally kept in it's own file for easy inclusion into
 //! The Percy Book.
 
-use crate::{VText, VirtualNode};
+use crate::{VText, VComment, VirtualNode};
 use std::collections::HashMap;
 
 mod apply_patches;
@@ -55,6 +55,8 @@ pub enum Patch<'a> {
     RemoveAttributes(NodeIdx, Vec<&'a str>),
     /// Change the text of a Text node.
     ChangeText(NodeIdx, &'a VText),
+    /// Change the text of a Comment node.
+    ChangeComment(NodeIdx, &'a VComment),
 }
 
 type NodeIdx = usize;
@@ -71,6 +73,7 @@ impl<'a> Patch<'a> {
             Patch::AddAttributes(node_idx, _) => *node_idx,
             Patch::RemoveAttributes(node_idx, _) => *node_idx,
             Patch::ChangeText(node_idx, _) => *node_idx,
+            Patch::ChangeComment(node_idx, _) => *node_idx,
         }
     }
 }

@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use crate::dom_updater::ActiveClosures;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{Element, Node, Text};
+use web_sys::{Element, Node, Text, Comment};
 
 /// Apply all of the patches to our old root node in order to create the new root node
 /// that we desire.
@@ -24,6 +24,7 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<Active
 
     let mut element_nodes_to_patch = HashMap::new();
     let mut text_nodes_to_patch = HashMap::new();
+    let mut comment_nodes_to_patch = HashMap::new();
 
     // Closures that were added to the DOM during this patch operation.
     let mut active_closures = HashMap::new();
@@ -34,6 +35,7 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<Active
         &mut nodes_to_find,
         &mut element_nodes_to_patch,
         &mut text_nodes_to_patch,
+        &mut comment_nodes_to_patch,
     );
 
     for patch in patches {
@@ -50,6 +52,11 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<Active
             continue;
         }
 
+        if let Some(comment_node) = comment_nodes_to_patch.get(&patch_node_idx) {
+            apply_comment_patch(&comment_node, &patch)?;
+            continue;
+        }
+
         unreachable!("Getting here means we didn't find the element or next node that we were supposed to patch.")
     }
 
@@ -62,6 +69,7 @@ fn find_nodes(
     nodes_to_find: &mut HashSet<usize>,
     element_nodes_to_patch: &mut HashMap<usize, Element>,
     text_nodes_to_patch: &mut HashMap<usize, Text>,
+    comment_nodes_to_patch: &mut HashMap<usize, Comment>,
 ) {
     if nodes_to_find.len() == 0 {
         return;
@@ -79,6 +87,9 @@ fn find_nodes(
             }
             Node::TEXT_NODE => {
                 text_nodes_to_patch.insert(*cur_node_idx, root_node.unchecked_into());
+            }
+            Node::COMMENT_NODE => {
+                comment_nodes_to_patch.insert(*cur_node_idx, root_node.unchecked_into());
             }
             other => unimplemented!("Unsupported root node type: {}", other),
         }
@@ -98,6 +109,7 @@ fn find_nodes(
                     nodes_to_find,
                     element_nodes_to_patch,
                     text_nodes_to_patch,
+                    comment_nodes_to_patch,
                 );
             }
             Node::TEXT_NODE => {
@@ -112,6 +124,10 @@ fn find_nodes(
                 // then it was a delimiter created by virtual-dom-rs in order to ensure that two
                 // neighboring text nodes did not get merged into one by the browser. So we skip
                 // over this virtual-dom-rs generated comment node.
+                // TODO
+                if nodes_to_find.get(&cur_node_idx).is_some() {
+                    comment_nodes_to_patch.insert(*cur_node_idx, node.unchecked_into());
+                }
             }
             _other => {
                 // Ignoring unsupported child node type
@@ -196,6 +212,9 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
         Patch::ChangeText(_node_idx, _new_node) => {
             unreachable!("Elements should not receive ChangeText patches.")
         }
+        Patch::ChangeComment(_node_idx, _new_node) => {
+            unreachable!("Elements should not receive ChangeComment patches.")
+        }
     }
 }
 
@@ -209,6 +228,23 @@ fn apply_text_patch(node: &Text, patch: &Patch) -> Result<(), JsValue> {
         }
         other => unreachable!(
             "Text nodes should only receive ChangeText or Replace patches, not {:?}.",
+            other,
+        ),
+    };
+
+    Ok(())
+}
+
+fn apply_comment_patch(node: &Comment, patch: &Patch) -> Result<(), JsValue> {
+    match patch {
+        Patch::ChangeComment(_node_idx, new_node) => {
+            node.set_node_value(Some(&new_node.text));
+        }
+        Patch::Replace(_node_idx, new_node) => {
+            node.replace_with_with_node_1(&new_node.create_dom_node().node)?;
+        }
+        other => unreachable!(
+            "Comment nodes should only receive ChangeComment or Replace patches, not {:?}.",
             other,
         ),
     };
