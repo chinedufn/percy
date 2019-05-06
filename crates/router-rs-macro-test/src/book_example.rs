@@ -6,7 +6,7 @@ use router_rs::prelude::*;
 use std::str::FromStr;
 use virtual_dom_rs::prelude::*;
 
-#[route(path = "/users/:id/favorite-meal/:meal")]
+#[route(path = "/users/:id/favorite-meal/:meal", on_visit = download_some_data)]
 fn route_data_and_param(id: u16, state: Provided<SomeState>, meal: Meal) -> VirtualNode {
     let id = format!("{}", id);
     let meal = format!("{:#?}", meal);
@@ -14,6 +14,11 @@ fn route_data_and_param(id: u16, state: Provided<SomeState>, meal: Meal) -> Virt
     html! {
         <div> User { id } loves { meal } </div>
     }
+}
+
+fn download_some_data (id: u16, state: Provided<SomeState>, meal: Meal) {
+    // Check state to see if we've already downloaded data ...
+    // If not - download the data that we need
 }
 
 #[test]
