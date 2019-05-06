@@ -15,6 +15,10 @@ _Here we list notable things that have been merged into the master branch but ha
 
 - ...
 
+## 0.2.1 - May 6, 2019
+
+- [added] Introduced `#[route(on_visit = some_func_name)] in [#114](https://github.com/chinedufn/percy/pull/114)
+
 ## 0.2.0 - Mar 4, 2019
 
 - [added] Introduced the `#[route(path = "/...")]` macro in [#95](https://github.com/chinedufn/percy/pull/95)
