@@ -67,6 +67,19 @@
 <span id="67">67</span>
 <span id="68">68</span>
 <span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Powers routing for frontend web applications</span>
 
@@ -109,6 +122,11 @@
     <span class="kw">fn</span> <span class="ident">matches</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">incoming_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">route</span>().<span class="ident">matches</span>(<span class="ident">incoming_path</span>)
     }
+
+    <span class="doccomment">/// What to do when this route is visited.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ex: load some data for the route based on application date.</span>
+    <span class="kw">fn</span> <span class="ident">on_visit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">incoming_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>);
 }
 
 <span class="kw">impl</span> <span class="ident">Router</span> {
@@ -122,19 +140,27 @@
         <span class="self">self</span>.<span class="ident">route_handlers</span> <span class="op">=</span> <span class="ident">route_handlers</span>;
     }
 
+    <span class="doccomment">/// Return the matching RouteHandler given some `incoming_route`</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">matching_routerhandler</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">incoming_route</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RouteHandler</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">for</span> <span class="ident">route_handler</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">route_handlers</span>.<span class="ident">iter</span>() {
+            <span class="kw">if</span> <span class="ident">route_handler</span>.<span class="ident">matches</span>(<span class="ident">incoming_route</span>) {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">route_handler</span>);
+            }
+        }
+
+        <span class="prelude-val">None</span>
+    }
+
     <span class="doccomment">/// Get the first route in our routes vector view that handles this `incoming_route`</span>
     <span class="doccomment">/// and return the view for that route.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// You&#39;ll typically call this when trying to render the correct view based on the</span>
     <span class="doccomment">/// page URL or after clicking on an anchor tag.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">view</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">incoming_route</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VirtualNode</span><span class="op">&gt;</span> {
-        <span class="kw">for</span> <span class="ident">route_handler</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">route_handlers</span>.<span class="ident">iter</span>() {
-            <span class="kw">if</span> <span class="ident">route_handler</span>.<span class="ident">matches</span>(<span class="ident">incoming_route</span>) {
-                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">route_handler</span>.<span class="ident">view</span>(<span class="ident">incoming_route</span>));
-            }
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">matching_routerhandler</span>(<span class="ident">incoming_route</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">route_handler</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">route_handler</span>.<span class="ident">view</span>(<span class="ident">incoming_route</span>)),
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
         }
-
-        <span class="prelude-val">None</span>
     }
 }
 </pre></div>
