@@ -39,6 +39,11 @@ pub trait RouteHandler {
     fn matches(&self, incoming_path: &str) -> bool {
         self.route().matches(incoming_path)
     }
+
+    /// What to do when this route is visited.
+    ///
+    /// ex: load some data for the route based on application date.
+    fn on_visit(&self);
 }
 
 impl Router {
@@ -52,18 +57,26 @@ impl Router {
         self.route_handlers = route_handlers;
     }
 
+    /// Return the matching RouteHandler given some `incoming_route`
+    pub fn matching_routerhandler(&self, incoming_route: &str) -> Option<&Box<dyn RouteHandler>> {
+        for route_handler in self.route_handlers.iter() {
+            if route_handler.matches(incoming_route) {
+                return Some(route_handler);
+            }
+        }
+
+        None
+    }
+
     /// Get the first route in our routes vector view that handles this `incoming_route`
     /// and return the view for that route.
     ///
     /// You'll typically call this when trying to render the correct view based on the
     /// page URL or after clicking on an anchor tag.
     pub fn view(&self, incoming_route: &str) -> Option<VirtualNode> {
-        for route_handler in self.route_handlers.iter() {
-            if route_handler.matches(incoming_route) {
-                return Some(route_handler.view(incoming_route));
-            }
+        match self.matching_routerhandler(incoming_route) {
+            Some(route_handler) => Some(route_handler.view(incoming_route)),
+            None => None,
         }
-
-        None
     }
 }

@@ -5,6 +5,7 @@ use std::str::FromStr;
 use virtual_dom_rs::prelude::*;
 
 mod book_example;
+mod on_visit;
 
 // No Params
 

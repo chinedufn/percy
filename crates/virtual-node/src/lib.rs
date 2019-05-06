@@ -217,9 +217,11 @@ impl VElement {
     pub fn create_element_node(&self) -> CreatedNode<Element> {
         let document = web_sys::window().unwrap().document().unwrap();
 
-        let element = if html_validation::is_svg_namespace(&self.tag){
-            document.create_element_ns(Some("http://www.w3.org/2000/svg"), &self.tag).unwrap()
-        }else{
+        let element = if html_validation::is_svg_namespace(&self.tag) {
+            document
+                .create_element_ns(Some("http://www.w3.org/2000/svg"), &self.tag)
+                .unwrap()
+        } else {
             document.create_element(&self.tag).unwrap()
         };
         let mut closures = HashMap::new();

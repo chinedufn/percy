@@ -31,4 +31,3 @@ pub use svg_namespace::is_svg_namespace;
 
 mod self_closing;
 mod svg_namespace;
-

@@ -26,14 +26,13 @@ impl App {
         let state = State::new(count);
         let store = Rc::new(RefCell::new(Store::new(state)));
 
-        store.borrow_mut().msg(&Msg::Path(path));
+        store.borrow_mut().msg(&Msg::SetPath(path));
 
         let router = make_router(Rc::clone(&store));
 
         App { store, router }
     }
 
-    // TODO: Just use `new(config: AppConfig)` and pass in state json Option
     pub fn from_state_json(json: &str) -> App {
         let state = State::from_json(json);
         let store = Rc::new(RefCell::new(Store::new(state)));
@@ -46,9 +45,6 @@ impl App {
 
 impl App {
     pub fn render(&self) -> VirtualNode {
-        #[allow(unused_variables)] // Compiler doesn't see it inside html macro
-        let store = Rc::clone(&self.store);
-
         self.router.view(self.store.borrow().path()).unwrap()
     }
 }

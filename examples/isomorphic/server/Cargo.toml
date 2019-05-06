@@ -6,6 +6,8 @@ publish = false
 edition = "2018"
 
 [dependencies]
-virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
-isomorphic-app = { path = "../app" }
 actix-web = "0.7.18"
+chrono = "0.4.6"
+isomorphic-app = { path = "../app" }
+env_logger = "0.6.1"
+virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }

@@ -10,11 +10,11 @@ lazy_static! {
         //("a", true),
         ("animate", true),
         ("animateMotion", false),
-        ("animateTransform", true),   
+        ("animateTransform", true),
         ("circle", true),
         ("clipPath",false),
         // TODO: blocked with [issue](https://github.com/chinedufn/percy/issues/106)
-        //("color-profile",), 
+        //("color-profile",),
         ("defs", false),
         ("desc", false),
         ("discard", true),
@@ -104,16 +104,11 @@ lazy_static! {
 ///
 /// assert_eq!(is_svg_namespace("div"), false);
 /// ```
-pub fn is_svg_namespace(tag: &str) ->bool {
+pub fn is_svg_namespace(tag: &str) -> bool {
     SVG_NAMESPACED_TAGS.contains_key(tag)
 }
 
 /// Whether or not this svg tag is self closing
 pub(crate) fn is_self_closing_svg_tag(tag: &str) -> bool {
-    SVG_NAMESPACED_TAGS
-        .get(tag)
-        .map(|v|*v)
-        .unwrap_or(false)
+    SVG_NAMESPACED_TAGS.get(tag).map(|v| *v).unwrap_or(false)
 }
-
-

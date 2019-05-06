@@ -18,7 +18,7 @@ impl Store {
 
     pub fn msg(&mut self, msg: &Msg) {
         match msg {
-            Msg::Path(path) => {
+            Msg::SetPath(path) => {
                 self.state.msg(msg);
 
                 if let Some(after_route) = &self.after_route {

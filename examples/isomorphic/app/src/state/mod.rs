@@ -45,7 +45,7 @@ impl State {
     pub fn msg(&mut self, msg: &Msg) {
         match msg {
             Msg::Click => self.increment_click(),
-            Msg::Path(path) => self.set_path(path.to_string()),
+            Msg::SetPath(path) => self.set_path(path.to_string()),
         };
 
         // Whenever we update state we'll let all of our state listeners know that state was
