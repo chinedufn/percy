@@ -3,6 +3,9 @@
 #[macro_use]
 extern crate serde_derive;
 
+#[macro_use]
+extern  crate log;
+
 pub use crate::state::*;
 pub use crate::store::*;
 use crate::views::*;
@@ -18,7 +21,7 @@ mod views;
 
 pub struct App {
     pub store: Rc<RefCell<Store>>,
-    router: Router,
+    router: Rc<Router>,
 }
 
 impl App {
@@ -30,6 +33,8 @@ impl App {
 
         let router = make_router(Rc::clone(&store));
 
+        store.borrow_mut().set_router(Rc::clone(&router));
+
         App { store, router }
     }
 
@@ -38,6 +43,8 @@ impl App {
         let store = Rc::new(RefCell::new(Store::new(state)));
 
         let router = make_router(Rc::clone(&store));
+
+        store.borrow_mut().set_router(Rc::clone(&router));
 
         App { store, router }
     }
@@ -54,19 +61,29 @@ fn home_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
     HomeView::new(Rc::clone(&store)).render()
 }
 
-#[route(path = "/contributors")]
+#[route(
+  path = "/contributors",
+  on_visit = download_contributors_json
+)]
 fn contributors_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
     ContributorsView::new(Rc::clone(&store)).render()
 }
 
-fn make_router(store: Rc<RefCell<Store>>) -> Router {
+fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
+    info!(r#"
+    TODO: Make XHR request to GitHub to download JSON data for percy contributors.
+    Then store this data in state via store.msg
+    "#);
+}
+
+fn make_router(store: Rc<RefCell<Store>>) -> Rc<Router> {
     let mut router = Router::default();
 
     router.provide(store);
 
     router.set_route_handlers(create_routes![home_route, contributors_route]);
 
-    router
+    Rc::new(router)
 }
 
 #[cfg(test)]

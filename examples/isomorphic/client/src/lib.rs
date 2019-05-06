@@ -14,6 +14,9 @@ use wasm_bindgen::JsCast;
 use web_sys;
 use web_sys::{Element, Url};
 
+#[macro_use]
+extern crate log;
+
 #[wasm_bindgen]
 pub struct Client {
     app: App,
