@@ -4,12 +4,13 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use syn;
 use syn::parse::{Parse, ParseStream, Result as SynResult};
-use syn::parse_macro_input;
 use syn::punctuated::Punctuated;
+use syn::spanned::Spanned;
 use syn::FnArg;
 use syn::ItemFn;
 use syn::Pat;
 use syn::Type;
+use syn::{parse_macro_input, Expr};
 use syn::{Ident, Lit, Token};
 
 // FIXME: Clean up to use consistent temrminology:
@@ -17,6 +18,8 @@ use syn::{Ident, Lit, Token};
 
 // FIXME: Needs clean up / organization ... but we can circle back to this since we have
 // tests in place. Got about halfway through cleanup.
+
+// FIXME: Before merge -> split code into DRY functions
 
 /// Parse the #[route(...)] macro
 ///
@@ -38,7 +41,7 @@ pub fn route(
     // we'll concatenate these TokenStream's and return them to the compiler.
     let mut tokens = vec![];
 
-    // #[route(path = "/:id")]
+    // #[route(path = "/:id", on_visit = some_func_name)]
     let mut args = parse_macro_input!(args as RouteAttrs);
 
     // The TokenStream for the original function
@@ -70,33 +73,31 @@ pub fn route(
     // [u8, Provided<MyAppState>]
     let types = as_param_types(&params);
 
-    // TODO: Don't assume that the path is the first argument. Fine for now since we only
-    // accept one argument
-    if let RouteAttr::Path(ref path) = args.attrs[0] {
-        // vec![":id", ":name", ...]
-        let path_params: Vec<String> = match path {
-            Lit::Str(path) => path
-                .value()
-                .split("/")
-                .filter(|segment| segment.starts_with(":"))
-                .map(|segment| without_first(segment).to_string())
-                .collect(),
-            _ => unimplemented!(""),
+    // path = "/route/path"
+    let mut path = None;
+
+    // The function to call whenever a RouteHandler is matched. `some_func_name`
+    let mut on_visit_fn = None;
+
+    for route_attr in args.attrs.into_iter() {
+        match route_attr {
+            RouteAttr::Path(p) => {
+                path = Some(p);
+            }
+
+            RouteAttr::OnVisit(on_visit) => {
+                on_visit_fn = Some(on_visit);
+            }
         };
-        let path_params2 = path_params
-            .clone()
-            .into_iter()
-            .map(|ident| Ident::new(&ident, Span::call_site()))
-            .collect();
-        let path_params_map: HashSet<String> = path_params.clone().into_iter().collect();
-
-        let route_creator = gen_route_creator(&params, &path, create_route);
-        tokens.push(route_creator);
-
-        let route_handler_mod =
-            gen_route_handler_mod(route_fn_name, &params, &path_params_map, path_params2);
-        tokens.push(route_handler_mod);
     }
+
+    let path = path.expect("Path literal");
+
+    let route_creator = gen_route_creator(&params, &path, &create_route);
+    tokens.push(route_creator);
+
+    let route_handler_mod = gen_route_handler_mod(&route_fn_name, &path, &params, on_visit_fn);
+    tokens.push(route_handler_mod);
 
     let tokens = quote! {
         #(#tokens)*
@@ -107,7 +108,7 @@ pub fn route(
 fn gen_route_creator(
     params: &Punctuated<FnArg, Token![,]>,
     path: &Lit,
-    create_route: Ident,
+    create_route: &Ident,
 ) -> proc_macro2::TokenStream {
     let types = as_param_types(&params);
 
@@ -135,7 +136,7 @@ fn gen_route_creator(
 
     let mut path_param_types = vec![];
     for path_param in path_params.iter() {
-        let type_idx = type_indices.get(path_param).unwrap();
+        let type_idx = type_indices.get(path_param).expect("Type index");
         path_param_types.push(types[*type_idx]);
     }
 
@@ -167,11 +168,28 @@ fn gen_route_creator(
 }
 
 fn gen_route_handler_mod(
-    route_fn_name: Ident,
+    route_fn_name: &Ident,
+    path: &Lit,
     params: &Punctuated<FnArg, Token![,]>,
-    path_params_map: &HashSet<String>,
-    path_params2: Vec<Ident>,
+    on_visit_expr: Option<Ident>,
 ) -> proc_macro2::TokenStream {
+    // vec![":id", ":name", ...]
+    let path_params: Vec<String> = match path {
+        Lit::Str(path) => path
+            .value()
+            .split("/")
+            .filter(|segment| segment.starts_with(":"))
+            .map(|segment| without_first(segment).to_string())
+            .collect(),
+        _ => unimplemented!(""),
+    };
+    let path_params2: Vec<Ident> = path_params
+        .clone()
+        .into_iter()
+        .map(|ident| Ident::new(&ident, Span::call_site()))
+        .collect();
+    let path_params_map: HashSet<String> = path_params.clone().into_iter().collect();
+
     let route_fn_mod = format!("__{}_mod__", route_fn_name);
     let route_fn_mod = Ident::new(&route_fn_mod, route_fn_name.span());
 
@@ -182,7 +200,6 @@ fn gen_route_handler_mod(
     let create_route = Ident::new(&create_route, route_fn_name.span());
 
     let param_idents = as_param_idents(params);
-    let param_idents2 = as_param_idents(params);
 
     let param_ident_strings: Vec<String> = as_param_idents(params)
         .iter()
@@ -190,7 +207,7 @@ fn gen_route_handler_mod(
         .map(|ident| format!("{}", ident))
         .collect();
 
-    let types = as_param_types(&params);
+    let route_fn_param_types = as_param_types(&params);
 
     // let state: Provided<State> = ... ;
     // let more_data: Provided<Foo> = ...;
@@ -198,13 +215,24 @@ fn gen_route_handler_mod(
 
     let mut arguments = vec![];
 
-    for (idx, arg_type) in types.iter().enumerate() {
+    // FIXME: We currently push our on_visit functions arguments in the same order as our Route.
+    // We should instead push arguments in the order that they appear in the on_visit function
+    let mut on_visit_arguments = vec![];
+
+    for (idx, arg_type) in route_fn_param_types.iter().enumerate() {
         let param = param_idents[idx];
 
         if path_params_map.contains(&format!("{}", param)) {
             arguments.push(quote! {
                 #arg_type::from_str_param(#param).expect(&format!("Error parsing param {}", #param))
             });
+
+            if on_visit_expr.is_some() {
+                on_visit_arguments.push(quote! {
+                    #arg_type::from_str_param(#param).expect(&format!("Error parsing param {}", #param))
+                });
+            }
+
             continue;
         }
 
@@ -216,7 +244,10 @@ fn gen_route_handler_mod(
             .borrow();
         let #param = #param
             .get(&std::any::TypeId::of::<#arg_type>())
-            .unwrap()
+            // TODO: If we try to use an argument such as `state: Provided<u32>` but there is no
+            // corresponding state.provide we panic here. Instead we should show a helpful
+            // compile time error.
+            .expect("Get argument type")
             .downcast_ref::<#arg_type>()
             .expect("Downcast param");
         });
@@ -225,9 +256,51 @@ fn gen_route_handler_mod(
             Provided::clone(#param)
         });
 
+        if on_visit_expr.is_some() {
+            on_visit_arguments.push(quote! {
+                Provided::clone(#param)
+            });
+        }
+
         // TODO: If this isn't a provided parameter or a route param.
         // Generate a compiler error. Test this with our ui crate.
     }
+
+    let path_params2 = &path_params2;
+    let arguments = &arguments;
+    let argument_definitions = &argument_definitions;
+    let param_ident_strings = &param_ident_strings;
+
+    let on_visit_fn_name = match on_visit_expr {
+        Some(ref ident) => {
+            let on_visit_fn_name = format!("{}", ident.to_string());
+            Ident::new(on_visit_fn_name.as_str(), ident.span())
+        }
+        None => {
+            let on_visit_fn_name = "__noop__";
+            Ident::new(on_visit_fn_name, Span::call_site())
+        }
+    };
+
+    let on_visit_argument_definitions = match on_visit_expr {
+        Some(_) => {
+            quote! {
+                // example:
+                //   let id = self.route().find_route_param(incoming_route, "id").unwrap();
+                #(
+                  let #path_params2 =
+                   self.route().find_route_param(
+                     incoming_path, #param_ident_strings
+                   ).expect("Finding route param");
+                )*
+
+                #(#argument_definitions)*
+            }
+        }
+        None => {
+            quote! {}
+        }
+    };
 
     // Kept it it's own module so that we can enable non camel case types only
     // for this module. This way we don't need to worry as much about transforming
@@ -261,16 +334,24 @@ fn gen_route_handler_mod(
                 }
 
                 fn provided (&self) -> &ProvidedMap {
-                    &self.provided.as_ref().unwrap()
+                    &self.provided.as_ref().expect("RouteHandler Provided map")
                 }
 
-                fn view (&self, incoming_route: &str) -> VirtualNode {
+                fn on_visit (&self, incoming_path: &str) {
+                    #on_visit_argument_definitions
+
+                    #on_visit_fn_name(
+                        #( #on_visit_arguments ),*
+                    );
+                }
+
+                fn view (&self, incoming_path: &str) -> VirtualNode {
                     // example:
                     //   let id = self.route().find_route_param(incoming_route, "id").unwrap();
                     #(
                       let #path_params2 =
                        self.route().find_route_param(
-                         incoming_route, #param_ident_strings
+                         incoming_path, #param_ident_strings
                        ).expect("Finding route param");
                     )*
 
@@ -281,6 +362,8 @@ fn gen_route_handler_mod(
                     )
                 }
             }
+
+            fn __noop__ () {}
         }
     };
 
@@ -355,6 +438,7 @@ impl Parse for RouteAttrs {
 #[derive(Debug, PartialEq, Eq)]
 enum RouteAttr {
     Path(Lit),
+    OnVisit(Ident),
 }
 
 impl Parse for RouteAttr {
@@ -362,12 +446,18 @@ impl Parse for RouteAttr {
         let original = input.fork();
 
         // path = "/my/route/here"
-        let path_key = input.parse::<Ident>()?;
+        let key = input.parse::<Ident>()?;
         let equals = input.parse::<Token![=]>()?;
-        let path_val = input.parse::<Lit>()?;
 
-        if path_key == "path" {
+        if key == "path" {
+            let path_val = input.parse::<Lit>()?;
             return Ok(RouteAttr::Path(path_val));
+        }
+
+        // on_visit = some_function_name
+        if key == "on_visit" {
+            let on_visit_fn_name = input.parse::<Ident>()?;
+            return Ok(RouteAttr::OnVisit(on_visit_fn_name));
         }
 
         Err(original.error("unknown attribute"))

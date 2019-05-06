@@ -8,6 +8,7 @@ edition = "2018"
 css-rs-macro = { path = "../../../crates/css-rs-macro"}
 virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
 router-rs = { path = "../../../crates/router-rs"}
+log = "0.4.6"
 serde = { version = "1", features = ["rc"] }
 serde_derive = "1"
 serde_json = "1"

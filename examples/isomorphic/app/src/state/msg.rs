@@ -1,4 +1,4 @@
 pub enum Msg {
     Click,
-    Path(String),
+    SetPath(String),
 }

@@ -37,15 +37,13 @@ impl View for NavBarItemView {
         let text = VirtualNode::text(self.text);
 
         html! {
-            <span
-                style=self.style
-                class=NAV_BAR_ITEM_CSS
-                onclick=move |_ev: u32| {
-                  store.borrow_mut().msg(&Msg::Path(path.to_string()));
-                }
+            <a
+             href=self.path
+             style=self.style
+             class=NAV_BAR_ITEM_CSS
             >
               { text }
-            </span>
+            </a>
         }
     }
 }
@@ -54,6 +52,8 @@ static NAV_BAR_ITEM_CSS: &'static str = css! {"
 :host {
     border-bottom: solid transparent 3px;
     cursor: pointer;
+    color: white;
+    text-decoration: none;
 }
 
 :host:hover {
