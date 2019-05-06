@@ -1,6 +1,6 @@
 [package]
 name = "router-rs-macro"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A macro for client side web application routing"
 keywords = ["route", "router", "wasm", "assembly", "webassembly"]
