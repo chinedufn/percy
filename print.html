@@ -770,7 +770,7 @@ use router_rs::prelude::*;
 use std::str::FromStr;
 use virtual_dom_rs::prelude::*;
 
-#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;)]
+#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;, on_visit = download_some_data)]
 fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
     let id = format!(&quot;{}&quot;, id);
     let meal = format!(&quot;{:#?}&quot;, meal);
@@ -778,6 +778,11 @@ fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -
     html! {
         &lt;div&gt; User { id } loves { meal } &lt;/div&gt;
     }
+}
+
+fn download_some_data (id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) {
+    // Check state to see if we've already downloaded data ...
+    // If not - download the data that we need
 }
 
 #[test]
@@ -1285,7 +1290,7 @@ use router_rs::prelude::*;
 use std::str::FromStr;
 use virtual_dom_rs::prelude::*;
 
-#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;)]
+#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;, on_visit = download_some_data)]
 fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
     let id = format!(&quot;{}&quot;, id);
     let meal = format!(&quot;{:#?}&quot;, meal);
@@ -1293,6 +1298,11 @@ fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -
     html! {
         &lt;div&gt; User { id } loves { meal } &lt;/div&gt;
     }
+}
+
+fn download_some_data (id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) {
+    // Check state to see if we've already downloaded data ...
+    // If not - download the data that we need
 }
 
 #[test]
@@ -1358,7 +1368,7 @@ use router_rs::prelude::*;
 use std::str::FromStr;
 use virtual_dom_rs::prelude::*;
 
-#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;)]
+#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;, on_visit = download_some_data)]
 fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
     let id = format!(&quot;{}&quot;, id);
     let meal = format!(&quot;{:#?}&quot;, meal);
@@ -1366,6 +1376,11 @@ fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -
     html! {
         &lt;div&gt; User { id } loves { meal } &lt;/div&gt;
     }
+}
+
+fn download_some_data (id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) {
+    // Check state to see if we've already downloaded data ...
+    // If not - download the data that we need
 }
 
 #[test]
