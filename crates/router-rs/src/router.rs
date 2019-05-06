@@ -43,7 +43,7 @@ pub trait RouteHandler {
     /// What to do when this route is visited.
     ///
     /// ex: load some data for the route based on application date.
-    fn on_visit(&self);
+    fn on_visit(&self, incoming_path: &str);
 }
 
 impl Router {

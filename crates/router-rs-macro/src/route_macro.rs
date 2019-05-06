@@ -91,7 +91,7 @@ pub fn route(
         };
     }
 
-    let path = path.unwrap();
+    let path = path.expect("Path literal");
 
     let route_creator = gen_route_creator(&params, &path, &create_route);
     tokens.push(route_creator);
@@ -136,7 +136,7 @@ fn gen_route_creator(
 
     let mut path_param_types = vec![];
     for path_param in path_params.iter() {
-        let type_idx = type_indices.get(path_param).unwrap();
+        let type_idx = type_indices.get(path_param).expect("Type index");
         path_param_types.push(types[*type_idx]);
     }
 
@@ -207,7 +207,7 @@ fn gen_route_handler_mod(
         .map(|ident| format!("{}", ident))
         .collect();
 
-    let types = as_param_types(&params);
+    let route_fn_param_types = as_param_types(&params);
 
     // let state: Provided<State> = ... ;
     // let more_data: Provided<Foo> = ...;
@@ -215,13 +215,24 @@ fn gen_route_handler_mod(
 
     let mut arguments = vec![];
 
-    for (idx, arg_type) in types.iter().enumerate() {
+    // FIXME: We currently push our on_visit functions arguments in the same order as our Route.
+    // We should instead push arguments in the order that they appear in the on_visit function
+    let mut on_visit_arguments = vec![];
+
+    for (idx, arg_type) in route_fn_param_types.iter().enumerate() {
         let param = param_idents[idx];
 
         if path_params_map.contains(&format!("{}", param)) {
             arguments.push(quote! {
                 #arg_type::from_str_param(#param).expect(&format!("Error parsing param {}", #param))
             });
+
+            if on_visit_expr.is_some() {
+                on_visit_arguments.push(quote! {
+                    #arg_type::from_str_param(#param).expect(&format!("Error parsing param {}", #param))
+                });
+            }
+
             continue;
         }
 
@@ -233,7 +244,10 @@ fn gen_route_handler_mod(
             .borrow();
         let #param = #param
             .get(&std::any::TypeId::of::<#arg_type>())
-            .unwrap()
+            // TODO: If we try to use an argument such as `state: Provided<u32>` but there is no
+            // corresponding state.provide we panic here. Instead we should show a helpful
+            // compile time error.
+            .expect("Get argument type")
             .downcast_ref::<#arg_type>()
             .expect("Downcast param");
         });
@@ -242,18 +256,49 @@ fn gen_route_handler_mod(
             Provided::clone(#param)
         });
 
+        if on_visit_expr.is_some() {
+            on_visit_arguments.push(quote! {
+                Provided::clone(#param)
+            });
+        }
+
         // TODO: If this isn't a provided parameter or a route param.
         // Generate a compiler error. Test this with our ui crate.
     }
 
+    let path_params2 = &path_params2;
+    let arguments = &arguments;
+    let argument_definitions = &argument_definitions;
+    let param_ident_strings = &param_ident_strings;
+
     let on_visit_fn_name = match on_visit_expr {
-        Some(ident) => {
+        Some(ref ident) => {
             let on_visit_fn_name = format!("{}", ident.to_string());
             Ident::new(on_visit_fn_name.as_str(), ident.span())
         }
         None => {
             let on_visit_fn_name = "__noop__";
             Ident::new(on_visit_fn_name, Span::call_site())
+        }
+    };
+
+    let on_visit_argument_definitions = match on_visit_expr {
+        Some(_) => {
+            quote! {
+                // example:
+                //   let id = self.route().find_route_param(incoming_route, "id").unwrap();
+                #(
+                  let #path_params2 =
+                   self.route().find_route_param(
+                     incoming_path, #param_ident_strings
+                   ).expect("Finding route param");
+                )*
+
+                #(#argument_definitions)*
+            }
+        }
+        None => {
+            quote! {}
         }
     };
 
@@ -289,21 +334,24 @@ fn gen_route_handler_mod(
                 }
 
                 fn provided (&self) -> &ProvidedMap {
-                    &self.provided.as_ref().unwrap()
+                    &self.provided.as_ref().expect("RouteHandler Provided map")
                 }
 
-                fn on_visit (&self) {
+                fn on_visit (&self, incoming_path: &str) {
+                    #on_visit_argument_definitions
+
                     #on_visit_fn_name(
+                        #( #on_visit_arguments ),*
                     );
                 }
 
-                fn view (&self, incoming_route: &str) -> VirtualNode {
+                fn view (&self, incoming_path: &str) -> VirtualNode {
                     // example:
                     //   let id = self.route().find_route_param(incoming_route, "id").unwrap();
                     #(
                       let #path_params2 =
                        self.route().find_route_param(
-                         incoming_route, #param_ident_strings
+                         incoming_path, #param_ident_strings
                        ).expect("Finding route param");
                     )*
 
