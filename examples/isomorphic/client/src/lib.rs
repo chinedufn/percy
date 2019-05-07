@@ -1,7 +1,6 @@
 use console_error_panic_hook;
 use isomorphic_app;
 use isomorphic_app::Msg;
-use isomorphic_app::VirtualNode;
 use isomorphic_app::{App, Store};
 use js_sys::Reflect;
 use log::Level;
@@ -12,10 +11,7 @@ use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys;
-use web_sys::{Element, Url};
-
-#[macro_use]
-extern crate log;
+use web_sys::Url;
 
 #[wasm_bindgen]
 pub struct Client {
@@ -58,30 +54,24 @@ impl Client {
         }));
 
         app.store.borrow_mut().set_after_route(Box::new(|new_path| {
-            web_sys::window()
-                .unwrap()
-                .history()
-                .unwrap()
+            history()
                 .push_state_with_url(&JsValue::null(), "Rust Web App", Some(new_path));
         }));
 
         let store = Rc::clone(&app.store);
         let on_popstate = move |_: web_sys::Event| {
-            let location = web_sys::window().unwrap().location();
+            let location = location();
             let path = location.pathname().unwrap() + &location.search().unwrap();
 
             store.borrow_mut().msg(&Msg::SetPath(path))
         };
         let on_popstate = Box::new(on_popstate) as Box<FnMut(_)>;
         let mut on_popstate = Closure::wrap(on_popstate);
-        web_sys::window()
-            .unwrap()
+        window()
             .set_onpopstate(Some(on_popstate.as_ref().unchecked_ref()));
         on_popstate.forget();
 
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
-        let root_node = document
+        let root_node = document()
             .get_element_by_id("isomorphic-rust-web-app")
             .unwrap();
         let dom_updater = DomUpdater::new_replace_mount(app.render(), root_node);
@@ -146,8 +136,14 @@ fn document() -> web_sys::Document {
     window().document().unwrap()
 }
 
-fn body() -> web_sys::HtmlElement {
-    document().body().unwrap()
+fn history() -> web_sys::History {
+    window().history().unwrap()
+}
+
+fn location() -> web_sys::Location {
+        document()
+        .location()
+        .unwrap()
 }
 
 fn hostname() -> String {
@@ -156,13 +152,4 @@ fn hostname() -> String {
 
 fn port() -> String {
     location().port().unwrap()
-}
-
-fn location() -> web_sys::Location {
-    web_sys::window()
-        .unwrap()
-        .document()
-        .unwrap()
-        .location()
-        .unwrap()
 }

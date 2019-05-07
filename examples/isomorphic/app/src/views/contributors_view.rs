@@ -17,7 +17,7 @@ impl ContributorsView {
 
 impl View for ContributorsView {
     fn render(&self) -> VirtualNode {
-        let nav_bar = NavBarView::new(ActivePage::Contributors, Rc::clone(&self.store)).render();
+        let nav_bar = NavBarView::new(ActivePage::Contributors).render();
 
         html! {
         <div>

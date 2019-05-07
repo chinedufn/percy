@@ -1,5 +1,4 @@
-extern crate actix_web;
-use self::actix_web::{fs, HttpRequest, HttpResponse, Responder};
+use actix_web::{fs, HttpRequest, HttpResponse, Responder};
 
 use isomorphic_app::App;
 

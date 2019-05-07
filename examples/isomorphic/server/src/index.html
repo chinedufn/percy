@@ -11,10 +11,7 @@
       #HTML_INSERTED_HERE_BY_SERVER#
   </div>
 
-  <script src='./static/isomorphic_client.js'></script>
-  <script>
-    window.wasm_bindgen(`/static/isomorphic_client_bg.wasm`).then(main)
-
+  <script type=module>
     let client
     let updateScheduled = false
 
@@ -32,13 +29,17 @@
 
       updateScheduled = true
     }
-
     window.global_js = new GlobalJS()
 
-    function main () {
-      const { Client } = window.wasm_bindgen
+    import { Client, default as init } from './static/isomorphic_client.js';
+
+    async function run() {
+      await init('static/isomorphic_client_bg.wasm');
+
       client = new Client(window.initialState)
     }
+
+    run();
   </script>
   <script>
       window.initialState = '#INITIAL_STATE_JSON#'

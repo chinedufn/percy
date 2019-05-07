@@ -1,11 +1,5 @@
 #![feature(proc_macro_hygiene)]
 
-#[macro_use]
-extern crate serde_derive;
-
-#[macro_use]
-extern  crate log;
-
 pub use crate::state::*;
 pub use crate::store::*;
 use crate::views::*;
@@ -13,6 +7,7 @@ use router_rs::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use virtual_dom_rs::prelude::*;
+use log::info;
 pub use virtual_dom_rs::VirtualNode;
 
 mod state;
@@ -69,7 +64,7 @@ fn contributors_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
     ContributorsView::new(Rc::clone(&store)).render()
 }
 
-fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
+fn download_contributors_json(_store: Provided<Rc<RefCell<Store>>>) {
     info!(r#"
     TODO: Make XHR request to GitHub to download JSON data for percy contributors.
     Then store this data in state via store.msg
