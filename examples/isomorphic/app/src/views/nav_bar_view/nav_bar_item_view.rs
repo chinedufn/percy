@@ -11,13 +11,9 @@ impl NavBarItemView {
     pub fn new(
         path: &'static str,
         text: &'static str,
-        style: &'static str,
+        style: &'static str
     ) -> NavBarItemView {
-        NavBarItemView {
-            path,
-            text,
-            style,
-        }
+        NavBarItemView { path, text, style }
     }
 }
 

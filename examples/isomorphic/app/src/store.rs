@@ -1,9 +1,9 @@
 use crate::state::Msg;
 use crate::state::State;
 
+use router_rs::prelude::Router;
 use std::ops::Deref;
 use std::rc::Rc;
-use router_rs::prelude::Router;
 
 pub struct Store {
     state: StateWrapper,

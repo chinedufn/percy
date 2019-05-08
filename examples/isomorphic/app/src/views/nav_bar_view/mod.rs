@@ -22,11 +22,8 @@ pub enum ActivePage {
 impl View for NavBarView {
     fn render(&self) -> VirtualNode {
         let home = NavBarItemView::new("/", "Isomorphic Web App", "");
-        let contributors = NavBarItemView::new(
-            "/contributors",
-            "Contributors",
-            "margin-left: auto;",
-        );
+        let contributors =
+            NavBarItemView::new("/contributors", "Contributors", "margin-left: auto;");
 
         html! {
         <div class=NAV_BAR_CSS>

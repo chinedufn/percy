@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_json;
 use std::cell::Cell;
 use std::rc::Rc;
@@ -9,7 +9,7 @@ pub use self::msg::Msg;
 #[derive(Serialize, Deserialize)]
 pub struct Contributor {
     pub login: String,
-    pub html_url:   String,
+    pub html_url: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -46,7 +46,7 @@ impl State {
             Msg::SetPath(path) => self.set_path(path.to_string()),
             Msg::StoreContributors(json) => {
                 self.contributors = Some(json.into_serde().unwrap());
-            },
+            }
         };
     }
 

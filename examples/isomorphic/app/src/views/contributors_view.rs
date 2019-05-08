@@ -21,21 +21,23 @@ impl View for ContributorsView {
         let store = self.store.borrow();
         let contributors = store.contributors().to_owned();
         let contributors_list: Vec<VirtualNode> = match contributors {
-                Some(contributors) => contributors.iter()
-                    .filter(|c| c.login != "invalid-email-address".to_string())
-                    .map(|contributor| {
-                        html! {
-                            <li>
-                                <a
-                                    href=contributor.html_url.to_string()
-                                    target="_blank"
-                                >
-                                    { contributor.login.to_string() }
-                                </a>
-                            </li>
-                        }
-                    }).collect(),
-                None => vec![ VirtualNode::text("Loading...") ],
+            Some(contributors) => contributors
+                .iter()
+                .filter(|c| c.login != "invalid-email-address".to_string())
+                .map(|contributor| {
+                    html! {
+                        <li>
+                            <a
+                                href=contributor.html_url.to_string()
+                                target="_blank"
+                            >
+                                { contributor.login.to_string() }
+                            </a>
+                        </li>
+                    }
+                })
+                .collect(),
+            None => vec![VirtualNode::text("Loading...")],
         };
 
         html! {
