@@ -4,13 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="/static/app.css"/>
+    <link rel="shortcut icon" href="#" />
     <title>Rust Web App</title>
 </head>
 <body style='margin: 0; padding: 0; width: 100%; height: 100%;'>
   <div id="isomorphic-rust-web-app" style='width: 100%; height: 100%;'>
       #HTML_INSERTED_HERE_BY_SERVER#
   </div>
-
+  <script>
+    // TODO: Use web-sys's fetch instead
+    // https://rustwasm.github.io/docs/wasm-bindgen/examples/fetch.html
+    function downloadJson(path, callback) {
+      fetch(path)
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(json) {
+            callback(json);
+        });
+    }
+  </script>
   <script type=module>
     let client
     let updateScheduled = false

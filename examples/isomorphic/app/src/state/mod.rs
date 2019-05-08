@@ -7,9 +7,16 @@ mod msg;
 pub use self::msg::Msg;
 
 #[derive(Serialize, Deserialize)]
+pub struct Contributor {
+    pub login: String,
+    pub html_url:   String,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct State {
     click_count: Rc<Cell<u32>>,
     path: String,
+    contributors: Option<Vec<Contributor>>,
 }
 
 impl State {
@@ -17,6 +24,7 @@ impl State {
         State {
             path: "/".to_string(),
             click_count: Rc::new(Cell::new(count)),
+            contributors: None,
         }
     }
 
@@ -36,6 +44,9 @@ impl State {
         match msg {
             Msg::Click => self.increment_click(),
             Msg::SetPath(path) => self.set_path(path.to_string()),
+            Msg::StoreContributors(json) => {
+                self.contributors = Some(json.into_serde().unwrap());
+            },
         };
     }
 
@@ -45,6 +56,10 @@ impl State {
 
     pub fn path(&self) -> &str {
         &self.path
+    }
+
+    pub fn contributors(&self) -> &Option<Vec<Contributor>> {
+        &self.contributors
     }
 }
 

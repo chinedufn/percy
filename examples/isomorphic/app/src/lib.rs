@@ -7,8 +7,11 @@ use router_rs::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use virtual_dom_rs::prelude::*;
-use log::info;
 pub use virtual_dom_rs::VirtualNode;
+use wasm_bindgen;
+use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
+use wasm_bindgen::JsValue;
 
 mod state;
 mod store;
@@ -64,11 +67,21 @@ fn contributors_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
     ContributorsView::new(Rc::clone(&store)).render()
 }
 
-fn download_contributors_json(_store: Provided<Rc<RefCell<Store>>>) {
-    info!(r#"
-    TODO: Make XHR request to GitHub to download JSON data for percy contributors.
-    Then store this data in state via store.msg
-    "#);
+// TODO: Use web-sys's fetch instead
+// https://rustwasm.github.io/docs/wasm-bindgen/examples/fetch.html
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_name = "downloadJson")]
+    pub fn download_json(path: &str, callback: &js_sys::Function);
+}
+
+fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
+    let callback = Closure::wrap(Box::new(move |json: JsValue| {
+        store.borrow_mut().msg(&Msg::StoreContributors(json));
+    }) as Box<FnMut(JsValue)>);
+    download_json("https://api.github.com/repos/chinedufn/percy/contributors", callback.as_ref().unchecked_ref());
+
+    callback.forget();
 }
 
 fn make_router(store: Rc<RefCell<Store>>) -> Rc<Router> {
