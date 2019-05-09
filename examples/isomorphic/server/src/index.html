@@ -12,8 +12,6 @@
       #HTML_INSERTED_HERE_BY_SERVER#
   </div>
   <script>
-    // TODO: Use web-sys's fetch instead
-    // https://rustwasm.github.io/docs/wasm-bindgen/examples/fetch.html
     function downloadJson(path, callback) {
       fetch(path)
         .then(function(response) {
@@ -44,7 +42,7 @@
     }
     window.global_js = new GlobalJS()
 
-    import { Client, default as init } from './static/isomorphic_client.js';
+    import { Client, default as init } from '/static/isomorphic_client.js';
 
     async function run() {
       await init('static/isomorphic_client_bg.wasm');

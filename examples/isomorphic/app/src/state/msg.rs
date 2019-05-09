@@ -3,5 +3,7 @@ use wasm_bindgen::JsValue;
 pub enum Msg {
     Click,
     SetPath(String),
-    StoreContributors(JsValue),
+    // Deserializes JSON array of Github contributors
+    // to `Option<Vec<PercyContributor>>`
+    SetContributorsJson(JsValue),
 }

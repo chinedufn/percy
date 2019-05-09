@@ -7,16 +7,10 @@ mod msg;
 pub use self::msg::Msg;
 
 #[derive(Serialize, Deserialize)]
-pub struct Contributor {
-    pub login: String,
-    pub html_url: String,
-}
-
-#[derive(Serialize, Deserialize)]
 pub struct State {
     click_count: Rc<Cell<u32>>,
     path: String,
-    contributors: Option<Vec<Contributor>>,
+    contributors: Option<Vec<PercyContributor>>,
 }
 
 impl State {
@@ -44,9 +38,9 @@ impl State {
         match msg {
             Msg::Click => self.increment_click(),
             Msg::SetPath(path) => self.set_path(path.to_string()),
-            Msg::StoreContributors(json) => {
-                self.contributors = Some(json.into_serde().unwrap());
-            }
+	    Msg::SetContributorsJson(json) => {
+		self.contributors = Some(json.into_serde().unwrap());
+	    }
         };
     }
 
@@ -58,7 +52,7 @@ impl State {
         &self.path
     }
 
-    pub fn contributors(&self) -> &Option<Vec<Contributor>> {
+    pub fn contributors(&self) -> &Option<Vec<PercyContributor>> {
         &self.contributors
     }
 }
@@ -71,6 +65,13 @@ impl State {
     fn set_path(&mut self, path: String) {
         self.path = path;
     }
+}
+
+// Serde ignores fields not in this struct when deserializing
+#[derive(Serialize, Deserialize)]
+pub struct PercyContributor {
+    pub login: String,    // Github username.
+    pub html_url: String, // Github profile URL. E.g. https://github.com/username
 }
 
 #[cfg(test)]

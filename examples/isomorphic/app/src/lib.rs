@@ -77,7 +77,7 @@ extern "C" {
 
 fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
     let callback = Closure::wrap(Box::new(move |json: JsValue| {
-        store.borrow_mut().msg(&Msg::StoreContributors(json));
+        store.borrow_mut().msg(&Msg::SetContributorsJson(json));
     }) as Box<FnMut(JsValue)>);
     download_json(
         "https://api.github.com/repos/chinedufn/percy/contributors",
