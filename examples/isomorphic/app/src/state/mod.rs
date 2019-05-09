@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn serialize_deserialize() {
-        let state_json = r#"{"click_count":5,"path":"/"}"#;
+        let state_json = r#"{"click_count":5,"path":"/","contributors":null}"#;
 
         let state = State::from_json(state_json);
 
