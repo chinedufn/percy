@@ -215,6 +215,7 @@ features = [
 Now run
 
 ```sh
+# Used to compile your Rust code to WebAssembly
 cargo install wasm-pack
 
 # Or any other static file server that supports the application/wasm mime type
@@ -224,7 +225,7 @@ chmod +x ./build.sh
 ./build.sh
 
 # Visit localhost:8080 in your browser
-http-server public --open
+http-server ./public --open
 ```
 
 And you should see the following:
