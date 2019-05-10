@@ -177,17 +177,25 @@ fn main () {
     &lt;meta charset=&quot;UTF-8&quot;&gt;
     &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
     &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;/static/app.css&quot;/&gt;
+    &lt;link rel=&quot;shortcut icon&quot; href=&quot;#&quot; /&gt;
     &lt;title&gt;Rust Web App&lt;/title&gt;
 &lt;/head&gt;
 &lt;body style='margin: 0; padding: 0; width: 100%; height: 100%;'&gt;
   &lt;div id=&quot;isomorphic-rust-web-app&quot; style='width: 100%; height: 100%;'&gt;
       #HTML_INSERTED_HERE_BY_SERVER#
   &lt;/div&gt;
-
-  &lt;script src='./static/isomorphic_client.js'&gt;&lt;/script&gt;
   &lt;script&gt;
-    window.wasm_bindgen(`/static/isomorphic_client_bg.wasm`).then(main)
-
+    function downloadJson(path, callback) {
+      fetch(path)
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(json) {
+            callback(json);
+        });
+    }
+  &lt;/script&gt;
+  &lt;script type=module&gt;
     let client
     let updateScheduled = false
 
@@ -205,13 +213,17 @@ fn main () {
 
       updateScheduled = true
     }
-
     window.global_js = new GlobalJS()
 
-    function main () {
-      const { Client } = window.wasm_bindgen
+    import { Client, default as init } from '/static/isomorphic_client.js';
+
+    async function run() {
+      await init('static/isomorphic_client_bg.wasm');
+
       client = new Client(window.initialState)
     }
+
+    run();
   &lt;/script&gt;
   &lt;script&gt;
       window.initialState = '#INITIAL_STATE_JSON#'
@@ -225,8 +237,7 @@ fn main () {
 #fn main() {
 // examples/isormorphic/server/src/server.rs
 // Check out the full application in /examples/isormorphic directory
-extern crate actix_web;
-use self::actix_web::{fs, HttpRequest, HttpResponse, Responder};
+use actix_web::{fs, HttpRequest, HttpResponse, Responder};
 
 use isomorphic_app::App;
 
