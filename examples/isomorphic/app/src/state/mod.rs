@@ -11,6 +11,7 @@ pub struct State {
     click_count: Rc<Cell<u32>>,
     path: String,
     contributors: Option<Vec<PercyContributor>>,
+    has_initiated_contributors_download: bool,
 }
 
 impl State {
@@ -19,6 +20,7 @@ impl State {
             path: "/".to_string(),
             click_count: Rc::new(Cell::new(count)),
             contributors: None,
+            has_initiated_contributors_download: false,
         }
     }
 
@@ -40,7 +42,10 @@ impl State {
             Msg::SetPath(path) => self.set_path(path.to_string()),
 	    Msg::SetContributorsJson(json) => {
 		self.contributors = Some(json.into_serde().unwrap());
-	    }
+	    },
+            Msg::InitiatedContributorsDownload => {
+                self.has_initiated_contributors_download = true;
+            }
         };
     }
 
@@ -54,6 +59,10 @@ impl State {
 
     pub fn contributors(&self) -> &Option<Vec<PercyContributor>> {
         &self.contributors
+    }
+
+    pub fn has_initiated_contributors_download(&self) -> &bool {
+        &self.has_initiated_contributors_download
     }
 }
 

@@ -44,7 +44,7 @@ impl App {
 
         store.borrow_mut().set_router(Rc::clone(&router));
 
-        let path = store.borrow().path().clone().to_string();
+        let path = store.borrow().path().to_string();
 
         store.borrow_mut().msg(&Msg::SetPath(path));
 
@@ -80,15 +80,32 @@ extern "C" {
 }
 
 fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
-    let callback = Closure::wrap(Box::new(move |json: JsValue| {
-        store.borrow_mut().msg(&Msg::SetContributorsJson(json));
-    }) as Box<FnMut(JsValue)>);
-    download_json(
-        "https://api.github.com/repos/chinedufn/percy/contributors",
-        callback.as_ref().unchecked_ref(),
-    );
+    // In order to check if the download has already been initiated, we must
+    // wrap the possibility of a download attempt in a closure and pass it to
+    // request_animation_frame. This is due to store already being mutably
+    // borrowed in the download callback closure.
+    let raf_closure = Closure::wrap(Box::new(move || {
+        if !store.borrow().has_initiated_contributors_download() {
+            store.borrow_mut().msg(&Msg::InitiatedContributorsDownload);
 
-    callback.forget();
+            let store = Rc::clone(&store);
+            let callback = Closure::wrap(Box::new(move |json: JsValue| {
+                store.borrow_mut().msg(&Msg::SetContributorsJson(json));
+            }) as Box<FnMut(JsValue)>);
+            download_json(
+                "https://api.github.com/repos/chinedufn/percy/contributors",
+                callback.as_ref().unchecked_ref(),
+            );
+
+            callback.forget();
+        }
+    }) as Box<FnMut()>);
+
+    web_sys::window()
+        .unwrap()
+        .request_animation_frame(raf_closure.as_ref().unchecked_ref()).unwrap();
+
+    raf_closure.forget();
 }
 
 fn make_router(store: Rc<RefCell<Store>>) -> Rc<Router> {
