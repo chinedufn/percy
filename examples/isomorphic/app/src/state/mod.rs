@@ -70,8 +70,10 @@ impl State {
 // Serde ignores fields not in this struct when deserializing
 #[derive(Serialize, Deserialize)]
 pub struct PercyContributor {
-    pub login: String,    // Github username.
-    pub html_url: String, // Github profile URL. E.g. https://github.com/username
+    /// Github username.
+    pub login: String,
+    /// Github profile URL. E.g. https://github.com/username
+    pub html_url: String,
 }
 
 #[cfg(test)]

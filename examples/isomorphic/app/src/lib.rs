@@ -44,6 +44,10 @@ impl App {
 
         store.borrow_mut().set_router(Rc::clone(&router));
 
+        let path = store.borrow().path().clone().to_string();
+
+        store.borrow_mut().msg(&Msg::SetPath(path));
+
         App { store, router }
     }
 }
