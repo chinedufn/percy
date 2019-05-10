@@ -105,6 +105,9 @@ fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
         .unwrap()
         .request_animation_frame(raf_closure.as_ref().unchecked_ref()).unwrap();
 
+    // TODO: We don't want to repeatedly forget this closure and should instead figure out a place
+    // to store it.
+    // Maybe make our `Store`'s msg handler for Msg::SetPath call `on_visit` inside of a RAF..
     raf_closure.forget();
 }
 
