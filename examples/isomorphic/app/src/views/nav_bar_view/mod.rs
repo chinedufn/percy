@@ -1,7 +1,4 @@
-use crate::store::Store;
 use css_rs_macro::css;
-use std::cell::RefCell;
-use std::rc::Rc;
 use virtual_dom_rs::prelude::*;
 
 mod nav_bar_item_view;
@@ -9,12 +6,11 @@ use self::nav_bar_item_view::NavBarItemView;
 
 pub struct NavBarView {
     active_page: ActivePage,
-    store: Rc<RefCell<Store>>,
 }
 
 impl NavBarView {
-    pub fn new(active_page: ActivePage, store: Rc<RefCell<Store>>) -> NavBarView {
-        NavBarView { active_page, store }
+    pub fn new(active_page: ActivePage) -> NavBarView {
+        NavBarView { active_page }
     }
 }
 
@@ -25,15 +21,9 @@ pub enum ActivePage {
 
 impl View for NavBarView {
     fn render(&self) -> VirtualNode {
-        let store = self.store.borrow();
-
-        let home = NavBarItemView::new(Rc::clone(&self.store), "/", "Isomorphic Web App", "");
-        let contributors = NavBarItemView::new(
-            Rc::clone(&self.store),
-            "/contributors",
-            "Contributors",
-            "margin-left: auto;",
-        );
+        let home = NavBarItemView::new("/", "Isomorphic Web App", "");
+        let contributors =
+            NavBarItemView::new("/contributors", "Contributors", "margin-left: auto;");
 
         html! {
         <div class=NAV_BAR_CSS>

@@ -1,14 +1,15 @@
 use crate::state::Msg;
 use crate::state::State;
 
+use router_rs::prelude::Router;
 use std::ops::Deref;
 use std::rc::Rc;
-use router_rs::prelude::Router;
 
 pub struct Store {
     state: StateWrapper,
     after_route: Option<Box<Fn(&str) -> ()>>,
-    router: Option<Rc<Router>>
+    router: Option<Rc<Router>>,
+    listeners: Vec<Box<Fn() -> ()>>,
 }
 
 impl Store {
@@ -16,7 +17,8 @@ impl Store {
         Store {
             state: StateWrapper(state),
             after_route: None,
-            router: None
+            router: None,
+            listeners: vec![],
         }
     }
 
@@ -34,13 +36,18 @@ impl Store {
                 if let Some(after_route) = &self.after_route {
                     after_route(path.as_str());
                 }
-            }
+            },
             _ => self.state.msg(msg),
+        }
+
+        // Whenever we update state we'll let all of our listeners know that state was updated
+        for callback in self.listeners.iter() {
+            callback();
         }
     }
 
     pub fn subscribe(&mut self, callback: Box<Fn() -> ()>) {
-        self.state.subscribe(callback);
+        self.listeners.push(callback)
     }
 
     pub fn set_after_route(&mut self, after_route: Box<Fn(&str) -> ()>) {
@@ -73,9 +80,5 @@ impl Deref for StateWrapper {
 impl StateWrapper {
     fn msg(&mut self, msg: &Msg) {
         self.0.msg(msg)
-    }
-
-    fn subscribe(&mut self, callback: Box<Fn() -> ()>) {
-        self.0.subscribe(callback);
     }
 }

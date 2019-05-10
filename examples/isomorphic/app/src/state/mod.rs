@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use serde_json;
 use std::cell::Cell;
 use std::rc::Rc;
@@ -8,9 +9,9 @@ pub use self::msg::Msg;
 #[derive(Serialize, Deserialize)]
 pub struct State {
     click_count: Rc<Cell<u32>>,
-    #[serde(skip)]
-    listeners: Vec<Box<Fn() -> ()>>,
     path: String,
+    contributors: Option<Vec<PercyContributor>>,
+    has_initiated_contributors_download: bool,
 }
 
 impl State {
@@ -18,9 +19,8 @@ impl State {
         State {
             path: "/".to_string(),
             click_count: Rc::new(Cell::new(count)),
-            // TODO: Move this to the store.. shouldn't be storing functions in state
-            // just data
-            listeners: vec![],
+            contributors: None,
+            has_initiated_contributors_download: false,
         }
     }
 
@@ -36,23 +36,17 @@ impl State {
 }
 
 impl State {
-    pub fn subscribe(&mut self, callback: Box<Fn() -> ()>) {
-        self.listeners.push(callback)
-    }
-}
-
-impl State {
     pub fn msg(&mut self, msg: &Msg) {
         match msg {
             Msg::Click => self.increment_click(),
             Msg::SetPath(path) => self.set_path(path.to_string()),
+	    Msg::SetContributorsJson(json) => {
+		self.contributors = Some(json.into_serde().unwrap());
+	    },
+            Msg::InitiatedContributorsDownload => {
+                self.has_initiated_contributors_download = true;
+            }
         };
-
-        // Whenever we update state we'll let all of our state listeners know that state was
-        // updated
-        for callback in self.listeners.iter() {
-            callback();
-        }
     }
 
     pub fn click_count(&self) -> u32 {
@@ -61,6 +55,14 @@ impl State {
 
     pub fn path(&self) -> &str {
         &self.path
+    }
+
+    pub fn contributors(&self) -> &Option<Vec<PercyContributor>> {
+        &self.contributors
+    }
+
+    pub fn has_initiated_contributors_download(&self) -> &bool {
+        &self.has_initiated_contributors_download
     }
 }
 
@@ -74,13 +76,22 @@ impl State {
     }
 }
 
+// Serde ignores fields not in this struct when deserializing
+#[derive(Serialize, Deserialize)]
+pub struct PercyContributor {
+    /// Github username.
+    pub login: String,
+    /// Github profile URL. E.g. https://github.com/username
+    pub html_url: String,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn serialize_deserialize() {
-        let state_json = r#"{"click_count":5,"path":"/"}"#;
+        let state_json = r#"{"click_count":5,"path":"/","contributors":null}"#;
 
         let state = State::from_json(state_json);
 

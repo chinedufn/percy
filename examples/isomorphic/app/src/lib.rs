@@ -1,11 +1,5 @@
 #![feature(proc_macro_hygiene)]
 
-#[macro_use]
-extern crate serde_derive;
-
-#[macro_use]
-extern  crate log;
-
 pub use crate::state::*;
 pub use crate::store::*;
 use crate::views::*;
@@ -14,6 +8,10 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use virtual_dom_rs::prelude::*;
 pub use virtual_dom_rs::VirtualNode;
+use wasm_bindgen;
+use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
+use wasm_bindgen::JsValue;
 
 mod state;
 mod store;
@@ -46,6 +44,10 @@ impl App {
 
         store.borrow_mut().set_router(Rc::clone(&router));
 
+        let path = store.borrow().path().to_string();
+
+        store.borrow_mut().msg(&Msg::SetPath(path));
+
         App { store, router }
     }
 }
@@ -69,11 +71,41 @@ fn contributors_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
     ContributorsView::new(Rc::clone(&store)).render()
 }
 
+// TODO: Use web-sys's fetch instead
+// https://rustwasm.github.io/docs/wasm-bindgen/examples/fetch.html
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_name = "downloadJson")]
+    pub fn download_json(path: &str, callback: &js_sys::Function);
+}
+
 fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
-    info!(r#"
-    TODO: Make XHR request to GitHub to download JSON data for percy contributors.
-    Then store this data in state via store.msg
-    "#);
+    // In order to check if the download has already been initiated, we must
+    // wrap the possibility of a download attempt in a closure and pass it to
+    // request_animation_frame. This is due to store already being mutably
+    // borrowed in the download callback closure.
+    let raf_closure = Closure::wrap(Box::new(move || {
+        if !store.borrow().has_initiated_contributors_download() {
+            store.borrow_mut().msg(&Msg::InitiatedContributorsDownload);
+
+            let store = Rc::clone(&store);
+            let callback = Closure::wrap(Box::new(move |json: JsValue| {
+                store.borrow_mut().msg(&Msg::SetContributorsJson(json));
+            }) as Box<FnMut(JsValue)>);
+            download_json(
+                "https://api.github.com/repos/chinedufn/percy/contributors",
+                callback.as_ref().unchecked_ref(),
+            );
+
+            callback.forget();
+        }
+    }) as Box<FnMut()>);
+
+    web_sys::window()
+        .unwrap()
+        .request_animation_frame(raf_closure.as_ref().unchecked_ref()).unwrap();
+
+    raf_closure.forget();
 }
 
 fn make_router(store: Rc<RefCell<Store>>) -> Rc<Router> {
