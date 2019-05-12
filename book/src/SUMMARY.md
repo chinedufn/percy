@@ -16,6 +16,7 @@
     - [How to SSR](./views/server-side-rendering/how-to-ssr.md)
 
 - [Router](./router/README.md)
+  - [On Visit Callback](./router/on-visit/README.md)
 
 - [CSS in Rust](./css-in-rust.md)
 

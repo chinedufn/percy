@@ -24,6 +24,9 @@ impl Store {
 
     pub fn msg(&mut self, msg: &Msg) {
         match msg {
+            // TODO: Right now `on_visit` cannot borrow store since it's already borrowed.
+            // So we might want to explore wraping our `on_visit` in requestAnimationFrame
+            // so that by the time it runs we are no longer borrowing store ... or something ...
             Msg::SetPath(path) => {
                 if let Some(router) = &self.router {
                     if let Some(route_handler) = router.matching_routerhandler(path.as_str()) {

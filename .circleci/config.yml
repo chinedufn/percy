@@ -103,9 +103,14 @@ jobs:
           command: >
             (test -x $CARGO_HOME/bin/cargo-install-update || cargo install cargo-update)
             && (test -x $CARGO_HOME/bin/mdbook || cargo install --vers "^0.1" mdbook)
+            && (test -x $CARGO_HOME/bin/mdbook-linkcheck || cargo install --vers "^0.2" mdbook-linkcheck)
+            && (test -x $CARGO_HOME/bin/mdbook-bookimport || cargo install --vers "^0.1" mdbook-bookimport)
             && mv ~/.gitconfig ~/.gitconfig.disabled  # Workaround for https://github.com/nabijaczleweli/cargo-update/issues/100
             && cargo install-update -a
             && mv ~/.gitconfig.disabled ~/.gitconfig
+            && mdbook -V # Print versions in case we need to debug a failed job
+            && mdbook-linkcheck -V # Print versions in case we need to debug a failed job
+            && mdbook-bookimport -V # Print versions in case we need to debug a failed job
 
       # Build docs
       - run:

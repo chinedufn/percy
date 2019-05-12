@@ -17,6 +17,12 @@ mod state;
 mod store;
 mod views;
 
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_name = "downloadJson")]
+    pub fn download_json(path: &str, callback: &js_sys::Function);
+}
+
 pub struct App {
     pub store: Rc<RefCell<Store>>,
     router: Rc<Router>,
@@ -63,6 +69,8 @@ fn home_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
     HomeView::new(Rc::clone(&store)).render()
 }
 
+// @book start on-visit-example
+
 #[route(
   path = "/contributors",
   on_visit = download_contributors_json
@@ -71,19 +79,13 @@ fn contributors_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
     ContributorsView::new(Rc::clone(&store)).render()
 }
 
-// TODO: Use web-sys's fetch instead
-// https://rustwasm.github.io/docs/wasm-bindgen/examples/fetch.html
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_name = "downloadJson")]
-    pub fn download_json(path: &str, callback: &js_sys::Function);
-}
-
 fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
     // In order to check if the download has already been initiated, we must
     // wrap the possibility of a download attempt in a closure and pass it to
     // request_animation_frame. This is due to store already being mutably
-    // borrowed in the download callback closure.
+    // borrowed, since this method will be called from the `Store.msg` function.
+    //
+    // TODO: Do this in `Store.msg` instead of needing to do it in every on_visit callback
     let raf_closure = Closure::wrap(Box::new(move || {
         if !store.borrow().has_initiated_contributors_download() {
             store.borrow_mut().msg(&Msg::InitiatedContributorsDownload);
@@ -97,6 +99,7 @@ fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
                 callback.as_ref().unchecked_ref(),
             );
 
+            // TODO: Store and drop the callback instead of leaking memory.
             callback.forget();
         }
     }) as Box<FnMut()>);
@@ -110,6 +113,8 @@ fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
     // Maybe make our `Store`'s msg handler for Msg::SetPath call `on_visit` inside of a RAF..
     raf_closure.forget();
 }
+
+// @book end on-visit-example
 
 fn make_router(store: Rc<RefCell<Store>>) -> Rc<Router> {
     let mut router = Router::default();

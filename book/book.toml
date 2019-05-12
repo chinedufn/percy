@@ -3,3 +3,6 @@ authors = ["Chinedu Francis Nwafili"]
 multilingual = false
 src = "src"
 title = "Percy - Isomorphic Web Apps in Rust"
+
+# mdbook-bookimport -> https://github.com/tailwind/mdbook-bookimport
+[preprocessor.bookimport]
