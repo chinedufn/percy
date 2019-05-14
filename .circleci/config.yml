@@ -102,7 +102,7 @@ jobs:
           name: Install mdbook
           command: >
             (test -x $CARGO_HOME/bin/cargo-install-update || cargo install cargo-update)
-            && cargo install --vers "^0.2" mdbook
+            && cargo install --vers "^0.2" mdbook --force
             && (test -x $CARGO_HOME/bin/mdbook || cargo install --vers "^0.2" mdbook)
             && (test -x $CARGO_HOME/bin/mdbook-linkcheck || cargo install --vers "^0.2" mdbook-linkcheck)
             && (test -x $CARGO_HOME/bin/mdbook-bookimport || cargo install --vers "^0.1" mdbook-bookimport)

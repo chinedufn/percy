@@ -15,7 +15,8 @@
     - [Why SSR](./views/server-side-rendering/why-ssr.md)
     - [How to SSR](./views/server-side-rendering/how-to-ssr.md)
 
-- [Router](./router/README.md)
+- [Router](./router/type-safe-url-param/README.md)
+  - [Type Safe URL Params](./router/type-safe-url-param/README.md)
   - [On Visit Callback](./router/on-visit/README.md)
 
 - [CSS in Rust](./css-in-rust.md)
