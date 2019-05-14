@@ -4,5 +4,10 @@ multilingual = false
 src = "src"
 title = "Percy - Isomorphic Web Apps in Rust"
 
+[output.linkcheck]
+follow-web-links = false
+traverse-parent-directories = false
+exclude = []
+
 # mdbook-bookimport -> https://github.com/tailwind/mdbook-bookimport
 [preprocessor.bookimport]

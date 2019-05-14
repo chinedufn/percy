@@ -22,8 +22,8 @@ jobs:
       # at all.
       - restore_cache:
           keys:
-            - v8-cargo-cache-test-{{ arch }}-{{ .Branch }}
-            - v8-cargo-cache-test-{{ arch }}-
+            - v9-cargo-cache-test-{{ arch }}-{{ .Branch }}
+            - v9-cargo-cache-test-{{ arch }}-
 
       # Install nightly & wasm
       - run:
@@ -63,12 +63,12 @@ jobs:
 
       # Save cache
       - save_cache:
-          key: v8-cargo-cache-test-{{ arch }}-{{ .Branch }}
+          key: v9-cargo-cache-test-{{ arch }}-{{ .Branch }}
           paths:
             - target
             - /usr/local/cargo
       - save_cache:
-          key: v8-cargo-cache-test-{{ arch }}-
+          key: v9-cargo-cache-test-{{ arch }}-
           paths:
             - target
             - /usr/local/cargo
@@ -82,8 +82,8 @@ jobs:
       # Multiple caches are used to increase the chance of a cache hit.
       - restore_cache:
           keys:
-            - v8-cargo-cache-docs-{{ arch }}-{{ .Branch }}-
-            - v8-cargo-cache-docs-{{ arch }}-
+            - v9-cargo-cache-docs-{{ arch }}-{{ .Branch }}-
+            - v9-cargo-cache-docs-{{ arch }}-
 
       # Install nightly
       - run:
@@ -106,29 +106,36 @@ jobs:
             && mv ~/.gitconfig ~/.gitconfig.disabled  # Workaround for https://github.com/nabijaczleweli/cargo-update/issues/100
             && cargo install-update -a
             && mv ~/.gitconfig.disabled ~/.gitconfig
-            && mdbook -V # Print versions in case we need to debug a failed job
-            && mdbook-linkcheck -V # Print versions in case we need to debug a failed job
-            && mdbook-bookimport -V # Print versions in case we need to debug a failed job
+
+      # Print versions in case we need to debug a failed job
+      - run:
+          name: Print Versions
+          command: >
+            mdbook -V
+            && mdbook-linkcheck -V
+            && mdbook-bookimport -V
+
 
       # Build docs
       - run:
           name: Build docs
           command: >
-            (cd book && mdbook build)
+            (cd book && RUST_LOG=debug mdbook build)
             && cargo doc --no-deps -p virtual-dom-rs -p css-rs-macro -p html-macro -p router-rs
             && cp -R target/doc book/book/api
+
       - persist_to_workspace:
           root: book
           paths: book
 
       # Save cache
       - save_cache:
-          key: v8-cargo-cache-docs-{{ arch }}-{{ .Branch }}
+          key: v9-cargo-cache-docs-{{ arch }}-{{ .Branch }}
           paths:
             - target
             - /usr/local/cargo
       - save_cache:
-          key: v8-cargo-cache-docs-{{ arch }}-
+          key: v9-cargo-cache-docs-{{ arch }}-
           paths:
             - target
             - /usr/local/cargo
