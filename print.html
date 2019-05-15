@@ -1,0 +1,1722 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Percy - Isomorphic Web Apps in Rust</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body class="light">
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { } 
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            document.body.className = theme;
+            document.querySelector('html').className = theme + ' js';
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <ol class="chapter"><li class="affix"><a href="introduction.html">Introduction</a></li><li class="spacer"></li><li><a href="views/index.html"><strong aria-hidden="true">1.</strong> Rendering Views</a></li><li><ol class="section"><li><a href="html-macro/index.html"><strong aria-hidden="true">1.1.</strong> Writing html!</a></li><li><ol class="section"><li><a href="html-macro/html-macro.html"><strong aria-hidden="true">1.1.1.</strong> Writing html!</a></li><li><a href="html-macro/compile-time-errors.html"><strong aria-hidden="true">1.1.2.</strong> Compile Time Errors</a></li><li><a href="html-macro/text/index.html"><strong aria-hidden="true">1.1.3.</strong> Working with Text</a></li></ol></li><li><a href="virtual-dom/index.html"><strong aria-hidden="true">1.2.</strong> Virtual DOM</a></li><li><ol class="section"><li><a href="virtual-dom/unit-testing-views.html"><strong aria-hidden="true">1.2.1.</strong> Unit Testing your Views</a></li></ol></li><li><a href="views/server-side-rendering/index.html"><strong aria-hidden="true">1.3.</strong> Server Side Rendering (SSR)</a></li><li><ol class="section"><li><a href="views/server-side-rendering/why-ssr.html"><strong aria-hidden="true">1.3.1.</strong> Why SSR</a></li><li><a href="views/server-side-rendering/how-to-ssr.html"><strong aria-hidden="true">1.3.2.</strong> How to SSR</a></li></ol></li></ol></li><li><a href="router/type-safe-url-param/index.html"><strong aria-hidden="true">2.</strong> Router</a></li><li><ol class="section"><li><a href="router/type-safe-url-param/index.html"><strong aria-hidden="true">2.1.</strong> Type Safe URL Params</a></li><li><a href="router/on-visit/index.html"><strong aria-hidden="true">2.2.</strong> On Visit Callback</a></li></ol></li><li><a href="css-in-rust.html"><strong aria-hidden="true">3.</strong> CSS in Rust</a></li><li><a href="contributing/index.html"><strong aria-hidden="true">4.</strong> Contributing</a></li><li><ol class="section"><li><a href="contributing/getting-started.html"><strong aria-hidden="true">4.1.</strong> Getting Started</a></li><li><a href="contributing/ways-to-contribute.html"><strong aria-hidden="true">4.2.</strong> Types of Contributions</a></li><li><a href="contributing/internal-design/index.html"><strong aria-hidden="true">4.3.</strong> Internal Design</a></li><li><ol class="section"><li><a href="diff-patch/index.html"><strong aria-hidden="true">4.3.1.</strong> Diff / Patch Algorithm</a></li><li><ol class="section"><li><a href="diff-patch/diff-patch-walkthrough/index.html"><strong aria-hidden="true">4.3.1.1.</strong> Diff / Patch Walkthrough</a></li><li><a href="diff-patch/fixing-diff-patch-issues/index.html"><strong aria-hidden="true">4.3.1.2.</strong> Fixing diff/patch issues</a></li></ol></li><li><a href="contributing/internal-design/sibling-text-nodes.html"><strong aria-hidden="true">4.3.2.</strong> Handling text siblings</a></li><li><a href="contributing/router/index.html"><strong aria-hidden="true">4.3.3.</strong> Router</a></li><li><ol class="section"><li><a href="contributing/router/macro/index.html"><strong aria-hidden="true">4.3.3.1.</strong> route macro</a></li></ol></li></ol></li></ol></li></ol>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">Percy - Isomorphic Web Apps in Rust</h1> 
+
+                        <div class="right-buttons">
+                            <a href="print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <a class="header" href="#introduction" id="introduction"><h1>Introduction</h1></a>
+<blockquote>
+<p>Note: The book is a work in progress. Some chapters are empty placeholders that will be filled in over time.</p>
+</blockquote>
+<p><code>Percy</code> is a modular toolkit for building isomorphic web apps with Rust + WebAssembly.</p>
+<p>Percy supports server side rendering out of the box.</p>
+<p>Modular in the sense that a big design focus is being able to replace different
+parts of the <code>Percy</code> toolkit with third party implementation that better suit your needs.</p>
+<p><code>Percy</code> is not yet ready for production (unless you're incredibly brave), but if you're
+interested in using it for real things you can <a href="https://github.com/chinedufn/percy/watchers">watch the development progress.</a>.</p>
+<a class="header" href="#a-snippet" id="a-snippet"><h3>A snippet</h3></a>
+<pre><pre class="playpen"><code class="language-rust">#![feature(proc_macro_hygiene)]
+
+use virtual_dom_rs::prelude::*;
+
+// Percy supports events, classes, attributes a virtual dom
+// with diff/patch and everything else that you'd expect from
+// a frontend toolkit.
+//
+// This, however, is just the most basic example of rendering
+// some HTML on the server side.
+fn main () {
+  let some_component = html! {
+    &lt;div class=&quot;cool-component&quot;&gt;Hello World&lt;/div&gt;
+  };
+
+  let html_string = some_component.to_string();
+  println!(&quot;{}&quot;, html_string);
+}
+</code></pre></pre>
+<a class="header" href="#roadmap" id="roadmap"><h3>Roadmap</h3></a>
+<p><code>Percy</code> is very young and going through the early stages of development. Our roadmap is
+is mainly led by Real World Driven Development.</p>
+<p>This means that we're using <code>Percy</code> to build a real, production web app and ironing out
+the kinks and fixing the bugs as we go.</p>
+<p>Once the tools have stabilized and we've settled into a clean structure for <code>Percy</code>
+applications we'll publish a CLI for generating a production-grade starter project with
+everything that you need to get up and running.</p>
+<p>Check out the <a href="https://github.com/chinedufn/percy/issues">Percy issue tracker</a> and
+maybe open a couple of your own!</p>
+<a class="header" href="#notable-features" id="notable-features"><h3>Notable Features</h3></a>
+<p><code>Percy</code> is still young, so the feature set is still growing and maturing. At the moment:</p>
+<ul>
+<li>
+<p>An <code>html!</code> macro that generates a virtual dom that can can be rendered into a DOM element
+on the frontend or a <code>String</code> on the backend.</p>
+</li>
+<li>
+<p>CSS in Rust - Optionally writing your CSS styles right next to your <code>html!</code> components instead
+of in separate CSS/Sass/etc files.</p>
+</li>
+</ul>
+<a class="header" href="#rendering-views" id="rendering-views"><h1>Rendering Views</h1></a>
+<p>Almost all front-end web applications seek to display some (often times interactive)
+content to a user.</p>
+<p>This section will dive into how to render content with <code>Percy</code>.</p>
+<a class="header" href="#html-macro" id="html-macro"><h1>HTML Macro</h1></a>
+<p>This chapter discusses rendering HTML using the <code>html!</code> macro</p>
+<a class="header" href="#writing-html" id="writing-html"><h1>Writing html!</h1></a>
+<a class="header" href="#static-text" id="static-text"><h3>Static text</h3></a>
+<p>Text that will never change can be typed right into your HTML</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+use virtual_dom_rs::prelude::*;
+
+html!{
+  &lt;div&gt; Text goes here &lt;/div&gt;
+};
+#}</code></pre></pre>
+<a class="header" href="#text-variables" id="text-variables"><h3>Text variables</h3></a>
+<p>Text variables must be wrapped in braces.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+use virtual_dom_rs::prelude::*;
+
+let text_var = &quot; world&quot;;
+
+html! {
+  Hello { &lt;div&gt; { text_var } &lt;/div&gt; }
+}
+#}</code></pre></pre>
+<a class="header" href="#attributes" id="attributes"><h3>Attributes</h3></a>
+<p>Attributes work just like regular HTML.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let view = html!{
+  &lt;div id='my-id' class='big wide'&gt;&lt;/div&gt;
+};
+#}</code></pre></pre>
+<a class="header" href="#event-handlers" id="event-handlers"><h3>Event Handlers</h3></a>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+html! {
+    &lt;button
+      onclick=move|_event: web_sys::MouseEvent| {
+        web_sys::console::log_1(&amp;&quot;clicked!&quot;.into());
+      }
+    &gt;
+      Click me!
+    &lt;/button&gt;
+}
+#}</code></pre></pre>
+<a class="header" href="#nested-components" id="nested-components"><h3>Nested components</h3></a>
+<p><code>html!</code> calls can be nested.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let view1 = html!{ &lt;em&gt; &lt;/em&gt; };
+let view2 = html{ &lt;span&gt; &lt;/span&gt; }
+
+let parent_view = html! {
+  &lt;div&gt;
+    { view1 }
+    { view2 }
+    {
+      html! {
+        Nested html! call
+      }
+    }
+  &lt;/div&gt;
+};
+
+
+let html_string = parent_view.to_string();
+// Here's what the String looks like:
+// &lt;div&gt;&lt;em&gt;&lt;/em&gt;&lt;span&gt;&lt;/span&gt;Nested html! call&lt;/div&gt;
+#}</code></pre></pre>
+<a class="header" href="#iterable-children" id="iterable-children"><h3>Iterable Children</h3></a>
+<p>Any type that implements IntoIter<VirtualNode> can be used as a child element within a block.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let list = vec![&quot;1&quot;, &quot;2&quot;, &quot;3&quot;]
+    .map(|item_num| {
+      html! { 
+        &lt;li&gt;
+          List item number { item_num }
+        &lt;/li&gt;
+      }
+    });
+
+html! {
+  &lt;ul&gt; { list } &gt;/ul&gt;
+}
+#}</code></pre></pre>
+<a class="header" href="#comments" id="comments"><h3>Comments</h3></a>
+<p>You can use Rust comments within your HTML</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+html! {
+  /* Main Div */
+  &lt;div&gt;
+    &lt;br /&gt;
+    // Title
+    &lt;h2&gt;Header&lt;/h2&gt;
+    &lt;br /&gt;
+  &lt;/div&gt;
+}
+#}</code></pre></pre>
+<a class="header" href="#compile-time-errors" id="compile-time-errors"><h1>Compile Time Errors</h1></a>
+<p>The <code>html-macro</code> provides compile time errors to help catch mistakes.</p>
+<p>Every compile time error is tested in <code>crates/html-macro-ui</code> using the <a href="https://github.com/laumann/compiletest-rs">compiletest-rs</a>
+crate.</p>
+<p>If you have an idea for an error that you don't see here <a href="https://github.com/chinedufn/percy/issues/new">open an issue!</a></p>
+<a class="header" href="#wrong-closing-tag" id="wrong-closing-tag"><h4>Wrong closing tag</h4></a>
+<p>You've opened with one tag but are attempting to close with another.</p>
+<pre><pre class="playpen"><code class="language-rust">#![feature(proc_macro_hygiene)]
+
+extern crate virtual_dom_rs;
+use virtual_dom_rs::prelude::*;
+
+// Expected a closing div tag, found a closing strong tag
+fn main () {
+    html! {
+        &lt;div&gt; &lt;/strong&gt;
+    };
+}
+</code></pre></pre>
+<pre><code>error: Wrong closing tag. Try changing &quot;strong&quot; into &quot;div&quot;
+ --&gt; $DIR/wrong_closing_tag.rs:9:17
+  |
+9 |         &lt;div&gt; &lt;/strong&gt;
+  |                 ^^^^^^
+
+error: aborting due to previous error
+
+
+</code></pre>
+<a class="header" href="#should-be-self-closing-tag" id="should-be-self-closing-tag"><h4>Should be self closing tag</h4></a>
+<p>The tag that you are trying to use is a self closing tagl</p>
+<pre><pre class="playpen"><code class="language-rust">#![feature(proc_macro_hygiene)]
+
+extern crate virtual_dom_rs;
+use virtual_dom_rs::prelude::*;
+
+// We are using open and close tags for a tag that should
+// actually be a self closing tag
+fn main () {
+    html! {
+        &lt;br&gt;&lt;/br&gt;
+    };
+}
+</code></pre></pre>
+<pre><code>error: br is a self closing tag. Try &quot;&lt;br&gt;&quot; or &quot;&lt;br /&gt;&quot;
+  --&gt; $DIR/should_be_self_closing_tag.rs:10:15
+   |
+10 |         &lt;br&gt;&lt;/br&gt;
+   |               ^^
+
+error: aborting due to previous error
+
+
+</code></pre>
+<a class="header" href="#working-with-text" id="working-with-text"><h1>Working with Text</h1></a>
+<p>One of the most popular types of nodes in the DOM is the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Text">Text</a> node, and the `html! macro
+focuses heavily on making them as easy to create as possible.</p>
+<p>You can just type unquoted text into the <code>html!</code> macro and neighboring text will get combined into a single <code>Text</code> node, much
+like the way that web browsers handle text from html documents.</p>
+<pre><pre class="playpen"><code class="language-rust">fn main () {
+    let interpolated_text = &quot;interpolate text variables.&quot;;
+
+    let example = html! {
+       &lt;div&gt;
+            Text can be typed directly into your HTML.
+            &lt;div&gt;Or you can also {interpolated_text}&lt;/div&gt;
+       &lt;/div&gt;
+    };
+}
+</code></pre></pre>
+<a class="header" href="#preserving-space-between-blocks" id="preserving-space-between-blocks"><h2>Preserving Space Between Blocks</h2></a>
+<p>You should always get the same spacing (or lack there of) between text and other elements as you would
+if you were working in a regular old <code>.html</code> file.</p>
+<p>We'll preserve newline characters so that <code>white-space: pre-wrap</code> etc will work as expected.</p>
+<p>When it comes to interpolated variables, we base spacing on the spacing outside of the braces, not the
+inside.</p>
+<p>Let's illustrate:</p>
+<pre><pre class="playpen"><code class="language-rust">fn main () {
+    let text = &quot;hello&quot;;
+
+    html! { &lt;div&gt;{ hello }&lt;/div&gt; }; // &lt;div&gt;hello&lt;/div&gt;
+    html! { &lt;div&gt;{hello}&lt;/div&gt; }; // &lt;div&gt;hello&lt;/div&gt;
+
+    html! { &lt;div&gt; { hello } &lt;/div&gt; }; // &lt;div&gt; hello &lt;/div&gt;
+    html! { &lt;div&gt; {hello} &lt;/div&gt; }; // &lt;div&gt; hello &lt;/div&gt;
+
+    html! { &lt;div&gt;{hello} &lt;/div&gt; }; // &lt;div&gt;hello &lt;/div&gt;
+    html! { &lt;div&gt;   {hello}&lt;/div&gt; }; // &lt;div&gt;   hello&lt;/div&gt;
+}
+</code></pre></pre>
+<a class="header" href="#preserving-white-space" id="preserving-white-space"><h2>Preserving white-space</h2></a>
+<p>Certain CSS styles such as <code>white-space: pre-wrap</code> will preserve all space and new lines within text.</p>
+<p>The <code>html-macro</code> will treat all sequences of whitespace as a single whitespace, so in cases that you don't want that you'll need to
+use a text variable for your text.</p>
+<p>Fortunately this should be incredibly uncommon for almost all use cases.</p>
+<pre><pre class="playpen"><code class="language-rust">fn main () {
+    let text = r#&quot;This needs
+it's whitespace perfectly
+      preserved&quot;#;
+
+    html! { &lt;span style=&quot;white-space: pre-wrap&quot;&gt;{ text }&lt;/span&gt; };
+}
+</code></pre></pre>
+<a class="header" href="#virtual-dom" id="virtual-dom"><h1>Virtual DOM</h1></a>
+<p>At the heart of the <code>Percy</code> toolkit is <code>virtual-dom-rs</code>, a crate that provides a virtual dom
+implementation that allows you to write functional front-end applications.</p>
+<p>This same <code>virtual-dom-rs</code> also works on the backend by rendering to a String instead of a DOM element.
+This ability to render on the backend is commonly referred to as server side rendering.</p>
+<pre><pre class="playpen"><code class="language-rust">use virtual_dom_rs::prelude::*;
+
+// The most basic example of rendering to a String
+fn main () {
+  let component = html! { &lt;div id=&quot;my-id&quot;&gt; Hello world &lt;/div&gt; };
+  println!(&quot;{}&quot;, component);
+  // &lt;div id=&quot;my-id&quot;&gt;Hello world&lt;/div&gt;
+}
+</code></pre></pre>
+<a class="header" href="#unit-testing-your-views" id="unit-testing-your-views"><h1>Unit Testing your Views</h1></a>
+<p>Percy's testing story is very much a work in progress, so please give feedback as you write tests!</p>
+<p>Here's an example of unit testing your views. You can find it in the examples directory at <a href="https://github.com/chinedufn/percy/tree/master/examples/unit-testing-views">examples/unit-testing-views</a>.</p>
+<pre><pre class="playpen"><code class="language-rust">#![feature(proc_macro_hygiene)]
+
+use virtual_dom_rs::prelude::*;
+
+fn main() {
+    println!(&quot;To see this example in action:&quot;);
+    println!(&quot;cargo test -p unit-testing-components&quot;);
+}
+
+#[allow(unused)]
+fn full_water_bottle() -&gt; VirtualNode {
+    html! {
+    &lt;div&gt;
+        &lt;span label=&quot;full-water&quot;&gt;
+          I am full of delicious and refreshing H20!
+        &lt;/span&gt;
+    &lt;/div&gt;
+    }
+}
+
+#[allow(unused)]
+fn struggling_water_bottle(percent_full: f32) -&gt; VirtualNode {
+    let message = format!(
+        &quot;Please fill me up :( I am only {} percent full :(&quot;,
+        percent_full
+    );
+    let message = VirtualNode::text(&amp;*message);
+
+    html! {
+        &lt;div label=&quot;struggle-water&quot;&gt;
+         { message }
+        &lt;/div&gt;
+    }
+}
+
+#[allow(unused)]
+fn water_bottle_view(percent_full: f32) -&gt; VirtualNode {
+    if percent_full &gt; 0.5 {
+        full_water_bottle()
+    } else {
+        struggling_water_bottle(percent_full)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn conditional_water_messaging() {
+        assert_eq!(
+            water_bottle_view(0.7)
+                .filter_label_equals(&quot;full-water&quot;)
+                .len(),
+            1
+        );
+
+        let water_view = water_bottle_view(0.2587);
+
+        assert_eq!(
+            water_view
+                .as_velement_ref()
+                .expect(&quot;Not an element node&quot;)
+                .children[0]
+                .as_vtext_ref()
+                .expect(&quot;Not a text node&quot;)
+                .text,
+            &quot; Please fill me up :( I am only 0.2587 percent full :( &quot;
+        )
+    }
+}
+
+</code></pre></pre>
+<a class="header" href="#server-side-rendering" id="server-side-rendering"><h1>Server Side Rendering</h1></a>
+<p>This section outlines Percy's server side rendering support.</p>
+<a class="header" href="#why-use-server-side-rendering" id="why-use-server-side-rendering"><h1>Why use Server Side Rendering</h1></a>
+<p>In recent years it has become popular for just about all of a web application to be rendered on the client.</p>
+<p>Applications will often serve almost nothing but a <code>&lt;script&gt;</code> tag that loads up some front-end code (<code>JavaScript</code> and/or <code>WebAssembly</code>)
+and that front-end code is responsible for rendering the application's <code>HTML</code> and interactions.</p>
+<p>Here's an example of what many of today's web application boil down to:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;body&gt;
+  &lt;div id='app'&gt;
+    &lt;!-- application will render HTML here when it begins --&gt;
+  &lt;/div&gt;
+  &lt;!--
+    One this applications loads it will
+    inject some HTML into the body
+  --&gt;
+  &lt;script src=&quot;/my-application.js&quot;&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+<hr />
+<p>One downside to this approach is that a user must wait until the script begins rendering before seeing anything.</p>
+<p>Let's illustrate:</p>
+<pre><code>Client side rendering
+without server side rendering:
+
+┌─────────────────────────────────────┐
+│   1) Client requests for web page   │
+└─────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│2) Server responds with &lt;script&gt; tag │
+└─────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│     3) Client downloads script      │
+└─────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│4) Client parses the returned script │
+└─────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│ 5) Client executes returned script  │
+└─────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐  User first
+│ 6) Script starts rendering content  │◀─   sees
+└─────────────────────────────────────┘   content
+</code></pre>
+<p>Contrast this with server side rendering, where the initial page load might look something like this:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;body&gt;
+  &lt;div id='app'&gt;
+  &lt;!--
+    This content was sent down from the server so
+    that the user sees something immediately!
+  --&gt;
+  &lt;/div&gt;
+
+  &lt;script src=&quot;/my-application.js&quot;&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+<p>And the flow:</p>
+<pre><code>Server side rendering then client
+takes over rendering:
+
+┌─────────────────────────────────────┐
+│   1) Client requests for web page   │
+└─────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│   2) Server responds with server    │  User first
+│ side rendered content along with a  │◀─   sees
+│            &lt;script&gt; tag             │   content
+└─────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│     3) Client downloads script      │
+└─────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│4) Client parses the returned script │
+└─────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│ 5) Client executes returned script  │
+└─────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│ 6) Script starts rendering content  │
+└─────────────────────────────────────┘
+</code></pre>
+<p>Server side rendering allows you to some <em>something</em> to your users more quickly,
+especially so for users with slower machines and/or bandwidth.</p>
+<a class="header" href="#how-to-ssr" id="how-to-ssr"><h1>How to SSR</h1></a>
+<p>In the most simple case, server side rendering in <code>Percy</code> boils down to
+rendering your virtual DOM to a <code>String</code> and responding to a client with
+that <code>String</code>.</p>
+<pre><pre class="playpen"><code class="language-rust">use virtual_dom_rs::prelude::*;
+use std::cell::Cell;
+
+fn main () {
+  let count_cell = Cell::new(5);
+
+  let app = html! {
+    &lt;div id=&quot;app&quot;&gt;
+      &lt;button onclick=|_ev| { *count+= 1; }&gt;
+        Hello world
+      &lt;/button&gt;
+    &lt;/div&gt;
+  };
+
+
+  let html_to_serve = app.to_string();
+  // &lt;div id=&quot;app&quot;&gt;&lt;button&gt;Hello world&lt;/button&gt;&lt;/div&gt;
+
+  // .. server string to client (http response) ...
+}
+</code></pre></pre>
+<a class="header" href="#hydrating-initial-state" id="hydrating-initial-state"><h2>Hydrating initial state</h2></a>
+<p>You'll usually want your views to be rendered based on some application state. So, typically, your server will</p>
+<ol>
+<li>Receive a request from the client</li>
+<li>Set the initial application state based on the request</li>
+<li>Render the application using the initial state</li>
+<li>Reply with the initial HTML and the initial state</li>
+<li>Client takes over rendering, starting from the initial state.</li>
+</ol>
+<p>To illustrate we'll take a look at an excerpt from a more realistic server side rendering example.</p>
+<p>Afterwards you can check out the full example at <a href="https://github.com/chinedufn/percy/tree/master/examples/isomorphic">examples/isormorphic</a>.</p>
+<hr />
+<p>A more realistic server side rendering implementation would look like the following:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+    &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;/static/app.css&quot;/&gt;
+    &lt;link rel=&quot;shortcut icon&quot; href=&quot;#&quot; /&gt;
+    &lt;title&gt;Rust Web App&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style='margin: 0; padding: 0; width: 100%; height: 100%;'&gt;
+  &lt;div id=&quot;isomorphic-rust-web-app&quot; style='width: 100%; height: 100%;'&gt;
+      #HTML_INSERTED_HERE_BY_SERVER#
+  &lt;/div&gt;
+  &lt;script&gt;
+    function downloadJson(path, callback) {
+      fetch(path)
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(json) {
+            callback(json);
+        });
+    }
+  &lt;/script&gt;
+  &lt;script type=module&gt;
+    let client
+    let updateScheduled = false
+
+    window.GlobalJS = function () {}
+    // TODO:
+    // https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Window.html#method.request_animation_frame
+    window.GlobalJS.prototype.update = function () {
+      if (!updateScheduled) {
+        requestAnimationFrame(() =&gt; {
+          client.render()
+
+          updateScheduled = false
+        })
+      }
+
+      updateScheduled = true
+    }
+    window.global_js = new GlobalJS()
+
+    import { Client, default as init } from '/static/isomorphic_client.js';
+
+    async function run() {
+      await init('static/isomorphic_client_bg.wasm');
+
+      client = new Client(window.initialState)
+    }
+
+    run();
+  &lt;/script&gt;
+  &lt;script&gt;
+      window.initialState = '#INITIAL_STATE_JSON#'
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// examples/isormorphic/server/src/server.rs
+// Check out the full application in /examples/isormorphic directory
+use actix_web::{fs, HttpRequest, HttpResponse, Responder};
+
+use isomorphic_app::App;
+
+const HTML_PLACEHOLDER: &amp;str = &quot;#HTML_INSERTED_HERE_BY_SERVER#&quot;;
+const STATE_PLACEHOLDER: &amp;str = &quot;#INITIAL_STATE_JSON#&quot;;
+
+fn index(req: &amp;HttpRequest) -&gt; impl Responder {
+    let path = &quot;/&quot;.to_string() + req.match_info().get(&quot;path&quot;).unwrap_or(&quot;&quot;);
+
+    let app = App::new(
+        req.query()
+            .get(&quot;init&quot;)
+            .map(|string| string.parse().expect(&quot;bad param&quot;))
+            .unwrap_or(1001),
+        path,
+    );
+    let state = app.store.borrow();
+
+    let html = format!(&quot;{}&quot;, include_str!(&quot;./index.html&quot;));
+    let html = html.replacen(HTML_PLACEHOLDER, &amp;app.render().to_string(), 1);
+    let html = html.replacen(STATE_PLACEHOLDER, &amp;state.to_json(), 1);
+
+    HttpResponse::Ok().content_type(&quot;text/html&quot;).body(html)
+}
+
+pub fn serve() {
+    let build_dir = {
+        // Development
+        #[cfg(debug_assertions)]
+        {
+            format!(&quot;{}/../client/build&quot;, env!(&quot;CARGO_MANIFEST_DIR&quot;))
+        }
+
+        #[cfg(not(debug_assertions))]
+        {
+            // Production
+            format!(&quot;{}/../client/dist&quot;, env!(&quot;CARGO_MANIFEST_DIR&quot;))
+        }
+    };
+
+    let server = actix_web::server::new(move || {
+        let app = actix_web::App::new();
+        let app = app
+            .resource(&quot;/&quot;, |r| r.f(index))
+            // Serve wasm and js files and any other assets
+            .handler(&quot;/static&quot;, fs::StaticFiles::new(&amp;build_dir).unwrap())
+            // All routes go back to our single index route since this is a single page app
+            .resource(&quot;/{path}&quot;, |r| r.f(index));
+        app
+    });
+
+    let server = server.bind(&quot;0.0.0.0:7878&quot;).unwrap();
+
+    println!(&quot;Listening on port 7878&quot;);
+    server.run();
+}
+
+#}</code></pre></pre>
+<p>And then the client would use <code>serde</code> to deserialize the <code>initialState</code>
+into a State struct and begin rendering using that State.</p>
+<a class="header" href="#type-safe-url-params" id="type-safe-url-params"><h1>Type Safe URL Params</h1></a>
+<p><code>router-rs</code> provides functionality that helps you render different views when your users' visit different routes.</p>
+<p>Let's take a look:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// Imported from crates/router-rs-macro-test/src/book_example.rs
+
+//! Note: Intentionally kept in it's own file for easy inclusion into The Percy Book
+
+#![feature(proc_macro_hygiene)]
+
+use router_rs::prelude::*;
+use std::str::FromStr;
+use virtual_dom_rs::prelude::*;
+
+#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;, on_visit = download_some_data)]
+fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
+    let id = format!(&quot;{}&quot;, id);
+    let meal = format!(&quot;{:#?}&quot;, meal);
+
+    html! {
+        &lt;div&gt; User { id } loves { meal } &lt;/div&gt;
+    }
+}
+
+fn download_some_data (id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) {
+    // Check state to see if we've already downloaded data ...
+    // If not - download the data that we need
+}
+
+#[test]
+fn provided_data_and_param() {
+    let mut router = Router::default();
+
+    router.provide(SomeState { happy: true });
+
+    router.set_route_handlers(create_routes![route_data_and_param]);
+
+    assert_eq!(
+        &amp;router
+            .view(&quot;/users/10/favorite-meal/breakfast&quot;)
+            .unwrap()
+            .to_string(),
+        &quot;&lt;div&gt; User 10 loves Breakfast &lt;/div&gt;&quot;
+    );
+}
+
+struct SomeState {
+    happy: bool,
+}
+
+#[derive(Debug)]
+enum Meal {
+    Breakfast,
+    Lunch,
+    Dinner,
+}
+
+impl FromStr for Meal {
+    type Err = ();
+
+    fn from_str(s: &amp;str) -&gt; Result&lt;Self, Self::Err&gt; {
+        Ok(match s {
+            &quot;breakfast&quot; =&gt; Meal::Breakfast,
+            &quot;lunch&quot; =&gt; Meal::Lunch,
+            &quot;dinner&quot; =&gt; Meal::Dinner,
+            _ =&gt; Err(())?,
+        })
+    }
+}
+
+#}</code></pre></pre>
+<a class="header" href="#type-safe-url-params-1" id="type-safe-url-params-1"><h1>Type Safe URL Params</h1></a>
+<p><code>router-rs</code> provides functionality that helps you render different views when your users' visit different routes.</p>
+<p>Let's take a look:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// Imported from crates/router-rs-macro-test/src/book_example.rs
+
+//! Note: Intentionally kept in it's own file for easy inclusion into The Percy Book
+
+#![feature(proc_macro_hygiene)]
+
+use router_rs::prelude::*;
+use std::str::FromStr;
+use virtual_dom_rs::prelude::*;
+
+#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;, on_visit = download_some_data)]
+fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
+    let id = format!(&quot;{}&quot;, id);
+    let meal = format!(&quot;{:#?}&quot;, meal);
+
+    html! {
+        &lt;div&gt; User { id } loves { meal } &lt;/div&gt;
+    }
+}
+
+fn download_some_data (id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) {
+    // Check state to see if we've already downloaded data ...
+    // If not - download the data that we need
+}
+
+#[test]
+fn provided_data_and_param() {
+    let mut router = Router::default();
+
+    router.provide(SomeState { happy: true });
+
+    router.set_route_handlers(create_routes![route_data_and_param]);
+
+    assert_eq!(
+        &amp;router
+            .view(&quot;/users/10/favorite-meal/breakfast&quot;)
+            .unwrap()
+            .to_string(),
+        &quot;&lt;div&gt; User 10 loves Breakfast &lt;/div&gt;&quot;
+    );
+}
+
+struct SomeState {
+    happy: bool,
+}
+
+#[derive(Debug)]
+enum Meal {
+    Breakfast,
+    Lunch,
+    Dinner,
+}
+
+impl FromStr for Meal {
+    type Err = ();
+
+    fn from_str(s: &amp;str) -&gt; Result&lt;Self, Self::Err&gt; {
+        Ok(match s {
+            &quot;breakfast&quot; =&gt; Meal::Breakfast,
+            &quot;lunch&quot; =&gt; Meal::Lunch,
+            &quot;dinner&quot; =&gt; Meal::Dinner,
+            _ =&gt; Err(())?,
+        })
+    }
+}
+
+#}</code></pre></pre>
+<a class="header" href="#on-visit-callback" id="on-visit-callback"><h1>On Visit Callback</h1></a>
+<p>You'll sometimes want to do something whenever you visit a route.</p>
+<p>For example, you might want to download some data from an API whenever you
+visit a route.</p>
+<p>You can specify things like this using the <code>on_visit</code> attribute in the <code>#route(...)</code>
+macro.</p>
+<p>Doing this in the <code>#route(...)</code> macro makes it very clear what happens whenever
+a route is visited.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// snippet: examples/isomorphic/app/src/lib.rs
+
+
+#[route(
+  path = &quot;/contributors&quot;,
+  on_visit = download_contributors_json
+)]
+fn contributors_route(store: Provided&lt;Rc&lt;RefCell&lt;Store&gt;&gt;&gt;) -&gt; VirtualNode {
+    ContributorsView::new(Rc::clone(&amp;store)).render()
+}
+
+fn download_contributors_json(store: Provided&lt;Rc&lt;RefCell&lt;Store&gt;&gt;&gt;) {
+    // In order to check if the download has already been initiated, we must
+    // wrap the possibility of a download attempt in a closure and pass it to
+    // request_animation_frame. This is due to store already being mutably
+    // borrowed, since this method will be called from the `Store.msg` function.
+    //
+    // TODO: Do this in `Store.msg` instead of needing to do it in every on_visit callback
+    let raf_closure = Closure::wrap(Box::new(move || {
+        if !store.borrow().has_initiated_contributors_download() {
+            store.borrow_mut().msg(&amp;Msg::InitiatedContributorsDownload);
+
+            let store = Rc::clone(&amp;store);
+            let callback = Closure::wrap(Box::new(move |json: JsValue| {
+                store.borrow_mut().msg(&amp;Msg::SetContributorsJson(json));
+            }) as Box&lt;FnMut(JsValue)&gt;);
+            download_json(
+                &quot;https://api.github.com/repos/chinedufn/percy/contributors&quot;,
+                callback.as_ref().unchecked_ref(),
+            );
+
+            // TODO: Store and drop the callback instead of leaking memory.
+            callback.forget();
+        }
+    }) as Box&lt;FnMut()&gt;);
+
+    web_sys::window()
+        .unwrap()
+        .request_animation_frame(raf_closure.as_ref().unchecked_ref()).unwrap();
+
+    // TODO: We don't want to repeatedly forget this closure and should instead figure out a place
+    // to store it.
+    // Maybe make our `Store`'s msg handler for Msg::SetPath call `on_visit` inside of a RAF..
+    raf_closure.forget();
+}
+
+#}</code></pre></pre>
+<a class="header" href="#css-in-rust" id="css-in-rust"><h1>CSS in Rust</h1></a>
+<p>... TODO ..</p>
+<a class="header" href="#contributing" id="contributing"><h1>Contributing</h1></a>
+<p>This section is meant to help you get up to speed with how you can contribute to the <code>Percy</code> project.</p>
+<a class="header" href="#getting-started" id="getting-started"><h1>Getting Started</h1></a>
+<ol>
+<li>
+<p>Rust Nightly.</p>
+<pre><code class="language-sh">rustup default nightly
+rustup target add wasm32-unknown-unknown
+</code></pre>
+</li>
+<li>
+<p><a href="https://github.com/mozilla/geckodriver/releases">Install Geckodriver</a> since some of our tests are meant to run in a browser.
+Put it somewhere in your path, i.e. you might move it to <code>/usr/local/bin/geckdriver</code>.</p>
+</li>
+<li>
+<p>Download the project and make sure that you can run the test suite</p>
+<pre><code class="language-sh">git clone https://github.com/chinedufn/percy
+cd percy
+./test.sh
+</code></pre>
+</li>
+</ol>
+<a class="header" href="#types-of-contributions" id="types-of-contributions"><h1>Types of Contributions</h1></a>
+<p>There are three main types of contributions to <code>Percy</code>, all of which are equally important.</p>
+<a class="header" href="#documentation--book-contributions--examples" id="documentation--book-contributions--examples"><h3>Documentation / Book Contributions / Examples</h3></a>
+<p>Our documentation is the first thing that anyone interested in using <code>Percy</code> will see.
+Before installing the tools, running the examples or starting up their own project they'll
+peruse the documentation to get a sense of <code>Percy</code>'s design and how to get started.</p>
+<p>Because of this, documentation and book contributions are incredibly useful and important.</p>
+<p>While it's common for projects to dismiss typo fixes as unimportant contributions, we feel
+the complete opposite. We strive for getting as close to &quot;perfect documentation&quot; as possible,
+and anything that brings us a step closer matters.</p>
+<a class="header" href="#documentation" id="documentation"><h5>Documentation</h5></a>
+<p>Scroll around the codebase. If you don't instantly understand something then it is poorly
+documented. Open up an issue or PR with your ideas on how it can be better communicated.</p>
+<a class="header" href="#book-contributions" id="book-contributions"><h5>Book Contributions</h5></a>
+<p>If there's a section that you think is missing from the book, PR the title of that section
+with some placeholder text.</p>
+<p>We're totally fine with not having book contributions fully fleshed out right away!</p>
+<p>Having a placeholder makes it easy for yourself or someone else to feel motivated one day
+and start hitting the keyboard.</p>
+<pre><code class="language-sh"># To view the book locally as you edit
+cd book &amp;&amp; mdbook serve --open
+</code></pre>
+<a class="header" href="#examples" id="examples"><h5>Examples</h5></a>
+<p>If you can't figure out how exactly to implement something within 5 minutes that might mean
+that you were underserved by the <code>examples</code> directory.</p>
+<p>Open up an issue with your question or an idea with how to craft an example that would have
+answered it!</p>
+<a class="header" href="#building-something-with-percy" id="building-something-with-percy"><h3>Building Something with Percy</h3></a>
+<p>When you're building a real application you run into problems, trade-offs and considerations
+that you never could have thought of up front.</p>
+<p>We want to uncover those problems and either address them in the main toolkit or point
+people in the right direction for how to solve them in user land.</p>
+<p>The more people that are using <code>Percy</code> to build things, the more of these problems we can
+fix and/or suggest approaches for.</p>
+<p>If you have an idea for something that you can build with <code>Percy</code> then get started. Feel
+free to open up an issue with any questions or thoughts that you might have. Also open
+issues / PRs as you run into problems / annoyances.</p>
+<a class="header" href="#design-of-percy" id="design-of-percy"><h1>Design of <code>percy</code></h1></a>
+<p>This section is intended to be a deep dive into how <code>percy</code>'s different internal pieces work today.</p>
+<a class="header" href="#diff--patch-algorithm" id="diff--patch-algorithm"><h1>Diff / Patch Algorithm</h1></a>
+<p>This section discusses the design of the diffing and patching algorithms as well as how
+to troubleshoot and fix issues that might arise.</p>
+<a class="header" href="#diff--patch-walkthrough" id="diff--patch-walkthrough"><h1>Diff / Patch Walkthrough</h1></a>
+<p>From a user's perspective, rendering on the client side looks roughly like this:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// Create a first virtual DOM in application memory then
+// use this description to render into the real DOM
+let old_vdom = html! { &lt;div&gt; Old &lt;/div&gt; };
+dom_updater.update(old_vdom);
+
+// Create a second virtual DOM in application memory then
+// apply a minimal set of changes to the DOM to get it to look like
+// this second virtual DOM representation
+let new_vdom = html! { &lt;div&gt; New &lt;/div&gt; }
+dom_updater.update(new_vdom);
+
+
+// Create a thid virtual DOM in application memory then
+// apply a minimal set of changes to the DOM to get it to look like
+// this second virtual DOM representation
+let new_vdom = html! { &lt;div&gt; &lt;span&gt;Very New&lt;/span&gt; &lt;/div&gt; }
+dom_updater.update(new_vdom);
+#}</code></pre></pre>
+<p>On the code side of things, the process is</p>
+<ol>
+<li>
+<p>Compare the old virtual DOM with the new virtual DOM and generate a <code>Vec&lt;Patch&lt;'a&gt;&gt;</code></p>
+</li>
+<li>
+<p>Iterate through <code>Vec&lt;Patch&lt;'a&gt;&gt;</code> and apply each of those patches in order to update the real DOM
+that the user sees.</p>
+</li>
+</ol>
+<a class="header" href="#diffing" id="diffing"><h2>Diffing</h2></a>
+<p>Let's say that you have an old virtual dom that you want to update using a new virtual dom.</p>
+<pre><code class="language-ignore">    Old vdom             New vdom
+
+    ┌─────┐             ┌─────┐
+    │ Div │             │ Div │
+    └─────┘             └─────┘
+       │                   │
+  ┌────┴─────┐        ┌────┴─────┐
+  ▼          ▼        ▼          ▼
+┌────┐     ┌────┐   ┌────┐     ┌────┐
+│Span│     │ Br │   │Img │     │ Br │
+└────┘     └────┘   └────┘     └────┘
+</code></pre>
+<p>In our example the only thing that has changed is that the <code>Span</code> has become a <code>Img</code>.</p>
+<p>So, we need to create a vector of patches that describes this.</p>
+<p>Our diffing algorithm will recursively iterate through the virtual dom trees and generate a vector
+of patches that looks like this:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// Our patches would look something like this:
+let patches = vec![
+    // The real generated patch won't use the `html!` macro,
+    // this is just for illustration.
+    Patch::Replace(1, html! { &lt;span&gt; &lt;/span&gt; }),
+];
+#}</code></pre></pre>
+<p>This patch says to replace the node with index of 1, which is currently a <code>&lt;br&gt;</code> with a <code>&lt;span&gt;</code>.</p>
+<p>How does the diffing algorithm determine the index?</p>
+<p>As we encounter nodes in our old virtual dom we increment a node index, the root node being index 0.
+Nodes are traversed depth first by recursively diffing children before proceeding to siblings.</p>
+<pre><code class="language-ignore">// Nodes are indexed depth first.
+
+            .─.
+           ( 0 )
+            `┬'
+        ┌────┴──────┐
+        │           │
+        ▼           ▼
+       .─.         .─.
+      ( 1 )       ( 4 )
+       `┬'         `─'
+   ┌────┴───┐       │
+   │        │       ├─────┬─────┐
+   ▼        ▼       │     │     │
+  .─.      .─.      ▼     ▼     ▼
+ ( 2 )    ( 3 )    .─.   .─.   .─.
+  `─'      `─'    ( 5 ) ( 6 ) ( 7 )
+                   `─'   `─'   `─'
+</code></pre>
+<a class="header" href="#patching" id="patching"><h2>Patching</h2></a>
+<p>There are several different types of patches that are described in our <code>Patch</code> enum.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+//! Our Patch enum is intentionally kept in it's own file for easy inclusion into
+//! The Percy Book.
+
+use crate::{VText, VirtualNode};
+use std::collections::HashMap;
+
+mod apply_patches;
+pub use apply_patches::patch;
+
+/// A Patch encodes an operation that modifies a real DOM element.
+///
+/// To update the real DOM that a user sees you'll want to first diff your
+/// old virtual dom and new virtual dom.
+///
+/// This diff operation will generate `Vec&lt;Patch&gt;` with zero or more patches that, when
+/// applied to your real DOM, will make your real DOM look like your new virtual dom.
+///
+/// Each Patch has a u32 node index that helps us identify the real DOM node that it applies to.
+///
+/// Our old virtual dom's nodes are indexed depth first, as shown in this illustration
+/// (0 being the root node, 1 being it's first child, 2 being it's first child's first child).
+///
+/// ```ignore
+///             .─.
+///            ( 0 )
+///             `┬'
+///         ┌────┴──────┐
+///         │           │
+///         ▼           ▼
+///        .─.         .─.
+///       ( 1 )       ( 4 )
+///        `┬'         `─'
+///    ┌────┴───┐       │
+///    │        │       ├─────┬─────┐
+///    ▼        ▼       │     │     │
+///   .─.      .─.      ▼     ▼     ▼
+///  ( 2 )    ( 3 )    .─.   .─.   .─.
+///   `─'      `─'    ( 5 ) ( 6 ) ( 7 )
+///                    `─'   `─'   `─'
+/// ```
+///
+/// The patching process is tested in a real browser in crates/virtual-dom-rs/tests/diff_patch.rs
+#[derive(Debug, PartialEq)]
+pub enum Patch&lt;'a&gt; {
+   /// Append a vector of child nodes to a parent node id.
+   AppendChildren(NodeIdx, Vec&lt;&amp;'a VirtualNode&gt;),
+   /// For a `node_i32`, remove all children besides the first `len`
+   TruncateChildren(NodeIdx, usize),
+   /// Replace a node with another node. This typically happens when a node's tag changes.
+   /// ex: &lt;div&gt; becomes &lt;span&gt;
+   Replace(NodeIdx, &amp;'a VirtualNode),
+   /// Add attributes that the new node has that the old node does not
+   AddAttributes(NodeIdx, HashMap&lt;&amp;'a str, &amp;'a str&gt;),
+   /// Remove attributes that the old node had that the new node doesn't
+   RemoveAttributes(NodeIdx, Vec&lt;&amp;'a str&gt;),
+   /// Change the text of a Text node.
+   ChangeText(NodeIdx, &amp;'a VText),
+}
+
+type NodeIdx = usize;
+
+impl&lt;'a&gt; Patch&lt;'a&gt; {
+   /// Every Patch is meant to be applied to a specific node within the DOM. Get the
+   /// index of the DOM node that this patch should apply to. DOM nodes are indexed
+   /// depth first with the root node in the tree having index 0.
+   pub fn node_idx(&amp;self) -&gt; usize {
+       match self {
+           Patch::AppendChildren(node_idx, _) =&gt; *node_idx,
+           Patch::TruncateChildren(node_idx, _) =&gt; *node_idx,
+           Patch::Replace(node_idx, _) =&gt; *node_idx,
+           Patch::AddAttributes(node_idx, _) =&gt; *node_idx,
+           Patch::RemoveAttributes(node_idx, _) =&gt; *node_idx,
+           Patch::ChangeText(node_idx, _) =&gt; *node_idx,
+       }
+   }
+}
+
+#}</code></pre></pre>
+<p>When patching we iterate over our vector of patches, look at the node index for the patch, then
+traverse the real DOM in order to find the corresponding DOM element.</p>
+<p>So if a patch applies to the node with index 4, we'll start at our root node (node 0) and crawl it's children
+and it's children's children until we've gone through node 1, 2 and 3.</p>
+<a class="header" href="#fixing-diffpatch-issues" id="fixing-diffpatch-issues"><h1>Fixing diff/patch issues</h1></a>
+<p>As our virtual dom implementation ages it will become more and more resilient, but while we're still
+an experimental library it's possible that the diff/patch algorithm could fail in some scenarios.</p>
+<p>If you notice a failure the first step is to open a new issue.</p>
+<p>Ideally you include an example start node and end node that isn't working properly.</p>
+<p>Let's make up an example here.</p>
+<pre><code># Example things that you'd include in your issue.
+
+start: html! { &lt;div&gt; &lt;/div&gt;  }
+
+end: html! { &lt;span&gt; &lt;/span&gt; }
+
+Observed error: It somehow ends up as &lt;b&gt;&lt;/b&gt; in my browser!
+</code></pre>
+<hr />
+<p>If you've opened this issue you've already made a big contribution!</p>
+<p>If you'd like to go further, here's how to get to the root of the problem.</p>
+<a class="header" href="#debugging-failed-diff" id="debugging-failed-diff"><h2>Debugging Failed Diff</h2></a>
+<p>The easiest place to start is by adding a new diff test and seeing what patches you get.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+
+#fn main() {
+use crate::diff::diff;
+use crate::patch::Patch;
+use virtual_node::VirtualNode;
+
+/// Test that we generate the right Vec&lt;Patch&gt; for some start and end virtual dom.
+pub struct DiffTestCase&lt;'a&gt; {
+    // ex: &quot;Patching root level nodes works&quot;
+    pub description: &amp;'static str,
+    // ex: html! { &lt;div&gt; &lt;/div&gt; }
+    pub old: VirtualNode,
+    // ex: html! { &lt;strong&gt; &lt;/strong&gt; }
+    pub new: VirtualNode,
+    // ex: vec![Patch::Replace(0, &amp;html! { &lt;strong&gt;&lt;/strong&gt; })],
+    pub expected: Vec&lt;Patch&lt;'a&gt;&gt;,
+}
+
+impl&lt;'a&gt; DiffTestCase&lt;'a&gt; {
+    pub fn test(&amp;self) {
+        // ex: vec![Patch::Replace(0, &amp;html! { &lt;strong&gt;&lt;/strong&gt; })],
+        let patches = diff(&amp;self.old, &amp;self.new);
+
+        assert_eq!(patches, self.expected, &quot;{}&quot;, self.description);
+    }
+}
+#}</code></pre></pre>
+<p>Diff patch tests get added in <code>diff.rs</code>. Here's an example:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// diff.rs
+
+#[test]
+fn add_children() {
+   DiffTestCase {
+       old: html! { &lt;div&gt; &lt;b&gt;&lt;/b&gt; &lt;/div&gt; },
+       new: html! { &lt;div&gt; &lt;b&gt;&lt;/b&gt; &lt;new&gt;&lt;/new&gt; &lt;/div&gt; },
+       expected: vec![Patch::AppendChildren(0, vec![&amp;html! { &lt;new&gt;&lt;/new&gt; }])],
+       description: &quot;Added a new node to the root node&quot;,
+   }.test();
+}
+#}</code></pre></pre>
+<p>To run your new test case:</p>
+<pre><code class="language-sh"># To run just your new diff test
+cargo test -p virtual-dom-rs --lib my_new_test_name_here
+
+# To run all diff tests
+cargo test -p virtual-dom-rs --lib diff::tests
+</code></pre>
+<p>If things are failing then you've found the issue!</p>
+<p>Please comment back on your original issue with your findings.</p>
+<p>If everything is passing, then it must be a patching issue.</p>
+<a class="header" href="#debugging-failed-patch" id="debugging-failed-patch"><h2>Debugging Failed Patch</h2></a>
+<p>If the diff checked out, then the issue must be in the patching process.</p>
+<p>Patches are tested in <code>crates/virtual-dom-rs/tests/diff_patch.rs</code></p>
+<p>A patch test case looks like this:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+//! Kept in its own file to more easily import into the book
+
+use console_error_panic_hook;
+use virtual_dom_rs::prelude::*;
+use wasm_bindgen::JsCast;
+use web_sys::{Element, Node};
+
+/// A test case that both diffing and patching are working in a real browser
+pub struct DiffPatchTest&lt;'a&gt; {
+    /// Description of the test case.
+    pub desc: &amp;'static str,
+    /// The old virtual node.
+    pub old: VirtualNode,
+    /// The new virtual node.
+    pub new: VirtualNode,
+    /// By default we generate the expected based on `new.to_string()`. You can
+    /// use this field to override the expected HTML after patching.
+    pub override_expected: Option&lt;&amp;'a str&gt;,
+}
+
+impl&lt;'a&gt; DiffPatchTest&lt;'a&gt; {
+    pub fn test(&amp;mut self) {
+        console_error_panic_hook::set_once();
+
+        let document = web_sys::window().unwrap().document().unwrap();
+
+        // Create a DOM node of the virtual root node
+        let root_node: Node = self.old.create_dom_node().node;
+
+        // Clone since virtual_dom_rs::patch takes ownership of the root node.
+        let patched_root_node: Node = root_node.clone();
+
+        // Generate patches
+        let patches = virtual_dom_rs::diff(&amp;self.old, &amp;self.new);
+
+        // Patch our root node. It should now look like `self.new`
+        virtual_dom_rs::patch(root_node, &amp;patches);
+
+        // Determine the expected outer HTML
+        let expected_outer_html = match self.override_expected {
+            Some(ref expected) =&gt; expected.to_string(),
+            None =&gt; self.new.to_string(),
+        };
+
+        let actual_outer_html = match patched_root_node.node_type() {
+            Node::ELEMENT_NODE =&gt; patched_root_node.unchecked_into::&lt;Element&gt;().outer_html(),
+            Node::TEXT_NODE =&gt; patched_root_node.text_content().unwrap_or(&quot;&quot;.into()),
+            _ =&gt; panic!(&quot;Unhandled node type&quot;),
+        };
+
+        assert_eq!(&amp;actual_outer_html, &amp;expected_outer_html, &quot;{}&quot;, self.desc);
+    }
+}
+
+#}</code></pre></pre>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// Example diff patch test case.
+// Found in `crates/virtual-dom-rs/tests/diff_patch.rs`
+
+
+wasm_bindgen_test_configure!(run_in_browser);
+
+mod diff_patch_test_case;
+use self::diff_patch_test_case::DiffPatchTest;
+
+#[wasm_bindgen_test]
+fn replace_child() {
+    DiffPatchTest {
+        desc: &quot;Replace a root node attribute attribute and a child text node&quot;,
+        old: html! {
+         &lt;div&gt;
+           Original element
+         &lt;/div&gt;
+#}</code></pre></pre>
+<pre><code># Run just your new diff patch test
+wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch my_test_name_here
+
+# Run all diff patch tests that contain the word replace
+wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch replace
+
+# Run all diff patch tests
+wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch
+</code></pre>
+<p>Create your new test case and run it to see if things fail.</p>
+<p>If they do, update your original issue with your findings.</p>
+<a class="header" href="#fixing-the-problem" id="fixing-the-problem"><h2>Fixing the problem</h2></a>
+<p>Look at the documentation for the diff algorithm and the patch algorithm to get a good sense of where and how our
+diffing and patching is implemented. Fixing the problem will require you to dive into that code.</p>
+<p>As you go, if you see opportunities to make the code more understandable, DRY or better commented, seize them!</p>
+<p>Look through your errors and try to pinpoint the exact place that the bug is stemming from. If you're stuck, continue
+to update your issue with your questions and progress and someone will get back to you.</p>
+<a class="header" href="#sibling-text-nodes" id="sibling-text-nodes"><h1>Sibling text nodes</h1></a>
+<p>If you render two text nodes next to them the browser will see them as just
+one text node.</p>
+<p>For example, when you have a component that looks like this:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+use virtual_dom_rs::prelude::*;
+
+let world = &quot;world&quot;;
+
+let sibling_text_nodes = html! { &lt;div&gt; hello {world} &lt;/div&gt; };
+#}</code></pre></pre>
+<p>A browser will end up with something like this:</p>
+<pre><code class="language-html"> &lt;div&gt;Hello World&lt;/div&gt;
+</code></pre>
+<p>The <code>textContent</code> of the div in the browser is now &quot;Hello World&quot;.</p>
+<p>If we did not work around this behavior we wouldn't be able  to patch the DOM when two text nodes are next to each other.
+We'd have no way of knowing how to find the original, individual strings that we wanted to render.</p>
+<p>To get around this here's what we actually end up rendering:</p>
+<pre><code class="language-html">&lt;div&gt;Hello &lt;!--ptns--&gt;World&lt;/div&gt;
+</code></pre>
+<p>Note the new <code>&lt;!--ptns--&gt;</code> comment node. Here's what <code>virtual_dom_rs</code>'s <code>createElement()</code> method ended up doing:</p>
+<ol>
+<li>Saw the &quot;Hello&quot; virtual text and appended a real Text node into the real DOM <code>&lt;div&gt;</code></li>
+<li>Saw the &quot;World&quot; virtual text and saw that the previous element was also a virtual text node</li>
+<li>Appended a <code>&lt;!--ptns&gt;</code> real comment element into the <code>&lt;div&gt;</code></li>
+<li>Appended a real &quot;World&quot; Text node into the <code>&lt;div&gt;</code></li>
+</ol>
+<p>If we later wanted to patch the DOM with a new component</p>
+<pre><code>let different_text = &quot;there&quot;;
+let sibling_text_nodes = html! { &lt;div&gt; hello {different_text} } &lt;/div&gt; };
+</code></pre>
+<p>Our <code>virtual_dom_rs</code> patch function would be able to find the old &quot;World&quot; text node since we've ensured that it
+did not get merged in with any other text nodes.</p>
+<a class="header" href="#router" id="router"><h1>Router</h1></a>
+<p>Percy provides a route that can be used for deciding which views to render
+based on, say, the route that the user has visited in their browser.</p>
+<p>Here's an example</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// Imported from crates/router-rs-macro-test/src/book_example.rs
+
+//! Note: Intentionally kept in it's own file for easy inclusion into The Percy Book
+
+#![feature(proc_macro_hygiene)]
+
+use router_rs::prelude::*;
+use std::str::FromStr;
+use virtual_dom_rs::prelude::*;
+
+#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;, on_visit = download_some_data)]
+fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
+    let id = format!(&quot;{}&quot;, id);
+    let meal = format!(&quot;{:#?}&quot;, meal);
+
+    html! {
+        &lt;div&gt; User { id } loves { meal } &lt;/div&gt;
+    }
+}
+
+fn download_some_data (id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) {
+    // Check state to see if we've already downloaded data ...
+    // If not - download the data that we need
+}
+
+#[test]
+fn provided_data_and_param() {
+    let mut router = Router::default();
+
+    router.provide(SomeState { happy: true });
+
+    router.set_route_handlers(create_routes![route_data_and_param]);
+
+    assert_eq!(
+        &amp;router
+            .view(&quot;/users/10/favorite-meal/breakfast&quot;)
+            .unwrap()
+            .to_string(),
+        &quot;&lt;div&gt; User 10 loves Breakfast &lt;/div&gt;&quot;
+    );
+}
+
+struct SomeState {
+    happy: bool,
+}
+
+#[derive(Debug)]
+enum Meal {
+    Breakfast,
+    Lunch,
+    Dinner,
+}
+
+impl FromStr for Meal {
+    type Err = ();
+
+    fn from_str(s: &amp;str) -&gt; Result&lt;Self, Self::Err&gt; {
+        Ok(match s {
+            &quot;breakfast&quot; =&gt; Meal::Breakfast,
+            &quot;lunch&quot; =&gt; Meal::Lunch,
+            &quot;dinner&quot; =&gt; Meal::Dinner,
+            _ =&gt; Err(())?,
+        })
+    }
+}
+
+#}</code></pre></pre>
+<p>This section will dive into how that works.</p>
+<a class="header" href="#route-macro" id="route-macro"><h1>route macro</h1></a>
+<p>The <code>#[route(...)]</code> attribute macro is used to annotate functions that we cant to get called
+when we visit a certain route.</p>
+<p>Before diving into how it works, let's take a look at what code the macro generates for you.</p>
+<p>Seeing the end result will make it easier to understand what we're doing and why we do it.</p>
+<a class="header" href="#generated-code" id="generated-code"><h2>Generated Code</h2></a>
+<p>Let's say that you have a file that looks like this:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// Imported from crates/router-rs-macro-test/src/book_example.rs
+
+//! Note: Intentionally kept in it's own file for easy inclusion into The Percy Book
+
+#![feature(proc_macro_hygiene)]
+
+use router_rs::prelude::*;
+use std::str::FromStr;
+use virtual_dom_rs::prelude::*;
+
+#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;, on_visit = download_some_data)]
+fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
+    let id = format!(&quot;{}&quot;, id);
+    let meal = format!(&quot;{:#?}&quot;, meal);
+
+    html! {
+        &lt;div&gt; User { id } loves { meal } &lt;/div&gt;
+    }
+}
+
+fn download_some_data (id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) {
+    // Check state to see if we've already downloaded data ...
+    // If not - download the data that we need
+}
+
+#[test]
+fn provided_data_and_param() {
+    let mut router = Router::default();
+
+    router.provide(SomeState { happy: true });
+
+    router.set_route_handlers(create_routes![route_data_and_param]);
+
+    assert_eq!(
+        &amp;router
+            .view(&quot;/users/10/favorite-meal/breakfast&quot;)
+            .unwrap()
+            .to_string(),
+        &quot;&lt;div&gt; User 10 loves Breakfast &lt;/div&gt;&quot;
+    );
+}
+
+struct SomeState {
+    happy: bool,
+}
+
+#[derive(Debug)]
+enum Meal {
+    Breakfast,
+    Lunch,
+    Dinner,
+}
+
+impl FromStr for Meal {
+    type Err = ();
+
+    fn from_str(s: &amp;str) -&gt; Result&lt;Self, Self::Err&gt; {
+        Ok(match s {
+            &quot;breakfast&quot; =&gt; Meal::Breakfast,
+            &quot;lunch&quot; =&gt; Meal::Lunch,
+            &quot;dinner&quot; =&gt; Meal::Dinner,
+            _ =&gt; Err(())?,
+        })
+    }
+}
+
+#}</code></pre></pre>
+<p>The <code>#[route(...)]</code> macro above will automatically generate the following code (some unimportant bits have been removed for brevity):</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+// TODO:: This code example isn't imported from a real file so it might go stale over time.
+
+fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
+  // ... removed ...
+}
+fn create_route_data_and_param() -&gt; Route {
+    fn route_param_parser(param_key: &amp;str, param_val: &amp;str) -&gt; Option&lt;Box&lt;dyn RouteParam&gt;&gt; {
+        match param_key {
+            &quot;id&quot; =&gt; {
+                return Some(Box::new(
+                    u16::from_str_param(param_val).expect(&quot;Macro parsed param&quot;),
+                ));
+            }
+            &quot;meal&quot; =&gt; {
+                return Some(Box::new(
+                    Meal::from_str_param(param_val).expect(&quot;Macro parsed param&quot;),
+                ));
+            }
+            _ =&gt; panic!(&quot;TODO: Handle this case...&quot;),
+        };
+        None
+    }
+    Route::new(
+        &quot;/users/:id/favorite-meal/:meal&quot;,
+        Box::new(route_param_parser),
+    )
+}
+pub mod __route_data_and_param_mod__ {
+    #![deny(warnings)]
+    #![allow(non_camel_case_types)]
+    use super::*;
+    pub struct route_data_and_param_handler {
+        route: Route,
+        provided: Option&lt;ProvidedMap&gt;,
+    }
+    impl route_data_and_param_handler {
+        pub fn new() -&gt; route_data_and_param_handler {
+            route_data_and_param_handler {
+                route: create_route_data_and_param(),
+                provided: None,
+            }
+        }
+    }
+    impl RouteHandler for route_data_and_param_handler {
+        fn route(&amp;self) -&gt; &amp;Route {
+            &amp;self.route
+        }
+        fn set_provided(&amp;mut self, provided: ProvidedMap) {
+            self.provided = Some(provided);
+        }
+        fn provided(&amp;self) -&gt; &amp;ProvidedMap {
+            &amp;self.provided.as_ref().unwrap()
+        }
+        fn view(&amp;self, incoming_route: &amp;str) -&gt; VirtualNode {
+            let id = self
+                .route()
+                .find_route_param(incoming_route, &quot;id&quot;)
+                .expect(&quot;Finding route param&quot;);
+            let meal = self
+                .route()
+                .find_route_param(incoming_route, &quot;meal&quot;)
+                .expect(&quot;Finding route param&quot;);
+            let state = self.provided().borrow();
+            let state = state
+                .get(&amp;std::any::TypeId::of::&lt;Provided&lt;SomeState&gt;&gt;())
+                .unwrap()
+                .downcast_ref::&lt;Provided&lt;SomeState&gt;&gt;()
+                .expect(&quot;Downcast param&quot;);
+            route_data_and_param(
+                u16::from_str_param(id).expect(
+                    // ... removed ...
+                )),
+                Provided::clone(state),
+                Meal::from_str_param(meal).expect(
+                  // ... removed ...
+                ),
+            )
+        }
+    }
+}
+fn provided_data_and_param() {
+    let mut router = Router::default();
+    router.provide(SomeState { happy: true });
+    router.set_route_handlers(&lt;[_]&gt;::into_vec(box [Box::new(
+        self::__route_data_and_param_mod__::route_data_and_param_handler::new(),
+    )]));
+    // ... removed ...
+}
+#}</code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+        
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+        
+        
+
+    </body>
+</html>
