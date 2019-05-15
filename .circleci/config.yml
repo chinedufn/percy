@@ -115,14 +115,13 @@ jobs:
             && mdbook-linkcheck -V
             && mdbook-bookimport -V
 
-
       # Build docs
       - run:
           name: Build docs
           command: >
             (cd book && RUST_LOG=debug mdbook build)
             && cargo doc --no-deps -p virtual-dom-rs -p css-rs-macro -p html-macro -p router-rs
-            && cp -R target/doc book/book/api
+            && cp -R target/doc book/book/html/api
 
       - persist_to_workspace:
           root: book
@@ -149,7 +148,7 @@ jobs:
           at: book
       - run:
           name: Disable jekyll builds
-          command: touch book/book/.nojekyll
+          command: touch book/book/html/.nojekyll
       - run:
           name: Install and configure dependencies
           command: >
@@ -161,7 +160,7 @@ jobs:
             - "71:95:d0:f5:0d:f6:fe:2a:9d:62:d7:4e:9a:6f:8e:8d"
       - run:
           name: Deploy docs to gh-pages branch
-          command: gh-pages --dotfiles --message "[skip ci] Updates" --dist book/book
+          command: gh-pages --dotfiles --message "[skip ci] Updates" --dist book/book/html
 
 workflows:
   version: 2
