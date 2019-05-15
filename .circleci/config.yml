@@ -148,7 +148,7 @@ jobs:
           at: book
       - run:
           name: Disable jekyll builds
-          command: touch book/book/html/.nojekyll
+          command: touch book/book/.nojekyll
       - run:
           name: Install and configure dependencies
           command: >
