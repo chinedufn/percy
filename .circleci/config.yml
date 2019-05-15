@@ -121,7 +121,7 @@ jobs:
           command: >
             (cd book && RUST_LOG=debug mdbook build)
             && cargo doc --no-deps -p virtual-dom-rs -p css-rs-macro -p html-macro -p router-rs
-            && cp -R target/doc book/book/html/api
+            && cp -R target/doc book/book/api
 
       - persist_to_workspace:
           root: book
@@ -158,9 +158,10 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "71:95:d0:f5:0d:f6:fe:2a:9d:62:d7:4e:9a:6f:8e:8d"
+
       - run:
           name: Deploy docs to gh-pages branch
-          command: gh-pages --dotfiles --message "[skip ci] Updates" --dist book/book/html
+          command: gh-pages --dotfiles --message "[skip ci] Updates" --dist book/book
 
 workflows:
   version: 2
