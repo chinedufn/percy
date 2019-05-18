@@ -227,6 +227,12 @@ impl VElement {
         let mut closures = HashMap::new();
 
         self.attrs.iter().for_each(|(name, value)| {
+            if name == "unsafe_inner_html" {
+                element.set_inner_html(value);
+
+                return;
+            }
+
             element
                 .set_attribute(name, value)
                 .expect("Set element attribute in create element");
@@ -578,18 +584,24 @@ mod tests {
         assert_eq!(&node.to_string(), "<br>");
     }
 
-    // TODO: Use html_macro as dev dependency and uncomment
-    //    #[test]
-    //    fn to_string() {
-    //        let node = html! {
-    //        <div id="some-id", !onclick=|_ev| {},>
-    //            <span>
-    //                { "Hello world" }
-    //            </span>
-    //        </div>
-    //        };
-    //        let expected = r#"<div id="some-id"><span>Hello world</span></div>"#;
-    //
-    //        assert_eq!(node.to_string(), expected);
-    //    }
+    #[test]
+    fn to_string() {
+        let mut node = VirtualNode::Element(VElement::new("div"));
+        node.as_velement_mut()
+            .unwrap()
+            .attrs
+            .insert("id".into(), "some-id".into());
+
+        let mut child = VirtualNode::Element(VElement::new("span"));
+
+        let mut text = VirtualNode::Text(VText::new("Hello world"));
+
+        child.as_velement_mut().unwrap().children.push(text);
+
+        node.as_velement_mut().unwrap().children.push(child);
+
+        let expected = r#"<div id="some-id"><span>Hello world</span></div>"#;
+
+        assert_eq!(node.to_string(), expected);
+    }
 }

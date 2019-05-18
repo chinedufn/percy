@@ -16,7 +16,7 @@ fn route_data_and_param(id: u16, state: Provided<SomeState>, meal: Meal) -> Virt
     }
 }
 
-fn download_some_data (id: u16, state: Provided<SomeState>, meal: Meal) {
+fn download_some_data(id: u16, state: Provided<SomeState>, meal: Meal) {
     // Check state to see if we've already downloaded data ...
     // If not - download the data that we need
 }

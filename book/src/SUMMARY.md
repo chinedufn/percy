@@ -9,6 +9,7 @@
     - [Writing html!](./html-macro/html-macro.md)
     - [Compile Time Errors](./html-macro/compile-time-errors.md)
     - [Working with Text](./html-macro/text/README.md)
+    - [Setting Inner HTML](./html-macro/setting-inner-html/README.md)
   - [Virtual DOM](./virtual-dom/README.md)
     - [Unit Testing your Views](./virtual-dom/unit-testing-views.md)
   - [Server Side Rendering (SSR)](./views/server-side-rendering/README.md)

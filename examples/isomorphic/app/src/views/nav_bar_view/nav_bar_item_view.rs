@@ -8,11 +8,7 @@ pub struct NavBarItemView {
 }
 
 impl NavBarItemView {
-    pub fn new(
-        path: &'static str,
-        text: &'static str,
-        style: &'static str
-    ) -> NavBarItemView {
+    pub fn new(path: &'static str, text: &'static str, style: &'static str) -> NavBarItemView {
         NavBarItemView { path, text, style }
     }
 }

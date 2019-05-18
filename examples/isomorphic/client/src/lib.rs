@@ -54,8 +54,7 @@ impl Client {
         }));
 
         app.store.borrow_mut().set_after_route(Box::new(|new_path| {
-            history()
-                .push_state_with_url(&JsValue::null(), "Rust Web App", Some(new_path));
+            history().push_state_with_url(&JsValue::null(), "Rust Web App", Some(new_path));
         }));
 
         let store = Rc::clone(&app.store);
@@ -67,8 +66,7 @@ impl Client {
         };
         let on_popstate = Box::new(on_popstate) as Box<FnMut(_)>;
         let mut on_popstate = Closure::wrap(on_popstate);
-        window()
-            .set_onpopstate(Some(on_popstate.as_ref().unchecked_ref()));
+        window().set_onpopstate(Some(on_popstate.as_ref().unchecked_ref()));
         on_popstate.forget();
 
         let root_node = document()
@@ -141,9 +139,7 @@ fn history() -> web_sys::History {
 }
 
 fn location() -> web_sys::Location {
-        document()
-        .location()
-        .unwrap()
+    document().location().unwrap()
 }
 
 fn hostname() -> String {

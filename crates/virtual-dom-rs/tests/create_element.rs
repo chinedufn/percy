@@ -3,6 +3,12 @@
 //! To run all tests in this file:
 //!
 //! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element
+//!
+//! ---
+//!
+//! To run a single test:
+//!
+//! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element nested_divs
 
 #![feature(proc_macro_hygiene)]
 
@@ -76,3 +82,18 @@ fn click_event() {
 
     assert_eq!(*clicked, Cell::new(true));
 }
+
+// @book start inner-html
+#[wasm_bindgen_test]
+fn inner_html() {
+    let div = html! {
+    <div
+      unsafe_inner_html="<span>hi</span>"
+    >
+    </div>
+    };
+    let div: Element = div.create_dom_node().node.unchecked_into();
+
+    assert_eq!(div.inner_html(), "<span>hi</span>");
+}
+// @book end inner-html

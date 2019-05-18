@@ -106,7 +106,8 @@ fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
 
     web_sys::window()
         .unwrap()
-        .request_animation_frame(raf_closure.as_ref().unchecked_ref()).unwrap();
+        .request_animation_frame(raf_closure.as_ref().unchecked_ref())
+        .unwrap();
 
     // TODO: We don't want to repeatedly forget this closure and should instead figure out a place
     // to store it.

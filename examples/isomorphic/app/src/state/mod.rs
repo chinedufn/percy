@@ -40,9 +40,9 @@ impl State {
         match msg {
             Msg::Click => self.increment_click(),
             Msg::SetPath(path) => self.set_path(path.to_string()),
-	    Msg::SetContributorsJson(json) => {
-		self.contributors = Some(json.into_serde().unwrap());
-	    },
+            Msg::SetContributorsJson(json) => {
+                self.contributors = Some(json.into_serde().unwrap());
+            }
             Msg::InitiatedContributorsDownload => {
                 self.has_initiated_contributors_download = true;
             }

@@ -1,5 +1,5 @@
 use router_rs::prelude::*;
-use std::sync::atomic::{AtomicBool, Ordering, AtomicUsize};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use virtual_dom_rs::prelude::VirtualNode;
 
 static mut VISITED: AtomicBool = AtomicBool::new(false);
@@ -57,7 +57,7 @@ fn route_param_and_data(id: u16, state: Provided<SomeState>) -> VirtualNode {
     VirtualNode::Text("".into())
 }
 
-fn set_id (id: u16, state: Provided<SomeState>) {
+fn set_id(id: u16, state: Provided<SomeState>) {
     unsafe {
         *ID.get_mut() = id as usize;
     }
@@ -74,7 +74,10 @@ fn visit_params_data() {
         assert_eq!(ID.load(Ordering::SeqCst), 0);
     }
 
-    router.matching_routerhandler("/users/5").unwrap().on_visit("/users/5");
+    router
+        .matching_routerhandler("/users/5")
+        .unwrap()
+        .on_visit("/users/5");
 
     unsafe {
         assert_eq!(ID.load(Ordering::SeqCst), 5);
