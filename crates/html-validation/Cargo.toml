@@ -1,6 +1,6 @@
 [package]
 name = "html-validation"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "Validation for HTML elements and attributes"
 keywords = ["html", "validation", "valid", "dom", "virtual"]
