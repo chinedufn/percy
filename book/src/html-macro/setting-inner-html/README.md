@@ -8,9 +8,11 @@ For example, if you're creating a tooltip component you might want to be able to
 
 You can use the `unsafe_inner_html` attribute for this purpose.
 
-Note that it is called `unsafe` because it can poentially expose your application to cross side scripting attacks if your application
+Note that it is called `unsafe` because it can poentially expose your application to [cross-site scripting][XSS] attacks if your application
 trusts arbitrary un-escaped HTML strings that are provided by users.
 
 ```rust
 {{#bookimport ../../../../crates/virtual-dom-rs/tests/create_element.rs@inner-html}}
 ```
+
+[XSS]: https://en.wikipedia.org/wiki/Cross-site_scripting
