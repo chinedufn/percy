@@ -16,6 +16,11 @@ _Here we list notable things that have been merged into the master branch but ha
 - [added] SVG support [#104](https://github.com/chinedufn/percy/pull/104)
 - ...
 
+## 0.6.9 - May 23, 2019
+
+- [added] `on_create_elem` [Docs](https://chinedufn.github.io/percy/html-macro/real-elements-and-nodes/on-create-elem/index.html)
+- [added] `inner_html` [Docs](https://chinedufn.github.io/percy/html-macro/setting-inner-html/index.html)
+
 ## 0.6.7 - Mar 16, 2019
 
 - [fixed] Spacing between elements is done by inserting space before and after existing text nodes instead of creating new ones.

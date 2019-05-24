@@ -3,12 +3,6 @@
 //! To run all tests in this file:
 //!
 //! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element
-//!
-//! ---
-//!
-//! To run a single test:
-//!
-//! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element nested_divs
 
 #![feature(proc_macro_hygiene)]
 
@@ -24,6 +18,7 @@ use virtual_dom_rs::prelude::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
+/// wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element nested_divs
 #[wasm_bindgen_test]
 fn nested_divs() {
     let vdiv = html! { <div> <div> <div></div> </div> </div> };
@@ -32,6 +27,7 @@ fn nested_divs() {
     assert_eq!(&div.inner_html(), "<div><div></div></div>");
 }
 
+/// wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element svg_element
 #[wasm_bindgen_test]
 fn svg_element() {
     let vdiv = html! { <div><svg xmlns="http://www.w3.org/2000/svg">
@@ -45,6 +41,7 @@ fn svg_element() {
     );
 }
 
+/// wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element div_with_attributes
 #[wasm_bindgen_test]
 fn div_with_attributes() {
     let vdiv = html! { <div id="id-here" class="two classes"></div> };
@@ -58,6 +55,7 @@ fn div_with_attributes() {
     assert_eq!(div.class_list().length(), 2);
 }
 
+/// wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element click_event
 #[wasm_bindgen_test]
 fn click_event() {
     let clicked = Rc::new(Cell::new(false));
@@ -83,7 +81,8 @@ fn click_event() {
     assert_eq!(*clicked, Cell::new(true));
 }
 
-// @book start inner-html
+/// wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element inner_html
+/// @book start inner-html
 #[wasm_bindgen_test]
 fn inner_html() {
     let div = html! {
@@ -97,3 +96,23 @@ fn inner_html() {
     assert_eq!(div.inner_html(), "<span>hi</span>");
 }
 // @book end inner-html
+
+/// wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element on_create_elem
+/// @book start on-create-elem
+#[wasm_bindgen_test]
+fn on_create_elem() {
+    let div = html! {
+    <div
+      on_create_elem=|elem: web_sys:: Node| {
+        let elem: Element = elem.dyn_into().unwrap();
+        elem.set_inner_html("Hello world");
+      }
+    >
+        <span>This span should get replaced</span>
+    </div>
+    };
+    let div: Element = div.create_dom_node().node.unchecked_into();
+
+    assert_eq!(div.inner_html(), "Hello world");
+}
+// @book end on-create-elem

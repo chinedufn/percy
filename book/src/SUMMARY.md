@@ -10,6 +10,8 @@
     - [Compile Time Errors](./html-macro/compile-time-errors.md)
     - [Working with Text](./html-macro/text/README.md)
     - [Setting Inner HTML](./html-macro/setting-inner-html/README.md)
+    - [Real Elements and Nodes](./html-macro/real-elements-and-nodes/on-create-elem/README.md)
+      - [on_create_elem](./html-macro/real-elements-and-nodes/on-create-elem/README.md)
   - [Virtual DOM](./virtual-dom/README.md)
     - [Unit Testing your Views](./virtual-dom/unit-testing-views.md)
   - [Server Side Rendering (SSR)](./views/server-side-rendering/README.md)

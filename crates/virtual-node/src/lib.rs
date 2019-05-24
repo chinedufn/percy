@@ -224,6 +224,7 @@ impl VElement {
         } else {
             document.create_element(&self.tag).unwrap()
         };
+
         let mut closures = HashMap::new();
 
         self.attrs.iter().for_each(|(name, value)| {
@@ -306,6 +307,12 @@ impl VElement {
             }
         });
 
+        if let Some(on_create_elem) = self.events.0.get("on_create_elem") {
+            let on_create_elem: &js_sys::Function =
+                on_create_elem.as_ref().as_ref().unchecked_ref();
+            on_create_elem.call1(&wasm_bindgen::JsValue::NULL, &element);
+        }
+
         CreatedNode {
             node: element,
             closures,
@@ -374,6 +381,21 @@ fn create_unique_identifier() -> u32 {
     *elem_unique_id += 1;
 
     *elem_unique_id
+}
+
+/// A trait with common functionality for rendering front-end views.
+pub trait View {
+    /// Render a VirtualNode, or any IntoIter<VirtualNode>
+    fn render(&self) -> VirtualNode;
+}
+
+impl<V> From<&V> for VirtualNode
+where
+    V: View,
+{
+    fn from(v: &V) -> Self {
+        v.render()
+    }
 }
 
 /// Used by the html! macro for all braced child nodes so that we can use any type
