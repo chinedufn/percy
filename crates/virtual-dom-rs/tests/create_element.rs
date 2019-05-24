@@ -103,8 +103,7 @@ fn inner_html() {
 fn on_create_elem() {
     let div = html! {
     <div
-      on_create_elem=|elem: web_sys:: Node| {
-        let elem: Element = elem.dyn_into().unwrap();
+      on_create_elem=|elem: web_sys::Element| {
         elem.set_inner_html("Hello world");
       }
     >
