@@ -5,9 +5,17 @@ authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 publish = false
 edition = "2018"
 
+[features]
+default = ["with-rocket"]
+with-rocket = ["rocket", "rocket_contrib"]
+with-actix = ["actix-web"]
+
 [dependencies]
-actix-web = "0.7.18"
 chrono = "0.4.6"
 isomorphic-app = { path = "../app" }
 env_logger = "0.6.1"
 virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
+
+rocket = {optional = true, version = "0.4.0"}
+rocket_contrib = {optional = true, version = "0.4.0"}
+actix-web = {optional = true, version = "0.7.18"}

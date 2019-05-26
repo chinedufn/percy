@@ -50,9 +50,10 @@ A more realistic server side rendering implementation would look like the follow
 ```
 
 ```rust
-// examples/isormorphic/server/src/server.rs
+// examples/isormorphic/server/src/rocket_server.rs
 // Check out the full application in /examples/isormorphic directory
-{{#include ../../../../examples/isomorphic/server/src/server.rs}}
+
+{{#include ../../../../examples/isomorphic/server/src/rocket_server.rs}}
 ```
 
 And then the client would use `serde` to deserialize the `initialState`
