@@ -242,23 +242,63 @@ fn main () {
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
-// examples/isormorphic/server/src/server.rs
+// examples/isormorphic/server/src/rocket_server.rs
 // Check out the full application in /examples/isormorphic directory
-use actix_web::{fs, HttpRequest, HttpResponse, Responder};
+
+use std::env;
+
+use rocket::http::ContentType;
+use rocket::response::Response;
+use rocket::{Rocket, Config};
 
 use isomorphic_app::App;
+use std::io::Cursor;
+use rocket::config::Environment;
+use rocket_contrib::serve::StaticFiles;
 
 const HTML_PLACEHOLDER: &amp;str = &quot;#HTML_INSERTED_HERE_BY_SERVER#&quot;;
 const STATE_PLACEHOLDER: &amp;str = &quot;#INITIAL_STATE_JSON#&quot;;
 
-fn index(req: &amp;HttpRequest) -&gt; impl Responder {
-    let path = &quot;/&quot;.to_string() + req.match_info().get(&quot;path&quot;).unwrap_or(&quot;&quot;);
+static INDEX_HTML: &amp;str = include_str!(&quot;./index.html&quot;);
 
+/// Create a Rocket server for our application
+pub fn rocket() -&gt; Rocket {
+    let config = Config::build(Environment::Development)
+        .address(&quot;127.0.0.1&quot;)
+        .port(7878)
+        .unwrap();
+
+    let static_files = format!(&quot;{}/../client/build&quot;, env!(&quot;CARGO_MANIFEST_DIR&quot;));
+
+    rocket::custom(config)
+        .mount(&quot;/&quot;, routes![index, favicon, catch_all])
+        .mount(&quot;/static&quot;, StaticFiles::from(static_files.as_str()))
+}
+
+/// # Example
+///
+/// localhost:7878/?init=50
+#[get(&quot;/?&lt;initial_count&gt;&quot;)]
+fn index(initial_count: Option&lt;u32&gt;) -&gt; Result&lt;Response&lt;'static&gt;, ()&gt; {
+    respond(&quot;/&quot;.to_string(), initial_count)
+}
+
+/// # Example
+///
+/// localhost:7878/contributors?init=1200
+#[get(&quot;/&lt;path&gt;?&lt;initial_count&gt;&quot;)]
+fn catch_all(path: String, initial_count: Option&lt;u32&gt;) -&gt; Result&lt;Response&lt;'static&gt;, ()&gt; {
+    respond(path, initial_count)
+}
+
+#[get(&quot;/favicon.ico&quot;)]
+fn favicon() -&gt; &amp;'static str {
+    &quot;&quot;
+}
+
+fn respond(path: String, initial_count: Option&lt;u32&gt;) -&gt; Result&lt;Response&lt;'static&gt;, ()&gt; {
     let app = App::new(
-        req.query()
-            .get(&quot;init&quot;)
-            .map(|string| string.parse().expect(&quot;bad param&quot;))
-            .unwrap_or(1001),
+        initial_count.unwrap_or(1000),
         path,
     );
     let state = app.store.borrow();
@@ -267,39 +307,11 @@ fn index(req: &amp;HttpRequest) -&gt; impl Responder {
     let html = html.replacen(HTML_PLACEHOLDER, &amp;app.render().to_string(), 1);
     let html = html.replacen(STATE_PLACEHOLDER, &amp;state.to_json(), 1);
 
-    HttpResponse::Ok().content_type(&quot;text/html&quot;).body(html)
-}
+    let mut response = Response::new();
+    response.set_header(ContentType::HTML);
+    response.set_sized_body(Cursor::new(html));
 
-pub fn serve() {
-    let build_dir = {
-        // Development
-        #[cfg(debug_assertions)]
-        {
-            format!(&quot;{}/../client/build&quot;, env!(&quot;CARGO_MANIFEST_DIR&quot;))
-        }
-
-        #[cfg(not(debug_assertions))]
-        {
-            // Production
-            format!(&quot;{}/../client/dist&quot;, env!(&quot;CARGO_MANIFEST_DIR&quot;))
-        }
-    };
-
-    let server = actix_web::server::new(move || {
-        let app = actix_web::App::new();
-        let app = app
-            .resource(&quot;/&quot;, |r| r.f(index))
-            // Serve wasm and js files and any other assets
-            .handler(&quot;/static&quot;, fs::StaticFiles::new(&amp;build_dir).unwrap())
-            // All routes go back to our single index route since this is a single page app
-            .resource(&quot;/{path}&quot;, |r| r.f(index));
-        app
-    });
-
-    let server = server.bind(&quot;0.0.0.0:7878&quot;).unwrap();
-
-    println!(&quot;Listening on port 7878&quot;);
-    server.run();
+    Ok(response)
 }
 
 #}</code></pre></pre>
