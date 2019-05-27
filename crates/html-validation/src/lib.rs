@@ -5,9 +5,9 @@
 //! validate html at compile time, but it is general purpose and can be used in other problem
 //! spaces.
 //!
-//! ## Optimistic Validation
+//! ## Potential Strategy - Pessimistic Validation
 //!
-//! The html-validation crate is optimistic by nature.
+//! We might make the html-validation crate is pessimistic by nature.
 //!
 //! This means that as we develop the create we'll blacklist more and more things - but in general
 //! we default to not saying that something is invalid until we've specifically encoded that it is
@@ -23,6 +23,13 @@
 //! needing to wait until our validation is perfect.
 //! A downside is that as we become more and more strict there might be situations where you have
 //! to go back and tweak your html if you had something that we are now calling invalid.
+//!
+//! ## Potential Strategy - Optimistic Validation
+//!
+//! In this case we'd make html! generate a compile time error for anything that isn't certainly valid.
+//! Then there would be a second macro such as html_unstrict! that would be a bit more permissive.
+//!
+//! Over time as our validation permitted more cases people could use html! more and more instead of html_loose!
 
 #![deny(missing_docs)]
 
