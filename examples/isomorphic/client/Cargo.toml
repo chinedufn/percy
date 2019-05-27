@@ -11,12 +11,12 @@ crate-type = ["cdylib"]
 console_error_panic_hook = "0.1"
 console_log = "0.1.2"
 isomorphic-app = { path = "../app" }
-js-sys = "0.3.20"
+js-sys = "0.3"
 log = "0.4.6"
 virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
 
 [dependencies.wasm-bindgen]
-version = "0.2.33"
+version = "0.2.45"
 features = ["default", "nightly"]
 
 [dependencies.web-sys]
