@@ -2,6 +2,8 @@
 
 cd $(dirname $0)
 
+set -e
+
 mkdir -p build/
 mkdir -p dist/
 
