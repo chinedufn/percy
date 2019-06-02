@@ -45,7 +45,7 @@
     import { Client, default as init } from '/static/isomorphic_client.js';
 
     async function run() {
-      await init('static/isomorphic_client_bg.wasm');
+      await init('/static/isomorphic_client_bg.wasm');
 
       client = new Client(window.initialState)
     }
