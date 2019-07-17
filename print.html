@@ -796,13 +796,13 @@ const STATE_PLACEHOLDER: &amp;str = &quot;#INITIAL_STATE_JSON#&quot;;
 static INDEX_HTML: &amp;str = include_str!(&quot;./index.html&quot;);
 
 /// Create a Rocket server for our application
-pub fn rocket() -&gt; Rocket {
+pub fn rocket(static_files: String) -&gt; Rocket {
     let config = Config::build(Environment::Development)
-        .address(&quot;127.0.0.1&quot;)
+        .address(&quot;0.0.0.0&quot;)
         .port(7878)
         .unwrap();
 
-    let static_files = format!(&quot;{}/../client/build&quot;, env!(&quot;CARGO_MANIFEST_DIR&quot;));
+    println!(&quot;Rocket server listening on port 7878&quot;);
 
     rocket::custom(config)
         .mount(&quot;/&quot;, routes![index, favicon, catch_all])
@@ -812,17 +812,17 @@ pub fn rocket() -&gt; Rocket {
 /// # Example
 ///
 /// localhost:7878/?init=50
-#[get(&quot;/?&lt;initial_count&gt;&quot;)]
-fn index(initial_count: Option&lt;u32&gt;) -&gt; Result&lt;Response&lt;'static&gt;, ()&gt; {
-    respond(&quot;/&quot;.to_string(), initial_count)
+#[get(&quot;/?&lt;init&gt;&quot;)]
+fn index(init: Option&lt;u32&gt;) -&gt; Result&lt;Response&lt;'static&gt;, ()&gt; {
+    respond(&quot;/&quot;.to_string(), init)
 }
 
 /// # Example
 ///
 /// localhost:7878/contributors?init=1200
-#[get(&quot;/&lt;path&gt;?&lt;initial_count&gt;&quot;)]
-fn catch_all(path: String, initial_count: Option&lt;u32&gt;) -&gt; Result&lt;Response&lt;'static&gt;, ()&gt; {
-    respond(path, initial_count)
+#[get(&quot;/&lt;path&gt;?&lt;init&gt;&quot;)]
+fn catch_all(path: String, init: Option&lt;u32&gt;) -&gt; Result&lt;Response&lt;'static&gt;, ()&gt; {
+    respond(path, init)
 }
 
 #[get(&quot;/favicon.ico&quot;)]
@@ -830,9 +830,9 @@ fn favicon() -&gt; &amp;'static str {
     &quot;&quot;
 }
 
-fn respond(path: String, initial_count: Option&lt;u32&gt;) -&gt; Result&lt;Response&lt;'static&gt;, ()&gt; {
+fn respond(path: String, init: Option&lt;u32&gt;) -&gt; Result&lt;Response&lt;'static&gt;, ()&gt; {
     let app = App::new(
-        initial_count.unwrap_or(1000),
+        init.unwrap_or(1001),
         path,
     );
     let state = app.store.borrow();
