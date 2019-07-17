@@ -15,13 +15,13 @@ const STATE_PLACEHOLDER: &str = "#INITIAL_STATE_JSON#";
 static INDEX_HTML: &str = include_str!("./index.html");
 
 /// Create a Rocket server for our application
-pub fn rocket() -> Rocket {
+pub fn rocket(static_files: String) -> Rocket {
     let config = Config::build(Environment::Development)
-        .address("127.0.0.1")
+        .address("0.0.0.0")
         .port(7878)
         .unwrap();
 
-    let static_files = format!("{}/../client/build", env!("CARGO_MANIFEST_DIR"));
+    println!("Rocket server listening on port 7878");
 
     rocket::custom(config)
         .mount("/", routes![index, favicon, catch_all])
@@ -31,17 +31,17 @@ pub fn rocket() -> Rocket {
 /// # Example
 ///
 /// localhost:7878/?init=50
-#[get("/?<initial_count>")]
-fn index(initial_count: Option<u32>) -> Result<Response<'static>, ()> {
-    respond("/".to_string(), initial_count)
+#[get("/?<init>")]
+fn index(init: Option<u32>) -> Result<Response<'static>, ()> {
+    respond("/".to_string(), init)
 }
 
 /// # Example
 ///
 /// localhost:7878/contributors?init=1200
-#[get("/<path>?<initial_count>")]
-fn catch_all(path: String, initial_count: Option<u32>) -> Result<Response<'static>, ()> {
-    respond(path, initial_count)
+#[get("/<path>?<init>")]
+fn catch_all(path: String, init: Option<u32>) -> Result<Response<'static>, ()> {
+    respond(path, init)
 }
 
 #[get("/favicon.ico")]
@@ -49,9 +49,9 @@ fn favicon() -> &'static str {
     ""
 }
 
-fn respond(path: String, initial_count: Option<u32>) -> Result<Response<'static>, ()> {
+fn respond(path: String, init: Option<u32>) -> Result<Response<'static>, ()> {
     let app = App::new(
-        initial_count.unwrap_or(1000),
+        init.unwrap_or(1001),
         path,
     );
     let state = app.store.borrow();

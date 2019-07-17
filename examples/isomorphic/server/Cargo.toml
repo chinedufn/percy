@@ -8,7 +8,7 @@ edition = "2018"
 [features]
 default = ["with-rocket"]
 with-rocket = ["rocket", "rocket_contrib"]
-with-actix = ["actix-web"]
+with-actix = ["actix-web", "actix-files", "actix-rt", "serde"]
 
 [dependencies]
 chrono = "0.4.6"
@@ -16,6 +16,12 @@ isomorphic-app = { path = "../app" }
 env_logger = "0.6.1"
 virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
 
+# with-rocket
 rocket = {optional = true, version = "0.4.0"}
 rocket_contrib = {optional = true, version = "0.4.0"}
-actix-web = {optional = true, version = "0.7.18"}
+
+# with-actix
+actix-web = {optional = true, version = "1.0.3"}
+actix-files = {optional = true, version = "0.1.3"}
+actix-rt = {optional = true, version = "0.2.3"}
+serde = {optional = true, version = "1.0.94"}
