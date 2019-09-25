@@ -9,6 +9,10 @@ Percy
 
 [The Percy Book](https://chinedufn.github.io/percy/)
 
+Percy is modular toolkit geared towards building single page web apps entirely in Rust that can also be rendered at the server.
+
+This allows you to build search engine friendly browser applications in Rust.
+
 ---
 
 ## What is an isomorphic web app?

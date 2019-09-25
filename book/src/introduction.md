@@ -12,6 +12,12 @@ parts of the `Percy` toolkit with third party implementation that better suit yo
 `Percy` is not yet ready for production (unless you're incredibly brave), but if you're
 interested in using it for real things you can [watch the development progress.](https://github.com/chinedufn/percy/watchers).
 
+### What is Percy?
+
+Percy is modular toolkit geared towards building single page web apps entirely in Rust that can also be rendered at the server.
+
+This allows you to build search engine friendly browser applications in Rust.
+
 ### A snippet
 
 ```rust
