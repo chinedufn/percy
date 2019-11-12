@@ -170,7 +170,7 @@ static _MORE_CSS: &'static str = css!{r#"
 # contents of Cargo.toml
 
 [package]
-name = "browser"
+name = "client-side-web-app"
 version = "0.1.0"
 authors = ["Friends of Percy"]
 edition = "2018"
@@ -205,9 +205,9 @@ features = [
         <title>Client Side Demo</title>
     </head>
     <body style='margin: 0; padding: 0; width: 100%; height: 100%;'>
-        <script src='/browser.js'></script>
+        <script src='/client_side_web_app.js'></script>
         <script>
-            window.wasm_bindgen(`/browser_bg.wasm`).then(() => {
+            window.wasm_bindgen(`/client_side_web_app_bg.wasm`).then(() => {
                 const { App } = window.wasm_bindgen
                 new App()
             })
