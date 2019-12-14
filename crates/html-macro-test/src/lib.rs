@@ -254,3 +254,81 @@ fn self_closing_tag() {
     }
     .test();
 }
+
+#[test]
+fn if_true_block() {
+    let child_valid = html! { <b></b> };
+    let child_invalid = html! { <i></i> };
+
+    let mut expected = VElement::new("div");
+    expected.children = vec![VirtualNode::element("b")];
+
+    HtmlMacroTest {
+        desc: "If true block",
+        generated: html! {
+          <div>
+            {if true {child_valid} else {child_invalid}}
+          </div>
+        },
+        expected: expected.into(),
+    }
+    .test();
+}
+
+#[test]
+fn if_false_block() {
+    let child_valid = html! { <b></b> };
+    let child_invalid = html! { <i></i> };
+
+    let mut expected = VElement::new("div");
+    expected.children = vec![VirtualNode::element("i")];
+
+    HtmlMacroTest {
+        desc: "If false block",
+        generated: html! {
+          <div>
+            {if false {
+                child_valid
+            } else {
+                child_invalid
+            }}
+          </div>
+        },
+        expected: expected.into(),
+    }
+    .test();
+}
+
+#[test]
+fn single_branch_if_true_block() {
+    let child_valid = html! { <b></b> };
+
+    let mut expected = VElement::new("div");
+    expected.children = vec![VirtualNode::element("b")];
+
+    HtmlMacroTest {
+        desc: "Single branch if block block",
+        generated: html! {
+          <div>{if true {child_valid}}</div>
+        },
+        expected: expected.into(),
+    }
+    .test();
+}
+
+#[test]
+fn single_branch_if_false_block() {
+    let child_valid = html! { <b></b> };
+
+    let mut expected = VElement::new("div");
+    expected.children = vec![VirtualNode::text("")];
+
+    HtmlMacroTest {
+        desc: "Single branch if block block",
+        generated: html! {
+          <div>{if false {child_valid}}</div>
+        },
+        expected: expected.into(),
+    }
+    .test();
+}

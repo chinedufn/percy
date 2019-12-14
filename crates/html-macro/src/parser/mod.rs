@@ -10,6 +10,7 @@ mod braced;
 mod close_tag;
 mod open_tag;
 mod text;
+mod statement;
 
 /// Used to parse [`Tag`]s that we've parsed and build a tree of `VirtualNode`s
 ///
@@ -207,14 +208,19 @@ impl HtmlParser {
     ///
     /// html! { <div> { some_var_in_braces } </div>
     /// html! { <div> { some_other_variable } </div>
-    fn push_iterable_nodes(&mut self, stmt: &Stmt) {
+    fn push_iterable_nodes(&mut self, stmt: &Stmt, tokens: Option<proc_macro2::TokenStream>) {
         let node_idx = self.current_node_idx;
         let node_ident = self.new_virtual_node_ident(stmt.span());
 
-        let nodes = quote! {
-            let mut #node_ident: IterableNodes = #stmt.into();
-        };
-        self.push_tokens(nodes);
+        if let Some(nodes) = tokens {
+            self.push_tokens(quote! {
+                let mut #node_ident: IterableNodes = #nodes.into();
+            });
+        } else {
+            self.push_tokens(quote! {
+                let mut #node_ident: IterableNodes = #stmt.into();
+            });
+        }
 
         let parent_idx = *&self.parent_stack[self.parent_stack.len() - 1].0;
 
