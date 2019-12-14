@@ -43,13 +43,13 @@ impl HtmlParser {
     /// 
     /// ```rust,ignore
     /// html! {
-    /// 	<div>
-    /// 		{if condition_is_true {
-    ///				html! {
-    /// 				<span>Hello World</span>
-    /// 			}
-    ///			}}
-    /// 	</div>
+    ///     <div>
+    ///         {if condition_is_true {
+    ///	            html! {
+    ///                 <span>Hello World</span>
+    ///             }
+    ///	        }}
+    ///     </div>
     /// }
     /// ```
     /// 
