@@ -45,10 +45,8 @@ impl HtmlParser {
     /// html! {
     ///     <div>
     ///         {if condition_is_true {
-    ///	            html! {
-    ///                 <span>Hello World</span>
-    ///             }
-    ///	        }}
+    ///	            html! { <span>Hello World</span> }
+    ///         }}
     ///     </div>
     /// }
     /// ```
