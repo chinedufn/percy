@@ -73,12 +73,7 @@ impl HtmlParser {
                 };
                 self.push_tokens(node);
             } else {
-                // Here we handle a block being a descendant within some html! call.
-                //
-                // The descendant should implement Into<IterableNodes>
-                //
-                // html { <div> { some_node } </div> }
-                self.push_iterable_nodes(stmt);
+                self.parse_statement(stmt);
 
                 if insert_whitespace_before_text {
                     let node = self.current_virtual_node_ident(stmt.span());
