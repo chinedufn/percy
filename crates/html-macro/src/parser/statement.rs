@@ -1,4 +1,4 @@
-use crate::parser::HtmlParser;
+use crate::parser::{HtmlParser, NodesToPush};
 use quote::quote;
 use syn::{Stmt, Expr, ExprIf};
 
@@ -14,8 +14,12 @@ impl HtmlParser {
         //
         // html { <div> { some_node } </div> }
         match stmt {
-            Stmt::Expr(expr) => self.parse_expr(stmt, expr),
-            _ => self.push_iterable_nodes(stmt, None)
+            Stmt::Expr(expr) => {
+                self.parse_expr(stmt, expr);
+            },
+            _ => {
+                self.push_iterable_nodes(NodesToPush::Stmt(stmt));
+            }
         };
     }
 
@@ -30,7 +34,7 @@ impl HtmlParser {
                 self.expand_if(stmt, expr_if);
             },
             _ => {
-                self.push_iterable_nodes(stmt, None);
+                self.push_iterable_nodes(NodesToPush::Stmt(stmt));
             }
         }
     }
@@ -54,7 +58,7 @@ impl HtmlParser {
     /// Traditionally this would be possible as an if statement in rust is an
     /// expression, so the then, and the else block have to return matching types.
     /// Here we identify whether the block is missing the else and fill it in with
-    /// a blank VirtualNode
+    /// a blank VirtualNode::text("")
     pub(crate) fn expand_if(
         &mut self,
         stmt: &Stmt,
@@ -62,11 +66,11 @@ impl HtmlParser {
     ) {
         // Has else branch, we can parse the expression as normal.
         if let Some(_else_branch) = &expr_if.else_branch {
-            self.push_iterable_nodes(stmt, None);
+            self.push_iterable_nodes(NodesToPush::Stmt(stmt));
         } else {
             let condition = &expr_if.cond;
             let block = &expr_if.then_branch;
-            let new_stmt = quote! {
+            let tokens = quote! {
                 if #condition {
                     #block.into()
                 } else {
@@ -74,7 +78,7 @@ impl HtmlParser {
                 }
             };
 
-            self.push_iterable_nodes(stmt, Some(new_stmt));
+            self.push_iterable_nodes(NodesToPush::TokenStream(stmt, tokens));
         }
     }
 }

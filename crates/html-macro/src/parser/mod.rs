@@ -12,6 +12,11 @@ mod open_tag;
 mod text;
 mod statement;
 
+pub enum NodesToPush<'a> {
+    Stmt(&'a Stmt),
+    TokenStream(&'a Stmt, proc_macro2::TokenStream)
+}
+
 /// Used to parse [`Tag`]s that we've parsed and build a tree of `VirtualNode`s
 ///
 /// [`Tag`]: enum.Tag.html
@@ -208,18 +213,24 @@ impl HtmlParser {
     ///
     /// html! { <div> { some_var_in_braces } </div>
     /// html! { <div> { some_other_variable } </div>
-    fn push_iterable_nodes(&mut self, stmt: &Stmt, tokens: Option<proc_macro2::TokenStream>) {
+    fn push_iterable_nodes(&mut self, nodes: NodesToPush) {
         let node_idx = self.current_node_idx;
-        let node_ident = self.new_virtual_node_ident(stmt.span());
 
-        if let Some(nodes) = tokens {
-            self.push_tokens(quote! {
-                let mut #node_ident: IterableNodes = #nodes.into();
-            });
-        } else {
-            self.push_tokens(quote! {
-                let mut #node_ident: IterableNodes = #stmt.into();
-            });
+        match nodes {
+            NodesToPush::Stmt(stmt) => {
+                let node_ident = self.new_virtual_node_ident(stmt.span());
+
+                self.push_tokens(quote! {
+                    let mut #node_ident: IterableNodes = #stmt.into();
+                });
+            },
+            NodesToPush::TokenStream(stmt, tokens) => {
+                let node_ident = self.new_virtual_node_ident(stmt.span());
+
+                self.push_tokens(quote! {
+                    let mut #node_ident: IterableNodes = #tokens.into();
+                });
+            }
         }
 
         let parent_idx = *&self.parent_stack[self.parent_stack.len() - 1].0;
