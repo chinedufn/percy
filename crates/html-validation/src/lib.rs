@@ -35,6 +35,8 @@
 
 pub use self_closing::is_self_closing;
 pub use svg_namespace::is_svg_namespace;
+pub use valid_tags::is_valid_tag;
 
 mod self_closing;
 mod svg_namespace;
+mod valid_tags;
