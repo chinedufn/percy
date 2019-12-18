@@ -6,5 +6,4 @@ implementors["router_rs"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `crates/router-rs/src/route.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>route.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../router_rs/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `crates/router-rs/src/route.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>route.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../router_rs/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -319,7 +319,7 @@
     <span class="doccomment">///   /route/path/55</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If Self is a u32 we would return 55</span>
-    <span class="kw">fn</span> <span class="ident">from_str_param</span>(<span class="ident">param</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">from_str_param</span>(<span class="ident">param</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Sized</span>;
 }
@@ -328,10 +328,10 @@
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">FromStr</span>,
 {
-    <span class="kw">fn</span> <span class="ident">from_str_param</span>(<span class="ident">param</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from_str_param</span>(<span class="ident">param</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">param</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() {
-            <span class="prelude-val">Ok</span>(<span class="ident">parsed</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">parsed</span>),
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">param</span>),
+            <span class="prelude-val">Ok</span>(<span class="ident">parsed</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">parsed</span>),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">param</span>),
         }
     }
 }
@@ -339,7 +339,7 @@
 <span class="doccomment">/// Given a param_key &amp;str and a param_val &amp;str, get the corresponding route parameter</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ex: (&quot;friend_count&quot;, &quot;30&quot;)</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ParseRouteParam</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RouteParam</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ParseRouteParam</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RouteParam</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// A route specifies a path to match against. When a match is found a `view_creator` is used</span>
 <span class="doccomment">/// to return an `impl View` that can be used to render the appropriate content for that route.</span>
@@ -351,7 +351,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Route</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="self">self</span>.<span class="ident">route_definition</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
@@ -360,7 +360,7 @@
 <span class="kw">impl</span> <span class="ident">Route</span> {
     <span class="doccomment">/// Create a new Route. You&#39;ll usually later call route.match(...) in order to see if a given</span>
     <span class="doccomment">/// the path in the browser URL matches your route&#39;s path definition.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">route_definition</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">route_param_parser</span>: <span class="ident">ParseRouteParam</span>) <span class="op">-&gt;</span> <span class="ident">Route</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">route_definition</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">route_param_parser</span>: <span class="ident">ParseRouteParam</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Route</span> {
         <span class="ident">Route</span> {
             <span class="ident">route_definition</span>,
             <span class="ident">route_param_parser</span>,
@@ -378,30 +378,30 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// route.matches(&quot;/food/tacos&quot;);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">matches</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">matches</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="comment">// ex: [ &quot;&quot;, &quot;food&quot;, &quot;:food_type&quot; ]</span>
         <span class="kw">let</span> <span class="ident">defined_segments</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">route_definition</span>
             .<span class="ident">split</span>(<span class="string">&quot;/&quot;</span>)
             .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">segment</span><span class="op">|</span> <span class="ident">segment</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span>)
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
         <span class="comment">// ex: [ &quot;&quot;, &quot;food&quot;, &quot;tacos&quot; ]</span>
         <span class="kw">let</span> <span class="ident">incoming_segments</span> <span class="op">=</span> <span class="ident">path</span>
             .<span class="ident">split</span>(<span class="string">&quot;/&quot;</span>)
             .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">segment</span><span class="op">|</span> <span class="ident">segment</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span>)
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
         <span class="comment">// If we defined a certain number of segments and we don&#39;t see the same amount in</span>
         <span class="comment">// the incoming route, we know that it isn&#39;t a match</span>
-        <span class="kw">if</span> <span class="ident">defined_segments</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="ident">incoming_segments</span>.<span class="ident">len</span>() {
+        <span class="kw">if</span> <span class="ident">defined_segments</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">incoming_segments</span>.<span class="ident">len</span>() {
             <span class="kw">return</span> <span class="bool-val">false</span>;
         }
 
         <span class="comment">// Iterate through all of the segments and verify that they match, or if it&#39;s a</span>
         <span class="comment">// RouteParam segment verify that we can parse it</span>
         <span class="kw">for</span> (<span class="ident">index</span>, <span class="ident">defined_segment</span>) <span class="kw">in</span> <span class="ident">defined_segments</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">if</span> <span class="ident">defined_segment</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
+            <span class="kw">if</span> <span class="ident">defined_segment</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                 <span class="kw">continue</span>;
             }
 
@@ -410,7 +410,7 @@
             <span class="kw">let</span> <span class="ident">first_char</span> <span class="op">=</span> <span class="ident">chars</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
 
             <span class="comment">// ex: &quot;:food_type&quot;</span>
-            <span class="kw">if</span> <span class="ident">first_char</span> <span class="op">==</span> <span class="string">&#39;:&#39;</span> {
+            <span class="kw">if</span> <span class="ident">first_char</span> <span class="op">=</span><span class="op">=</span> <span class="string">&#39;:&#39;</span> {
                 <span class="comment">// food_type</span>
                 <span class="kw">let</span> <span class="ident">param_name</span> <span class="op">=</span> <span class="ident">chars</span>.<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>();
 
@@ -424,7 +424,7 @@
             <span class="comment">// Compare segments on the same level</span>
             <span class="kw">let</span> <span class="ident">incoming_segment</span> <span class="op">=</span> <span class="ident">incoming_segments</span>[<span class="ident">index</span>];
 
-            <span class="kw">if</span> <span class="ident">defined_segment</span> <span class="op">!=</span> <span class="kw-2">&amp;</span><span class="ident">incoming_segment</span> {
+            <span class="kw">if</span> <span class="ident">defined_segment</span> <span class="op">!</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">incoming_segment</span> {
                 <span class="kw">return</span> <span class="bool-val">false</span>;
             }
         }
@@ -433,13 +433,13 @@
     }
 
     <span class="doccomment">/// Given an incoming path and a param_key, get the RouteParam</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_route_param</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">incoming_path</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">param_key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_route_param</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">incoming_path</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">param_key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">param_key</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;:{}&quot;</span>, <span class="ident">param_key</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">incoming_segments</span> <span class="op">=</span> <span class="ident">incoming_path</span>.<span class="ident">split</span>(<span class="string">&quot;/&quot;</span>);
 
         <span class="kw">for</span> (<span class="ident">idx</span>, <span class="ident">defined_segment</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">route_definition</span>.<span class="ident">split</span>(<span class="string">&quot;/&quot;</span>).<span class="ident">enumerate</span>() {
-            <span class="kw">if</span> <span class="ident">defined_segment</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">param_key</span> {
+            <span class="kw">if</span> <span class="ident">defined_segment</span> <span class="op">=</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">param_key</span> {
                 <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">idx</span> {
                     <span class="ident">incoming_segments</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
                 }
@@ -463,7 +463,7 @@
     }
 
     <span class="kw">impl</span> <span class="ident">View</span> <span class="kw">for</span> <span class="ident">MyView</span> {
-        <span class="kw">fn</span> <span class="ident">render</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">VirtualNode</span> {
+        <span class="kw">fn</span> <span class="ident">render</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">VirtualNode</span> {
             <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">VirtualNode</span>::<span class="ident">text</span>(<span class="self">self</span>.<span class="ident">id</span>.<span class="ident">to_string</span>());
             <span class="macro">html</span><span class="macro">!</span> { <span class="op">&lt;</span><span class="ident">div</span><span class="op">&gt;</span> {<span class="ident">id</span>} <span class="op">&lt;</span><span class="op">/</span><span class="ident">div</span><span class="op">&gt;</span> }
         }
@@ -501,7 +501,7 @@
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">new</span>(
             <span class="string">&quot;/:id&quot;</span>,
             <span class="ident">Box</span>::<span class="ident">new</span>(<span class="op">|</span><span class="ident">param_key</span>, <span class="ident">param_val</span><span class="op">|</span> {
-                <span class="kw">if</span> <span class="ident">param_key</span> <span class="op">==</span> <span class="string">&quot;id&quot;</span> {
+                <span class="kw">if</span> <span class="ident">param_key</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;id&quot;</span> {
                     <span class="prelude-val">Some</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">u32</span>::<span class="ident">from_str_param</span>(<span class="ident">param_val</span>).<span class="ident">unwrap</span>()));
                 }
 
@@ -521,14 +521,14 @@
 
     <span class="kw">impl</span> <span class="ident">MatchRouteTestCase</span> {
         <span class="kw">fn</span> <span class="ident">test</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-            <span class="kw">fn</span> <span class="ident">get_param</span>(<span class="ident">param_key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">param_val</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RouteParam</span><span class="op">&gt;&gt;</span> {
+            <span class="kw">fn</span> <span class="ident">get_param</span>(<span class="ident">param_key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">param_val</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RouteParam</span><span class="op">&gt;</span><span class="op">&gt;</span> {
                 <span class="comment">// /some/route/path/:id/</span>
                 <span class="kw">match</span> <span class="ident">param_key</span> {
-                    <span class="string">&quot;id&quot;</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">u32</span>::<span class="ident">from_str_param</span>(<span class="ident">param_val</span>) {
-                        <span class="prelude-val">Ok</span>(<span class="ident">num</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">num</span>)),
-                        <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+                    <span class="string">&quot;id&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">u32</span>::<span class="ident">from_str_param</span>(<span class="ident">param_val</span>) {
+                        <span class="prelude-val">Ok</span>(<span class="ident">num</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">num</span>)),
+                        <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
                     },
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
                 }
             }
 
@@ -548,4 +548,4 @@
 
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g., <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g., <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g., <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "router_rs";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "router_rs";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
