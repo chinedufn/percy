@@ -2,77 +2,6 @@ version: 2
 
 jobs:
 
-  test:
-    docker:
-      - image: rust:latest
-    steps:
-      - checkout
-
-      # Load cargo target from cache if possible.
-      # Multiple caches are used to increase the chance of a cache hit.
-      #
-      # Explanation: If you create a new branch, then there won't be a cache
-      # for that branch yet. (The branch is in the name of the cache key to
-      # prevent two branches overwriting each other's caches.)
-      #
-      # However, if you create a new branch, you could still use the latest
-      # cache of any other branch as a starting point. You probably won't be
-      # able to reuse everything, but – as long as cache invalidation works
-      # properly – you'll still be faster than if you don't have any cache
-      # at all.
-      - restore_cache:
-          keys:
-            - v9-cargo-cache-test-{{ arch }}-{{ .Branch }}
-            - v9-cargo-cache-test-{{ arch }}-
-
-      # Install nightly & wasm
-      - run:
-          name: Install Rust nightly
-          command: rustup update nightly && rustup default nightly
-      - run:
-          name: Add wasm32 target
-          command: rustup target add wasm32-unknown-unknown
-
-      # Install wasm tools
-      - run:
-          name: Install wasm-pack
-          command: >
-            curl -L https://github.com/rustwasm/wasm-pack/releases/download/v0.8.1/wasm-pack-v0.8.1-x86_64-unknown-linux-musl.tar.gz
-            | tar --strip-components=1 --wildcards -xzf - "*/wasm-pack"
-            && chmod +x wasm-pack
-            && mv wasm-pack $CARGO_HOME/bin/
-
-      # Install browsers
-      - run:
-          name: Install latest firefox
-          command: >
-            apt-get update
-            && apt-get install -y libgtk-3-0 libdbus-glib-1-2
-            && wget -q -O - "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
-            |  tar xj
-
-      # Show versions
-      - run:
-          name: Show versions
-          command: rustc --version && cargo --version && wasm-pack --version && firefox/firefox --version
-
-      # Run tests
-      - run:
-          name: Run all tests
-          command: PATH=$(pwd)/firefox:$PATH ./test.sh
-
-      # Save cache
-      - save_cache:
-          key: v9-cargo-cache-test-{{ arch }}-{{ .Branch }}
-          paths:
-            - target
-            - /usr/local/cargo
-      - save_cache:
-          key: v9-cargo-cache-test-{{ arch }}-
-          paths:
-            - target
-            - /usr/local/cargo
-
   docs-build:
     docker:
       - image: rust:latest
@@ -167,7 +96,6 @@ workflows:
   version: 2
   build:
     jobs:
-      - test
       - docs-build
       - docs-deploy:
           requires:
