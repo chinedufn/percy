@@ -50,14 +50,14 @@ jobs:
             && apt-get install -y libgtk-3-0 libdbus-glib-1-2
             # Use an older version of Firefox since newer ones appear to be failing
             # https://github.com/chinedufn/percy/issues/137
-            && wget -q -O - "https://download-installer.cdn.mozilla.net/pub/firefox/releases/59.0.2/linux-x86_64/en-US/firefox-59.0.2.tar.bz2"
+            && wget "https://download-installer.cdn.mozilla.net/pub/firefox/releases/59.0.2/linux-x86_64/en-US/firefox-59.0.2.tar.bz2"
             && tar xvf firefox-59.0.2.tar.bz2
             && chmod +x firefox/firefox
 
       # Show versions
       - run:
           name: Show versions
-          command: rustc --version && cargo --version && wasm-pack --version && $(pwd)/firefox/firefox --version
+          command: rustc --version && cargo --version && wasm-pack --version && ./firefox/firefox --version
 
       # Run tests
       - run:
