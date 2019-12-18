@@ -48,7 +48,9 @@ jobs:
           command: >
             apt-get update
             && apt-get install -y libgtk-3-0 libdbus-glib-1-2
-            && wget -q -O - "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
+            # Use an older version of Firefox since newer ones appear to be failing
+            # https://github.com/chinedufn/percy/issues/137
+            && wget -q -O - "https://download-installer.cdn.mozilla.net/pub/firefox/releases/59.0.2/linux-x86_64/en-US/firefox-59.0.2.tar.bz2"
             |  tar xj
 
       # Show versions
