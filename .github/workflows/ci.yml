@@ -11,21 +11,23 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions-rs/cargo@v1
 
-    - name: Rust Nightly
-      run: rustup update nightly && rustup default nightly
+    - name: Latest Rust Nightly
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: nightly
+          override: true
+          # Used when testing with `wasm-pack test`
+          target: wasm32-unknown-unknown
 
     - name: Rust Version Info
       run: rustc --version && cargo --version && echo $CARGO_HOME
-
-    - name: wasm32 target
-      run: rustup target add wasm32-unknown-unknown
 
     - name: Install wasm-pack
       run: >
             curl -L https://github.com/rustwasm/wasm-pack/releases/download/v0.8.1/wasm-pack-v0.8.1-x86_64-unknown-linux-musl.tar.gz
             | tar --strip-components=1 --wildcards -xzf - "*/wasm-pack"
             && chmod +x wasm-pack
-            && mv wasm-pack $CARGO_HOME/bin/
+            && mv wasm-pack $HOME/.cargo/bin/
 
     - name: Browser versions
       run: wasm-pack --version && firefox --version
