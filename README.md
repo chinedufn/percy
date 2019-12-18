@@ -1,6 +1,8 @@
 Percy
 =====
 
+
+[![Actions Status](https://github.com/chinedufn/percy/workflows/percy-build-test/badge.svg)](https://github.com/chinedufn/percy/actions)
 [![Build status](https://circleci.com/gh/chinedufn/percy.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/chinedufn/percy)
 
 > A modular toolkit for building interactive frontend browser apps with Rust + WebAssembly. Supports server side rendering.

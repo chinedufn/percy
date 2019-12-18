@@ -1,4 +1,4 @@
-name: Percy CI
+name: percy-build-test
 
 on: [push]
 
