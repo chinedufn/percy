@@ -9,7 +9,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+
+    - name: Rust Nightly
+      run: rustup update nightly && rustup default nightly
+
+    - name: wasm32 target
+      run: rustup target add wasm32-unknown-unknown
+
+    - name: Install wasm-pack
+      run: >
+            curl -L https://github.com/rustwasm/wasm-pack/releases/download/v0.8.1/wasm-pack-v0.8.1-x86_64-unknown-linux-musl.tar.gz
+            | tar --strip-components=1 --wildcards -xzf - "*/wasm-pack"
+            && chmod +x wasm-pack
+            && mv wasm-pack $CARGO_HOME/bin/
+
+
+    - name: Show Versions
+      run: rustc --version && cargo --version && wasm-pack --version && firefox --version
+
+    - name: Run all tests
+      run: ./test.sh

@@ -48,17 +48,12 @@ jobs:
           command: >
             apt-get update
             && apt-get install -y libgtk-3-0 libdbus-glib-1-2
-            # Use an older version of Firefox since newer ones appear to be failing. Probably need to apt-get install a few more dependencies
-            # https://github.com/chinedufn/percy/issues/137
-            && wget "https://download-installer.cdn.mozilla.net/pub/firefox/releases/59.0.2/linux-x86_64/en-US/firefox-59.0.2.tar.bz2"
-            && tar xvf firefox-59.0.2.tar.bz2
-            && chmod +x firefox/firefox
-            && pwd && ls
+            && wget -q -O - "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US" |  tar xj
 
       # Show versions
       - run:
           name: Show versions
-          command: pwd && ls && rustc --version && cargo --version && wasm-pack --version && ./firefox/firefox --version
+          command: rustc --version && cargo --version && wasm-pack --version && firefox/firefox --version
 
       # Run tests
       - run:
