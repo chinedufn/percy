@@ -2,9 +2,9 @@ name: Percy CI
 
 on: [push]
 
+# TODO: Introduce caching https://github.com/actions/cache/blob/master/examples.md#rust---cargo
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
