@@ -1,9 +1,5 @@
-#![feature(proc_macro_hygiene)]
-
-use crate::HtmlMacroTest;
 use html_macro::html;
-use std::collections::HashMap;
-use virtual_node::{IterableNodes, VElement, VirtualNode};
+use virtual_node::{IterableNodes, VirtualNode};
 
 #[test]
 fn text_root_node() {

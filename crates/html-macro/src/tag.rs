@@ -132,8 +132,12 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
     let mut attrs = Vec::new();
 
     // Do we see an identifier such as `id`? If so proceed
-    while input.peek(Ident) || input.peek(Token![async])  || input.peek(Token![for])
-            || input.peek(Token![loop]) || input.peek(Token![type]) {
+    while input.peek(Ident)
+        || input.peek(Token![async])
+        || input.peek(Token![for])
+        || input.peek(Token![loop])
+        || input.peek(Token![type])
+    {
         // <link rel="stylesheet" type="text/css"
         //   .. async, for, loop, type need to be handled specially since they are keywords
         let maybe_async_key: Option<Token![async]> = input.parse()?;
@@ -163,8 +167,11 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
             let tt: TokenTree = input.parse()?;
             value_tokens.extend(Some(tt));
 
-            let has_attrib_key = input.peek(Ident) || input.peek(Token![async]) || input.peek(Token![for])
-                || input.peek(Token![loop]) || input.peek(Token![type]);
+            let has_attrib_key = input.peek(Ident)
+                || input.peek(Token![async])
+                || input.peek(Token![for])
+                || input.peek(Token![loop])
+                || input.peek(Token![type]);
             let peek_start_of_next_attr = has_attrib_key && input.peek2(Token![=]);
 
             let peek_end_of_tag = input.peek(Token![>]);
@@ -257,11 +264,23 @@ fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
 
                 let spans_on_different_lines = current_span_start.line != most_recent_span_end.line;
 
+                // Contraptions such as "Aren't" give the "'" and the "t" the
+                // same span, even though they get parsed separately when calling
+                // input.parse::<TokenTree>().
+                // As in - it takes two input.parse calls to get the "'" and "t",
+                // even though they have the same span.
+                // This might be a bug in syn - but regardless we address this by
+                // not inserting a space in this case.
+                let span_comes_before_previous_span = current_span_start.column
+                    < most_recent_span_end.column
+                    && !spans_on_different_lines;
+
                 // Spans are on different lines, insert space
                 if spans_on_different_lines {
                     text += " ";
-                    break;
-                } else if current_span_start.column - most_recent_span_end.column > 0 {
+                } else if !span_comes_before_previous_span
+                    && current_span_start.column - most_recent_span_end.column > 0
+                {
                     text += " ";
                 }
             }

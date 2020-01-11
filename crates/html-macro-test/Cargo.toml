@@ -6,5 +6,6 @@ edition = "2018"
 
 [dependencies]
 html-macro = {path = "../html-macro"}
+virtual-dom-rs = { path = "../virtual-dom-rs" }
 virtual-node = {path = "../virtual-node"}
-compiletest_rs = "0.3.19"
+trybuild = "1.0"

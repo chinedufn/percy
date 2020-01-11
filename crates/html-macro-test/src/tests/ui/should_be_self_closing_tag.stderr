@@ -3,6 +3,3 @@ error: br is a self closing tag. Try "<br>" or "<br />"
    |
 10 |         <br></br>
    |               ^^
-
-error: aborting due to previous error
-

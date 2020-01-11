@@ -3,6 +3,3 @@ error: Wrong closing tag. Try changing "strong" into "div"
   |
 9 |         <div> </strong>
   |                 ^^^^^^
-
-error: aborting due to previous error
-

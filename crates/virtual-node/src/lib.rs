@@ -9,7 +9,7 @@
 //
 // Around in order to get rid of dependencies that we don't need in non wasm32 targets
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fmt;
 use std::rc::Rc;
 
@@ -20,9 +20,7 @@ use web_sys::{self, Element, EventTarget, Node, Text};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 
-use std::iter::FromIterator;
 use std::ops::Deref;
-use std::option::Iter;
 use std::sync::Mutex;
 
 // Used to uniquely identify elements that contain closures so that the DomUpdater can
@@ -310,7 +308,9 @@ impl VElement {
         if let Some(on_create_elem) = self.events.0.get("on_create_elem") {
             let on_create_elem: &js_sys::Function =
                 on_create_elem.as_ref().as_ref().unchecked_ref();
-            on_create_elem.call1(&wasm_bindgen::JsValue::NULL, &element);
+            on_create_elem
+                .call1(&wasm_bindgen::JsValue::NULL, &element)
+                .unwrap();
         }
 
         CreatedNode {
