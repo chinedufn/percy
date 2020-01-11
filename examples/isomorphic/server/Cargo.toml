@@ -17,8 +17,8 @@ env_logger = "0.6.1"
 virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
 
 # with-rocket
-rocket = {optional = true, version = "0.4.0"}
-rocket_contrib = {optional = true, version = "0.4.0"}
+rocket = {optional = true, version = "0.4"}
+rocket_contrib = {optional = true, version = "0.4"}
 
 # with-actix
 actix-web = {optional = true, version = "1.0.3"}

@@ -91,6 +91,7 @@ fn get_descendants<'a>(descendants: &mut Vec<&'a VirtualNode>, node: &'a Virtual
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::VElement;
     use std::collections::HashMap;
 
     // TODO: Move this test somewhere that we can use the `html!` macro
