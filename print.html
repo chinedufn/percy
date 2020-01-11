@@ -314,52 +314,21 @@ crate.</p>
 <p>If you have an idea for an error that you don't see here <a href="https://github.com/chinedufn/percy/issues/new">open an issue!</a></p>
 <a class="header" href="#wrong-closing-tag" id="wrong-closing-tag"><h4>Wrong closing tag</h4></a>
 <p>You've opened with one tag but are attempting to close with another.</p>
-<pre><pre class="playpen"><code class="language-rust">#![feature(proc_macro_hygiene)]
-
-extern crate virtual_dom_rs;
-use virtual_dom_rs::prelude::*;
-
-// Expected a closing div tag, found a closing strong tag
-fn main () {
-    html! {
-        &lt;div&gt; &lt;/strong&gt;
-    };
-}
-</code></pre></pre>
-<pre><code>error: Wrong closing tag. Try changing &quot;strong&quot; into &quot;div&quot;
- --&gt; $DIR/wrong_closing_tag.rs:9:17
-  |
-9 |         &lt;div&gt; &lt;/strong&gt;
-  |                 ^^^^^^
-
-error: aborting due to previous error
-
-
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+{{#include ../../../crates/html-macro-ui/wrong_closing_tag.rs}}
+#}</code></pre></pre>
+<pre><code>{{#include ../../../crates/html-macro-ui/wrong_closing_tag.stderr}}
 </code></pre>
 <a class="header" href="#should-be-self-closing-tag" id="should-be-self-closing-tag"><h4>Should be self closing tag</h4></a>
 <p>The tag that you are trying to use is a self closing tagl</p>
-<pre><pre class="playpen"><code class="language-rust">#![feature(proc_macro_hygiene)]
-
-extern crate virtual_dom_rs;
-use virtual_dom_rs::prelude::*;
-
-// We are using open and close tags for a tag that should
-// actually be a self closing tag
-fn main () {
-    html! {
-        &lt;br&gt;&lt;/br&gt;
-    };
-}
-</code></pre></pre>
-<pre><code>error: br is a self closing tag. Try &quot;&lt;br&gt;&quot; or &quot;&lt;br /&gt;&quot;
-  --&gt; $DIR/should_be_self_closing_tag.rs:10:15
-   |
-10 |         &lt;br&gt;&lt;/br&gt;
-   |               ^^
-
-error: aborting due to previous error
-
-
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+{{#include ../../../crates/html-macro-ui/should_be_self_closing_tag.rs}}
+#}</code></pre></pre>
+<pre><code>{{#include ../../../crates/html-macro-ui/should_be_self_closing_tag.stderr}}
 </code></pre>
 <a class="header" href="#working-with-text" id="working-with-text"><h1>Working with Text</h1></a>
 <p>One of the most popular types of nodes in the DOM is the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Text">Text</a> node, and the `html! macro
