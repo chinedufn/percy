@@ -5,7 +5,7 @@
 //! to an `HtmlElement`, and on the server we render to a `String`.
 
 #![deny(missing_docs)]
-#![feature(proc_macro_hygiene)]
+#![cfg_attr(test, feature(proc_macro_hygiene))]
 
 extern crate wasm_bindgen;
 

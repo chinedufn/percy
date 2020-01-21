@@ -1,6 +1,6 @@
 [package]
 name = "virtual-node"
-version = "0.2.6"
+version = "0.2.7"
 description = "A standalone Virtual DOM"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
@@ -11,7 +11,7 @@ edition = "2018"
 
 [dependencies]
 js-sys = "0.3"
-wasm-bindgen = {version = "0.2.33", features = ["default", "nightly"]}
+wasm-bindgen = "0.2.33"
 html-validation = {path = "../html-validation", version = "0.1.1"}
 lazy_static = "1.0"
 
