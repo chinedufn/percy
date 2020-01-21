@@ -49,7 +49,7 @@
 <span class="doccomment">//! to an `HtmlElement`, and on the server we render to a `String`.</span>
 
 <span class="attribute">#![<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="attribute">#![<span class="ident">feature</span>(<span class="ident">proc_macro_hygiene</span>)]</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">test</span>, <span class="ident">feature</span>(<span class="ident">proc_macro_hygiene</span>))]</span>
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">wasm_bindgen</span>;
 
