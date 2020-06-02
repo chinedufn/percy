@@ -41,7 +41,7 @@ impl HtmlParser {
                     let add_closure = quote! {
                         #[cfg(target_arch = "wasm32")]
                         {
-                          let closure = wasm_bindgen::prelude::Closure::wrap(
+                          let closure = Closure::wrap(
                               Box::new(#value) as Box<FnMut(_)>
                           );
                           let closure_rc = std::rc::Rc::new(closure);

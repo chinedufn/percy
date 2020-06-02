@@ -40,4 +40,5 @@ pub mod prelude {
     pub use std::vec::IntoIter;
     pub use virtual_node::IterableNodes;
     pub use virtual_node::View;
+    pub use wasm_bindgen::prelude::Closure;
 }
