@@ -306,6 +306,8 @@
 <span id="306">306</span>
 <span id="307">307</span>
 <span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Span</span>, <span class="ident">TokenStream</span>, <span class="ident">TokenTree</span>};
 <span class="kw">use</span> <span class="ident">syn</span>::<span class="ident">parse</span>::{<span class="ident">Parse</span>, <span class="ident">ParseStream</span>, <span class="prelude-ty">Result</span>};
@@ -325,6 +327,7 @@
         <span class="ident">attrs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attr</span><span class="op">&gt;</span>,
         <span class="ident">open_bracket_span</span>: <span class="ident">Span</span>,
         <span class="ident">closing_bracket_span</span>: <span class="ident">Span</span>,
+        <span class="ident">is_self_closing</span>: <span class="ident">bool</span>,
     },
     <span class="doccomment">/// &lt;/div&gt;</span>
     <span class="ident">Close</span> {
@@ -417,8 +420,8 @@
 
     <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">parse_attributes</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">_maybe_trailing_slash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">/</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-    <span class="comment">//    let has_trailing_slash = has_trailing_slash.is_some();</span>
+    <span class="kw">let</span> <span class="ident">is_self_closing</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">/</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">is_self_closing</span> <span class="op">=</span> <span class="ident">is_self_closing</span>.<span class="ident">is_some</span>();
 
     <span class="kw">let</span> <span class="ident">closing_bracket</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="op">&gt;</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">closing_bracket_span</span> <span class="op">=</span> <span class="ident">closing_bracket</span>.<span class="ident">span</span>();
@@ -428,6 +431,7 @@
         <span class="ident">attrs</span>,
         <span class="ident">open_bracket_span</span>,
         <span class="ident">closing_bracket_span</span>,
+        <span class="ident">is_self_closing</span>
     })
 }
 
