@@ -16,6 +16,7 @@ pub enum Tag {
         attrs: Vec<Attr>,
         open_bracket_span: Span,
         closing_bracket_span: Span,
+        is_self_closing: bool,
     },
     /// </div>
     Close {
@@ -108,8 +109,8 @@ fn parse_open_tag(input: &mut ParseStream, open_bracket_span: Span) -> Result<Ta
 
     let attrs = parse_attributes(input)?;
 
-    let _maybe_trailing_slash: Option<Token![/]> = input.parse()?;
-    //    let has_trailing_slash = has_trailing_slash.is_some();
+    let is_self_closing: Option<Token![/]> = input.parse()?;
+    let is_self_closing = is_self_closing.is_some();
 
     let closing_bracket = input.parse::<Token![>]>()?;
     let closing_bracket_span = closing_bracket.span();
@@ -119,6 +120,7 @@ fn parse_open_tag(input: &mut ParseStream, open_bracket_span: Span) -> Result<Ta
         attrs,
         open_bracket_span,
         closing_bracket_span,
+        is_self_closing
     })
 }
 

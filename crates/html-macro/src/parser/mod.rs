@@ -74,9 +74,10 @@ impl HtmlParser {
                 name,
                 attrs,
                 closing_bracket_span,
+                is_self_closing,
                 ..
             } => {
-                self.parse_open_tag(name, closing_bracket_span, attrs);
+                self.parse_open_tag(name, closing_bracket_span, attrs, is_self_closing);
                 self.last_tag_kind = Some(TagKind::Open);
             }
             Tag::Close { name, .. } => {
@@ -128,13 +129,15 @@ impl HtmlParser {
                         let unreachable = quote_spanned!(Span::call_site() => {
                             unreachable!("Non-elements cannot have children");
                         });
+
                         let push_children = quote! {
-                            if let Some(ref mut element_node) =  #parent_name.as_velement_mut() {
+                            if let Some(ref mut element_node) = #parent_name.as_velement_mut() {
                                 element_node.children.extend(#children.into_iter());
                             } else {
                                 #unreachable;
                             }
                         };
+                        
                         tokens.push(push_children);
                     }
                 }
@@ -260,4 +263,8 @@ struct RecentSpanLocations {
 
 fn is_self_closing(tag: &str) -> bool {
     html_validation::is_self_closing(tag)
+}
+
+fn is_valid_tag(tag: &str) -> bool {
+    html_validation::is_valid_tag(tag)
 }

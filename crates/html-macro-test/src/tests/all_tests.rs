@@ -7,7 +7,7 @@
 
 use html_macro::html;
 use std::collections::HashMap;
-use virtual_node::{IterableNodes, VElement, VText, VirtualNode};
+use virtual_node::{IterableNodes, VElement, VText, View, VirtualNode};
 
 struct HtmlMacroTest {
     generated: VirtualNode,
@@ -314,6 +314,62 @@ fn single_branch_if_false_block() {
     HtmlMacroTest {
         generated: html! {
           <div>{if false {child_valid}}</div>
+        },
+        expected: expected.into(),
+    }
+    .test();
+}
+
+#[test]
+fn custom_component_props() {
+    struct Counter {
+        count: u8,
+    }
+
+    impl View for Counter {
+        fn render(&self) -> VirtualNode {
+            html! {
+                <span>Counter = {format!("{}", self.count)}</span>
+            }
+        }
+    }
+
+    let mut expected = VElement::new("div");
+    let mut child = VElement::new("span");
+    child.children = vec![VirtualNode::text("Counter = "), VirtualNode::text("1")];
+    expected.children = vec![child.into()];
+
+    HtmlMacroTest {
+        generated: html! {
+          <div><Counter count={1}/></div>
+        },
+        expected: expected.into(),
+    }
+    .test();
+}
+
+#[test]
+fn custom_component_children() {
+    struct Child;
+
+    impl View for Child {
+        fn render(&self) -> VirtualNode {
+            html! {
+                <span></span>
+            }
+        }
+    }
+
+    let mut expected = VElement::new("div");
+    let mut child = VElement::new("span");
+    child.children = vec![VirtualNode::text("Hello World")];
+    expected.children = vec![child.into()];
+
+    HtmlMacroTest {
+        generated: html! {
+          <div>
+            <Child>Hello World</Child>
+          </div>
         },
         expected: expected.into(),
     }
