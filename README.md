@@ -1,41 +1,42 @@
 Percy
 =====
 
-
 [![Actions Status](https://github.com/chinedufn/percy/workflows/percy-build-test/badge.svg)](https://github.com/chinedufn/percy/actions)
 [![Build status](https://circleci.com/gh/chinedufn/percy.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/chinedufn/percy)
 
 > Libraries for building interactive frontend browser apps with Rust + WebAssembly. Supports server side rendering.
 
-## [The Percy Book](https://chinedufn.github.io/percy/)
-
-[The Percy Book](https://chinedufn.github.io/percy/)
-
-Percy is modular toolkit geared towards building single page web apps entirely in Rust that can also be rendered at the server.
+Percy is collection of tools geared towards building single page web apps entirely in Rust that can also be rendered at the server.
 
 This allows you to build search engine friendly browser applications in Rust.
 
----
+## [The Percy Book](https://chinedufn.github.io/percy/)
 
-## What is an isomorphic web app?
+Information about all of the libraries and tools can be found in the Percy book.
 
-An isomorphic web application allows the same application code (in our case Rust code) to be run on both the server-side and the client-side (usually a web browser).
+This README serves as a light introduction - consult the book for a full walk through.
+
+[The Percy Book](https://chinedufn.github.io/percy/)
+
+## How does it work?
+
+Well, that depends on the library in question.
+
+At a high level you:
+
+1. Server your application from a server (optional)
+
+2. User loads the page
+
+3. Page downloads your application compiled to WebAssembly
+
+4. Page picks up where the server left off by reading state from the window
 
 So the server would render the application into a `String` of HTML and send that down to the client.
 
 Then the client would take over, re-rendering the application to a DOM `Node` whenever application state changes.
 
 In a browser our application renders to an `HtmlElement`, and on the server our application renders to a `String`.
-
-## API Documentation
-
-- [virtual-dom-rs API docs](https://chinedufn.github.io/percy/api/virtual_dom_rs/macro.html.html)
-
-- [html-macro API docs](https://chinedufn.github.io/percy/api/html_macro)
-
-- [router-rs API docs](https://chinedufn.github.io/percy/api/router_rs)
-
-- [css-rs-macro API docs](https://chinedufn.github.io/percy/api/css_rs_macro)
 
 ## Getting Started
 
@@ -249,6 +250,16 @@ Nice work!
 - [Unit Testing View Components](examples/unit-testing-components)
 
 - [Open an Issue or PR if you have an idea for a useful example!](https://github.com/chinedufn/percy/issues)
+
+## API Documentation
+
+- [virtual-dom-rs API docs](https://chinedufn.github.io/percy/api/virtual_dom_rs/macro.html.html)
+
+- [html-macro API docs](https://chinedufn.github.io/percy/api/html_macro)
+
+- [router-rs API docs](https://chinedufn.github.io/percy/api/router_rs)
+
+- [css-rs-macro API docs](https://chinedufn.github.io/percy/api/css_rs_macro)
 
 ## Contributing
 

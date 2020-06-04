@@ -30,3 +30,16 @@ The tag that you are trying to use is a self closing tagl
 ```
 {{#include ../../../crates/html-macro-ui/should_be_self_closing_tag.stderr}}
 ```
+
+#### Invalid HTML tag
+
+You're trying to use a tag that isn't in the HTML specification.
+This might happen if you've made a typo.
+
+```rust
+{{#include ../../../crates/html-macro-ui/invalid_html_tag.rs}}
+```
+
+```
+{{#include ../../../crates/html-macro-ui/invalid_html_tag.stderr}}
+```

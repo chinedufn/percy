@@ -195,8 +195,8 @@ mod tests {
         DiffTestCase {
             description: "Added a new node to the root node",
             old: html! { <div> <b></b> </div> },
-            new: html! { <div> <b></b> <new></new> </div> },
-            expected: vec![Patch::AppendChildren(0, vec![&html! { <new></new> }])],
+            new: html! { <div> <b></b> <span></span> </div> },
+            expected: vec![Patch::AppendChildren(0, vec![&html! { <span></span> }])],
         }
         .test();
     }
@@ -348,5 +348,4 @@ mod tests {
     //            description: "Add attributes",
     //        })
     //    }
-
 }

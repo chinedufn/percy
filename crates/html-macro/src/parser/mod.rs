@@ -9,12 +9,12 @@ use syn::{Ident, Stmt};
 mod braced;
 mod close_tag;
 mod open_tag;
-mod text;
 mod statement;
+mod text;
 
 pub enum NodesToPush<'a> {
     Stmt(&'a Stmt),
-    TokenStream(&'a Stmt, proc_macro2::TokenStream)
+    TokenStream(&'a Stmt, proc_macro2::TokenStream),
 }
 
 /// Used to parse [`Tag`]s that we've parsed and build a tree of `VirtualNode`s
@@ -77,7 +77,7 @@ impl HtmlParser {
                 is_self_closing,
                 ..
             } => {
-                self.parse_open_tag(name, closing_bracket_span, attrs, is_self_closing);
+                self.parse_open_tag(name, closing_bracket_span, attrs, *is_self_closing);
                 self.last_tag_kind = Some(TagKind::Open);
             }
             Tag::Close { name, .. } => {
@@ -137,7 +137,7 @@ impl HtmlParser {
                                 #unreachable;
                             }
                         };
-                        
+
                         tokens.push(push_children);
                     }
                 }
@@ -226,7 +226,7 @@ impl HtmlParser {
                 self.push_tokens(quote! {
                     let mut #node_ident: IterableNodes = #stmt.into();
                 });
-            },
+            }
             NodesToPush::TokenStream(stmt, tokens) => {
                 let node_ident = self.new_virtual_node_ident(stmt.span());
 

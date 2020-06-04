@@ -1,7 +1,7 @@
 use crate::parser::{is_self_closing, is_valid_tag, HtmlParser};
 use crate::tag::Attr;
 use proc_macro2::{Ident, Span};
-use quote::quote;
+use quote::{quote, quote_spanned};
 use syn::Expr;
 
 impl HtmlParser {
@@ -11,7 +11,7 @@ impl HtmlParser {
         name: &Ident,
         closing_span: &Span,
         attrs: &Vec<Attr>,
-        is_self_closing_tag: &bool
+        is_self_closing_tag: bool,
     ) {
         self.set_most_recent_open_tag_end(closing_span.clone());
 
@@ -73,6 +73,28 @@ impl HtmlParser {
                     }
                 };
             }
+        } else if !html_tag.chars().next().unwrap().is_uppercase() {
+            let error = format!(
+                r#"{} is not a valid HTML tag.
+                
+If you are trying to use a valid HTML tag, perhaps there's a typo?
+                
+If you are trying to use a custom component, please capitalize the component name.
+                
+custom components: https://chinedufn.github.io/percy/html-macro/custom-components/index.html"#,
+                html_tag,
+            );
+            let span = name.span();
+            let invalid_tag_name_error = quote_spanned! {span=> {
+                compile_error!(#error);
+            }};
+            tokens.push(invalid_tag_name_error);
+
+            let node = quote! {
+                let mut #var_name_node = VirtualNode::text("error");
+            };
+
+            tokens.push(node);
         } else {
             let var_name_component = Ident::new(format!("component_{}", idx).as_str(), name.span());
             let component_ident = Ident::new(format!("{}", html_tag).as_str(), name.span());
