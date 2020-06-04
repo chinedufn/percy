@@ -328,6 +328,16 @@ crate.</p>
 #}</code></pre></pre>
 <pre><code>{{#include ../../../crates/html-macro-ui/should_be_self_closing_tag.stderr}}
 </code></pre>
+<a class="header" href="#invalid-html-tag" id="invalid-html-tag"><h4>Invalid HTML tag</h4></a>
+<p>You're trying to use a tag that isn't in the HTML specification.
+This might happen if you've made a typo.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+{{#include ../../../crates/html-macro-ui/invalid_html_tag.rs}}
+#}</code></pre></pre>
+<pre><code>{{#include ../../../crates/html-macro-ui/invalid_html_tag.stderr}}
+</code></pre>
 <a class="header" href="#working-with-text" id="working-with-text"><h1>Working with Text</h1></a>
 <p>One of the most popular types of nodes in the DOM is the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Text">Text</a> node, and the `html! macro
 focuses heavily on making them as easy to create as possible.</p>

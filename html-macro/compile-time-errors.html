@@ -163,6 +163,16 @@ crate.</p>
 #}</code></pre></pre>
 <pre><code>{{#include ../../../crates/html-macro-ui/should_be_self_closing_tag.stderr}}
 </code></pre>
+<a class="header" href="#invalid-html-tag" id="invalid-html-tag"><h4>Invalid HTML tag</h4></a>
+<p>You're trying to use a tag that isn't in the HTML specification.
+This might happen if you've made a typo.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+{{#include ../../../crates/html-macro-ui/invalid_html_tag.rs}}
+#}</code></pre></pre>
+<pre><code>{{#include ../../../crates/html-macro-ui/invalid_html_tag.stderr}}
+</code></pre>
 
                     </main>
 
