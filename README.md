@@ -24,7 +24,7 @@ Well, that depends on the library in question.
 
 At a high level you:
 
-1. Server your application from a server (optional)
+1. Serve your application from a server (optional)
 
 2. User loads the page
 
