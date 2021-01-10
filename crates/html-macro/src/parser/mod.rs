@@ -224,7 +224,7 @@ impl HtmlParser {
                 let node_ident = self.new_virtual_node_ident(stmt.span());
 
                 self.push_tokens(quote! {
-                    let mut #node_ident: IterableNodes = #stmt.into();
+                    let mut #node_ident: IterableNodes = (#stmt).into();
                 });
             }
             NodesToPush::TokenStream(stmt, tokens) => {
