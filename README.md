@@ -1,7 +1,8 @@
 Percy
 =====
 
-[![Actions Status](https://github.com/chinedufn/percy/workflows/percy-build-test/badge.svg)](https://github.com/chinedufn/percy/actions)
+[![Actions Status](https://github.com/chinedufn/percy/workflows/tests/badge.svg)](https://github.com/chinedufn/percy/actions)
+[![Actions Status](https://github.com/chinedufn/percy/workflows/github-pages/badge.svg)](https://github.com/chinedufn/percy/actions)
 
 > Build frontend browser apps with Rust + WebAssembly. Supports server side rendering.
 
