@@ -106,7 +106,7 @@ use wasm_bindgen::prelude::*;
 use web_sys;
 use web_sys::MouseEvent;
 
-use css_rs_macro::css;
+use percy_css_macro::css;
 use virtual_dom_rs::prelude::*;
 
 #[wasm_bindgen]
@@ -188,7 +188,7 @@ crate-type = ["cdylib"] # Don't forget this!
 wasm-bindgen = "0.2.37"
 js-sys = "0.3.14"
 virtual-dom-rs = "0.6"
-css-rs-macro = "0.1"
+percy-css-macro = "0.1"
 
 [dependencies.web-sys]
 version = "0.3"
@@ -266,7 +266,7 @@ Nice work!
 
 - [router-rs API docs](https://chinedufn.github.io/percy/api/router_rs)
 
-- [css-rs-macro API docs](https://chinedufn.github.io/percy/api/css_rs_macro)
+- [percy-css-macro API docs](https://chinedufn.github.io/percy/api/percy_css_macro)
 
 ## Contributing
 

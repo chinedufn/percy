@@ -5,7 +5,7 @@ mod tests {
     use std::io::Read;
     use std::process::Command;
 
-    use css_rs_macro::css;
+    use percy_css_macro::css;
 
     #[test]
     fn css_classes_increment() {

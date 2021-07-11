@@ -1,4 +1,4 @@
-//! css-rs-macro is a procedural macro that allows you to write your CSS next to your Rust views.
+//! percy-css-macro is a procedural macro that allows you to write your CSS next to your Rust views.
 //!
 //! github.com/chinedufn/percy/examples/css-in-rust
 
@@ -43,7 +43,7 @@ lazy_static! {
 ///
 /// ```ignore
 /// #[macro_use]
-/// extern crate css_rs_macro;
+/// extern crate percy_css_macro;
 ///
 /// fn main () {
 ///     let class1 = css! {

@@ -5,4 +5,4 @@ authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-css-rs-macro = { path = "../../crates/css-rs-macro" }
+percy-css-macro = { path = "../../crates/percy-css-macro" }

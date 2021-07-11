@@ -1,4 +1,4 @@
-use css_rs_macro::css;
+use percy_css_macro::css;
 
 fn main() {
     let class1 = css! {r#"

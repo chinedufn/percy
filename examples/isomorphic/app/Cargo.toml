@@ -5,7 +5,7 @@ authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-css-rs-macro = { path = "../../../crates/css-rs-macro"}
+percy-css-macro = { path = "../../../crates/percy-css-macro"}
 virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
 router-rs = { path = "../../../crates/router-rs"}
 log = "0.4.6"

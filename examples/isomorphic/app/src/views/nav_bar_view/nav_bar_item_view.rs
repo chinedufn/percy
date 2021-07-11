@@ -1,4 +1,4 @@
-use css_rs_macro::css;
+use percy_css_macro::css;
 use virtual_dom_rs::prelude::*;
 
 pub struct NavBarItemView {

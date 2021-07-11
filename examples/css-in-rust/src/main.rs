@@ -1,5 +1,5 @@
-extern crate css_rs_macro;
-use css_rs_macro::css;
+extern crate percy_css_macro;
+use percy_css_macro::css;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
