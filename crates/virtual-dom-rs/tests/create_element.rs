@@ -4,8 +4,6 @@
 //!
 //! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test create_element
 
-#![feature(proc_macro_hygiene)]
-
 extern crate wasm_bindgen_test;
 extern crate web_sys;
 use std::cell::Cell;
@@ -50,8 +48,8 @@ fn div_with_attributes() {
 
     assert_eq!(&div.id(), "id-here");
 
-    assert!(div.class_list().contains("two"));;
-    assert!(div.class_list().contains("classes"));;
+    assert!(div.class_list().contains("two"));
+    assert!(div.class_list().contains("classes"));
 
     assert_eq!(div.class_list().length(), 2);
 }

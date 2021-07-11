@@ -6,10 +6,6 @@ Percy
 
 > Libraries for building interactive frontend browser apps with Rust + WebAssembly. Supports server side rendering.
 
-Percy is collection of tools geared towards building single page web apps entirely in Rust that can also be rendered at the server.
-
-This allows you to build search engine friendly browser applications in Rust.
-
 ## [The Percy Book](https://chinedufn.github.io/percy/)
 
 Information about all of the libraries and tools can be found in the Percy book.
@@ -18,40 +14,39 @@ This README serves as a light introduction - consult the book for a full walk th
 
 [The Percy Book](https://chinedufn.github.io/percy/)
 
-## How does it work?
+## Stable Rust
 
-Well, that depends on the library in question.
+Percy compiles on stable Rust, however there is one aspect of the `html-macro` that is different on stable at this time:
 
-At a high level you:
+On nightly Rust you can create text nodes without quotes.
 
-1. Serve your application from a server (optional)
+```rust
+// Nightly Rust does not require quotes around text nodes.
+html! { <div>My text nodes here </div> };
+```
 
-2. User loads the page
+On stable Rust, quotation marks are required.
 
-3. Page downloads your application compiled to WebAssembly
+```rust
+// Stable Rust requires quotes around text nodes.
+html! { <div>{ "My text nodes here " }</div> };
+```
 
-4. Page picks up where the server left off by reading state from the window
-
-So the server would render the application into a `String` of HTML and send that down to the client.
-
-Then the client would take over, re-rendering the application to a DOM `Node` whenever application state changes.
-
-In a browser our application renders to an `HtmlElement`, and on the server our application renders to a `String`.
+This difference will go away once span locations are stabilized in the Rust compiler - [Rust tracking issue](https://github.com/rust-lang/rust/issues/54725).
 
 ## Getting Started
 
+The best way to get up to speed is by checking out [The Percy Book](https://chinedufn.github.io/percy/), but here is a
+very basic example to get your feet wet with.
+
 For a full example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic).
-
----
-
-The best way to get up to speed is by checking out [The Percy Book](https://chinedufn.github.io/percy/), but here are some
-very basic examples to get your feet wet with.
 
 ### Quickstart - Getting your feet wet
 
-You can create applications that only have server side rendering, client side rendering, or both!
+Percy allows you to create applications that only have server side rendering, only client side rendering,
+or both server and client side rendering.
 
-Here's a quick-and-easy working example of client side rendering that you can try right now!
+Here's a quick-and-easy working example of client side rendering that you can try right now.
 
 ---
 
@@ -99,7 +94,7 @@ cp index.html public/
 ```rust
 // contents of src/lib.rs
 
-#![feature(proc_macro_hygiene)]
+
 
 use wasm_bindgen::prelude::*;
 use web_sys;

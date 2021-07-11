@@ -5,8 +5,6 @@
 //!
 //! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test closures
 
-#![feature(proc_macro_hygiene)]
-
 use std::cell::RefCell;
 use std::collections::hash_map::DefaultHasher;
 use std::rc::Rc;

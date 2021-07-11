@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene)]
-
 pub use crate::state::*;
 pub use crate::store::*;
 use crate::views::*;

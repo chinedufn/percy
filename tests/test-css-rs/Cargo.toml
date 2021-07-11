@@ -2,6 +2,7 @@
 name = "test-css-rs"
 version = "0.1.0"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+edition = "2018"
 
 [dependencies]
 css-rs-macro = { path = "../../crates/css-rs-macro" }

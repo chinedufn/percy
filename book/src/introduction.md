@@ -18,7 +18,7 @@ This allows you to build search engine friendly browser applications in Rust.
 ### A snippet
 
 ```rust
-#![feature(proc_macro_hygiene)]
+
 
 use virtual_dom_rs::prelude::*;
 

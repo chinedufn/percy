@@ -4,8 +4,6 @@
 //!
 //! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test diff_patch
 
-#![feature(proc_macro_hygiene)]
-
 extern crate wasm_bindgen_test;
 extern crate web_sys;
 use wasm_bindgen_test::*;

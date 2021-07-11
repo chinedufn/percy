@@ -34,3 +34,7 @@ jobs:
 
     - name: Run all tests
       run: ./test.sh
+
+    # NOTE: We can start running the full test suite on stable after https://github.com/rust-lang/rust/issues/54725
+    - name: Check that Stable can compile
+      run: cargo +stable check --all

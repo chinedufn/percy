@@ -5,8 +5,6 @@
 //!
 //! wasm-pack test crates/virtual-dom-rs --chrome --headless -- --test dom_updater
 
-#![feature(proc_macro_hygiene)]
-
 use console_error_panic_hook;
 use std::cell::RefCell;
 use std::collections::hash_map::DefaultHasher;

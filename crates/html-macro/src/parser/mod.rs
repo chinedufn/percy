@@ -1,8 +1,9 @@
 use crate::tag::TagKind;
 use crate::Tag;
+use proc_macro2::Span;
 use quote::{quote, quote_spanned};
 use std::collections::HashMap;
-use syn::export::Span;
+use std::io::Write;
 use syn::spanned::Spanned;
 use syn::{Ident, Stmt};
 
@@ -183,6 +184,21 @@ impl HtmlParser {
             return true;
         }
 
+        std::fs::OpenOptions::new()
+            .append(true)
+            .write(true)
+            .open("/tmp/foo")
+            .unwrap()
+            .write(
+                format!(
+                    "start: {:?} | end: {:?}\n",
+                    first_span.end(),
+                    second_span.start()
+                )
+                .as_bytes(),
+            )
+            .unwrap();
+
         second_span.start().column - first_span.end().column > 0
     }
 
@@ -256,6 +272,7 @@ impl HtmlParser {
 /// html! { <div>{Hello World}</div>
 /// ```
 #[derive(Default)]
+
 struct RecentSpanLocations {
     most_recent_open_tag_end: Option<Span>,
     most_recent_block_start: Option<Span>,
