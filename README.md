@@ -8,13 +8,13 @@ Percy
 
 ## The Percy Book
 
-This README serves as a light introduction to Percy. Consult [The Percy Book] for a full walk through.
+This README gives a light introduction to Percy. Check out [The Percy Book] for a full walk through.
 
 [The Percy Book]: https://chinedufn.github.io/percy/
 
 ## Stable Rust
 
-Percy compiles on stable Rust, however there is one aspect of the `html-macro` that is different on stable at this time:
+Percy compiles on stable Rust with one caveat:
 
 On nightly Rust you can create text nodes without quotes.
 
@@ -37,14 +37,12 @@ This difference will go away once span locations are stabilized in the Rust comp
 The best way to get up to speed is by checking out [The Percy Book](https://chinedufn.github.io/percy/), but here is a
 very basic example to get your feet wet with.
 
-For a full example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic).
-
 ### Quickstart - Getting your feet wet
 
 Percy allows you to create applications that only have server side rendering, only client side rendering,
 or both server and client side rendering.
 
-Here's a quick-and-easy working example of client side rendering that you can try right now.
+Here's a quick-and-easy working example of client side rendering that you can try right now:
 
 ---
 
@@ -99,8 +97,6 @@ cp index.html public/
 
 ```rust
 // contents of src/lib.rs
-
-
 
 use wasm_bindgen::prelude::*;
 use web_sys;
