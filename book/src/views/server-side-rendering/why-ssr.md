@@ -121,5 +121,5 @@ takes over rendering:
 └─────────────────────────────────────┘
 ```
 
-Server side rendering allows you to some *something* to your users more quickly,
+Server side rendering allows you to show *something* to your users more quickly,
 especially so for users with slower machines and/or bandwidth.
