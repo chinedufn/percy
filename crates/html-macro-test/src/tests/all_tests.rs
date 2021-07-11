@@ -108,6 +108,7 @@ fn sibling_text_nodes() {
     .test();
 }
 
+
 #[test]
 fn nested_macro() {
     let child_2 = html! { <b></b> };

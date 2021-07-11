@@ -2,56 +2,48 @@ Percy
 =====
 
 [![Actions Status](https://github.com/chinedufn/percy/workflows/percy-build-test/badge.svg)](https://github.com/chinedufn/percy/actions)
-[![Build status](https://circleci.com/gh/chinedufn/percy.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/chinedufn/percy)
 
-> Libraries for building interactive frontend browser apps with Rust + WebAssembly. Supports server side rendering.
+> Build frontend browser apps with Rust + WebAssembly. Supports server side rendering.
 
-Percy is collection of tools geared towards building single page web apps entirely in Rust that can also be rendered at the server.
+## The Percy Book
 
-This allows you to build search engine friendly browser applications in Rust.
+This README serves as a light introduction to Percy. Consult [The Percy Book] for a full walk through.
 
-## [The Percy Book](https://chinedufn.github.io/percy/)
+[The Percy Book]: https://chinedufn.github.io/percy/
 
-Information about all of the libraries and tools can be found in the Percy book.
+## Stable Rust
 
-This README serves as a light introduction - consult the book for a full walk through.
+Percy compiles on stable Rust, however there is one aspect of the `html-macro` that is different on stable at this time:
 
-[The Percy Book](https://chinedufn.github.io/percy/)
+On nightly Rust you can create text nodes without quotes.
 
-## How does it work?
+```rust
+// Nightly Rust does not require quotes around text nodes.
+html! { <div>My text nodes here </div> };
+```
 
-Well, that depends on the library in question.
+On stable Rust, quotation marks are required.
 
-At a high level you:
+```rust
+// Stable Rust requires quotes around text nodes.
+html! { <div>{ "My text nodes here " }</div> };
+```
 
-1. Serve your application from a server (optional)
-
-2. User loads the page
-
-3. Page downloads your application compiled to WebAssembly
-
-4. Page picks up where the server left off by reading state from the window
-
-So the server would render the application into a `String` of HTML and send that down to the client.
-
-Then the client would take over, re-rendering the application to a DOM `Node` whenever application state changes.
-
-In a browser our application renders to an `HtmlElement`, and on the server our application renders to a `String`.
+This difference will go away once span locations are stabilized in the Rust compiler - [Rust tracking issue](https://github.com/rust-lang/rust/issues/54725).
 
 ## Getting Started
 
+The best way to get up to speed is by checking out [The Percy Book](https://chinedufn.github.io/percy/), but here is a
+very basic example to get your feet wet with.
+
 For a full example of an isomorphic web app in Rust check out the [isomorphic example](examples/isomorphic).
-
----
-
-The best way to get up to speed is by checking out [The Percy Book](https://chinedufn.github.io/percy/), but here are some
-very basic examples to get your feet wet with.
 
 ### Quickstart - Getting your feet wet
 
-You can create applications that only have server side rendering, client side rendering, or both!
+Percy allows you to create applications that only have server side rendering, only client side rendering,
+or both server and client side rendering.
 
-Here's a quick-and-easy working example of client side rendering that you can try right now!
+Here's a quick-and-easy working example of client side rendering that you can try right now.
 
 ---
 
@@ -62,12 +54,16 @@ cargo new client-side-web-app --lib
 cd client-side-web-app
 ```
 
+---
+
 Add the following files to your project.
 
 ```sh
 touch build.sh
 touch index.html
 ```
+
+---
 
 Here's the end directory structure:
 
@@ -79,6 +75,8 @@ Here's the end directory structure:
 └── src
     └── lib.rs
 ```
+
+---
 
 Now edit each file with the following contents:
 
@@ -96,10 +94,12 @@ OUTPUT_CSS=$CSS_FILE wasm-pack build --no-typescript --dev --target no-modules -
 cp index.html public/
 ```
 
+---
+
 ```rust
 // contents of src/lib.rs
 
-#![feature(proc_macro_hygiene)]
+
 
 use wasm_bindgen::prelude::*;
 use web_sys;
@@ -169,6 +169,8 @@ static _MORE_CSS: &'static str = css!{r#"
 "#};
 ```
 
+---
+
 ```toml
 # contents of Cargo.toml
 
@@ -197,6 +199,8 @@ features = [
 ]
 ```
 
+---
+
 ```html
 <!-- contents of index.html -->
 <!DOCTYPE html>
@@ -218,6 +222,8 @@ features = [
     </body>
 </html>
 ```
+
+---
 
 Now run
 

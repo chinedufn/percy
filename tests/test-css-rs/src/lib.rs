@@ -1,18 +1,11 @@
-#![feature(proc_macro_hygiene)]
-
-extern crate css_rs_macro;
-
-use css_rs_macro::css;
-
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::fs;
     use std::fs::File;
-    use std::fs::OpenOptions;
     use std::io::Read;
-    use std::io::Write;
     use std::process::Command;
+
+    use css_rs_macro::css;
 
     #[test]
     fn css_classes_increment() {

@@ -42,11 +42,8 @@ lazy_static! {
 /// # Examples
 ///
 /// ```ignore
-/// #![feature(use_extern_macros)]
-/// #![feature(proc_macro_hygiene)]
-///
+/// #[macro_use]
 /// extern crate css_rs_macro;
-/// use css_rs_macro::css;
 ///
 /// fn main () {
 ///     let class1 = css! {

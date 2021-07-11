@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene, decl_macro)]
-
 #[cfg(feature = "with-rocket")]
 #[macro_use]
 #[cfg(feature = "with-rocket")]

@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene)]
-
 use router_rs::prelude::*;
 use std::str::FromStr;
 use virtual_dom_rs::prelude::*;

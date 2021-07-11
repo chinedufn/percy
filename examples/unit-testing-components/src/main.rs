@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene)]
-
 use virtual_dom_rs::prelude::*;
 
 fn main() {

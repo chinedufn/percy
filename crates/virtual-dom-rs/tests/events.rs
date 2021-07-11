@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene)]
-
 extern crate wasm_bindgen_test;
 extern crate web_sys;
 use std::cell::Cell;

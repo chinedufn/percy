@@ -2,7 +2,6 @@ name: percy-build-test
 
 on: [push]
 
-# TODO: Introduce caching https://github.com/actions/cache/blob/master/examples.md#rust---cargo
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,7 +23,7 @@ jobs:
 
     - name: Install wasm-pack
       run: >
-            curl -L https://github.com/rustwasm/wasm-pack/releases/download/v0.9.1/wasm-pack-v0.9.1-x86_64-unknown-linux-musl.tar.gz
+            curl -L https://github.com/rustwasm/wasm-pack/releases/download/v0.10.0/wasm-pack-v0.10.0-x86_64-unknown-linux-musl.tar.gz
             | tar --strip-components=1 --wildcards -xzf - "*/wasm-pack"
             && chmod +x wasm-pack
             && mv wasm-pack $HOME/.cargo/bin/
@@ -32,5 +31,17 @@ jobs:
     - name: Browser versions
       run: wasm-pack --version && firefox --version
 
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
     - name: Run all tests
       run: ./test.sh
+
+    # NOTE: We can start running the full test suite on stable after https://github.com/rust-lang/rust/issues/54725
+    - name: Check that Stable can compile
+      run: cargo +stable check --all

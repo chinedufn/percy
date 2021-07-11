@@ -4,8 +4,6 @@
 //!
 //! cargo test --color=always --package html-macro-test --lib "" -- --nocapture
 
-#![feature(proc_macro_hygiene)]
-
 // TODO: Deny warnings to ensure that the macro isn't creating any warnings.
 // #![deny(warnings)]
 

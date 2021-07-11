@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene)]
-
 extern crate css_rs_macro;
 use css_rs_macro::css;
 use std::fs::File;
