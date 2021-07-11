@@ -4,15 +4,13 @@ Percy
 [![Actions Status](https://github.com/chinedufn/percy/workflows/percy-build-test/badge.svg)](https://github.com/chinedufn/percy/actions)
 [![Build status](https://circleci.com/gh/chinedufn/percy.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/chinedufn/percy)
 
-> Libraries for building interactive frontend browser apps with Rust + WebAssembly. Supports server side rendering.
+> Build frontend browser apps with Rust + WebAssembly. Supports server side rendering.
 
-## [The Percy Book](https://chinedufn.github.io/percy/)
+## The Percy Book
 
-Information about all of the libraries and tools can be found in the Percy book.
+This README serves as a light introduction to Percy. Consult [The Percy Book] for a full walk through.
 
-This README serves as a light introduction - consult the book for a full walk through.
-
-[The Percy Book](https://chinedufn.github.io/percy/)
+[The Percy Book]: https://chinedufn.github.io/percy/
 
 ## Stable Rust
 
@@ -57,12 +55,16 @@ cargo new client-side-web-app --lib
 cd client-side-web-app
 ```
 
+---
+
 Add the following files to your project.
 
 ```sh
 touch build.sh
 touch index.html
 ```
+
+---
 
 Here's the end directory structure:
 
@@ -74,6 +76,8 @@ Here's the end directory structure:
 └── src
     └── lib.rs
 ```
+
+---
 
 Now edit each file with the following contents:
 
@@ -90,6 +94,8 @@ CSS_FILE="$(pwd)/public/app.css"
 OUTPUT_CSS=$CSS_FILE wasm-pack build --no-typescript --dev --target no-modules --out-dir ./public
 cp index.html public/
 ```
+
+---
 
 ```rust
 // contents of src/lib.rs
@@ -164,6 +170,8 @@ static _MORE_CSS: &'static str = css!{r#"
 "#};
 ```
 
+---
+
 ```toml
 # contents of Cargo.toml
 
@@ -192,6 +200,8 @@ features = [
 ]
 ```
 
+---
+
 ```html
 <!-- contents of index.html -->
 <!DOCTYPE html>
@@ -213,6 +223,8 @@ features = [
     </body>
 </html>
 ```
+
+---
 
 Now run
 

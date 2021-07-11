@@ -3,7 +3,6 @@ use crate::Tag;
 use proc_macro2::Span;
 use quote::{quote, quote_spanned};
 use std::collections::HashMap;
-use std::io::Write;
 use syn::spanned::Spanned;
 use syn::{Ident, Stmt};
 
@@ -183,21 +182,6 @@ impl HtmlParser {
         if first_span.end().line != second_span.end().line {
             return true;
         }
-
-        std::fs::OpenOptions::new()
-            .append(true)
-            .write(true)
-            .open("/tmp/foo")
-            .unwrap()
-            .write(
-                format!(
-                    "start: {:?} | end: {:?}\n",
-                    first_span.end(),
-                    second_span.start()
-                )
-                .as_bytes(),
-            )
-            .unwrap();
 
         second_span.start().column - first_span.end().column > 0
     }
