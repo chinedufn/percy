@@ -5,7 +5,7 @@ You'll sometimes want to do something to the real DOM [Node] that gets created f
 You can accomplish this with the `on_create_elem` function.
 
 ```rust
-{{#bookimport ../../../../../crates/virtual-dom-rs/tests/create_element.rs@on-create-elem}}
+{{#bookimport ../../../../../crates/percy-vdom/tests/create_element.rs@on-create-elem}}
 ```
 
 [Node]: https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Node.html

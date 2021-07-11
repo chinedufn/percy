@@ -6,8 +6,8 @@ edition = "2018"
 
 [dependencies]
 percy-css-macro = { path = "../../../crates/percy-css-macro"}
-virtual-dom-rs = { path = "../../../crates/virtual-dom-rs" }
-router-rs = { path = "../../../crates/router-rs"}
+percy-vdom = { path = "../../../crates/percy-vdom" }
+percy-router = { path = "../../../crates/percy-router"}
 log = "0.4.6"
 serde = { version = "1", features = ["rc", "derive"] }
 serde_json = "1"

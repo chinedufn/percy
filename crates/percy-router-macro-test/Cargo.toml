@@ -1,0 +1,10 @@
+[package]
+name = "percy-router-macro-test"
+version = "0.1.0"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+percy-router-macro = {path = "../percy-router-macro"}
+percy-vdom = {path = "../percy-vdom"}
+percy-router = {path = "../percy-router"}

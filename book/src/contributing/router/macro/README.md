@@ -12,9 +12,9 @@ Seeing the end result will make it easier to understand what we're doing and why
 Let's say that you have a file that looks like this:
 
 ```rust
-// Imported from crates/router-rs-macro-test/src/book_example.rs
+// Imported from crates/percy-router-macro-test/src/book_example.rs
 
-{{#include ../../../../../crates/router-rs-macro-test/src/book_example.rs}}
+{{#include ../../../../../crates/percy-router-macro-test/src/book_example.rs}}
 ```
 
 The `#[route(...)]` macro above will automatically generate the following code (some unimportant bits have been removed for brevity):

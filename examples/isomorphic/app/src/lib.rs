@@ -1,11 +1,11 @@
 pub use crate::state::*;
 pub use crate::store::*;
 use crate::views::*;
-use router_rs::prelude::*;
+use percy_router::prelude::*;
+use percy_vdom::prelude::*;
+pub use percy_vdom::VirtualNode;
 use std::cell::RefCell;
 use std::rc::Rc;
-use virtual_dom_rs::prelude::*;
-pub use virtual_dom_rs::VirtualNode;
 use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;

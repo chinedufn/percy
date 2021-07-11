@@ -1,9 +1,9 @@
 use crate::store::Store;
 use crate::views::nav_bar_view::ActivePage;
 use crate::views::nav_bar_view::NavBarView;
+use percy_vdom::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
-use virtual_dom_rs::prelude::*;
 
 pub struct ContributorsView {
     store: Rc<RefCell<Store>>,

@@ -3,7 +3,7 @@ use crate::views::nav_bar_view::ActivePage;
 use crate::views::nav_bar_view::NavBarView;
 use crate::Msg;
 
-use virtual_dom_rs::prelude::*;
+use percy_vdom::prelude::*;
 
 use std::cell::RefCell;
 use std::rc::Rc;

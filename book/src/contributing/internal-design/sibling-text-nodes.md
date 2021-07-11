@@ -6,7 +6,7 @@ one text node.
 For example, when you have a component that looks like this:
 
 ```rust
-use virtual_dom_rs::prelude::*;
+use percy_vdom::prelude::*;
 
 let world = "world";
 
@@ -30,7 +30,7 @@ To get around this here's what we actually end up rendering:
 <div>Hello <!--ptns-->World</div>
 ```
 
-Note the new `<!--ptns-->` comment node. Here's what `virtual_dom_rs`'s `createElement()` method ended up doing:
+Note the new `<!--ptns-->` comment node. Here's what `percy_vdom`'s `createElement()` method ended up doing:
 
 1. Saw the "Hello" virtual text and appended a real Text node into the real DOM `<div>`
 2. Saw the "World" virtual text and saw that the previous element was also a virtual text node
@@ -44,5 +44,5 @@ let different_text = "there";
 let sibling_text_nodes = html! { <div> hello {different_text} } </div> };
 ```
 
-Our `virtual_dom_rs` patch function would be able to find the old "World" text node since we've ensured that it
+Our `percy_vdom` patch function would be able to find the old "World" text node since we've ensured that it
 did not get merged in with any other text nodes.

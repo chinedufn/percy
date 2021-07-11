@@ -1,5 +1,5 @@
-extern crate virtual_dom_rs;
-use virtual_dom_rs::prelude::*;
+extern crate percy_vdom;
+use percy_vdom::prelude::*;
 
 // Used a tag name that does not exist in the HTML spec
 fn main() {

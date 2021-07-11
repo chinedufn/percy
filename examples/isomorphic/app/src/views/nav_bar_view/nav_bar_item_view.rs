@@ -1,5 +1,5 @@
 use percy_css_macro::css;
-use virtual_dom_rs::prelude::*;
+use percy_vdom::prelude::*;
 
 pub struct NavBarItemView {
     path: &'static str,

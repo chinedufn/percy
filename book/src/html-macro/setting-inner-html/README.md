@@ -12,7 +12,7 @@ Note that it is called `unsafe` because it can poentially expose your applicatio
 trusts arbitrary un-escaped HTML strings that are provided by users.
 
 ```rust
-{{#bookimport ../../../../crates/virtual-dom-rs/tests/create_element.rs@inner-html}}
+{{#bookimport ../../../../crates/percy-vdom/tests/create_element.rs@inner-html}}
 ```
 
 [XSS]: https://en.wikipedia.org/wiki/Cross-site_scripting

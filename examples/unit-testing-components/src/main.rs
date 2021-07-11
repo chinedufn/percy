@@ -1,4 +1,4 @@
-use virtual_dom_rs::prelude::*;
+use percy_vdom::prelude::*;
 
 fn main() {
     println!("To see this example in action:");

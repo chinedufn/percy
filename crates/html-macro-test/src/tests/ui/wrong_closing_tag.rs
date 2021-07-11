@@ -1,5 +1,5 @@
-extern crate virtual_dom_rs;
-use virtual_dom_rs::prelude::*;
+extern crate percy_vdom;
+use percy_vdom::prelude::*;
 
 // Expected a closing div tag, found a closing strong tag
 fn main() {

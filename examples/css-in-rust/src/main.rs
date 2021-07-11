@@ -5,7 +5,7 @@ use std::io::Read;
 use std::io::Write;
 use std::net::TcpListener;
 
-use virtual_dom_rs::prelude::*;
+use percy_vdom::prelude::*;
 
 static SOME_COMPONENT_CSS: &'static str = css! {"
 :host {
@@ -50,7 +50,7 @@ fn main() {
     }
 }
 
-fn render_app() -> virtual_dom_rs::VirtualNode {
+fn render_app() -> percy_vdom::VirtualNode {
     let another_component_css = css! {r#"
     :host {
         display: flex;

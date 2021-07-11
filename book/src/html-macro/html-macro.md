@@ -5,7 +5,7 @@
 Text that will never change can be typed right into your HTML
 
 ```rust
-use virtual_dom_rs::prelude::*;
+use percy_vdom::prelude::*;
 
 html!{
   <div> Text goes here </div>
@@ -17,7 +17,7 @@ html!{
 Text variables must be wrapped in braces.
 
 ```rust
-use virtual_dom_rs::prelude::*;
+use percy_vdom::prelude::*;
 
 let text_var = " world";
 

@@ -5,4 +5,4 @@ authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-virtual-dom-rs = { path = "../../crates/virtual-dom-rs" }
+percy-vdom = { path = "../../crates/percy-vdom" }

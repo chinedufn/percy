@@ -1,7 +1,7 @@
 use crate::state::Msg;
 use crate::state::State;
 
-use router_rs::prelude::Router;
+use percy_router::prelude::Router;
 use std::ops::Deref;
 use std::rc::Rc;
 

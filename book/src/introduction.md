@@ -20,7 +20,7 @@ This allows you to build search engine friendly browser applications in Rust.
 ```rust
 
 
-use virtual_dom_rs::prelude::*;
+use percy_vdom::prelude::*;
 
 // Percy supports events, classes, attributes a virtual dom
 // with diff/patch and everything else that you'd expect from

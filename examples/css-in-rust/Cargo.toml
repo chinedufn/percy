@@ -6,4 +6,4 @@ edition = "2018"
 
 [dependencies]
 percy-css-macro = { path = "../../crates/percy-css-macro" }
-virtual-dom-rs = { path = "../../crates/virtual-dom-rs" }
+percy-vdom = { path = "../../crates/percy-vdom" }
