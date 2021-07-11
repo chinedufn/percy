@@ -1,7 +1,7 @@
 //! Powers routing for frontend web applications
 
 use crate::Route;
-use percy_vdom::prelude::*;
+use percy_dom::prelude::*;
 use std::any::Any;
 use std::any::TypeId;
 use std::cell::RefCell;

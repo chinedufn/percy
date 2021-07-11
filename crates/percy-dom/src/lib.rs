@@ -1,4 +1,4 @@
-//! percy-vdom provides a virtual dom implementation as well as an `html!` macro
+//! percy-dom provides a virtual dom implementation as well as an `html!` macro
 //! that you can use to generate a virtual dom.
 //!
 //! The virtual dom works on both the client and server. On the client we'll render

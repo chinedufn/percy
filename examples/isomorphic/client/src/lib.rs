@@ -4,7 +4,7 @@ use isomorphic_app::Msg;
 use isomorphic_app::{App, Store};
 use js_sys::Reflect;
 use log::Level;
-use percy_vdom::prelude::*;
+use percy_dom::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen;

@@ -9,7 +9,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 
-use percy_vdom::prelude::*;
+use percy_dom::prelude::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
 

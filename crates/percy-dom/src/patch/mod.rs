@@ -39,7 +39,7 @@ pub use apply_patches::patch;
 ///                    `─'   `─'   `─'
 /// ```
 ///
-/// The patching process is tested in a real browser in crates/percy-vdom/tests/diff_patch.rs
+/// The patching process is tested in a real browser in crates/percy-dom/tests/diff_patch.rs
 #[derive(Debug, PartialEq)]
 pub enum Patch<'a> {
     /// Append a vector of child nodes to a parent node id.

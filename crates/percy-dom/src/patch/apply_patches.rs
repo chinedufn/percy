@@ -109,9 +109,9 @@ fn find_nodes(
             }
             Node::COMMENT_NODE => {
                 // At this time we do not support user entered comment nodes, so if we see a comment
-                // then it was a delimiter created by percy-vdom in order to ensure that two
+                // then it was a delimiter created by percy-dom in order to ensure that two
                 // neighboring text nodes did not get merged into one by the browser. So we skip
-                // over this percy-vdom generated comment node.
+                // over this percy-dom generated comment node.
             }
             _other => {
                 // Ignoring unsupported child node type

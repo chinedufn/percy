@@ -13,7 +13,7 @@ with-actix = ["actix-web", "actix-files", "actix-rt", "serde"]
 chrono = "0.4.6"
 isomorphic-app = { path = "../app" }
 env_logger = "0.6.1"
-percy-vdom = { path = "../../../crates/percy-vdom" }
+percy-dom = { path = "../../../crates/percy-dom" }
 
 # with-actix
 actix-web = {optional = true, version = "1.0.3"}

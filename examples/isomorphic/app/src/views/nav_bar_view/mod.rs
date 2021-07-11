@@ -1,5 +1,5 @@
 use percy_css_macro::css;
-use percy_vdom::prelude::*;
+use percy_dom::prelude::*;
 
 mod nav_bar_item_view;
 use self::nav_bar_item_view::NavBarItemView;

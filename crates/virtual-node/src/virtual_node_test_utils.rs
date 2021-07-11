@@ -9,7 +9,7 @@ impl VirtualNode {
     /// # Examples
     ///
     /// ```rust,ignore
-    /// # #[macro_use] extern crate percy_vdom;  fn main() {
+    /// # #[macro_use] extern crate percy_dom;  fn main() {
     ///
     /// let component = html! {<div>
     ///  <span label="hello",> {"Hi!"} </span>
@@ -58,7 +58,7 @@ impl VirtualNode {
     /// # Examples
     ///
     /// ```rust,ignore
-    /// # #[macro_use] extern crate percy_vdom;  fn main() {
+    /// # #[macro_use] extern crate percy_dom;  fn main() {
     ///
     /// let component = html! {<div>
     ///  <span label="hello",> {"Hi!"} </span>

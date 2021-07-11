@@ -1,5 +1,5 @@
+use percy_dom::prelude::*;
 use percy_router::prelude::*;
-use percy_vdom::prelude::*;
 use std::str::FromStr;
 
 mod book_example;

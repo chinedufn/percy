@@ -83,7 +83,7 @@ impl VirtualNode {
     /// These get patched into the DOM using `document.createElement`
     ///
     /// ```ignore
-    /// use percy_vdom::VirtualNode;
+    /// use percy_dom::VirtualNode;
     ///
     /// let div = VirtualNode::element("div");
     /// ```
@@ -99,7 +99,7 @@ impl VirtualNode {
     /// These get patched into the DOM using `document.createTextNode`
     ///
     /// ```ignore
-    /// use percy_vdom::VirtualNode;
+    /// use percy_dom::VirtualNode;
     ///
     /// let div = VirtualNode::text("div");
     /// ```

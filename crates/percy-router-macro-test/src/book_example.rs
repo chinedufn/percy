@@ -1,7 +1,7 @@
 //! Note: Intentionally kept in it's own file for easy inclusion into The Percy Book
 
+use percy_dom::prelude::*;
 use percy_router::prelude::*;
-use percy_vdom::prelude::*;
 use std::str::FromStr;
 
 #[route(path = "/users/:id/favorite-meal/:meal", on_visit = download_some_data)]

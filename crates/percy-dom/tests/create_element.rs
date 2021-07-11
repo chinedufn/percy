@@ -2,7 +2,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test crates/percy-vdom --chrome --headless -- --test create_element
+//! wasm-pack test crates/percy-dom --chrome --headless -- --test create_element
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
@@ -12,11 +12,11 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 use web_sys::{Element, Event, EventTarget, MouseEvent};
 
-use percy_vdom::prelude::*;
+use percy_dom::prelude::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
-/// wasm-pack test crates/percy-vdom --chrome --headless -- --test create_element nested_divs
+/// wasm-pack test crates/percy-dom --chrome --headless -- --test create_element nested_divs
 #[wasm_bindgen_test]
 fn nested_divs() {
     let vdiv = html! { <div> <div> <div></div> </div> </div> };
@@ -25,7 +25,7 @@ fn nested_divs() {
     assert_eq!(&div.inner_html(), "<div><div></div></div>");
 }
 
-/// wasm-pack test crates/percy-vdom --chrome --headless -- --test create_element svg_element
+/// wasm-pack test crates/percy-dom --chrome --headless -- --test create_element svg_element
 /// TODO: Temporarily disabled until we figure out why it's failing in CI but not failing locally
 // #[wasm_bindgen_test]
 // fn svg_element() {
@@ -40,7 +40,7 @@ fn nested_divs() {
 //     );
 // }
 
-/// wasm-pack test crates/percy-vdom --chrome --headless -- --test create_element div_with_attributes
+/// wasm-pack test crates/percy-dom --chrome --headless -- --test create_element div_with_attributes
 #[wasm_bindgen_test]
 fn div_with_attributes() {
     let vdiv = html! { <div id="id-here" class="two classes"></div> };
@@ -54,7 +54,7 @@ fn div_with_attributes() {
     assert_eq!(div.class_list().length(), 2);
 }
 
-/// wasm-pack test crates/percy-vdom --chrome --headless -- --test create_element click_event
+/// wasm-pack test crates/percy-dom --chrome --headless -- --test create_element click_event
 #[wasm_bindgen_test]
 fn click_event() {
     let clicked = Rc::new(Cell::new(false));
@@ -80,7 +80,7 @@ fn click_event() {
     assert_eq!(*clicked, Cell::new(true));
 }
 
-/// wasm-pack test crates/percy-vdom --chrome --headless -- --test create_element inner_html
+/// wasm-pack test crates/percy-dom --chrome --headless -- --test create_element inner_html
 /// @book start inner-html
 #[wasm_bindgen_test]
 fn inner_html() {
@@ -96,7 +96,7 @@ fn inner_html() {
 }
 // @book end inner-html
 
-/// wasm-pack test crates/percy-vdom --chrome --headless -- --test create_element on_create_elem
+/// wasm-pack test crates/percy-dom --chrome --headless -- --test create_element on_create_elem
 /// @book start on-create-elem
 #[wasm_bindgen_test]
 fn on_create_elem() {

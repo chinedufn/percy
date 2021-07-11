@@ -1,9 +1,9 @@
 pub use crate::state::*;
 pub use crate::store::*;
 use crate::views::*;
+use percy_dom::prelude::*;
+pub use percy_dom::VirtualNode;
 use percy_router::prelude::*;
-use percy_vdom::prelude::*;
-pub use percy_vdom::VirtualNode;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen;

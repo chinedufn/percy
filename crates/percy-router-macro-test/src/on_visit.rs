@@ -1,5 +1,5 @@
+use percy_dom::prelude::VirtualNode;
 use percy_router::prelude::*;
-use percy_vdom::prelude::VirtualNode;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 static mut VISITED: AtomicBool = AtomicBool::new(false);

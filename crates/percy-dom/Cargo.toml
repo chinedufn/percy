@@ -1,12 +1,12 @@
 [package]
-name = "percy-vdom"
+name = "percy-dom"
 version = "0.6.14"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A standalone Virtual DOM creation, diffing and patching implementation"
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/chinedufn/percy"
-documentation = "https://chinedufn.github.io/percy/api/percy_vdom/"
+documentation = "https://chinedufn.github.io/percy/api/percy_dom/"
 edition = "2018"
 
 [dependencies]

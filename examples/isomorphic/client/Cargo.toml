@@ -13,7 +13,7 @@ console_log = "0.1.2"
 isomorphic-app = { path = "../app" }
 js-sys = "0.3"
 log = "0.4.6"
-percy-vdom = { path = "../../../crates/percy-vdom" }
+percy-dom = { path = "../../../crates/percy-dom" }
 wasm-bindgen = "0.2.74"
 
 [dependencies.web-sys]

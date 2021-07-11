@@ -6,5 +6,5 @@ edition = "2018"
 
 [dependencies]
 percy-router-macro = {path = "../percy-router-macro"}
-percy-vdom = {path = "../percy-vdom"}
+percy-dom = {path = "../percy-dom"}
 percy-router = {path = "../percy-router"}

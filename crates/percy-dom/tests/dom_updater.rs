@@ -3,11 +3,11 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test crates/percy-vdom --chrome --headless -- --test dom_updater
+//! wasm-pack test crates/percy-dom --chrome --headless -- --test dom_updater
 
 use console_error_panic_hook;
-use percy_vdom::prelude::*;
-use percy_vdom::DomUpdater;
+use percy_dom::prelude::*;
+use percy_dom::DomUpdater;
 use std::cell::RefCell;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};

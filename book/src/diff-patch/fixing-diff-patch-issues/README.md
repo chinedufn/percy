@@ -30,7 +30,7 @@ If you'd like to go further, here's how to get to the root of the problem.
 The easiest place to start is by adding a new diff test and seeing what patches you get.
 
 ```rust
-{{#include ../../../../crates/percy-vdom/src/diff/diff_test_case.rs:2:}}
+{{#include ../../../../crates/percy-dom/src/diff/diff_test_case.rs:2:}}
 ```
 
 Diff patch tests get added in `diff.rs`. Here's an example:
@@ -53,10 +53,10 @@ To run your new test case:
 
 ```sh
 # To run just your new diff test
-cargo test -p percy-vdom --lib my_new_test_name_here
+cargo test -p percy-dom --lib my_new_test_name_here
 
 # To run all diff tests
-cargo test -p percy-vdom --lib diff::tests
+cargo test -p percy-dom --lib diff::tests
 ```
 
 If things are failing then you've found the issue!
@@ -69,30 +69,30 @@ If everything is passing, then it must be a patching issue.
 
 If the diff checked out, then the issue must be in the patching process.
 
-Patches are tested in `crates/percy-vdom/tests/diff_patch.rs`
+Patches are tested in `crates/percy-dom/tests/diff_patch.rs`
 
 A patch test case looks like this:
 
 ```rust
-{{#include ../../../../crates/percy-vdom/tests/diff_patch_test_case/mod.rs}}
+{{#include ../../../../crates/percy-dom/tests/diff_patch_test_case/mod.rs}}
 ```
 
 ```rust
 // Example diff patch test case.
-// Found in `crates/percy-vdom/tests/diff_patch.rs`
+// Found in `crates/percy-dom/tests/diff_patch.rs`
 
-{{#include ../../../../crates/percy-vdom/tests/diff_patch.rs:14:27}}
+{{#include ../../../../crates/percy-dom/tests/diff_patch.rs:14:27}}
 ```
 
 ```
 # Run just your new diff patch test
-wasm-pack test crates/percy-vdom --chrome --headless -- --test diff_patch my_test_name_here
+wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch my_test_name_here
 
 # Run all diff patch tests that contain the word replace
-wasm-pack test crates/percy-vdom --chrome --headless -- --test diff_patch replace
+wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch replace
 
 # Run all diff patch tests
-wasm-pack test crates/percy-vdom --chrome --headless -- --test diff_patch
+wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch
 ```
 
 Create your new test case and run it to see if things fail.

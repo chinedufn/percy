@@ -1,4 +1,4 @@
-# percy-vdom Changelog
+# percy-dom Changelog
 
 Types of changes:
 

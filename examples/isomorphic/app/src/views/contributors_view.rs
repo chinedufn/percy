@@ -1,7 +1,7 @@
 use crate::store::Store;
 use crate::views::nav_bar_view::ActivePage;
 use crate::views::nav_bar_view::NavBarView;
-use percy_vdom::prelude::*;
+use percy_dom::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 

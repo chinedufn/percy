@@ -5,7 +5,7 @@ rendering your virtual DOM to a `String` and responding to a client with
 that `String`.
 
 ```rust
-use percy_vdom::prelude::*;
+use percy_dom::prelude::*;
 use std::cell::Cell;
 
 fn main () {

@@ -1,7 +1,7 @@
 //! Kept in its own file to more easily import into the book
 
 use console_error_panic_hook;
-use percy_vdom::prelude::*;
+use percy_dom::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node};
 
@@ -27,14 +27,14 @@ impl<'a> DiffPatchTest<'a> {
         // Create a DOM node of the virtual root node
         let root_node: Node = self.old.create_dom_node().node;
 
-        // Clone since percy_vdom::patch takes ownership of the root node.
+        // Clone since percy_dom::patch takes ownership of the root node.
         let patched_root_node: Node = root_node.clone();
 
         // Generate patches
-        let patches = percy_vdom::diff(&self.old, &self.new);
+        let patches = percy_dom::diff(&self.old, &self.new);
 
         // Patch our root node. It should now look like `self.new`
-        percy_vdom::patch(root_node, &patches);
+        percy_dom::patch(root_node, &patches);
 
         // Determine the expected outer HTML
         let expected_outer_html = match self.override_expected {

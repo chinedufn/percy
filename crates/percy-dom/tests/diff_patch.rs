@@ -2,13 +2,13 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test crates/percy-vdom --chrome --headless -- --test diff_patch
+//! wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
 use wasm_bindgen_test::*;
 
-use percy_vdom::prelude::*;
+use percy_dom::prelude::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
 

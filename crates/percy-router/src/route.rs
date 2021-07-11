@@ -1,5 +1,5 @@
-use percy_vdom::VText;
-use percy_vdom::VirtualNode;
+use percy_dom::VText;
+use percy_dom::VirtualNode;
 use std::fmt::Debug;
 use std::fmt::Error;
 use std::fmt::Formatter;
@@ -179,7 +179,7 @@ impl Route {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use percy_vdom::prelude::*;
+    use percy_dom::prelude::*;
     use std::cell::RefCell;
     use std::rc::Rc;
 

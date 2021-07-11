@@ -6,6 +6,6 @@ edition = "2018"
 
 [dependencies]
 html-macro = {path = "../html-macro"}
-percy-vdom = { path = "../percy-vdom" }
+percy-dom = { path = "../percy-dom" }
 virtual-node = {path = "../virtual-node"}
 trybuild = "1.0"

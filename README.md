@@ -107,7 +107,7 @@ use web_sys;
 use web_sys::MouseEvent;
 
 use percy_css_macro::css;
-use percy_vdom::prelude::*;
+use percy_dom::prelude::*;
 
 #[wasm_bindgen]
 struct App {
@@ -187,7 +187,7 @@ crate-type = ["cdylib"] # Don't forget this!
 [dependencies]
 wasm-bindgen = "0.2.37"
 js-sys = "0.3.14"
-percy-vdom = "0.6"
+percy-dom = "0.6"
 percy-css-macro = "0.1"
 
 [dependencies.web-sys]
@@ -260,7 +260,7 @@ Nice work!
 
 ## API Documentation
 
-- [percy-vdom API docs](https://chinedufn.github.io/percy/api/percy_vdom/macro.html.html)
+- [percy-dom API docs](https://chinedufn.github.io/percy/api/percy_dom/macro.html.html)
 
 - [html-macro API docs](https://chinedufn.github.io/percy/api/html_macro)
 
