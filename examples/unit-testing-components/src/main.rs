@@ -9,7 +9,7 @@ fn main() {
 fn full_water_bottle() -> VirtualNode {
     html! {
     <div>
-        <span label="full-water">
+        <span id="full-water">
           I am full of delicious and refreshing H20!
         </span>
     </div>
@@ -17,7 +17,7 @@ fn full_water_bottle() -> VirtualNode {
 }
 
 #[allow(unused)]
-fn struggling_water_bottle(percent_full: f32) -> VirtualNode {
+fn not_full_water_bottle(percent_full: f32) -> VirtualNode {
     let message = format!(
         "Please fill me up :( I am only {} percent full :(",
         percent_full
@@ -25,7 +25,7 @@ fn struggling_water_bottle(percent_full: f32) -> VirtualNode {
     let message = VirtualNode::text(&*message);
 
     html! {
-        <div label="struggle-water">
+        <div id="not-ful-water">
          { message }
         </div>
     }
@@ -36,7 +36,7 @@ fn water_bottle_view(percent_full: f32) -> VirtualNode {
     if percent_full > 0.5 {
         full_water_bottle()
     } else {
-        struggling_water_bottle(percent_full)
+        not_full_water_bottle(percent_full)
     }
 }
 
@@ -48,7 +48,16 @@ mod tests {
     fn conditional_water_messaging() {
         assert_eq!(
             water_bottle_view(0.7)
-                .filter_label_equals("full-water")
+                .children_recursive()
+                .iter()
+                .filter(|v| {
+                    if let Some(elem) = v.as_velement_ref() {
+                        return elem.attrs.get("id") == Some(&"full-water".to_string());
+                    }
+
+                    false
+                })
+                .collect::<Vec<_>>()
                 .len(),
             1
         );

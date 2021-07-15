@@ -50,7 +50,10 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<Active
             continue;
         }
 
-        unreachable!("Getting here means we didn't find the element or next node that we were supposed to patch.")
+        unreachable!(
+            "We didn't find the element or next node that we were supposed to patch ({}).",
+            patch_node_idx
+        )
     }
 
     Ok(active_closures)

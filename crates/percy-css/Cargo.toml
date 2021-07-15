@@ -10,3 +10,4 @@ documentation = "https://chinedufn.github.io/percy/api/percy_css/"
 edition = "2018"
 
 [dependencies]
+percy-css-macro = {path = "../percy-css-macro"}

@@ -11,7 +11,6 @@ extern crate wasm_bindgen;
 // Used so that `html!` calls work when people depend on this crate since `html!` needs
 // access to `Closure` when creating event handlers.
 pub use wasm_bindgen::prelude::Closure;
-#[cfg(target_arch = "wasm32")]
 pub use wasm_bindgen::JsCast;
 
 pub extern crate web_sys;
@@ -37,7 +36,6 @@ pub mod prelude {
     pub use crate::VirtualNode;
     pub use html_macro::html;
     pub use std::vec::IntoIter;
-    pub use virtual_node::IterableNodes;
-    pub use virtual_node::View;
+    pub use virtual_node::{event::*, EventAttribFn, IterableNodes, View};
     pub use wasm_bindgen::prelude::Closure;
 }

@@ -3,7 +3,7 @@
 use crate::diff::diff;
 use crate::patch::patch;
 use std::collections::HashMap;
-use virtual_node::DynClosure;
+use virtual_node::EventAttribFn;
 use virtual_node::VirtualNode;
 use web_sys::{Element, Node};
 
@@ -18,7 +18,7 @@ use web_sys::{Element, Node};
 ///   descendants somehow and invalidate those closures..? Need to plan this out..
 ///   At it stands now this hashmap will grow anytime a new element with closures is
 ///   appended or replaced and we will never free those closures.
-pub type ActiveClosures = HashMap<u32, Vec<DynClosure>>;
+pub type ActiveClosures = HashMap<u32, Vec<EventAttribFn>>;
 
 /// Used for keeping a real DOM node up to date based on the current VirtualNode
 /// and a new incoming VirtualNode that represents our latest DOM state.
@@ -49,10 +49,11 @@ impl DomUpdater {
 
     /// Create a new `DomUpdater`.
     ///
-    /// A root `Node` will be created and appended (as a child) to your passed
+    /// A root `Node` will be created and append (as a child) to your passed
     /// in mount element.
     pub fn new_append_to_mount(current_vdom: VirtualNode, mount: &Element) -> DomUpdater {
         let created_node = current_vdom.create_dom_node();
+
         mount
             .append_child(&created_node.node)
             .expect("Could not append child to mount");
