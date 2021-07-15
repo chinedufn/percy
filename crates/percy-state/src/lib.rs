@@ -14,7 +14,6 @@ use std::sync::{Arc, RwLock, RwLockReadGuard};
 /// All clones will point to the same inner state.
 ///
 /// Cloning an `AppStateWrapper` is a very cheap operation.
-#[derive(Clone)]
 pub struct AppStateWrapper<S: AppState>(Arc<RwLock<S>>);
 
 /// Application state.
@@ -50,5 +49,11 @@ impl<S: AppState> AppStateWrapper<S> {
     /// Acquire read access to AppState.
     pub fn read(&self) -> RwLockReadGuard<'_, S> {
         self.0.read().unwrap()
+    }
+}
+
+impl<S: AppState> Clone for AppStateWrapper<S> {
+    fn clone(&self) -> Self {
+        AppStateWrapper(Arc::clone(&self.0))
     }
 }
