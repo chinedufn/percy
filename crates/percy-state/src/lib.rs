@@ -37,6 +37,11 @@ pub trait AppState {
 }
 
 impl<S: AppState> AppStateWrapper<S> {
+    /// Create a new AppStateWrapper.
+    pub fn new(state: S) -> Self {
+        Self(Arc::new(RwLock::new(state)))
+    }
+
     /// Acquire write access to the AppState then send a message.
     pub fn msg(&mut self, msg: S::Message) {
         self.0.write().unwrap().msg(msg);
