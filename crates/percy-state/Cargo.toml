@@ -1,0 +1,13 @@
+[package]
+name = "percy-state"
+version = "0.1.0"
+description = "Manage application state."
+edition = "2018"
+keywords = ["state", "browser", "wasm", "webassembly"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/chinedufn/percy"
+documentation = "https://chinedufn.github.io/percy/api/virtual_node/"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
