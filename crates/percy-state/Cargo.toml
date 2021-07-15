@@ -8,6 +8,4 @@ license = "MIT/Apache-2.0"
 repository = "https://github.com/chinedufn/percy"
 documentation = "https://chinedufn.github.io/percy/api/virtual_node/"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]

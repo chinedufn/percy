@@ -49,10 +49,17 @@ impl DomUpdater {
 
     /// Create a new `DomUpdater`.
     ///
-    /// A root `Node` will be created and appended (as a child) to your passed
+    /// A root `Node` will be created and append (as a child) to your passed
     /// in mount element.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the mount element has any other child elements.
     pub fn new_append_to_mount(current_vdom: VirtualNode, mount: &Element) -> DomUpdater {
         let created_node = current_vdom.create_dom_node();
+
+        assert_eq!(mount.children().length(), 0);
+
         mount
             .append_child(&created_node.node)
             .expect("Could not append child to mount");

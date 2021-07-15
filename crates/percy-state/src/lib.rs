@@ -2,7 +2,10 @@
 
 #![deny(missing_docs)]
 
-use std::sync::{Arc, RwLock, RwLockReadGuard};
+use std::sync::{Arc, Mutex, RwLock, RwLockReadGuard};
+
+/// A function that can render the application.
+pub type RenderFn = Arc<Mutex<Box<dyn FnMut() -> ()>>>;
 
 /// Holds application state.
 ///
@@ -14,7 +17,10 @@ use std::sync::{Arc, RwLock, RwLockReadGuard};
 /// All clones will point to the same inner state.
 ///
 /// Cloning an `AppStateWrapper` is a very cheap operation.
-pub struct AppStateWrapper<S: AppState>(Arc<RwLock<S>>);
+pub struct AppStateWrapper<S: AppState> {
+    state: Arc<RwLock<S>>,
+    render: RenderFn,
+}
 
 /// Application state.
 pub trait AppState {
@@ -37,23 +43,31 @@ pub trait AppState {
 
 impl<S: AppState> AppStateWrapper<S> {
     /// Create a new AppStateWrapper.
-    pub fn new(state: S) -> Self {
-        Self(Arc::new(RwLock::new(state)))
+    pub fn new(state: S, render: RenderFn) -> Self {
+        Self {
+            state: Arc::new(RwLock::new(state)),
+            render,
+        }
     }
 
     /// Acquire write access to the AppState then send a message.
-    pub fn msg(&mut self, msg: S::Message) {
-        self.0.write().unwrap().msg(msg);
+    pub fn msg(&self, msg: S::Message) {
+        self.state.write().unwrap().msg(msg);
+
+        (self.render.lock().unwrap())();
     }
 
     /// Acquire read access to AppState.
     pub fn read(&self) -> RwLockReadGuard<'_, S> {
-        self.0.read().unwrap()
+        self.state.read().unwrap()
     }
 }
 
 impl<S: AppState> Clone for AppStateWrapper<S> {
     fn clone(&self) -> Self {
-        AppStateWrapper(Arc::clone(&self.0))
+        AppStateWrapper {
+            state: Arc::clone(&self.state),
+            render: Arc::clone(&self.render),
+        }
     }
 }

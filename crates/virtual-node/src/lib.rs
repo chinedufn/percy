@@ -15,12 +15,12 @@ use std::rc::Rc;
 
 pub mod virtual_node_test_utils;
 
-use web_sys::{self, Element, EventTarget, Node, Text};
+use web_sys::{self, Element, Event, EventTarget, Node, Text};
 
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::sync::Mutex;
 
 // Used to uniquely identify elements that contain closures so that the DomUpdater can
@@ -83,8 +83,7 @@ impl VirtualNode {
     /// These get patched into the DOM using `document.createElement`
     ///
     /// ```ignore
-    /// use percy_dom::VirtualNode;
-    ///
+    /// # use percy_dom::VirtualNode;
     /// let div = VirtualNode::element("div");
     /// ```
     pub fn element<S>(tag: S) -> Self
@@ -99,8 +98,7 @@ impl VirtualNode {
     /// These get patched into the DOM using `document.createTextNode`
     ///
     /// ```ignore
-    /// use percy_dom::VirtualNode;
-    ///
+    /// # use percy_dom::VirtualNode;
     /// let div = VirtualNode::text("div");
     /// ```
     pub fn text<S>(text: S) -> Self
@@ -510,7 +508,7 @@ impl From<String> for VText {
 
 impl IntoIterator for VirtualNode {
     type Item = VirtualNode;
-    // TODO: Is this possible with an array [VirtualNode] instead of a vec?
+    // TODO: ::std::iter::Once<VirtualNode> to avoid allocation
     type IntoIter = ::std::vec::IntoIter<VirtualNode>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -590,7 +588,7 @@ impl fmt::Display for VirtualNode {
 }
 
 /// Box<dyn AsRef<JsValue>>> is our js_sys::Closure. Stored this way to allow us to store
-/// any Closure regardless of the arguments.
+/// any Closure regardless of the types of its arguments.
 pub type DynClosure = Rc<dyn AsRef<JsValue>>;
 
 /// We need a custom implementation of fmt::Debug since JsValue doesn't
@@ -609,6 +607,20 @@ impl fmt::Debug for Events {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let events: String = self.0.keys().map(|key| " ".to_string() + key).collect();
         write!(f, "{}", events)
+    }
+}
+
+impl Deref for Events {
+    type Target = HashMap<String, DynClosure>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Events {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
@@ -634,7 +646,7 @@ mod tests {
 
         let mut child = VirtualNode::Element(VElement::new("span"));
 
-        let mut text = VirtualNode::Text(VText::new("Hello world"));
+        let text = VirtualNode::Text(VText::new("Hello world"));
 
         child.as_velement_mut().unwrap().children.push(text);
 

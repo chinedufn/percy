@@ -9,11 +9,11 @@ repository = "https://github.com/chinedufn/percy"
 
 [workspace]
 members = [
-  "crates/percy-css-macro",
   "crates/html-macro",
   "crates/html-macro-test",
   "crates/html-validation",
   "crates/percy-css",
+  "crates/percy-css-macro",
   "crates/percy-router",
   "crates/percy-router-macro",
   "crates/percy-router-macro-test",

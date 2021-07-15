@@ -56,6 +56,18 @@ fn ignore_events_on_non_wasm32_targets() {
     .test();
 }
 
+/// Verify that we can generate a node that has a closure without any arguments.
+#[test]
+fn closure_no_arguments() {
+    HtmlMacroTest {
+        generated: html! {
+            <div onclick=||{}></div>
+        },
+        expected: html! {<div></div>},
+    }
+    .test();
+}
+
 #[test]
 fn child_node() {
     let mut expected = VElement::new("div");
@@ -107,7 +119,6 @@ fn sibling_text_nodes() {
     }
     .test();
 }
-
 
 #[test]
 fn nested_macro() {
