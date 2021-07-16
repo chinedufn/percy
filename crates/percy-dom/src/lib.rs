@@ -37,7 +37,6 @@ pub mod prelude {
     pub use crate::VirtualNode;
     pub use html_macro::html;
     pub use std::vec::IntoIter;
-    pub use virtual_node::IterableNodes;
-    pub use virtual_node::View;
+    pub use virtual_node::{event::*, EventAttribFn, IterableNodes, View};
     pub use wasm_bindgen::prelude::Closure;
 }

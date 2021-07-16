@@ -4,6 +4,10 @@
 
 use std::sync::{Arc, Mutex, RwLock, RwLockReadGuard};
 
+pub use self::state_with_message_buffer::*;
+
+mod state_with_message_buffer;
+
 /// A function that can render the application.
 pub type RenderFn = Arc<Mutex<Box<dyn FnMut() -> ()>>>;
 
@@ -18,7 +22,7 @@ pub type RenderFn = Arc<Mutex<Box<dyn FnMut() -> ()>>>;
 ///
 /// Cloning an `AppStateWrapper` is a very cheap operation.
 pub struct AppStateWrapper<S: AppState> {
-    state: Arc<RwLock<S>>,
+    state: Arc<RwLock<StateWithMessageBuffer<S>>>,
     render: RenderFn,
 }
 
@@ -45,7 +49,7 @@ impl<S: AppState> AppStateWrapper<S> {
     /// Create a new AppStateWrapper.
     pub fn new(state: S, render: RenderFn) -> Self {
         Self {
-            state: Arc::new(RwLock::new(state)),
+            state: Arc::new(RwLock::new(StateWithMessageBuffer::new(state))),
             render,
         }
     }
@@ -58,7 +62,7 @@ impl<S: AppState> AppStateWrapper<S> {
     }
 
     /// Acquire read access to AppState.
-    pub fn read(&self) -> RwLockReadGuard<'_, S> {
+    pub fn read(&self) -> RwLockReadGuard<'_, StateWithMessageBuffer<S>> {
         self.state.read().unwrap()
     }
 }

@@ -7,7 +7,9 @@
 
 use html_macro::html;
 use std::collections::HashMap;
-use virtual_node::{IterableNodes, VElement, VText, View, VirtualNode};
+use std::sync::atomic::{AtomicU8, Ordering};
+use std::sync::Arc;
+use virtual_node::{event::*, IterableNodes, VElement, VText, View, VirtualNode};
 
 struct HtmlMacroTest {
     generated: VirtualNode,
@@ -44,16 +46,46 @@ fn one_attr() {
     .test();
 }
 
-/// Events are ignored in non wasm-32 targets
+/// Verify that we can create an event attribute that takes zero arguments.
 #[test]
-fn ignore_events_on_non_wasm32_targets() {
-    HtmlMacroTest {
-        generated: html! {
-            <div onclick=|_: u8|{}></div>
-        },
-        expected: html! {<div></div>},
-    }
-    .test();
+fn non_wasm_zero_args() {
+    let node = html! {
+        <div onclick=||{}></div>
+    };
+
+    unimplemented!(
+        r#"
+Put an Rc inside the closure then call the event handler and verify
+count incremented"#
+    );
+}
+
+/// Verify that we can create an event attribute that takes one argument.
+#[test]
+fn non_wasm_one_arg() {
+    let counter = Arc::new(AtomicU8::new(0));
+    let counter_clone = Arc::clone(&counter);
+
+    let node = html! {
+        <input
+          oninput=move |_: DomInputEvent| {
+            counter_clone.fetch_add(1, Ordering::SeqCst);
+          }
+        />
+    };
+
+    (node
+        .as_velement_ref()
+        .unwrap()
+        .known_events
+        .as_ref()
+        .unwrap()
+        .oninput
+        .borrow()
+        .as_ref()
+        .unwrap())(DomInputEvent::new(None));
+
+    assert_eq!(counter.load(Ordering::SeqCst), 1);
 }
 
 /// Verify that we can generate a node that has a closure without any arguments.
