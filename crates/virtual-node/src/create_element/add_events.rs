@@ -23,7 +23,7 @@ impl VElement {
         element: &Element,
         closures: &mut HashMap<u32, Vec<EventAttribFn>>,
     ) {
-        let needs_create_closures = self.custom_events.0.len() > 0 || self.known_events.is_some();
+        let needs_create_closures = self.custom_events.0.len() > 0;
 
         if needs_create_closures {
             let unique_id = create_unique_identifier();
@@ -42,23 +42,6 @@ impl VElement {
 
                     attach_event(&element, event_name, callback, closures, unique_id);
                 });
-
-                if let Some(known_events) = self.known_events.as_ref() {
-                    if let Some(oninput) = known_events.oninput.borrow_mut().take() {
-                        let callback = Box::new(oninput) as Box<dyn FnMut(_)>;
-                        let callback = wasm_bindgen::closure::Closure::wrap(callback);
-                        let callback = Rc::new(callback) as EventAttribFn;
-
-                        attach_event(&element, "input", &callback, closures, unique_id);
-                    }
-                    if let Some(onclick) = known_events.onclick.borrow_mut().take() {
-                        let callback = Box::new(onclick) as Box<dyn FnMut(_)>;
-                        let callback = wasm_bindgen::closure::Closure::wrap(callback);
-                        let callback = Rc::new(callback) as EventAttribFn;
-
-                        attach_event(&element, "click", &callback, closures, unique_id);
-                    }
-                }
             }
         }
     }

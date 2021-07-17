@@ -24,7 +24,7 @@ use web_sys::{self, Element, EventTarget, Node, Text};
 // look them up by their unique id.
 // When the DomUpdater sees that the element no longer exists it will drop all of it's
 // Rc'd Closures for those events.
-use crate::event::{Events, KnownEvents};
+use crate::event::Events;
 
 pub use self::event::EventAttribFn;
 
@@ -66,7 +66,6 @@ pub struct VElement {
     pub tag: String,
     /// HTML attributes such as id, class, style, etc
     pub attrs: HashMap<String, String>,
-    pub known_events: Option<KnownEvents>,
     /// Events that will get added to your real DOM element via `.addEventListener`
     ///
     /// Events natively handled in HTML such as onclick, onchange, oninput and others
@@ -208,7 +207,6 @@ impl VElement {
         VElement {
             tag: tag.into(),
             attrs: HashMap::new(),
-            known_events: None,
             custom_events: Events(HashMap::new()),
             children: vec![],
         }

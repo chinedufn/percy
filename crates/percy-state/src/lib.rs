@@ -2,32 +2,32 @@
 
 #![deny(missing_docs)]
 
-use std::sync::{Arc, Mutex, RwLock, RwLockReadGuard};
+use std::sync::{Arc, Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-pub use self::state_with_message_buffer::*;
+pub use self::world_with_message_buffer::*;
 
-mod state_with_message_buffer;
+mod world_with_message_buffer;
 
-/// A function that can render the application.
+/// A function that can render the application and update the DOM.
 pub type RenderFn = Arc<Mutex<Box<dyn FnMut() -> ()>>>;
 
-/// Holds application state.
+/// Holds application state and resources, and will trigger a re-render after .msg() calls.
 ///
 /// # Cloning
 ///
-/// It can be useful to clone `AppStateWrapper`'s in order to pass state into event handler
+/// Cloning an `AppWorldWrapper` is a very cheap operation.
+///
+/// It can be useful to clone `AppWorldWrapper`'s in order to pass the world into event handler
 /// closures.
 ///
-/// All clones will point to the same inner state.
-///
-/// Cloning an `AppStateWrapper` is a very cheap operation.
-pub struct AppStateWrapper<S: AppState> {
-    state: Arc<RwLock<StateWithMessageBuffer<S>>>,
-    render: RenderFn,
+/// All clones hold pointers to the same inner state.
+pub struct AppWorldWrapper<W: AppWorld> {
+    world: Arc<RwLock<WorldWithMessageBuffer<W>>>,
+    render_fn: RenderFn,
 }
 
-/// Application state.
-pub trait AppState {
+/// Defines how messages that indicate that something has happened get sent to the World.
+pub trait AppWorld: Sized {
     /// Indicates that something has happened.
     ///
     /// ```
@@ -42,36 +42,39 @@ pub trait AppState {
 
     /// Send a message to the state object.
     /// This will usually lead to a state update
-    fn msg(&mut self, message: Self::Message);
+    fn msg(&mut self, message: Self::Message, world_wrapper: AppWorldWrapper<Self>);
 }
 
-impl<S: AppState> AppStateWrapper<S> {
-    /// Create a new AppStateWrapper.
-    pub fn new(state: S, render: RenderFn) -> Self {
+impl<W: AppWorld> AppWorldWrapper<W> {
+    /// Create a new AppWorldWrapper.
+    pub fn new(world: W, render_fn: RenderFn) -> Self {
         Self {
-            state: Arc::new(RwLock::new(StateWithMessageBuffer::new(state))),
-            render,
+            world: Arc::new(RwLock::new(WorldWithMessageBuffer::new(world))),
+            render_fn,
         }
     }
 
-    /// Acquire write access to the AppState then send a message.
-    pub fn msg(&self, msg: S::Message) {
-        self.state.write().unwrap().msg(msg);
+    /// Acquire write access to the AppWorld then send a message.
+    pub fn msg(&self, msg: W::Message) {
+        self.world
+            .write()
+            .unwrap()
+            .message_maybe_capture(msg, self.clone());
 
-        (self.render.lock().unwrap())();
+        (self.render_fn.lock().unwrap())();
     }
 
-    /// Acquire read access to AppState.
-    pub fn read(&self) -> RwLockReadGuard<'_, StateWithMessageBuffer<S>> {
-        self.state.read().unwrap()
+    /// Acquire read access to AppWorld.
+    pub fn read(&self) -> RwLockReadGuard<'_, WorldWithMessageBuffer<W>> {
+        self.world.read().unwrap()
     }
 }
 
-impl<S: AppState> Clone for AppStateWrapper<S> {
+impl<S: AppWorld> Clone for AppWorldWrapper<S> {
     fn clone(&self) -> Self {
-        AppStateWrapper {
-            state: Arc::clone(&self.state),
-            render: Arc::clone(&self.render),
+        AppWorldWrapper {
+            world: Arc::clone(&self.world),
+            render_fn: Arc::clone(&self.render_fn),
         }
     }
 }

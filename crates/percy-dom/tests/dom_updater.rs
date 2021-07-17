@@ -14,6 +14,11 @@ use wasm_bindgen_test;
 use wasm_bindgen_test::*;
 use web_sys::*;
 
+use wasm_bindgen::JsCast;
+// Used in macro
+#[allow(unused)]
+use std::ops::Deref;
+
 wasm_bindgen_test_configure!(run_in_browser);
 
 // Verify that our DomUpdater's patch method works.
@@ -62,7 +67,7 @@ fn updates_active_closure_on_replace() {
         let replace_node = html! {
          <input
             id=id
-            oninput=move |event: Event| {
+            oninput=move |event: InputEvent| {
                let input_elem = event.target().unwrap();
                let input_elem = input_elem.dyn_into::<HtmlInputElement>().unwrap();
                *text_clone.borrow_mut() = input_elem.value();
@@ -114,7 +119,7 @@ fn updates_active_closures_on_append() {
            <input
               id=id
               oninput=move |event: DomInputEvent| {
-                 let event: Event = event.deref().deref();
+                 let event: &Event = event.deref();
 
                  let input_elem = event.target().unwrap();
                  let input_elem = input_elem.dyn_into::<HtmlInputElement>().unwrap();

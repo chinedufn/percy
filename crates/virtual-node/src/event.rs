@@ -1,35 +1,40 @@
-use std::cell::RefCell;
+use std::collections::HashMap;
+use std::fmt;
+use std::ops::{Deref, DerefMut};
 
-pub use self::event_attribute::*;
-pub use self::input_event::*;
-pub use self::mouse_event::*;
+/// Box<dyn AsRef<JsValue>>> is our js_sys::Closure. Stored this way to allow us to store
+/// any Closure regardless of the types of its arguments.
+pub type EventAttribFn = std::rc::Rc<dyn AsRef<wasm_bindgen::JsValue>>;
 
-mod event_attribute;
+/// We need a custom implementation of fmt::Debug since JsValue doesn't
+/// implement debug.
+pub struct Events(pub HashMap<String, EventAttribFn>);
 
-mod input_event;
-mod mouse_event;
-
-/// An event handler that takes one argument.
-pub type KnownEventHandler<T> = RefCell<Option<Box<dyn Fn(T)>>>;
-
-/// TODO: Do we only need this in non-wasm testing environments? If so put this behind a test
-///  utils flag or something.
-pub struct KnownEvents {
-    pub oninput: KnownEventHandler<DomInputEvent>,
-    pub onclick: KnownEventHandler<DomMouseEvent>,
-}
-
-impl KnownEvents {
-    pub fn new() -> Self {
-        KnownEvents {
-            oninput: RefCell::new(None),
-            onclick: RefCell::new(None),
-        }
+impl PartialEq for Events {
+    // TODO: What should happen here..? And why?
+    fn eq(&self, _rhs: &Self) -> bool {
+        true
     }
 }
 
-impl PartialEq for KnownEvents {
-    fn eq(&self, _other: &Self) -> bool {
-        true
+impl fmt::Debug for Events {
+    // Print out all of the event names for this VirtualNode
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let events: String = self.0.keys().map(|key| " ".to_string() + key).collect();
+        write!(f, "{}", events)
+    }
+}
+
+impl Deref for Events {
+    type Target = HashMap<String, EventAttribFn>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Events {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }

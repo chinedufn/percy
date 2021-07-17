@@ -99,7 +99,7 @@ fn make_input_component(text_clone: Rc<RefCell<String>>) -> VirtualNode {
     html! {
         <input
            // On input we'll set our Rc<RefCell<String>> value to the input elements value
-           oninput=move |event: Event| {
+           oninput=move |event: InputEvent| {
               let input_elem = event.target().unwrap();
               let input_elem = input_elem.dyn_into::<HtmlInputElement>().unwrap();
               *text_clone.borrow_mut() = input_elem.value();

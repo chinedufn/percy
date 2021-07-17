@@ -93,29 +93,19 @@ fn create_valid_node(
                 // After we merge the DomUpdater
                 let _arg_count = closure.inputs.len();
 
-                #[cfg(target_arch = "wasm32")]
-                {
-                    let add_closure = quote! {
-                        {
-                            let closure = Closure::wrap(
-                                Box::new(#value) as Box<FnMut(_)>
-                            );
-                            let closure_rc = std::rc::Rc::new(closure);
-                            #var_name_node.as_velement_mut().expect("Not an element")
-                                .events.0.insert(#key.to_string(), closure_rc);
-                        }
-                    };
-
-                    tokens.push(add_closure);
-                }
-
-                #[cfg(not(target_arch = "wasm32"))]
-                {
-                    if key == "oninput" || key == "onclick" {
-                        let add_event = simulated_event_tokens(var_name_node, closure, &attr.key);
-                        tokens.push(add_event);
+                let add_closure = quote! {
+                    #[cfg(target_arch = "wasm32")]
+                    {
+                        let closure = Closure::wrap(
+                            Box::new(#value) as Box<FnMut(_)>
+                        );
+                        let closure_rc = std::rc::Rc::new(closure);
+                        #var_name_node.as_velement_mut().expect("Not an element")
+                            .custom_events.0.insert(#key.to_string(), closure_rc);
                     }
-                }
+                };
+
+                tokens.push(add_closure);
             }
             _ => {
                 let insert_attribute = quote! {
@@ -181,36 +171,4 @@ fn component_node(
     };
 
     node
-}
-
-// ```
-// // Example:
-//
-// html! { <button oninput=|_: DomInputEvent| {}> Hi </button>
-//
-// ... closure becomes ...
-//
-// let node_5.as_velement_mut().unwrap()
-//   .known_events.as_mut().unwrap()
-//   .oninput.borrow_mut() = Some(Box::new(CLOSURE_HERE) as Box<_>);
-// ```
-fn simulated_event_tokens(
-    node_name: &Ident,
-    closure: &ExprClosure,
-    event_name: &Ident,
-) -> TokenStream {
-    quote! {
-        if #node_name.as_velement_mut().expect("Not an element")
-            .known_events.is_none() {
-          #node_name.as_velement_mut().unwrap()
-            .known_events = Some(KnownEvents::new());
-        }
-
-          *(#node_name.as_velement_mut().unwrap()
-            .known_events
-            .as_mut()
-            .unwrap()
-            .#event_name.borrow_mut()) =
-            Some(Box::new(#closure) as Box<_>);
-    }
 }
