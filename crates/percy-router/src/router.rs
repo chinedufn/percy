@@ -24,17 +24,18 @@ pub struct Router {
     pub(crate) provided: ProvidedMap,
 }
 
-/// Used by percy-router-macro during code generation when turning your
-///
-/// #[route(path="/...")] macro into a struct.
+// Used by percy-router-macro during code generation when turning your
+//
+// #[route(path="/...")] macro into a struct.
+#[doc(hidden)]
 pub trait RouteHandler {
     fn route(&self) -> &Route;
 
     fn view(&self, incoming_route: &str) -> VirtualNode;
 
-    fn set_provided(&mut self, provided: ProvidedMap);
+    fn set_provided(&self, provided: ProvidedMap);
 
-    fn provided(&self) -> &ProvidedMap;
+    fn provided(&self) -> std::cell::Ref<'_, ProvidedMap>;
 
     fn matches(&self, incoming_path: &str) -> bool {
         self.route().matches(incoming_path)
@@ -42,7 +43,7 @@ pub trait RouteHandler {
 
     /// What to do when this route is visited.
     ///
-    /// ex: load some data for the route based on application date.
+    /// ex: make an HTTP request to load some data for application state.
     fn on_visit(&self, incoming_path: &str);
 }
 
@@ -50,15 +51,15 @@ impl Router {
     /// Push a vector of Routes into the Router
     pub fn set_route_handlers(&mut self, route_handlers: Vec<Box<dyn RouteHandler>>) {
         let mut route_handlers = route_handlers;
-        for router_handler in route_handlers.iter_mut() {
-            router_handler.set_provided(Rc::clone(&self.provided));
+        for route_handler in route_handlers.iter_mut() {
+            route_handler.set_provided(Rc::clone(&self.provided));
         }
 
         self.route_handlers = route_handlers;
     }
 
     /// Return the matching RouteHandler given some `incoming_route`
-    pub fn matching_routerhandler(&self, incoming_route: &str) -> Option<&Box<dyn RouteHandler>> {
+    pub fn matching_route_handler(&self, incoming_route: &str) -> Option<&Box<dyn RouteHandler>> {
         for route_handler in self.route_handlers.iter() {
             if route_handler.matches(incoming_route) {
                 return Some(route_handler);
@@ -74,7 +75,7 @@ impl Router {
     /// You'll typically call this when trying to render the correct view based on the
     /// page URL or after clicking on an anchor tag.
     pub fn view(&self, incoming_route: &str) -> Option<VirtualNode> {
-        match self.matching_routerhandler(incoming_route) {
+        match self.matching_route_handler(incoming_route) {
             Some(route_handler) => Some(route_handler.view(incoming_route)),
             None => None,
         }

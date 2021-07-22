@@ -32,7 +32,7 @@ fn visit() {
         assert_eq!(VISITED.load(Ordering::SeqCst), false);
     }
 
-    router.matching_routerhandler("/").unwrap().on_visit("/");
+    router.matching_route_handler("/").unwrap().on_visit("/");
 
     unsafe {
         assert_eq!(VISITED.load(Ordering::SeqCst), true);
@@ -75,7 +75,7 @@ fn visit_params_data() {
     }
 
     router
-        .matching_routerhandler("/users/5")
+        .matching_route_handler("/users/5")
         .unwrap()
         .on_visit("/users/5");
 

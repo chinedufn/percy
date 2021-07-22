@@ -239,9 +239,8 @@ fn gen_route_handler_mod(
         // This is not a route parameter, so it must be a provided parameter
 
         argument_definitions.push(quote! {
-        let #param = self
-            .provided()
-            .borrow();
+        let #param = self.provided();
+        let #param = #param.borrow();
         let #param = #param
             .get(&std::any::TypeId::of::<#arg_type>())
             // TODO: If we try to use an argument such as `state: Provided<u32>` but there is no
@@ -314,14 +313,18 @@ fn gen_route_handler_mod(
 
             pub struct #route_fn_handler {
                 route: Route,
-                provided: Option<ProvidedMap>
+                provided: std::cell::RefCell<ProvidedMap>
             }
 
             impl #route_fn_handler {
                 pub fn new () -> #route_fn_handler {
+                    use std::cell::RefCell;
+                    use std::rc::Rc;
+                    use std::collections::HashMap;
+
                         #route_fn_handler {
                             route: #create_route(),
-                            provided: None
+                            provided: RefCell::new(Rc::new(RefCell::new(HashMap::new()))),
                         }
                 }
             }
@@ -329,12 +332,17 @@ fn gen_route_handler_mod(
             impl RouteHandler for #route_fn_handler {
                 fn route (&self) -> &Route { &self.route }
 
-                fn set_provided (&mut self, provided: ProvidedMap) {
-                    self.provided = Some(provided);
+                // Taking by reference so that route handlers can be stored as Rc<dyn RouteHandler>.
+                // This allows them to be cloned before their on_visit handler is called allowing
+                // them to be used effectively with the app-world crate where you'd typically want
+                // to drop the lock on the World before calling an on_visit handler that needed to
+                // access the World.
+                fn set_provided (&self, provided: ProvidedMap) {
+                    *self.provided.borrow_mut() = provided;
                 }
 
-                fn provided (&self) -> &ProvidedMap {
-                    &self.provided.as_ref().expect("RouteHandler Provided map")
+                fn provided (&self) -> std::cell::Ref<'_, ProvidedMap> {
+                    self.provided.borrow()
                 }
 
                 fn on_visit (&self, incoming_path: &str) {

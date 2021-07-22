@@ -29,7 +29,7 @@ impl Store {
             // so that by the time it runs we are no longer borrowing store ... or something ...
             Msg::SetPath(path) => {
                 if let Some(router) = &self.router {
-                    if let Some(route_handler) = router.matching_routerhandler(path.as_str()) {
+                    if let Some(route_handler) = router.matching_route_handler(path.as_str()) {
                         route_handler.on_visit(path.as_str());
                     }
                 }
