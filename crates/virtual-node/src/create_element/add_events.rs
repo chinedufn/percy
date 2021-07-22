@@ -66,5 +66,5 @@ fn attach_event(
     closures
         .get_mut(&unique_id)
         .unwrap()
-        .push(Rc::clone(callback));
+        .push(std::rc::Rc::clone(callback));
 }
