@@ -2,9 +2,6 @@
 #[deny(missing_docs)]
 extern crate proc_macro;
 
-use self::proc_macro::TokenStream;
-use syn;
-
 mod create_routes_macro;
 mod route_macro;
 
@@ -18,9 +15,7 @@ mod route_macro;
 /// }
 ///
 /// fn main() {
-///     let mut router = Router::default();
-///
-///     router.set_route_handlers(create_routes![
+///     let mut router = Router::new(create_routes![
 ///         my_route,
 ///     ]);
 ///
@@ -51,9 +46,7 @@ pub fn route(
 /// }
 ///
 /// fn main() {
-///     let mut router = Router::default();
-///
-///     router.set_route_handlers(create_routes![
+///     let mut router = Router::new(create_routes![
 ///         my_route,
 ///         route2
 ///     ]);

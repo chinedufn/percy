@@ -18,9 +18,8 @@ pub type ProvidedMap = Rc<RefCell<HashMap<TypeId, Box<dyn Any>>>>;
 /// we'll query our router to see if the new route matches any of our route definitions.
 ///
 /// Then if we find a matching route we'll return it.
-#[derive(Default)]
 pub struct Router {
-    route_handlers: Vec<Box<dyn RouteHandler>>,
+    route_handlers: Vec<Rc<dyn RouteHandler>>,
     pub(crate) provided: ProvidedMap,
 }
 
@@ -48,18 +47,27 @@ pub trait RouteHandler {
 }
 
 impl Router {
-    /// Push a vector of Routes into the Router
-    pub fn set_route_handlers(&mut self, route_handlers: Vec<Box<dyn RouteHandler>>) {
-        let mut route_handlers = route_handlers;
+    /// Create a new Router.
+    ///
+    /// ```no_run,ignore
+    /// # use percy_router::prelude::Router;
+    /// let router = Router::new(create_routes![index_route, products_route]);
+    /// ```
+    pub fn new(mut route_handlers: Vec<Rc<dyn RouteHandler>>) -> Self {
+        let provided = Rc::new(RefCell::new(HashMap::new()));
+
         for route_handler in route_handlers.iter_mut() {
-            route_handler.set_provided(Rc::clone(&self.provided));
+            route_handler.set_provided(Rc::clone(&provided));
         }
 
-        self.route_handlers = route_handlers;
+        Self {
+            route_handlers,
+            provided,
+        }
     }
 
     /// Return the matching RouteHandler given some `incoming_route`
-    pub fn matching_route_handler(&self, incoming_route: &str) -> Option<&Box<dyn RouteHandler>> {
+    pub fn matching_route_handler(&self, incoming_route: &str) -> Option<&Rc<dyn RouteHandler>> {
         for route_handler in self.route_handlers.iter() {
             if route_handler.matches(incoming_route) {
                 return Some(route_handler);

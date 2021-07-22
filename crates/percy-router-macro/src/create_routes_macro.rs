@@ -21,7 +21,7 @@ use syn::Ident;
 ///     __another_route_mod__::another_route_handler::new(),
 /// ]
 pub fn create_routes(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let mut routes_to_create = parse_macro_input!(input as RoutesToCreate);
+    let routes_to_create = parse_macro_input!(input as RoutesToCreate);
 
     let mut tokens = vec![];
 
@@ -34,7 +34,7 @@ pub fn create_routes(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 
         // self::__route_fn_name_mod__::route_fn_name_handler::new()
         let route_handler = quote! {
-            Box::new(self :: #route_mod :: #route_fn ::new())
+            std::rc::Rc::new(self :: #route_mod :: #route_fn ::new())
         };
         tokens.push(route_handler);
     }

@@ -21,11 +21,8 @@ fn download_some_data(id: u16, state: Provided<SomeState>, meal: Meal) {
 
 #[test]
 fn provided_data_and_param() {
-    let mut router = Router::default();
-
+    let mut router = Router::new(create_routes![route_data_and_param]);
     router.provide(SomeState { happy: true });
-
-    router.set_route_handlers(create_routes![route_data_and_param]);
 
     assert_eq!(
         &router

@@ -24,9 +24,7 @@ fn set_visited_true() {
 
 #[test]
 fn visit() {
-    let mut router = Router::default();
-
-    router.set_route_handlers(create_routes![on_visit_works]);
+    let mut router = Router::new(create_routes![on_visit_works]);
 
     unsafe {
         assert_eq!(VISITED.load(Ordering::SeqCst), false);
@@ -65,9 +63,7 @@ fn set_id(id: u16, state: Provided<SomeState>) {
 
 #[test]
 fn visit_params_data() {
-    let mut router = Router::default();
-
-    router.set_route_handlers(create_routes![route_param_and_data]);
+    let mut router = Router::new(create_routes![route_param_and_data]);
     router.provide(SomeState { happy: false });
 
     unsafe {

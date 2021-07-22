@@ -16,8 +16,7 @@ use std::rc::Rc;
 /// }
 ///
 /// fn main () {
-///     let mut router = Router::default();
-///
+///     let mut router = Router::new(vec![]);
 ///     router.provide(State {count: 50});
 /// }
 /// ```
@@ -67,8 +66,7 @@ mod tests {
 
     #[test]
     fn provide() {
-        let mut router = Router::default();
-
+        let mut router = Router::new(vec![]);
         router.provide(State { count: 50 });
 
         let state = router.provided.borrow();

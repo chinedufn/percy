@@ -14,9 +14,7 @@ fn no_params() -> VirtualNode {
 
 #[test]
 fn root_path() {
-    let mut router = Router::default();
-
-    router.set_route_handlers(create_routes![no_params]);
+    let mut router = Router::new(create_routes![no_params]);
 
     assert_eq!(
         router.view("/").unwrap(),
@@ -33,9 +31,7 @@ fn route_one_param(id: u32) -> VirtualNode {
 
 #[test]
 fn one_param() {
-    let mut router = Router::default();
-
-    router.set_route_handlers(create_routes![route_one_param]);
+    let mut router = Router::new(create_routes![route_one_param]);
 
     assert_eq!(router.view("/10").unwrap(), VirtualNode::Text("10".into()));
 }
@@ -49,9 +45,7 @@ fn route_two_params(user_id: u64, buddy_id: u32) -> VirtualNode {
 
 #[test]
 fn two_params() {
-    let mut router = Router::default();
-
-    router.set_route_handlers(create_routes![route_two_params]);
+    let mut router = Router::new(create_routes![route_two_params]);
 
     assert_eq!(
         router.view("/user/50/buddies/90").unwrap(),
@@ -72,11 +66,9 @@ fn route_provided_data(state: Provided<State>) -> VirtualNode {
 
 #[test]
 fn provided_data() {
-    let mut router = Router::default();
+    let mut router = Router::new(create_routes![route_provided_data]);
 
     router.provide(State { count: 50 });
-
-    router.set_route_handlers(create_routes![route_provided_data]);
 
     assert_eq!(
         router.view("/").unwrap(),
@@ -99,12 +91,10 @@ fn route_provided_two_data(count: Provided<Count>, dollars: Provided<Money>) -> 
 
 #[test]
 fn provided_two_data() {
-    let mut router = Router::default();
+    let mut router = Router::new(create_routes![route_provided_two_data]);
 
     router.provide(Count { count: 8 });
     router.provide(Money(99));
-
-    router.set_route_handlers(create_routes![route_provided_two_data]);
 
     assert_eq!(
         router.view("/").unwrap(),
@@ -125,11 +115,9 @@ fn route_param_and_data(id: u16, state: Provided<SomeState>) -> VirtualNode {
 
 #[test]
 fn provided_param_and_data() {
-    let mut router = Router::default();
+    let mut router = Router::new(create_routes![route_param_and_data]);
 
     router.provide(SomeState { happy: true });
-
-    router.set_route_handlers(create_routes![route_param_and_data]);
 
     assert_eq!(
         router.view("/users/12345").unwrap(),
@@ -146,11 +134,9 @@ fn route_data_and_param(state: Provided<SomeState>, id: u32) -> VirtualNode {
 
 #[test]
 fn provided_data_and_param() {
-    let mut router = Router::default();
+    let mut router = Router::new(create_routes![route_data_and_param]);
 
     router.provide(SomeState { happy: false });
-
-    router.set_route_handlers(create_routes![route_data_and_param]);
 
     assert_eq!(
         router.view("/players/998").unwrap(),
