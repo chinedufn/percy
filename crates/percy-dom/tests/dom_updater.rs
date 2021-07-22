@@ -118,7 +118,7 @@ fn updates_active_closures_on_append() {
         <div>
            <input
               id=id
-              oninput=move |event: DomInputEvent| {
+              oninput=move |event: InputEvent| {
                  let event: &Event = event.deref();
 
                  let input_elem = event.target().unwrap();
