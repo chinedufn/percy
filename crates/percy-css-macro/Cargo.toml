@@ -1,6 +1,6 @@
 [package]
 name = "percy-css-macro"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A macro for writing your CSS next to your views"
 keywords = ["css", "style", "stylesheet", "percy", "sheet"]
