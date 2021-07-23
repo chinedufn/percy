@@ -1,6 +1,6 @@
 [package]
 name = "percy-dom"
-version = "0.6.19"
+version = "0.6.20"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A standalone Virtual DOM creation, diffing and patching implementation"
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
@@ -12,7 +12,7 @@ edition = "2018"
 [dependencies]
 js-sys = "0.3"
 wasm-bindgen = "0.2.33"
-virtual-node = { path = "../virtual-node", version = "0.2.10" }
+virtual-node = { path = "../virtual-node", version = "0.2.11" }
 html-macro = { path = "../html-macro", version = "0.1.11"}
 
 [dependencies.web-sys]

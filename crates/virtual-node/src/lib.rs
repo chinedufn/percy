@@ -330,6 +330,12 @@ impl From<String> for IterableNodes {
     }
 }
 
+impl From<&String> for IterableNodes {
+    fn from(other: &String) -> Self {
+        IterableNodes(vec![VirtualNode::text(other.as_str())])
+    }
+}
+
 impl From<Vec<VirtualNode>> for IterableNodes {
     fn from(other: Vec<VirtualNode>) -> Self {
         IterableNodes(other)
