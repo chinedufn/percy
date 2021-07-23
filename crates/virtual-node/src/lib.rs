@@ -292,13 +292,13 @@ pub struct IterableNodes(Vec<VirtualNode>);
 
 impl IterableNodes {
     /// Retrieve the first node mutably
-    pub fn first(&mut self) -> &mut VirtualNode {
-        self.0.first_mut().unwrap()
+    pub fn first_mut(&mut self) -> Option<&mut VirtualNode> {
+        self.0.first_mut()
     }
 
     /// Retrieve the last node mutably
-    pub fn last(&mut self) -> &mut VirtualNode {
-        self.0.last_mut().unwrap()
+    pub fn last_mut(&mut self) -> Option<&mut VirtualNode> {
+        self.0.last_mut()
     }
 }
 

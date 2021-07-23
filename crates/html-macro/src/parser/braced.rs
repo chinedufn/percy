@@ -79,7 +79,9 @@ impl HtmlParser {
                     let node = self.current_virtual_node_ident(stmt.span());
 
                     let insert_whitespace = quote! {
-                        #node.first().insert_space_before_text();
+                        if let Some(first_node) = #node.first_mut() {
+                            first_node.insert_space_before_text();
+                        }
                     };
 
                     self.push_tokens(insert_whitespace);
@@ -89,7 +91,9 @@ impl HtmlParser {
                     let node = self.current_virtual_node_ident(stmt.span());
 
                     let insert_whitespace = quote! {
-                        #node.last().insert_space_after_text();
+                        if let Some(last_node) = #node.last_mut() {
+                            last_node.insert_space_after_text();
+                        }
                     };
 
                     self.push_tokens(insert_whitespace);

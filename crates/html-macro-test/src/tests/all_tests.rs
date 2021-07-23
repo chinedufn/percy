@@ -108,7 +108,6 @@ fn sibling_text_nodes() {
     .test();
 }
 
-
 #[test]
 fn nested_macro() {
     let child_2 = html! { <b></b> };
@@ -375,4 +374,18 @@ fn custom_component_children() {
         expected: expected.into(),
     }
     .test();
+}
+
+/// Verify that we can properly render an empty list of virtual nodes that has a space after it.
+/// Before this test our code generation was assuming that all lists had more than one element when
+/// checking if we needed to insert space after an element.
+#[test]
+fn space_before_and_after_empty_list() {
+    let elements: Vec<VirtualNode> = Vec::new();
+
+    HtmlMacroTest {
+        generated: html! {<div> {elements} </div>},
+        expected: html! {<div> </div>},
+    }
+    .test()
 }
