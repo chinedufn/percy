@@ -1,4 +1,4 @@
-//! The html-validation crate provides method that can be used when validating html elements
+//! The html-validation crate provides functions that can be used when validating html elements
 //! and attributes.
 //!
 //! The original goal of this crate was to be used as a dependency in procedural macros that

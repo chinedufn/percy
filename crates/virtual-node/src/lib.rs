@@ -17,20 +17,21 @@ use std::rc::Rc;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsCast;
-use web_sys::{self, Element, Node, Text};
-
-// Used to uniquely identify elements that contain closures so that the DomUpdater can
-// look them up by their unique id.
-// When the DomUpdater sees that the element no longer exists it will drop all of it's
-// Rc'd Closures for those events.
-use crate::event::Events;
+use web_sys::{self, Element, Node};
 
 pub use self::event::EventAttribFn;
+pub use self::iterable_nodes::*;
+pub use self::velement::*;
+pub use self::vtext::*;
 
 pub mod event;
 pub mod test_utils;
 
 mod create_element;
+
+mod iterable_nodes;
+mod velement;
+mod vtext;
 
 /// When building your views you'll typically use the `html!` macro to generate
 /// `VirtualNode`'s.
@@ -57,27 +58,6 @@ pub enum VirtualNode {
     /// order to enable custom methods like `create_text_node()` on the
     /// wrapped type.
     Text(VText),
-}
-
-#[derive(PartialEq)]
-pub struct VElement {
-    /// The HTML tag, such as "div"
-    pub tag: String,
-    /// HTML attributes such as id, class, style, etc
-    pub attrs: HashMap<String, String>,
-    /// Events that will get added to your real DOM element via `.addEventListener`
-    ///
-    /// Events natively handled in HTML such as onclick, onchange, oninput and others
-    /// can be found in [`VElement.known_events`]
-    pub custom_events: Events,
-    /// The children of this `VirtualNode`. So a <div> <em></em> </div> structure would
-    /// have a parent div and one child, em.
-    pub children: Vec<VirtualNode>,
-}
-
-#[derive(PartialEq)]
-pub struct VText {
-    pub text: String,
 }
 
 impl VirtualNode {
@@ -198,37 +178,6 @@ impl VirtualNode {
     }
 }
 
-impl VElement {
-    pub fn new<S>(tag: S) -> Self
-    where
-        S: Into<String>,
-    {
-        VElement {
-            tag: tag.into(),
-            attrs: HashMap::new(),
-            custom_events: Events(HashMap::new()),
-            children: vec![],
-        }
-    }
-}
-
-impl VText {
-    /// Create an new `VText` instance with the specified text.
-    pub fn new<S>(text: S) -> Self
-    where
-        S: Into<String>,
-    {
-        VText { text: text.into() }
-    }
-
-    /// Return a `Text` element from a `VirtualNode`, typically right before adding it
-    /// into the DOM.
-    pub fn create_text_node(&self) -> Text {
-        let document = web_sys::window().unwrap().document().unwrap();
-        document.create_text_node(&self.text)
-    }
-}
-
 /// A node along with all of the closures that were created for that
 /// node's events and all of it's child node's events.
 pub struct CreatedNode<T> {
@@ -282,84 +231,6 @@ where
     }
 }
 
-/// Used by the html! macro for all braced child nodes so that we can use any type
-/// that implements Into<IterableNodes>
-///
-/// html! { <div> { nodes } </div> }
-///
-/// nodes can be a String .. VirtualNode .. Vec<VirtualNode> ... etc
-pub struct IterableNodes(Vec<VirtualNode>);
-
-impl IterableNodes {
-    /// Retrieve the first node mutably
-    pub fn first_mut(&mut self) -> Option<&mut VirtualNode> {
-        self.0.first_mut()
-    }
-
-    /// Retrieve the last node mutably
-    pub fn last_mut(&mut self) -> Option<&mut VirtualNode> {
-        self.0.last_mut()
-    }
-}
-
-impl IntoIterator for IterableNodes {
-    type Item = VirtualNode;
-    // TODO: Is this possible with an array [VirtualNode] instead of a vec?
-    type IntoIter = ::std::vec::IntoIter<VirtualNode>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
-    }
-}
-
-impl From<VirtualNode> for IterableNodes {
-    fn from(other: VirtualNode) -> Self {
-        IterableNodes(vec![other])
-    }
-}
-
-impl From<&str> for IterableNodes {
-    fn from(other: &str) -> Self {
-        IterableNodes(vec![VirtualNode::text(other)])
-    }
-}
-
-impl From<String> for IterableNodes {
-    fn from(other: String) -> Self {
-        IterableNodes(vec![VirtualNode::text(other.as_str())])
-    }
-}
-
-impl From<&String> for IterableNodes {
-    fn from(other: &String) -> Self {
-        IterableNodes(vec![VirtualNode::text(other.as_str())])
-    }
-}
-
-impl From<Vec<VirtualNode>> for IterableNodes {
-    fn from(other: Vec<VirtualNode>) -> Self {
-        IterableNodes(other)
-    }
-}
-
-impl<V: View> From<Vec<V>> for IterableNodes {
-    fn from(other: Vec<V>) -> Self {
-        IterableNodes(other.into_iter().map(|it| it.render()).collect())
-    }
-}
-
-impl<V: View> From<&Vec<V>> for IterableNodes {
-    fn from(other: &Vec<V>) -> Self {
-        IterableNodes(other.iter().map(|it| it.render()).collect())
-    }
-}
-
-impl<V: View> From<&[V]> for IterableNodes {
-    fn from(other: &[V]) -> Self {
-        IterableNodes(other.iter().map(|it| it.render()).collect())
-    }
-}
-
 impl From<VText> for VirtualNode {
     fn from(other: VText) -> Self {
         VirtualNode::Text(other)
@@ -381,20 +252,6 @@ impl From<&str> for VirtualNode {
 impl From<String> for VirtualNode {
     fn from(other: String) -> Self {
         VirtualNode::text(other.as_str())
-    }
-}
-
-impl From<&str> for VText {
-    fn from(text: &str) -> Self {
-        VText {
-            text: text.to_string(),
-        }
-    }
-}
-
-impl From<String> for VText {
-    fn from(text: String) -> Self {
-        VText { text }
     }
 }
 
@@ -420,52 +277,6 @@ impl fmt::Debug for VirtualNode {
             VirtualNode::Element(e) => write!(f, "Node::{:?}", e),
             VirtualNode::Text(t) => write!(f, "Node::{:?}", t),
         }
-    }
-}
-
-impl fmt::Debug for VElement {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Element(<{}>, attrs: {:?}, children: {:?})",
-            self.tag, self.attrs, self.children,
-        )
-    }
-}
-
-impl fmt::Debug for VText {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Text({})", self.text)
-    }
-}
-
-impl fmt::Display for VElement {
-    // Turn a VElement and all of it's children (recursively) into an HTML string
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "<{}", self.tag).unwrap();
-
-        for (attr, value) in self.attrs.iter() {
-            write!(f, r#" {}="{}""#, attr, value)?;
-        }
-
-        write!(f, ">")?;
-
-        for child in self.children.iter() {
-            write!(f, "{}", child.to_string())?;
-        }
-
-        if !html_validation::is_self_closing(&self.tag) {
-            write!(f, "</{}>", self.tag)?;
-        }
-
-        Ok(())
-    }
-}
-
-// Turn a VText into an HTML string
-impl fmt::Display for VText {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.text)
     }
 }
 
