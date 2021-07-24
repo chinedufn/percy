@@ -49,6 +49,9 @@ pub enum Patch<'a> {
     /// Replace a node with another node. This typically happens when a node's tag changes.
     /// ex: <div> becomes <span>
     Replace(NodeIdx, &'a VirtualNode),
+    /// The value attribute of a textarea or input element has not changed, but we will still patch
+    /// it anyway in case something was typed into the field.
+    ValueAttributeUnchanged(NodeIdx, &'a str),
     /// Add attributes that the new node has that the old node does not
     AddAttributes(NodeIdx, HashMap<&'a str, &'a str>),
     /// Remove attributes that the old node had that the new node doesn't
@@ -71,6 +74,7 @@ impl<'a> Patch<'a> {
             Patch::AddAttributes(node_idx, _) => *node_idx,
             Patch::RemoveAttributes(node_idx, _) => *node_idx,
             Patch::ChangeText(node_idx, _) => *node_idx,
+            Patch::ValueAttributeUnchanged(node_idx, _) => *node_idx,
         }
     }
 }

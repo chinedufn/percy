@@ -73,6 +73,9 @@ fn diff_recursive<'a, 'b>(
                     Some(ref old_attr_val) => {
                         if old_attr_val != &new_attr_val {
                             add_attributes.insert(new_attr_name, new_attr_val);
+                        } else if new_attr_name == "value" {
+                            patches
+                                .push(Patch::ValueAttributeUnchanged(*cur_node_idx, new_attr_val));
                         }
                     }
                     None => {
@@ -313,6 +316,38 @@ mod tests {
             expected: vec![Patch::Replace(0, &html! {<div key="2"> </div>})],
         }
         .test()
+    }
+
+    /// If an input or textarea has a value attribute we always push a patch for setting the value
+    /// attribute so that we can replace anything that might have been typed into the field.
+    #[test]
+    fn always_pushes_patch_for_value() {
+        DiffTestCase {
+            description: "Input field value unchanged",
+            old: html! { <input value="abc" /> },
+            new: html! { <input value="abc" /> },
+            expected: vec![Patch::ValueAttributeUnchanged(0, "abc")],
+        }
+        .test();
+
+        DiffTestCase {
+            description: "Textarea value unchanged",
+            old: html! { <textarea value="abc" /> },
+            new: html! { <textarea value="abc" /> },
+            expected: vec![Patch::ValueAttributeUnchanged(0, "abc")],
+        }
+        .test();
+
+        DiffTestCase {
+            description: "Textarea value unchanged",
+            old: html! { <textarea value="abc" /> },
+            new: html! { <textarea value="def" /> },
+            expected: vec![Patch::AddAttributes(
+                0,
+                vec![("value", "def")].into_iter().collect(),
+            )],
+        }
+        .test();
     }
 
     //    // TODO: Key support

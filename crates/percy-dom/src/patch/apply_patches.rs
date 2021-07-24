@@ -203,6 +203,12 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
         Patch::ChangeText(_node_idx, _new_node) => {
             unreachable!("Elements should not receive ChangeText patches.")
         }
+        Patch::ValueAttributeUnchanged(_node_idx, value) => {
+            node.set_attribute("value", value)?;
+            maybe_set_value_property(node, value);
+
+            Ok(active_closures)
+        }
     }
 }
 

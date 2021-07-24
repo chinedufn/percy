@@ -13,55 +13,67 @@ wasm_bindgen_test_configure!(run_in_browser);
 
 /// Verify that we call .set_value when setting the value attribute on an input field.
 ///
+/// Even if the value hasn't changed between diffs, we still overwrite it. This helps with making
+/// sure that the value in the virtual dom overwrites anything that might have been typed into the
+/// real DOM.
+///
 /// wasm-pack test --chrome --headless crates/percy-dom --test value_attribute -- set_input_elem_value_property
 #[wasm_bindgen_test]
 fn set_input_elem_value_property() {
-    let start_input = html! {<input value="Start">};
-    let end_input = html! {<input value="End">};
+    for (start, end) in vec![("BOTH EQUAL", "BOTH EQUAL"), ("NOT", "EQUAL")] {
+        let start_input = html! {<input value=start>};
+        let end_input = html! {<input value=end>};
 
-    let input_node = start_input.create_dom_node().node;
+        let input_node = start_input.create_dom_node().node;
 
-    input_node
-        .clone()
-        .dyn_into::<HtmlInputElement>()
-        .unwrap()
-        .set_value("Should Be Replaced");
+        input_node
+            .clone()
+            .dyn_into::<HtmlInputElement>()
+            .unwrap()
+            .set_value("Should Be Replaced");
 
-    let patches = percy_dom::diff(&start_input, &end_input);
+        let patches = percy_dom::diff(&start_input, &end_input);
 
-    percy_dom::patch(input_node.clone(), &patches).unwrap();
+        percy_dom::patch(input_node.clone(), &patches).unwrap();
 
-    assert_eq!(
-        input_node.dyn_into::<HtmlInputElement>().unwrap().value(),
-        "End"
-    );
+        assert_eq!(
+            input_node.dyn_into::<HtmlInputElement>().unwrap().value(),
+            end
+        );
+    }
 }
 
 /// Verify that we call .set_value when setting the value attribute on an textarea field.
 ///
+/// Even if the value hasn't changed between diffs, we still overwrite it. This helps with making
+/// sure that the value in the virtual dom overwrites anything that might have been typed into the
+/// real DOM.
+///
 /// wasm-pack test --chrome --headless crates/percy-dom --test value_attribute -- set_textarea_elem_value_property
 #[wasm_bindgen_test]
 fn set_textarea_elem_value_property() {
-    let start_textarea = html! {<textarea value="Start">};
-    let end_textarea = html! {<textarea value="End">};
+    for (start, end) in vec![("BOTH EQUAL", "BOTH EQUAL"), ("NOT", "EQUAL")] {
+        let start_textarea = html! {<textarea value=start>};
+        let end_textarea = html! {<textarea value=end>};
 
-    let textarea_node = start_textarea.create_dom_node().node;
+        let textarea_node = start_textarea.create_dom_node().node;
 
-    textarea_node
-        .clone()
-        .dyn_into::<HtmlTextAreaElement>()
-        .unwrap()
-        .set_value("Should Be Replaced");
-
-    let patches = percy_dom::diff(&start_textarea, &end_textarea);
-
-    percy_dom::patch(textarea_node.clone(), &patches).unwrap();
-
-    assert_eq!(
         textarea_node
+            .clone()
             .dyn_into::<HtmlTextAreaElement>()
             .unwrap()
-            .value(),
-        "End"
-    );
+            .set_value("Should Be Replaced");
+
+        let patches = percy_dom::diff(&start_textarea, &end_textarea);
+
+        percy_dom::patch(textarea_node.clone(), &patches).unwrap();
+
+        assert_eq!(
+            textarea_node
+                .dyn_into::<HtmlTextAreaElement>()
+                .unwrap()
+                .value(),
+            end
+        );
+    }
 }
