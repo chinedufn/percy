@@ -2,7 +2,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch
+//! wasm-pack test --chrome --headless crates/percy-dom --test diff_patch
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;

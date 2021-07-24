@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use crate::dom_updater::ActiveClosures;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{Element, Node, Text};
+use web_sys::{Element, HtmlInputElement, HtmlTextAreaElement, Node, Text};
 
 /// Apply all of the patches to our old root node in order to create the new root node
 /// that we desire.
@@ -131,6 +131,10 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
         Patch::AddAttributes(_node_idx, attributes) => {
             for (attrib_name, attrib_val) in attributes.iter() {
                 node.set_attribute(attrib_name, attrib_val)?;
+
+                if attrib_name == &"value" {
+                    maybe_set_value_property(node, attrib_val)
+                }
             }
 
             Ok(active_closures)
@@ -217,4 +221,13 @@ fn apply_text_patch(node: &Text, patch: &Patch) -> Result<(), JsValue> {
     };
 
     Ok(())
+}
+
+// See crates/percy-dom/tests/value_attribute.rs
+fn maybe_set_value_property(node: &Element, value: &str) {
+    if let Some(input_node) = node.dyn_ref::<HtmlInputElement>() {
+        input_node.set_value(value);
+    } else if let Some(textarea_node) = node.dyn_ref::<HtmlTextAreaElement>() {
+        textarea_node.set_value(value)
+    }
 }

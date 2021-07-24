@@ -3,7 +3,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test crates/percy-dom --chrome --headless -- --test dom_updater
+//! wasm-pack crates/percy-dom test eadless --chrome --test dom_updater
 
 use console_error_panic_hook;
 use percy_dom::prelude::*;

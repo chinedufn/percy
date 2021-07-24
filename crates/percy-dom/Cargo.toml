@@ -1,6 +1,6 @@
 [package]
 name = "percy-dom"
-version = "0.6.20"
+version = "0.6.21"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A standalone Virtual DOM creation, diffing and patching implementation"
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
@@ -18,16 +18,18 @@ html-macro = { path = "../html-macro", version = "0.1.11"}
 [dependencies.web-sys]
 version = "0.3"
 features = [
+    "CharacterData",
     "Comment",
     "Document",
     "Element",
-    "HtmlElement",
     "EventTarget",
     "HtmlCollection",
+    "HtmlElement",
+    "HtmlInputElement",
+    "HtmlTextAreaElement",
     "Node",
     "NodeList",
     "Text",
-    "CharacterData",
     "Window",
 ]
 
@@ -39,9 +41,9 @@ console_error_panic_hook = "0.1.5"
 version = "0.3"
 features = [
     "DomTokenList",
-    "HtmlInputElement",
     "Event",
-    "MouseEvent",
     "InputEvent",
+    "KeyEvent",
+    "MouseEvent",
     "console",
 ]

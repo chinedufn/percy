@@ -22,8 +22,6 @@ impl<'a> DiffPatchTest<'a> {
     pub fn test(&mut self) {
         console_error_panic_hook::set_once();
 
-        let document = web_sys::window().unwrap().document().unwrap();
-
         // Create a DOM node of the virtual root node
         let root_node: Node = self.old.create_dom_node().node;
 
@@ -34,7 +32,7 @@ impl<'a> DiffPatchTest<'a> {
         let patches = percy_dom::diff(&self.old, &self.new);
 
         // Patch our root node. It should now look like `self.new`
-        percy_dom::patch(root_node, &patches);
+        percy_dom::patch(root_node, &patches).unwrap();
 
         // Determine the expected outer HTML
         let expected_outer_html = match self.override_expected {

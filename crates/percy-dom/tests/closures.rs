@@ -3,7 +3,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test crates/percy-dom --chrome --headless -- --test closures
+//! wasm-pack test --chrome --headless crates/percy-dom --test closures
 
 use percy_dom::prelude::*;
 use percy_dom::DomUpdater;

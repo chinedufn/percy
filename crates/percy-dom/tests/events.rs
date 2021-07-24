@@ -1,6 +1,3 @@
-extern crate wasm_bindgen_test;
-extern crate web_sys;
-use std::cell::Cell;
 use std::rc::Rc;
 use wasm_bindgen_test::*;
 

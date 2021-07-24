@@ -86,13 +86,13 @@ A patch test case looks like this:
 
 ```
 # Run just your new diff patch test
-wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch my_test_name_here
+wasm-pack test --chrome --headless crates/percy-dom --test diff_patch -- my_test_name_here
 
 # Run all diff patch tests that contain the word replace
-wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch replace
+wasm-pack test --chrome --headless crates/percy-dom --test diff_patch -- replace
 
 # Run all diff patch tests
-wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch
+wasm-pack test --chrome --headless crates/percy-dom --test diff_patch
 ```
 
 Create your new test case and run it to see if things fail.
