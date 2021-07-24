@@ -272,8 +272,6 @@ impl&lt;'a&gt; DiffPatchTest&lt;'a&gt; {
     pub fn test(&amp;mut self) {
         console_error_panic_hook::set_once();
 
-        let document = web_sys::window().unwrap().document().unwrap();
-
         // Create a DOM node of the virtual root node
         let root_node: Node = self.old.create_dom_node().node;
 
@@ -284,7 +282,7 @@ impl&lt;'a&gt; DiffPatchTest&lt;'a&gt; {
         let patches = percy_dom::diff(&amp;self.old, &amp;self.new);
 
         // Patch our root node. It should now look like `self.new`
-        percy_dom::patch(root_node, &amp;patches);
+        percy_dom::patch(root_node, &amp;patches).unwrap();
 
         // Determine the expected outer HTML
         let expected_outer_html = match self.override_expected {
@@ -326,13 +324,13 @@ fn replace_child() {
 <span class="boring">}
 </span></code></pre></pre>
 <pre><code># Run just your new diff patch test
-wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch my_test_name_here
+wasm-pack test --chrome --headless crates/percy-dom --test diff_patch -- my_test_name_here
 
 # Run all diff patch tests that contain the word replace
-wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch replace
+wasm-pack test --chrome --headless crates/percy-dom --test diff_patch -- replace
 
 # Run all diff patch tests
-wasm-pack test crates/percy-dom --chrome --headless -- --test diff_patch
+wasm-pack test --chrome --headless crates/percy-dom --test diff_patch
 </code></pre>
 <p>Create your new test case and run it to see if things fail.</p>
 <p>If they do, update your original issue with your findings.</p>
