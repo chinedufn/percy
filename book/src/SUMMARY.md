@@ -14,6 +14,7 @@
     - [Conditional Rendering](./html-macro/conditional-rendering/README.md)
     - [Real Elements and Nodes](./html-macro/real-elements-and-nodes/on-create-elem/README.md)
       - [on_create_elem](./html-macro/real-elements-and-nodes/on-create-elem/README.md)
+    - [Boolean Attributes](./html-macro/boolean-attributes/README.md)
   - [Virtual DOM](./virtual-dom/README.md)
     - [Unit Testing your Views](./virtual-dom/unit-testing-views.md)
   - [Server Side Rendering (SSR)](./views/server-side-rendering/README.md)

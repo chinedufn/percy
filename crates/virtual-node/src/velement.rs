@@ -4,12 +4,16 @@ use std::fmt;
 use crate::event::Events;
 use crate::VirtualNode;
 
+pub use self::attribute_value::*;
+
+mod attribute_value;
+
 #[derive(PartialEq)]
 pub struct VElement {
     /// The HTML tag, such as "div"
     pub tag: String,
     /// HTML attributes such as id, class, style, etc
-    pub attrs: HashMap<String, String>,
+    pub attrs: HashMap<String, AttributeValue>,
     /// Events that will get added to your real DOM element via `.addEventListener`
     ///
     /// Events natively handled in HTML such as onclick, onchange, oninput and others
@@ -50,7 +54,16 @@ impl fmt::Display for VElement {
         write!(f, "<{}", self.tag).unwrap();
 
         for (attr, value) in self.attrs.iter() {
-            write!(f, r#" {}="{}""#, attr, value)?;
+            match value {
+                AttributeValue::String(value_str) => {
+                    write!(f, r#" {}="{}""#, attr, value_str)?;
+                }
+                AttributeValue::Bool(value_bool) => {
+                    if *value_bool {
+                        write!(f, " {}", attr)?;
+                    }
+                }
+            }
         }
 
         write!(f, ">")?;

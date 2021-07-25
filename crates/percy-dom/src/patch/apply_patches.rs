@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use crate::dom_updater::ActiveClosures;
+use crate::AttributeValue;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{Element, HtmlInputElement, HtmlTextAreaElement, Node, Text};
@@ -11,7 +12,7 @@ use web_sys::{Element, HtmlInputElement, HtmlTextAreaElement, Node, Text};
 /// Apply all of the patches to our old root node in order to create the new root node
 /// that we desire.
 /// This is usually used after diffing two virtual nodes.
-pub fn patch<N: Into<Node>>(root_node: N, patches: &Vec<Patch>) -> Result<ActiveClosures, JsValue> {
+pub fn patch<N: Into<Node>>(root_node: N, patches: &[Patch]) -> Result<ActiveClosures, JsValue> {
     let root_node: Node = root_node.into();
 
     let mut cur_node_idx = 0;
@@ -130,10 +131,21 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
             for (attrib_name, attrib_val) in attributes.iter() {
-                node.set_attribute(attrib_name, attrib_val)?;
+                match attrib_val {
+                    AttributeValue::String(val_str) => {
+                        node.set_attribute(attrib_name, val_str)?;
 
-                if attrib_name == &"value" {
-                    maybe_set_value_property(node, attrib_val)
+                        if attrib_name == &"value" {
+                            maybe_set_value_property(node, val_str)
+                        }
+                    }
+                    AttributeValue::Bool(val_bool) => {
+                        if *val_bool {
+                            node.set_attribute(attrib_name, "")?;
+                        } else {
+                            node.remove_attribute(attrib_name)?;
+                        }
+                    }
                 }
             }
 
@@ -204,8 +216,8 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
             unreachable!("Elements should not receive ChangeText patches.")
         }
         Patch::ValueAttributeUnchanged(_node_idx, value) => {
-            node.set_attribute("value", value)?;
-            maybe_set_value_property(node, value);
+            node.set_attribute("value", value.as_string().unwrap())?;
+            maybe_set_value_property(node, value.as_string().unwrap());
 
             Ok(active_closures)
         }

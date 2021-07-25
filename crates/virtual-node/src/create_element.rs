@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use web_sys::{Document, Element};
 
-use crate::{CreatedNode, EventAttribFn, VElement, VirtualNode};
+use crate::{AttributeValue, CreatedNode, EventAttribFn, VElement, VirtualNode};
 
 mod add_events;
 
@@ -24,14 +24,21 @@ impl VElement {
 
         self.attrs.iter().for_each(|(name, value)| {
             if name == "unsafe_inner_html" {
-                element.set_inner_html(value);
+                element.set_inner_html(value.as_string().unwrap());
 
                 return;
             }
 
-            element
-                .set_attribute(name, value)
-                .expect("Set element attribute in create element");
+            match value {
+                AttributeValue::String(s) => {
+                    element.set_attribute(name, s).unwrap();
+                }
+                AttributeValue::Bool(b) => {
+                    if *b {
+                        element.set_attribute(name, "").unwrap();
+                    }
+                }
+            };
         });
 
         self.add_events(&element, &mut closures);

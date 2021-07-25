@@ -1,7 +1,7 @@
 //! Our Patch enum is intentionally kept in it's own file for easy inclusion into
 //! The Percy Book.
 
-use crate::{VText, VirtualNode};
+use crate::{AttributeValue, VText, VirtualNode};
 use std::collections::HashMap;
 
 mod apply_patches;
@@ -51,9 +51,9 @@ pub enum Patch<'a> {
     Replace(NodeIdx, &'a VirtualNode),
     /// The value attribute of a textarea or input element has not changed, but we will still patch
     /// it anyway in case something was typed into the field.
-    ValueAttributeUnchanged(NodeIdx, &'a str),
+    ValueAttributeUnchanged(NodeIdx, &'a AttributeValue),
     /// Add attributes that the new node has that the old node does not
-    AddAttributes(NodeIdx, HashMap<&'a str, &'a str>),
+    AddAttributes(NodeIdx, HashMap<&'a str, &'a AttributeValue>),
     /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(NodeIdx, Vec<&'a str>),
     /// Change the text of a Text node.

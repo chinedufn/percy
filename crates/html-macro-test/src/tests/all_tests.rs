@@ -33,7 +33,8 @@ fn empty_div() {
 #[test]
 fn one_attr() {
     let mut attrs = HashMap::new();
-    attrs.insert("id".to_string(), "hello-world".to_string());
+    let id = "hello-world".into();
+    attrs.insert("id".to_string(), id);
     let mut expected = VElement::new("div");
     expected.attrs = attrs;
 

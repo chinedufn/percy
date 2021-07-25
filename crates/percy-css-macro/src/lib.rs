@@ -2,19 +2,13 @@
 //!
 //! github.com/chinedufn/percy/examples/css-in-rust
 
-#[feature(proc_macro)]
-#[macro_use]
-extern crate syn;
 #[macro_use]
 extern crate quote;
 #[macro_use]
 extern crate lazy_static;
 extern crate proc_macro;
 
-use syn::Expr;
-
 use proc_macro::TokenStream;
-use proc_macro::TokenTree;
 
 use std::env;
 use std::fs;

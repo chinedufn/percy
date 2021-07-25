@@ -2,7 +2,7 @@
 //! virtual dom.
 
 // TODO: A few of these dependencies (including js_sys) are used to power events.. yet events
-// only work on wasm32 targest. So we should start sprinkling some
+// only work on wasm32 targets. So we should start sprinkling some
 //
 // #[cfg(target_arch = "wasm32")]
 // #[cfg(not(target_arch = "wasm32"))]
@@ -12,11 +12,7 @@
 use std::collections::HashMap;
 use std::fmt;
 use std::ops::Deref;
-#[cfg(target_arch = "wasm32")]
-use std::rc::Rc;
 
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen::JsCast;
 use web_sys::{self, Element, Node};
 
 pub use self::event::EventAttribFn;
@@ -65,9 +61,9 @@ impl VirtualNode {
     ///
     /// These get patched into the DOM using `document.createElement`
     ///
-    /// ```ignore
-    /// # use percy_dom::VirtualNode;
-    /// let div = VirtualNode::element("div");
+    /// ```
+    /// # use virtual_node::VirtualNode;
+    /// let _div = VirtualNode::element("div");
     /// ```
     pub fn element<S>(tag: S) -> Self
     where
@@ -80,9 +76,9 @@ impl VirtualNode {
     ///
     /// These get patched into the DOM using `document.createTextNode`
     ///
-    /// ```ignore
-    /// # use percy_dom::VirtualNode;
-    /// let div = VirtualNode::text("div");
+    /// ```
+    /// # use virtual_node::VirtualNode;
+    /// let _text = VirtualNode::text("My text node");
     /// ```
     pub fn text<S>(text: S) -> Self
     where
@@ -321,5 +317,29 @@ mod tests {
         let expected = r#"<div id="some-id"><span>Hello world</span></div>"#;
 
         assert_eq!(node.to_string(), expected);
+    }
+
+    /// Verify that a boolean attribute is included in the string if true.
+    #[test]
+    fn boolean_attribute_true_shown() {
+        let mut button = VElement::new("button");
+        button.attrs.insert("disabled".to_string(), true.into());
+
+        let expected = "<button disabled></button>";
+        let button = VirtualNode::Element(button).to_string();
+
+        assert_eq!(button.to_string(), expected);
+    }
+
+    /// Verify that a boolean attribute is not included in the string if false.
+    #[test]
+    fn boolean_attribute_false_ignored() {
+        let mut button = VElement::new("button");
+        button.attrs.insert("disabled".to_string(), false.into());
+
+        let expected = "<button></button>";
+        let button = VirtualNode::Element(button).to_string();
+
+        assert_eq!(button.to_string(), expected);
     }
 }

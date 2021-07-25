@@ -52,7 +52,7 @@ mod tests {
                 .iter()
                 .filter(|v| {
                     if let Some(elem) = v.as_velement_ref() {
-                        return elem.attrs.get("id") == Some(&"full-water".to_string());
+                        return elem.attrs.get("id") == Some(&"full-water".into());
                     }
 
                     false

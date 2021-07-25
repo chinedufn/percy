@@ -1,5 +1,5 @@
-use crate::Patch;
 use crate::VirtualNode;
+use crate::{AttributeValue, Patch};
 use std::cmp::min;
 use std::collections::HashMap;
 use std::mem;
@@ -64,7 +64,7 @@ fn diff_recursive<'a, 'b>(
 
         // We're comparing two element nodes
         (VirtualNode::Element(old_element), VirtualNode::Element(new_element)) => {
-            let mut add_attributes: HashMap<&str, &str> = HashMap::new();
+            let mut add_attributes: HashMap<&str, &AttributeValue> = HashMap::new();
             let mut remove_attributes: Vec<&str> = vec![];
 
             // TODO: -> split out into func
@@ -249,7 +249,8 @@ mod tests {
     #[test]
     fn add_attributes() {
         let mut attributes = HashMap::new();
-        attributes.insert("id", "hello");
+        let id = "hello".into();
+        attributes.insert("id", &id);
 
         DiffTestCase {
             old: html! { <div> </div> },
@@ -282,7 +283,8 @@ mod tests {
     #[test]
     fn change_attribute() {
         let mut attributes = HashMap::new();
-        attributes.insert("id", "changed");
+        let id = "changed".into();
+        attributes.insert("id", &id);
 
         DiffTestCase {
             description: "Add attributes",
@@ -326,7 +328,7 @@ mod tests {
             description: "Input field value unchanged",
             old: html! { <input value="abc" /> },
             new: html! { <input value="abc" /> },
-            expected: vec![Patch::ValueAttributeUnchanged(0, "abc")],
+            expected: vec![Patch::ValueAttributeUnchanged(0, &"abc".into())],
         }
         .test();
 
@@ -334,7 +336,7 @@ mod tests {
             description: "Textarea value unchanged",
             old: html! { <textarea value="abc" /> },
             new: html! { <textarea value="abc" /> },
-            expected: vec![Patch::ValueAttributeUnchanged(0, "abc")],
+            expected: vec![Patch::ValueAttributeUnchanged(0, &"abc".into())],
         }
         .test();
 
@@ -344,7 +346,7 @@ mod tests {
             new: html! { <textarea value="def" /> },
             expected: vec![Patch::AddAttributes(
                 0,
-                vec![("value", "def")].into_iter().collect(),
+                vec![("value", &"def".into())].into_iter().collect(),
             )],
         }
         .test();
