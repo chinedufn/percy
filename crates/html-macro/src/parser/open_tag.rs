@@ -103,6 +103,11 @@ fn create_valid_node(
                         #var_name_node.as_velement_mut().expect("Not an element")
                             .custom_events.0.insert(#key.to_string(), closure_rc);
                     }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        let _ = #value;
+                    }
                 };
 
                 tokens.push(add_closure);

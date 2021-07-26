@@ -390,3 +390,21 @@ fn space_before_and_after_empty_list() {
     }
     .test()
 }
+
+/// As of July 2021 we don't make sure of closures outside of the wasm32 target.
+/// In the future we'll want to be able to use an emulated DOM in not(wasm32) so that we can
+/// simulate and test events, but this isn't possible today.
+///
+/// So, in the meantime, this test ensures that while we don't actually use the closure we still
+/// emit it so that any captured variables are marked as used.
+///
+/// Before this test we used to just throw away the closure tokens in not(wasm32) targets.
+#[test]
+#[deny(unused)] // <------- Ensures that the moved variable is seen as used.
+fn closure_moved_variables_used() {
+    let moved_var = ();
+
+    html! {
+        <button onclick=move || {let _ = moved_var;}></button>
+    };
+}
