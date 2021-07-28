@@ -408,3 +408,40 @@ fn closure_moved_variables_used() {
         <button onclick=move || {let _ = moved_var;}></button>
     };
 }
+
+/// Verify that an Option::None virtual node gets ignored.
+#[test]
+fn option_none() {
+    let element: Option<VirtualNode> = None;
+
+    HtmlMacroTest {
+        generated: html! {<div> {element} </div>},
+        expected: html! {<div> </div>},
+    }
+    .test()
+}
+
+/// Verify that an Some(VirtualNode) gets rendered.
+#[test]
+fn option_some() {
+    let element: Option<VirtualNode> = Some(VirtualNode::element("em"));
+
+    HtmlMacroTest {
+        generated: html! {<div> {element} </div>},
+        expected: html! {<div> <em></em> </div>},
+    }
+    .test()
+}
+
+/// Verify that our macro to generate IterableNodes implementations for numbers works.
+#[test]
+fn numbers() {
+    let num = 3u8;
+    let ref_num = &4u8;
+
+    HtmlMacroTest {
+        generated: html! {<div> {num} {ref_num} </div>},
+        expected: html! {<div> {"3"} {"4"} </div>},
+    }
+    .test()
+}

@@ -60,6 +60,16 @@ impl From<Vec<VirtualNode>> for IterableNodes {
     }
 }
 
+impl<T: Into<IterableNodes>> From<Option<T>> for IterableNodes {
+    fn from(opt: Option<T>) -> Self {
+        if let Some(val) = opt {
+            val.into()
+        } else {
+            IterableNodes(vec![])
+        }
+    }
+}
+
 impl<V: View> From<Vec<V>> for IterableNodes {
     fn from(other: Vec<V>) -> Self {
         IterableNodes(other.into_iter().map(|it| it.render()).collect())
@@ -77,3 +87,28 @@ impl<V: View> From<&[V]> for IterableNodes {
         IterableNodes(other.iter().map(|it| it.render()).collect())
     }
 }
+
+// Implements
+//   From<T> and From<&T> -> IterableNodes
+//   by using T's Display implementation.
+macro_rules! from_display_impls {
+    ($ty:ty) => {
+        impl From<$ty> for IterableNodes {
+            fn from(val: $ty) -> Self {
+                IterableNodes::from(val.to_string())
+            }
+        }
+
+        impl From<&$ty> for IterableNodes {
+            fn from(val: &$ty) -> Self {
+                IterableNodes::from(val.to_string())
+            }
+        }
+    };
+
+    ($ty:ty, $($tys:ty),*) => {
+        from_display_impls!( $ty );
+        from_display_impls! ( $($tys),* );
+    }
+}
+from_display_impls!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
