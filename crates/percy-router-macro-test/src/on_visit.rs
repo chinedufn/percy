@@ -24,7 +24,7 @@ fn set_visited_true() {
 
 #[test]
 fn visit() {
-    let mut router = Router::new(create_routes![on_visit_works]);
+    let router = Router::new(create_routes![on_visit_works]);
 
     unsafe {
         assert_eq!(VISITED.load(Ordering::SeqCst), false);
@@ -44,6 +44,7 @@ fn visit() {
 static mut ID: AtomicUsize = AtomicUsize::new(0);
 
 struct SomeState {
+    #[allow(unused)]
     happy: bool,
 }
 
@@ -51,10 +52,12 @@ struct SomeState {
   path = "/users/:id",
   on_visit = set_id
 )]
+#[allow(unused)]
 fn route_param_and_data(id: u16, state: Provided<SomeState>) -> VirtualNode {
     VirtualNode::Text("".into())
 }
 
+#[allow(unused)]
 fn set_id(id: u16, state: Provided<SomeState>) {
     unsafe {
         *ID.get_mut() = id as usize;

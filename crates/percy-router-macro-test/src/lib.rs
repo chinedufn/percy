@@ -4,7 +4,9 @@ use percy_router::prelude::*;
 mod book_example;
 mod on_visit;
 
+// **************************************************
 // No Params
+// **************************************************
 
 #[route(path = "/")]
 fn no_params() -> VirtualNode {
@@ -13,7 +15,7 @@ fn no_params() -> VirtualNode {
 
 #[test]
 fn root_path() {
-    let mut router = Router::new(create_routes![no_params]);
+    let router = Router::new(create_routes![no_params]);
 
     assert_eq!(
         router.view("/").unwrap(),
@@ -21,7 +23,9 @@ fn root_path() {
     );
 }
 
+// **************************************************
 // Route With One Param
+// **************************************************
 
 #[route(path = "/:id")]
 fn route_one_param(id: u32) -> VirtualNode {
@@ -30,12 +34,14 @@ fn route_one_param(id: u32) -> VirtualNode {
 
 #[test]
 fn one_param() {
-    let mut router = Router::new(create_routes![route_one_param]);
+    let router = Router::new(create_routes![route_one_param]);
 
     assert_eq!(router.view("/10").unwrap(), VirtualNode::Text("10".into()));
 }
 
+// **************************************************
 // Route With Two Params
+// **************************************************
 
 #[route(path = "/user/:user_id/buddies/:buddy_id")]
 fn route_two_params(user_id: u64, buddy_id: u32) -> VirtualNode {
@@ -44,7 +50,7 @@ fn route_two_params(user_id: u64, buddy_id: u32) -> VirtualNode {
 
 #[test]
 fn two_params() {
-    let mut router = Router::new(create_routes![route_two_params]);
+    let router = Router::new(create_routes![route_two_params]);
 
     assert_eq!(
         router.view("/user/50/buddies/90").unwrap(),
@@ -52,7 +58,9 @@ fn two_params() {
     );
 }
 
+// **************************************************
 // Route with Provided Data
+// **************************************************
 
 struct State {
     count: u8,
@@ -75,7 +83,9 @@ fn provided_data() {
     );
 }
 
+// **************************************************
 // Route with Two Provided Data
+// **************************************************
 
 struct Count {
     count: u8,
@@ -101,7 +111,9 @@ fn provided_two_data() {
     );
 }
 
+// **************************************************
 // Route with Provided Data And Param
+// **************************************************
 
 struct SomeState {
     happy: bool,
@@ -124,7 +136,9 @@ fn provided_param_and_data() {
     );
 }
 
+// **************************************************
 // Route with Provided Data And Param
+// **************************************************
 
 #[route(path = "/players/:id")]
 fn route_data_and_param(state: Provided<SomeState>, id: u32) -> VirtualNode {
@@ -143,9 +157,29 @@ fn provided_data_and_param() {
     );
 }
 
+// **************************************************
+// Create route in another module
+// **************************************************
+mod some_module {
+    use super::*;
+
+    #[route(path = "/")]
+    pub fn route_in_a_module() -> VirtualNode {
+        unimplemented!()
+    }
+}
+
+/// Verify that we can create a route using a path to a function in another module.
+#[test]
+fn create_route_in_another_module() {
+    create_routes![some_module::route_in_a_module];
+}
+
 // TODO: Compile time error if the route doesn't start with a `/`.
-// Test this with a percy-router-macro-ui crate that uses compiletest-rs
+// Test this with a ui test using trybuild
 
 // TODO: Compile time error if the route defines segments that the function
 // does not have.
-// Test this with a percy-router-macro-ui crate that uses compiletest-rs
+// Test this with a ui test using trybuild
+
+// TODO: Test that verifies that we can add route parameters as function arguments in any order.

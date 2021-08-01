@@ -1,16 +1,22 @@
-//! Note: Intentionally kept in it's own file for easy inclusion into The Percy Book
-
 use percy_dom::prelude::*;
 use percy_router::prelude::*;
 use std::str::FromStr;
 
-#[route(path = "/users/:id/favorite-meal/:meal", on_visit = download_some_data)]
-fn route_data_and_param(id: u16, state: Provided<SomeState>, meal: Meal) -> VirtualNode {
-    let id = format!("{}", id);
-    let meal = format!("{:#?}", meal);
+mod my_routes {
+    use super::*;
 
-    html! {
-        <div> User { id } loves { meal } </div>
+    #[route(path = "/users/:id/favorite-meal/:meal", on_visit = download_some_data)]
+    pub(super) fn route_data_and_param(
+        id: u16,
+        state: Provided<SomeState>,
+        meal: Meal,
+    ) -> VirtualNode {
+        let id = format!("{}", id);
+        let meal = format!("{:#?}", meal);
+
+        html! {
+            <div> User { id } loves { meal } </div>
+        }
     }
 }
 
@@ -21,7 +27,7 @@ fn download_some_data(id: u16, state: Provided<SomeState>, meal: Meal) {
 
 #[test]
 fn provided_data_and_param() {
-    let mut router = Router::new(create_routes![route_data_and_param]);
+    let mut router = Router::new(create_routes![my_routes::route_data_and_param]);
     router.provide(SomeState { happy: true });
 
     assert_eq!(

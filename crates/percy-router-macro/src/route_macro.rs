@@ -4,16 +4,15 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use syn;
 use syn::parse::{Parse, ParseStream, Result as SynResult};
+use syn::parse_macro_input;
 use syn::punctuated::Punctuated;
-use syn::spanned::Spanned;
 use syn::FnArg;
 use syn::ItemFn;
 use syn::Pat;
 use syn::Type;
-use syn::{parse_macro_input, Expr};
 use syn::{Ident, Lit, Token};
 
-// FIXME: Clean up to use consistent temrminology:
+// FIXME: Clean up to use consistent terminology:
 // route_def_colon_param, route_fn_param_ident, route_fn_param_ty
 
 // FIXME: Needs clean up / organization ... but we can circle back to this since we have
@@ -42,7 +41,7 @@ pub fn route(
     let mut tokens = vec![];
 
     // #[route(path = "/:id", on_visit = some_func_name)]
-    let mut args = parse_macro_input!(args as RouteAttrs);
+    let args = parse_macro_input!(args as RouteAttrs);
 
     // The TokenStream for the original function
     //
