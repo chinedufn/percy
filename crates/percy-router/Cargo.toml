@@ -1,6 +1,6 @@
 [package]
 name = "percy-router"
-version = "0.2.5"
+version = "0.2.6"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 edition = "2018"
 description = "A router for client side web applications with server side rendering support"
@@ -11,5 +11,5 @@ documentation = "https://chinedufn.github.io/percy/api/percy_router/"
 
 
 [dependencies]
-percy-dom = { path = "../percy-dom", version = "0.6.17"}
-percy-router-macro = { path = "../percy-router-macro", version = "0.1.4" }
+percy-dom = { path = "../percy-dom", version = "0.6.28"}
+percy-router-macro = { path = "../percy-router-macro", version = "0.1.5" }

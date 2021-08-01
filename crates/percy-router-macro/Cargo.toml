@@ -1,6 +1,6 @@
 [package]
 name = "percy-router-macro"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A macro for client side web application routing"
 keywords = ["route", "router", "wasm", "assembly", "webassembly"]

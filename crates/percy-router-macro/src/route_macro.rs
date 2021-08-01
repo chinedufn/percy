@@ -151,12 +151,7 @@ fn gen_route_creator(
                         }
                     )*
                     _ => panic!("TODO: Think about when this case gets hit... 2am coding ...")
-                };
-
-                // TODO: Generate a quote_spanned! error if we specify an attribute in the
-                // path that isn't in the arguments
-
-                None
+                }
             }
 
             Route::new(#path, Box::new(route_param_parser))

@@ -175,6 +175,22 @@ fn create_route_in_another_module() {
     create_routes![some_module::route_in_a_module];
 }
 
+// **************************************************
+// No warnings
+// **************************************************
+
+/// Verify that the route macro does not generate any warnings.
+mod test_no_warnings {
+    #![deny(warnings)]
+
+    use super::*;
+
+    #[route(path = "/")]
+    fn no_warnings() -> VirtualNode {
+        unimplemented!()
+    }
+}
+
 // TODO: Compile time error if the route doesn't start with a `/`.
 // Test this with a ui test using trybuild
 
