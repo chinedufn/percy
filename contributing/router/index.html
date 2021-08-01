@@ -174,19 +174,25 @@ based on, say, the route that the user has visited in their browser.</p>
 </span><span class="boring">fn main() {
 </span>// Imported from crates/percy-router-macro-test/src/book_example.rs
 
-//! Note: Intentionally kept in it's own file for easy inclusion into The Percy Book
-
 use percy_dom::prelude::*;
 use percy_router::prelude::*;
 use std::str::FromStr;
 
-#[route(path = &quot;/users/:id/favorite-meal/:meal&quot;, on_visit = download_some_data)]
-fn route_data_and_param(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) -&gt; VirtualNode {
-    let id = format!(&quot;{}&quot;, id);
-    let meal = format!(&quot;{:#?}&quot;, meal);
+mod my_routes {
+    use super::*;
 
-    html! {
-        &lt;div&gt; User { id } loves { meal } &lt;/div&gt;
+    #[route(path = &quot;/users/:id/favorite-meal/:meal&quot;, on_visit = download_some_data)]
+    pub(super) fn route_data_and_param(
+        id: u16,
+        state: Provided&lt;SomeState&gt;,
+        meal: Meal,
+    ) -&gt; VirtualNode {
+        let id = format!(&quot;{}&quot;, id);
+        let meal = format!(&quot;{:#?}&quot;, meal);
+
+        html! {
+            &lt;div&gt; User { id } loves { meal } &lt;/div&gt;
+        }
     }
 }
 
@@ -197,7 +203,7 @@ fn download_some_data(id: u16, state: Provided&lt;SomeState&gt;, meal: Meal) {
 
 #[test]
 fn provided_data_and_param() {
-    let mut router = Router::new(create_routes![route_data_and_param]);
+    let mut router = Router::new(create_routes![my_routes::route_data_and_param]);
     router.provide(SomeState { happy: true });
 
     assert_eq!(
