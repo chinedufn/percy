@@ -65,6 +65,7 @@ impl VirtualNode {
     /// # use virtual_node::VirtualNode;
     /// let _div = VirtualNode::element("div");
     /// ```
+    // FIXME: Rename to new_element
     pub fn element<S>(tag: S) -> Self
     where
         S: Into<String>,
@@ -80,6 +81,7 @@ impl VirtualNode {
     /// # use virtual_node::VirtualNode;
     /// let _text = VirtualNode::text("My text node");
     /// ```
+    // FIXME: Rename to new_text
     pub fn text<S>(text: S) -> Self
     where
         S: Into<String>,
@@ -323,7 +325,7 @@ mod tests {
     #[test]
     fn boolean_attribute_true_shown() {
         let mut button = VElement::new("button");
-        button.attrs.insert("disabled".to_string(), true.into());
+        button.attrs.insert("disabled".into(), true.into());
 
         let expected = "<button disabled></button>";
         let button = VirtualNode::Element(button).to_string();
@@ -335,7 +337,7 @@ mod tests {
     #[test]
     fn boolean_attribute_false_ignored() {
         let mut button = VElement::new("button");
-        button.attrs.insert("disabled".to_string(), false.into());
+        button.attrs.insert("disabled".into(), false.into());
 
         let expected = "<button></button>";
         let button = VirtualNode::Element(button).to_string();

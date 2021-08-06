@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use crate::dom_updater::ActiveClosures;
-use crate::AttributeValue;
+use crate::{AttributeValue, PatchSpecialAttribute};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{Element, HtmlInputElement, HtmlTextAreaElement, Node, Text};
@@ -221,6 +221,35 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
 
             Ok(active_closures)
         }
+        Patch::SpecialAttribute(special) => match special {
+            PatchSpecialAttribute::CallOnCreateElem(_node_idx, new_node) => {
+                new_node
+                    .as_velement_ref()
+                    .unwrap()
+                    .special_attributes
+                    .maybe_call_on_create_elem(&node);
+
+                Ok(active_closures)
+            }
+            PatchSpecialAttribute::SetDangerousInnerHtml(_node_idx, new_node) => {
+                let new_inner_html = new_node
+                    .as_velement_ref()
+                    .unwrap()
+                    .special_attributes
+                    .dangerous_inner_html
+                    .as_ref()
+                    .unwrap();
+
+                node.set_inner_html(new_inner_html);
+
+                Ok(active_closures)
+            }
+            PatchSpecialAttribute::RemoveDangerousInnerHtml(_node_idx) => {
+                node.set_inner_html("");
+
+                Ok(active_closures)
+            }
+        },
     }
 }
 

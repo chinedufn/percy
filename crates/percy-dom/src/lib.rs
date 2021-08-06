@@ -24,6 +24,8 @@ pub use crate::diff::*;
 mod patch;
 pub use crate::patch::*;
 
+// FIXME: Remove this and have users depend on html-macro directly.
+//  That way we don't need to re-release this crate whenever we update html-macro.
 pub use html_macro::html;
 
 mod dom_updater;
@@ -36,6 +38,6 @@ pub mod prelude {
     pub use crate::VirtualNode;
     pub use html_macro::html;
     pub use std::vec::IntoIter;
-    pub use virtual_node::{event::*, EventAttribFn, IterableNodes, View};
+    pub use virtual_node::{event::*, wrap_closure, EventAttribFn, IterableNodes, View};
     pub use wasm_bindgen::prelude::Closure;
 }

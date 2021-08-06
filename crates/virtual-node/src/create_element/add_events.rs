@@ -21,7 +21,7 @@ impl VElement {
         element: &Element,
         closures: &mut HashMap<u32, Vec<EventAttribFn>>,
     ) {
-        let needs_create_closures = self.custom_events.0.len() > 0;
+        let needs_create_closures = self.events.0.len() > 0;
 
         if needs_create_closures {
             let unique_id = create_unique_identifier();
@@ -34,7 +34,7 @@ impl VElement {
 
             #[cfg(target_arch = "wasm32")]
             {
-                self.custom_events.0.iter().for_each(|(onevent, callback)| {
+                self.events.0.iter().for_each(|(onevent, callback)| {
                     // onclick -> click
                     let event_name = &onevent[2..];
 

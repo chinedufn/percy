@@ -23,12 +23,6 @@ impl VElement {
         let mut closures = HashMap::new();
 
         self.attrs.iter().for_each(|(name, value)| {
-            if name == "unsafe_inner_html" {
-                element.set_inner_html(value.as_string().unwrap());
-
-                return;
-            }
-
             match value {
                 AttributeValue::String(s) => {
                     element.set_attribute(name, s).unwrap();
@@ -46,14 +40,12 @@ impl VElement {
         self.append_children_to_dom(&element, &document, &mut closures);
 
         #[cfg(target_arch = "wasm32")]
-        if let Some(on_create_elem) = self.custom_events.0.get("on_create_elem") {
-            use wasm_bindgen::JsCast;
+        {
+            &self.special_attributes.maybe_call_on_create_elem(&element);
 
-            let on_create_elem: &js_sys::Function =
-                on_create_elem.as_ref().as_ref().unchecked_ref();
-            on_create_elem
-                .call1(&wasm_bindgen::JsValue::NULL, &element)
-                .unwrap();
+            if let Some(inner_html) = &self.special_attributes.dangerous_inner_html {
+                element.set_inner_html(inner_html);
+            }
         }
 
         CreatedNode {

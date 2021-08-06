@@ -58,15 +58,29 @@ pub enum Patch<'a> {
     RemoveAttributes(NodeIdx, Vec<&'a str>),
     /// Change the text of a Text node.
     ChangeText(NodeIdx, &'a VText),
+    /// Patches that apply to [`SpecialAttributes`].
+    SpecialAttribute(PatchSpecialAttribute<'a>),
 }
 
+/// Patches that apply to [`SpecialAttributes`].
+#[derive(Debug, PartialEq)]
+pub enum PatchSpecialAttribute<'a> {
+    /// Call the [`SpecialAttributes.on_create_elem`] function on the node.
+    CallOnCreateElem(NodeIdx, &'a VirtualNode),
+    /// Set the node's innerHTML using the [`SpecialAttributes.dangerous_inner_html`].
+    SetDangerousInnerHtml(NodeIdx, &'a VirtualNode),
+    /// Set the node's innerHTML to an empty string.
+    RemoveDangerousInnerHtml(NodeIdx),
+}
+
+// TODO: u32 instead of usize
 type NodeIdx = usize;
 
 impl<'a> Patch<'a> {
     /// Every Patch is meant to be applied to a specific node within the DOM. Get the
     /// index of the DOM node that this patch should apply to. DOM nodes are indexed
     /// depth first with the root node in the tree having index 0.
-    pub fn node_idx(&self) -> usize {
+    pub fn node_idx(&self) -> NodeIdx {
         match self {
             Patch::AppendChildren(node_idx, _) => *node_idx,
             Patch::TruncateChildren(node_idx, _) => *node_idx,
@@ -75,6 +89,11 @@ impl<'a> Patch<'a> {
             Patch::RemoveAttributes(node_idx, _) => *node_idx,
             Patch::ChangeText(node_idx, _) => *node_idx,
             Patch::ValueAttributeUnchanged(node_idx, _) => *node_idx,
+            Patch::SpecialAttribute(special) => match special {
+                PatchSpecialAttribute::CallOnCreateElem(node_idx, _) => *node_idx,
+                PatchSpecialAttribute::SetDangerousInnerHtml(node_idx, _) => *node_idx,
+                PatchSpecialAttribute::RemoveDangerousInnerHtml(node_idx) => *node_idx,
+            },
         }
     }
 }

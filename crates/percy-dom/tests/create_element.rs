@@ -80,37 +80,158 @@ fn click_event() {
     assert_eq!(*clicked, Cell::new(true));
 }
 
-/// wasm-pack test --chrome --headless crates/percy-dom --test create_element -- inner_html
-/// @book start inner-html
+/// wasm-pack test --chrome --headless crates/percy-dom --test create_element -- new_elem_inner_html
 #[wasm_bindgen_test]
-fn inner_html() {
-    let div = html! {
-    <div
-      unsafe_inner_html="<span>hi</span>"
-    >
-    </div>
+fn new_elem_inner_html() {
+    let mut div: VirtualNode = html! {
+    <div></div>
     };
+    div.as_velement_mut()
+        .unwrap()
+        .special_attributes
+        .dangerous_inner_html = Some("<span>hi</span>".to_string());
+
     let div: Element = div.create_dom_node().node.unchecked_into();
 
     assert_eq!(div.inner_html(), "<span>hi</span>");
 }
-// @book end inner-html
 
-/// wasm-pack test --chrome --headless crates/percy-dom --test create_element -- on_create_elem
-/// @book start on-create-elem
+/// Verify that if we patch a node with dangerous_inner_html over another node that has
+/// dangerous_inner_html we overwrite the innerHTML.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test create_element -- inner_html_overwrite
 #[wasm_bindgen_test]
-fn on_create_elem() {
-    let div = html! {
-    <div
-      on_create_elem=|elem: web_sys::Element| {
-        elem.set_inner_html("Hello world");
-      }
-    >
+fn inner_html_overwrite() {
+    let mut start: VirtualNode = VirtualNode::element("div");
+    start
+        .as_velement_mut()
+        .unwrap()
+        .special_attributes
+        .dangerous_inner_html = Some("<span>OLD</span>".to_string());
+
+    let mut end: VirtualNode = VirtualNode::element("div");
+    end.as_velement_mut()
+        .unwrap()
+        .special_attributes
+        .dangerous_inner_html = Some("<span>NEW</span>".to_string());
+
+    let div = start.create_dom_node();
+
+    let patches = percy_dom::diff(&start, &end);
+    percy_dom::patch(div.node.clone(), &patches).unwrap();
+
+    let div: Element = div.node.unchecked_into();
+    assert_eq!(div.inner_html(), "<span>NEW</span>");
+}
+
+/// Verify that if the old node has dangerous_inner_html but the new node does not, the
+/// dangerous_inner_html is removed.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test create_element -- remove_inner_html
+#[wasm_bindgen_test]
+fn remove_inner_html() {
+    let mut start: VirtualNode = VirtualNode::element("div");
+    start
+        .as_velement_mut()
+        .unwrap()
+        .special_attributes
+        .dangerous_inner_html = Some("<span>OLD</span>".to_string());
+
+    let end: VirtualNode = VirtualNode::element("div");
+
+    let div = start.create_dom_node();
+
+    let patches = percy_dom::diff(&start, &end);
+    percy_dom::patch(div.node.clone(), &patches).unwrap();
+
+    let div: Element = div.node.unchecked_into();
+    assert_eq!(div.inner_html(), "");
+}
+
+/// Verify that when we create a new element we call it's on_create_elem function.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test create_element -- on_create_elem_new_node
+#[wasm_bindgen_test]
+fn on_create_elem_new_node() {
+    let mut div: VirtualNode = html! {
+    <div>
         <span>This span should get replaced</span>
     </div>
     };
+
+    div.as_velement_mut()
+        .unwrap()
+        .special_attributes
+        .on_create_elem = Some((
+        0,
+        wrap_closure(move |elem: web_sys::Element| {
+            elem.set_inner_html("Hello world");
+        }),
+    ));
+
     let div: Element = div.create_dom_node().node.unchecked_into();
 
     assert_eq!(div.inner_html(), "Hello world");
 }
-// @book end on-create-elem
+
+/// Verify that if we are patching over another element that does not have an on_create_elem
+/// attribute we call the new node's on_create_elem.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test create_element -- on_create_elem_triggered_via_patch
+#[wasm_bindgen_test]
+fn on_create_elem_triggered_via_patch() {
+    let start = VirtualNode::element("div");
+
+    let mut end: VirtualNode = VirtualNode::element("div");
+    end.as_velement_mut()
+        .unwrap()
+        .special_attributes
+        .on_create_elem = Some((
+        0,
+        wrap_closure(move |elem: web_sys::Element| {
+            elem.set_inner_html("Hello world");
+        }),
+    ));
+
+    let div = start.create_dom_node();
+
+    let patches = percy_dom::diff(&start, &end);
+    percy_dom::patch(div.node.clone(), &patches).unwrap();
+
+    let div: Element = div.node.unchecked_into();
+    assert_eq!(div.inner_html(), "Hello world");
+}
+
+/// Verify that if we are patching over another element that has the same on_create_elem ID
+/// (i.e., we're probably patching over the same virtual-node that's been slightly changed..)
+/// we do not call the new node's on_create_elem.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test create_element -- on_create_elem_not_triggered_via_patch_if_same_id
+#[wasm_bindgen_test]
+fn on_create_elem_not_triggered_via_patch_if_same_id() {
+    let mut start = html! {<div id="original"></div>};
+    start
+        .as_velement_mut()
+        .unwrap()
+        .special_attributes
+        .on_create_elem = Some((0, wrap_closure(|_elem: web_sys::Element| {})));
+
+    let mut end: VirtualNode = html! {<div id="new"></div>};
+    end.as_velement_mut()
+        .unwrap()
+        .special_attributes
+        .on_create_elem = Some((
+        0,
+        wrap_closure(move |elem: web_sys::Element| {
+            panic!("CLOSURE SHOULD NOT GET CALLED");
+        }),
+    ));
+
+    let div = start.create_dom_node();
+
+    let patches = percy_dom::diff(&start, &end);
+    percy_dom::patch(div.node.clone(), &patches).unwrap();
+
+    let div: Element = div.node.unchecked_into();
+    assert_eq!(div.id(), "new");
+}

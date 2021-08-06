@@ -5,8 +5,10 @@ use crate::event::Events;
 use crate::VirtualNode;
 
 pub use self::attribute_value::*;
+pub use self::special_attributes::*;
 
 mod attribute_value;
+mod special_attributes;
 
 #[derive(PartialEq)]
 pub struct VElement {
@@ -18,10 +20,12 @@ pub struct VElement {
     ///
     /// Events natively handled in HTML such as onclick, onchange, oninput and others
     /// can be found in [`VElement.known_events`]
-    pub custom_events: Events,
+    pub events: Events,
     /// The children of this `VirtualNode`. So a <div> <em></em> </div> structure would
     /// have a parent div and one child, em.
     pub children: Vec<VirtualNode>,
+    /// See [`SpecialAttributes`]
+    pub special_attributes: SpecialAttributes,
 }
 
 impl VElement {
@@ -32,8 +36,9 @@ impl VElement {
         VElement {
             tag: tag.into(),
             attrs: HashMap::new(),
-            custom_events: Events(HashMap::new()),
+            events: Events(HashMap::new()),
             children: vec![],
+            special_attributes: SpecialAttributes::default(),
         }
     }
 }

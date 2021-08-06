@@ -97,11 +97,11 @@ fn create_valid_node(
                     #[cfg(target_arch = "wasm32")]
                     {
                         let closure = Closure::wrap(
-                            Box::new(#value) as Box<FnMut(_)>
+                            Box::new(#value) as Box<dyn FnMut(_)>
                         );
                         let closure_rc = std::rc::Rc::new(closure);
                         #var_name_node.as_velement_mut().expect("Not an element")
-                            .custom_events.0.insert(#key.to_string(), closure_rc);
+                            .events.0.insert(#key.to_string(), closure_rc);
                     }
 
                     #[cfg(not(target_arch = "wasm32"))]
