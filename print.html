@@ -487,15 +487,28 @@ impl View for ChildView {
 </span></code></pre></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="setting-inner-html"><a class="header" href="#setting-inner-html">Setting Inner HTML</a></h1>
 <p>You'll sometimes want to use a string of HTML in order to set the child nodes for an element.</p>
-<p>For example, if you're creating a tooltip component you might want to be able to support setting tooltips as such:</p>
-<div data-tip="Hello <strong>World!</strong>"></div>
-<p>You can use the <code>unsafe_inner_html</code> attribute for this purpose.</p>
-<p>Note that it is called <code>unsafe</code> because it can poentially expose your application to <a href="https://en.wikipedia.org/wiki/Cross-site_scripting">cross-site scripting</a> attacks if your application
-trusts arbitrary un-escaped HTML strings that are provided by users.</p>
+<p>For example, if you're creating a tool tip component you might want to be able to support setting tool tips using
+arbitrary HTML such as <code>&quot;Hello &lt;strong&gt;World!&lt;/strong&gt;&quot;</code>:</p>
+<p>You can use the <code>SpecialAttributes.dangerous_inner_html</code> attribute to set inner html.</p>
+<p>Note that it is called <code>unsafe</code> because it can potentially expose your application to <a href="https://en.wikipedia.org/wiki/Cross-site_scripting">cross-site scripting</a> attacks if your application
+trusts arbitrary un-escaped HTML strings.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>{{#bookimport ../../../../crates/percy-dom/tests/create_element.rs@inner-html}}
+</span>
+<span class="boring">fn main() {
+</span>let tooltip_contents = &quot;&lt;span&gt;hi&lt;/span&gt;&quot;;
+
+let mut div: VirtualNode = html! {
+&lt;div&gt;&lt;/div&gt;
+};
+div.as_velement_mut()
+    .unwrap()
+    .special_attributes
+    .dangerous_inner_html = Some(tooltip_contents.to_string());
+
+let div: Element = div.create_dom_node().node.unchecked_into();
+
+assert_eq!(div.inner_html(), &quot;&lt;span&gt;hi&lt;/span&gt;&quot;);
 <span class="boring">}
 </span></code></pre></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="conditional-rendering"><a class="header" href="#conditional-rendering">Conditional Rendering</a></h1>
@@ -523,20 +536,60 @@ and else branches don't match.</p>
 </span></code></pre></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="real-elements-and-nodes"><a class="header" href="#real-elements-and-nodes">Real Elements and Nodes</a></h1>
 <p>You'll sometimes want to do something to the real DOM <a href="https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Node.html">Node</a> that gets created from your <code>VirtualNode</code>.</p>
-<p>You can accomplish this with the <code>on_create_elem</code> function.</p>
+<p>You can accomplish this with the <code>SpecialAttributes.on_create_elem</code> attribute function.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>{{#bookimport ../../../../../crates/percy-dom/tests/create_element.rs@on-create-elem}}
+</span>use virtual_node::wrap_closure;
+
+let mut div: VirtualNode = html! {
+&lt;div&gt;
+    &lt;span&gt;This span should get replaced&lt;/span&gt;
+&lt;/div&gt;
+};
+
+div.as_velement_mut()
+    .unwrap()
+    .special_attributes
+    .on_create_elem = Some((
+        123,
+        wrap_closure(move |elem: web_sys::Element| {
+            elem.set_inner_html(&quot;Hello world&quot;);
+        }),
+    ));
+
+let div: Element = div.create_dom_node().node.unchecked_into();
+
+assert_eq!(div.inner_html(), &quot;Hello world&quot;);
 <span class="boring">}
 </span></code></pre></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="real-elements-and-nodes-1"><a class="header" href="#real-elements-and-nodes-1">Real Elements and Nodes</a></h1>
 <p>You'll sometimes want to do something to the real DOM <a href="https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Node.html">Node</a> that gets created from your <code>VirtualNode</code>.</p>
-<p>You can accomplish this with the <code>on_create_elem</code> function.</p>
+<p>You can accomplish this with the <code>SpecialAttributes.on_create_elem</code> attribute function.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>{{#bookimport ../../../../../crates/percy-dom/tests/create_element.rs@on-create-elem}}
+</span>use virtual_node::wrap_closure;
+
+let mut div: VirtualNode = html! {
+&lt;div&gt;
+    &lt;span&gt;This span should get replaced&lt;/span&gt;
+&lt;/div&gt;
+};
+
+div.as_velement_mut()
+    .unwrap()
+    .special_attributes
+    .on_create_elem = Some((
+        123,
+        wrap_closure(move |elem: web_sys::Element| {
+            elem.set_inner_html(&quot;Hello world&quot;);
+        }),
+    ));
+
+let div: Element = div.create_dom_node().node.unchecked_into();
+
+assert_eq!(div.inner_html(), &quot;Hello world&quot;);
 <span class="boring">}
 </span></code></pre></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="boolean-attributes"><a class="header" href="#boolean-attributes">Boolean Attributes</a></h1>
@@ -1230,8 +1283,6 @@ use virtual_node::VirtualNode;
 
 /// Test that we generate the right Vec&lt;Patch&gt; for some start and end virtual dom.
 pub struct DiffTestCase&lt;'a&gt; {
-    // ex: &quot;Patching root level nodes works&quot;
-    pub description: &amp;'static str,
     // ex: html! { &lt;div&gt; &lt;/div&gt; }
     pub old: VirtualNode,
     // ex: html! { &lt;strong&gt; &lt;/strong&gt; }
@@ -1245,7 +1296,7 @@ impl&lt;'a&gt; DiffTestCase&lt;'a&gt; {
         // ex: vec![Patch::Replace(0, &amp;html! { &lt;strong&gt;&lt;/strong&gt; })],
         let patches = diff(&amp;self.old, &amp;self.new);
 
-        assert_eq!(patches, self.expected, &quot;{}&quot;, self.description);
+        assert_eq!(patches, self.expected);
     }
 }
 <span class="boring">}

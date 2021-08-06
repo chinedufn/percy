@@ -167,11 +167,31 @@
                     <main>
                         <h1 id="real-elements-and-nodes"><a class="header" href="#real-elements-and-nodes">Real Elements and Nodes</a></h1>
 <p>You'll sometimes want to do something to the real DOM <a href="https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Node.html">Node</a> that gets created from your <code>VirtualNode</code>.</p>
-<p>You can accomplish this with the <code>on_create_elem</code> function.</p>
+<p>You can accomplish this with the <code>SpecialAttributes.on_create_elem</code> attribute function.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>{{#bookimport ../../../../../crates/percy-dom/tests/create_element.rs@on-create-elem}}
+</span>use virtual_node::wrap_closure;
+
+let mut div: VirtualNode = html! {
+&lt;div&gt;
+    &lt;span&gt;This span should get replaced&lt;/span&gt;
+&lt;/div&gt;
+};
+
+div.as_velement_mut()
+    .unwrap()
+    .special_attributes
+    .on_create_elem = Some((
+        123,
+        wrap_closure(move |elem: web_sys::Element| {
+            elem.set_inner_html(&quot;Hello world&quot;);
+        }),
+    ));
+
+let div: Element = div.create_dom_node().node.unchecked_into();
+
+assert_eq!(div.inner_html(), &quot;Hello world&quot;);
 <span class="boring">}
 </span></code></pre></pre>
 

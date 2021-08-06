@@ -194,8 +194,6 @@ use virtual_node::VirtualNode;
 
 /// Test that we generate the right Vec&lt;Patch&gt; for some start and end virtual dom.
 pub struct DiffTestCase&lt;'a&gt; {
-    // ex: &quot;Patching root level nodes works&quot;
-    pub description: &amp;'static str,
     // ex: html! { &lt;div&gt; &lt;/div&gt; }
     pub old: VirtualNode,
     // ex: html! { &lt;strong&gt; &lt;/strong&gt; }
@@ -209,7 +207,7 @@ impl&lt;'a&gt; DiffTestCase&lt;'a&gt; {
         // ex: vec![Patch::Replace(0, &amp;html! { &lt;strong&gt;&lt;/strong&gt; })],
         let patches = diff(&amp;self.old, &amp;self.new);
 
-        assert_eq!(patches, self.expected, &quot;{}&quot;, self.description);
+        assert_eq!(patches, self.expected);
     }
 }
 <span class="boring">}
