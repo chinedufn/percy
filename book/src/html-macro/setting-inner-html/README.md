@@ -7,7 +7,7 @@ arbitrary HTML such as `"Hello <strong>World!</strong>"`:
 
 You can use the `SpecialAttributes.dangerous_inner_html` attribute to set inner html.
 
-Note that it is called `unsafe` because it can potentially expose your application to [cross-site scripting][XSS] attacks if your application
+Note that it is called `dangerous` because it can potentially expose your application to [cross-site scripting][XSS] attacks if your application
 trusts arbitrary un-escaped HTML strings.
 
 ```rust
