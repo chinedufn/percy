@@ -170,7 +170,7 @@
 <p>For example, if you're creating a tool tip component you might want to be able to support setting tool tips using
 arbitrary HTML such as <code>&quot;Hello &lt;strong&gt;World!&lt;/strong&gt;&quot;</code>:</p>
 <p>You can use the <code>SpecialAttributes.dangerous_inner_html</code> attribute to set inner html.</p>
-<p>Note that it is called <code>unsafe</code> because it can potentially expose your application to <a href="https://en.wikipedia.org/wiki/Cross-site_scripting">cross-site scripting</a> attacks if your application
+<p>Note that it is called <code>dangerous</code> because it can potentially expose your application to <a href="https://en.wikipedia.org/wiki/Cross-site_scripting">cross-site scripting</a> attacks if your application
 trusts arbitrary un-escaped HTML strings.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
