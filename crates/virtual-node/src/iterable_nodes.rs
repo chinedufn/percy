@@ -111,4 +111,4 @@ macro_rules! from_display_impls {
         from_display_impls! ( $($tys),* );
     }
 }
-from_display_impls!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
+from_display_impls!(u8, u16, u32, usize, u64, u128, i8, i16, i32, isize, i64, i128, f32, f64);

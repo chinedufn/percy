@@ -16,6 +16,10 @@ use web_sys::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
+/// Verify that if we create a real DOM element from a virtual node that has an event listener and
+/// then drop the virtual node, the event listener still works.
+/// This ensures that the DomUpdater is holding onto a reference counted pointer to the event
+/// listener closure.
 #[wasm_bindgen_test]
 fn closure_not_dropped() {
     let text = Rc::new(RefCell::new("Start Text".to_string()));

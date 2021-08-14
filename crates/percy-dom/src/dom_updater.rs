@@ -18,6 +18,12 @@ use web_sys::{Element, Node};
 ///   descendants somehow and invalidate those closures..? Need to plan this out..
 ///   At it stands now this hashmap will grow anytime a new element with closures is
 ///   appended or replaced and we will never free those closures.
+///
+/// TODO: Instead of periodically checking as mentioned above.. keep track of the IDs of all elements
+///  that have children that have closures.
+///  Add a mutation observer to each of those parent elements listening for removals of any
+///  of their children. Then when one of their children if removed look up its ID and drop all of
+///  its closures.
 pub type ActiveClosures = HashMap<u32, Vec<EventAttribFn>>;
 
 /// Used for keeping a real DOM node up to date based on the current VirtualNode
