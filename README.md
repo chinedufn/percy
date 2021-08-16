@@ -126,7 +126,7 @@ impl App {
 
         let end_view = html! {
            // Use regular Rust comments within your html
-           <div class="big blue">
+           <div class=["big", "blue"]>
               /* Interpolate values using braces */
               <strong>{ greetings }</strong>
 

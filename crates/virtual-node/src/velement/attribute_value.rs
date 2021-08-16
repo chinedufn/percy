@@ -82,6 +82,38 @@ impl From<&str> for AttributeValue {
     }
 }
 
+impl<S: AsRef<str>, const N: usize> From<[S; N]> for AttributeValue {
+    fn from(vals: [S; N]) -> Self {
+        let mut combined = "".to_string();
+
+        for (idx, val) in vals.iter().enumerate() {
+            if idx != 0 {
+                combined += " ";
+            }
+
+            combined += val.as_ref();
+        }
+
+        AttributeValue::String(combined)
+    }
+}
+
+impl<S: AsRef<str>> From<Vec<S>> for AttributeValue {
+    fn from(vals: Vec<S>) -> Self {
+        let mut combined = "".to_string();
+
+        for (idx, val) in vals.iter().enumerate() {
+            if idx != 0 {
+                combined += " ";
+            }
+
+            combined += val.as_ref();
+        }
+
+        AttributeValue::String(combined)
+    }
+}
+
 impl From<bool> for AttributeValue {
     fn from(b: bool) -> Self {
         AttributeValue::Bool(b)
@@ -100,5 +132,26 @@ impl Display for AttributeValue {
             AttributeValue::String(s) => s.fmt(f),
             AttributeValue::Bool(b) => b.fmt(f),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn array_of_as_ref_str() {
+        assert_eq!(
+            AttributeValue::from(["hello", "world"]),
+            AttributeValue::String("hello world".to_string())
+        );
+    }
+
+    #[test]
+    fn vec_of_as_ref_str() {
+        assert_eq!(
+            AttributeValue::from(vec!["foo", "bar"]),
+            AttributeValue::String("foo bar".to_string())
+        );
     }
 }

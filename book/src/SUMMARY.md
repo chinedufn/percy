@@ -7,6 +7,7 @@
 - [Rendering Views](./views/README.md)
   - [Writing html!](./html-macro/README.md)
     - [Writing html!](./html-macro/html-macro.md)
+    - [Classes](./html-macro/classes/README.md)
     - [Compile Time Errors](./html-macro/compile-time-errors.md)
     - [Working with Text](./html-macro/text/README.md)
     - [Custom Components](./html-macro/custom-components/README.md)
