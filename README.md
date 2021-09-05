@@ -60,17 +60,19 @@ Add the following files to your project.
 ```sh
 touch build.sh
 touch index.html
+touch app.css
 ```
 
 ---
 
-Here's the end directory structure:
+Here's the directory structure:
 
 ```sh
 .
 ├── Cargo.toml
 ├── build.sh
 ├── index.html
+├── app.css
 └── src
     └── lib.rs
 ```
@@ -88,9 +90,10 @@ cd "$(dirname "$0")"
 
 mkdir -p public
 
-CSS_FILE="$(pwd)/public/app.css"
-OUTPUT_CSS=$CSS_FILE wasm-pack build --no-typescript --dev --target no-modules --out-dir ./public
+cargo build --target wasm32-unknown-unknown
+wasm-bindgen target/wasm32-unknown-unknown/debug/client_side_web_app.wasm --no-typescript --target web --out-dir ./public --debug
 cp index.html public/
+cp app.css public/
 ```
 
 ---
@@ -102,7 +105,6 @@ use wasm_bindgen::prelude::*;
 use web_sys;
 use web_sys::MouseEvent;
 
-use percy_css_macro::css;
 use percy_dom::prelude::*;
 
 #[wasm_bindgen]
@@ -131,7 +133,7 @@ impl App {
               <strong>{ greetings }</strong>
 
               <button
-                class=MY_COMPONENT_CSS
+                class="giant-button"
                 onclick=|_event: MouseEvent| {
                    web_sys::console::log_1(&"Button Clicked!".into());
                 }
@@ -147,23 +149,6 @@ impl App {
         App { dom_updater }
     }
 }
-
-static MY_COMPONENT_CSS: &'static str = css!{r#"
-:host {
-    font-size: 24px;
-    font-weight: bold;
-}
-"#};
-
-static _MORE_CSS: &'static str = css!{r#"
-.big {
-  font-size: 30px;
-}
-
-.blue {
-  color: blue;
-}
-"#};
 ```
 
 ---
@@ -181,10 +166,9 @@ edition = "2018"
 crate-type = ["cdylib"] # Don't forget this!
 
 [dependencies]
-wasm-bindgen = "0.2.37"
-js-sys = "0.3.14"
+wasm-bindgen = "0.2"
+js-sys = "0.3"
 percy-dom = "0.6"
-percy-css-macro = "0.1"
 
 [dependencies.web-sys]
 version = "0.3"
@@ -209,15 +193,34 @@ features = [
         <title>Client Side Demo</title>
     </head>
     <body style='margin: 0; padding: 0; width: 100%; height: 100%;'>
-        <script src='/client_side_web_app.js'></script>
-        <script>
-            window.wasm_bindgen(`/client_side_web_app_bg.wasm`).then(() => {
-                const { App } = window.wasm_bindgen
+        <script type="module">
+            import init, {App} from '/client_side_web_app.js'
+        
+            async function run ()  {
+                await init('/client_side_web_app_bg.wasm')
                 new App()
-            })
+            }
+        
+            run()
         </script>
     </body>
 </html>
+```
+
+---
+
+```html
+/* contents of app.css */
+.big {
+  font-size: 30px;
+}
+.blue {
+  color: blue;
+}
+.giant-button {
+  font-size: 24px;
+  font-weight: bold;
+}
 ```
 
 ---
@@ -226,16 +229,16 @@ Now run
 
 ```sh
 # Used to compile your Rust code to WebAssembly
-cargo install wasm-pack
+cargo install wasm-bindgen-cli
 
 # Or any other static file server that supports the application/wasm mime type
-npm install -g http-server
+cargo install https
 
 chmod +x ./build.sh
 ./build.sh
 
 # Visit localhost:8080 in your browser
-http-server ./public --open
+http ./public --port 8080
 ```
 
 And you should see the following:
@@ -248,8 +251,6 @@ Nice work!
 
 - [Isomorphic web app](examples/isomorphic)
 
-- [CSS in Rust](examples/css-in-rust)
-
 - [Unit Testing View Components](examples/unit-testing-components)
 
 - [Open an Issue or PR if you have an idea for a useful example!](https://github.com/chinedufn/percy/issues)
@@ -261,8 +262,6 @@ Nice work!
 - [html-macro API docs](https://chinedufn.github.io/percy/api/html_macro)
 
 - [percy-router API docs](https://chinedufn.github.io/percy/api/percy_router)
-
-- [percy-css-macro API docs](https://chinedufn.github.io/percy/api/percy_css_macro)
 
 ## Contributing
 

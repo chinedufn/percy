@@ -1,9 +1,0 @@
-[package]
-name = "css-in-rust"
-version = "0.1.0"
-authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
-edition = "2018"
-
-[dependencies]
-percy-css-macro = { path = "../../crates/percy-css-macro" }
-percy-dom = { path = "../../crates/percy-dom" }
