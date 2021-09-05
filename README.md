@@ -209,7 +209,7 @@ features = [
 
 ---
 
-```html
+```css
 /* contents of app.css */
 .big {
   font-size: 30px;
@@ -279,14 +279,6 @@ To run all of the unit, integration and browser tests, [grab the dependencies th
 ```sh
 ./test.sh
 ```
-
-## See Also
-
-- [virtual-dom](https://github.com/Matt-Esch/virtual-dom) - a JavaScript virtual-dom implementation that I took inspiration from.
-
-- [How to write your own Virtual DOM](https://medium.com/@deathmood/how-to-write-your-own-virtual-dom-ee74acc13060) - helped me better understand how a virtual-dom works.
-
-- [Sheetify](https://github.com/stackcss/sheetify) inspired the css! macro
 
 ## License
 
