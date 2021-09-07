@@ -18,7 +18,6 @@ members = [
   "crates/percy-router-macro",
   "crates/percy-router-macro-test",
   "crates/virtual-node",
-  "examples/css-in-rust",
   "examples/isomorphic/app",
   "examples/isomorphic/client",
   "examples/isomorphic/server",
