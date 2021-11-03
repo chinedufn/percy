@@ -391,9 +391,9 @@ fn space_before_and_after_empty_list() {
     .test()
 }
 
-/// As of July 2021 we don't make sure of closures outside of the wasm32 target.
+/// As of July 2021 we don't make use of closures outside of the wasm32 target.
 /// In the future we'll want to be able to use an emulated DOM in not(wasm32) so that we can
-/// simulate and test events, but this isn't possible today.
+/// simulate and test events, but there isn't a crate for this today.
 ///
 /// So, in the meantime, this test ensures that while we don't actually use the closure we still
 /// emit it so that any captured variables are marked as used.

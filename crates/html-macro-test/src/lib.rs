@@ -2,10 +2,7 @@
 //!
 //! To run all tests in this library:
 //!
-//! cargo test --color=always --package html-macro-test --lib "" -- --nocapture
-
-// TODO: Deny warnings to ensure that the macro isn't creating any warnings.
-// #![deny(warnings)]
+//! cargo test -p html-macro-test
 
 #[cfg(test)]
 mod tests;

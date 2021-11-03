@@ -256,7 +256,6 @@ impl HtmlParser {
 /// html! { <div>{Hello World}</div>
 /// ```
 #[derive(Default)]
-
 struct RecentSpanLocations {
     most_recent_open_tag_end: Option<Span>,
     most_recent_block_start: Option<Span>,
