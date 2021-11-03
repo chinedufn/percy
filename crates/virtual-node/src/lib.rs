@@ -9,11 +9,10 @@
 //
 // Around in order to get rid of dependencies that we don't need in non wasm32 targets
 
-use std::collections::HashMap;
 use std::fmt;
-use std::ops::Deref;
 
-use web_sys::{self, Element, Node};
+use crate::event::EventsByNodeIdx;
+use web_sys::{self, Node};
 
 pub use self::event::EventAttribFn;
 pub use self::iterable_nodes::*;
@@ -135,12 +134,15 @@ impl VirtualNode {
 
     /// Create and return a `CreatedNode` instance (containing a DOM `Node`
     /// together with potentially related closures) for this virtual node.
-    pub fn create_dom_node(&self) -> CreatedNode<Node> {
+    pub fn create_dom_node(&self, node_idx: u32, events: &mut EventsByNodeIdx) -> Node {
+        let mut copy = node_idx;
+        let copy = &mut copy;
+
         match self {
-            VirtualNode::Text(text_node) => {
-                CreatedNode::without_closures(text_node.create_text_node())
+            VirtualNode::Text(text_node) => text_node.create_text_node().into(),
+            VirtualNode::Element(element_node) => {
+                element_node.create_element_node(copy, events).into()
             }
-            VirtualNode::Element(element_node) => element_node.create_element_node().into(),
         }
     }
 
@@ -172,44 +174,6 @@ impl VirtualNode {
                 text_node.text += " ";
             }
             _ => {}
-        }
-    }
-}
-
-/// A node along with all of the closures that were created for that
-/// node's events and all of it's child node's events.
-pub struct CreatedNode<T> {
-    /// A `Node` or `Element` that was created from a `VirtualNode`
-    pub node: T,
-    /// A map of a node's unique identifier along with all of the Closures for that node.
-    ///
-    /// The DomUpdater uses this to look up nodes and see if they're still in the page. If not
-    /// the reference that we maintain to their closure will be dropped, thus freeing the Closure's
-    /// memory.
-    pub closures: HashMap<u32, Vec<EventAttribFn>>,
-}
-
-impl<T> CreatedNode<T> {
-    pub fn without_closures<N: Into<T>>(node: N) -> Self {
-        CreatedNode {
-            node: node.into(),
-            closures: std::collections::HashMap::with_capacity(0),
-        }
-    }
-}
-
-impl<T> Deref for CreatedNode<T> {
-    type Target = T;
-    fn deref(&self) -> &Self::Target {
-        &self.node
-    }
-}
-
-impl From<CreatedNode<Element>> for CreatedNode<Node> {
-    fn from(other: CreatedNode<Element>) -> CreatedNode<Node> {
-        CreatedNode {
-            node: other.node.into(),
-            closures: other.closures,
         }
     }
 }

@@ -45,61 +45,9 @@ fn patches_dom() {
     assert_eq!(document.query_selector("#patched").unwrap().is_some(), true);
 }
 
-// When you replace a DOM node with another DOM node we need to make sure that the closures
-// from the new DOM node are stored by the DomUpdater otherwise they'll get dropped and
-// won't work.
+/// Verify that closures work for elements appended to the DOM.
 #[wasm_bindgen_test]
-fn updates_active_closure_on_replace() {
-    console_error_panic_hook::set_once();
-
-    let document = web_sys::window().unwrap().document().unwrap();
-    let body = document.body().unwrap();
-
-    let old = html! { <div> </div> };
-    let mut dom_updater = DomUpdater::new_append_to_mount(old, &body);
-
-    let text = Rc::new(RefCell::new("Start Text".to_string()));
-    let text_clone = Rc::clone(&text);
-
-    let id = "update-active-closures-on-replace";
-
-    {
-        let replace_node = html! {
-         <input
-            id=id
-            oninput=move |event: InputEvent| {
-               let input_elem = event.target().unwrap();
-               let input_elem = input_elem.dyn_into::<HtmlInputElement>().unwrap();
-               *text_clone.borrow_mut() = input_elem.value();
-            }
-            value="End Text"
-         >
-        };
-
-        // New node replaces old node.
-        // We are testing that we've stored this new node's closures even though `new` will be dropped
-        // at the end of this block.
-        dom_updater.update(replace_node);
-    }
-
-    let input_event = InputEvent::new("input").unwrap();
-
-    assert_eq!(&*text.borrow(), "Start Text");
-
-    // After dispatching the oninput event our `text` should have a value of the input elements value.
-    let input = document.get_element_by_id(&id).unwrap();
-    web_sys::EventTarget::from(input)
-        .dispatch_event(&input_event)
-        .unwrap();
-
-    assert_eq!(&*text.borrow(), "End Text");
-}
-
-// When you replace a DOM node with another DOM node we need to make sure that the closures
-// from the new DOM node are stored by the DomUpdater otherwise they'll get dropped and
-// won't work.
-#[wasm_bindgen_test]
-fn updates_active_closures_on_append() {
+fn append_element_with_closure() {
     console_error_panic_hook::set_once();
 
     let document = web_sys::window().unwrap().document().unwrap();
@@ -119,6 +67,7 @@ fn updates_active_closures_on_append() {
            <input
               id=id
               oninput=move |event: InputEvent| {
+                 assert_eq!(text_clone.borrow().as_str(), "Start Text");
                  let event: &Event = event.deref();
 
                  let input_elem = event.target().unwrap();
@@ -142,6 +91,58 @@ fn updates_active_closures_on_append() {
 
     // After dispatching the oninput event our `text` should have a value of the input elements value.
     let input = document.get_element_by_id(id).unwrap();
+    web_sys::EventTarget::from(input)
+        .dispatch_event(&input_event)
+        .unwrap();
+
+    assert_eq!(&*text.borrow(), "End Text");
+}
+
+/// When you replace a DOM node with another DOM node we need to make sure that the closures
+/// from the new DOM node are stored by the DomUpdater otherwise they'll get dropped and
+/// won't work.
+#[wasm_bindgen_test]
+fn updates_active_closure_on_replace() {
+    console_error_panic_hook::set_once();
+
+    let document = web_sys::window().unwrap().document().unwrap();
+    let body = document.body().unwrap();
+
+    let old = html! { <div> </div> };
+    let mut dom_updater = DomUpdater::new_append_to_mount(old, &body);
+
+    let text = Rc::new(RefCell::new("Start Text".to_string()));
+    let text_clone = Rc::clone(&text);
+
+    let id = "update-active-closures-on-replace";
+
+    {
+        let replace_node = html! {
+         <input
+            id=id
+            oninput=move |event: InputEvent| {
+               assert_eq!(text_clone.borrow().as_str(), "Start Text");
+
+               let input_elem = event.target().unwrap();
+               let input_elem = input_elem.dyn_into::<HtmlInputElement>().unwrap();
+               *text_clone.borrow_mut() = input_elem.value();
+            }
+            value="End Text"
+         >
+        };
+
+        // New node replaces old node.
+        // We are testing that we've stored this new node's closures even though `new` will be dropped
+        // at the end of this block.
+        dom_updater.update(replace_node);
+    }
+
+    let input_event = InputEvent::new("input").unwrap();
+
+    assert_eq!(&*text.borrow(), "Start Text");
+
+    // After dispatching the oninput event our `text` should have a value of the input elements value.
+    let input = document.get_element_by_id(&id).unwrap();
     web_sys::EventTarget::from(input)
         .dispatch_event(&input_event)
         .unwrap();

@@ -1,43 +1,25 @@
 //! Diff virtual-doms and patch the real DOM
 
 use crate::diff::diff;
+use crate::event::EventsByNodeIdx;
 use crate::patch::patch;
 use std::collections::HashMap;
-use virtual_node::EventAttribFn;
 use virtual_node::VirtualNode;
+use wasm_bindgen::JsValue;
 use web_sys::{Element, Node};
 
-/// Closures that we are holding on to to make sure that they don't get invalidated after a
-/// VirtualNode is dropped.
-///
-/// The u32 is a unique identifier that is associated with the DOM element that this closure is
-/// attached to.
-///
-/// TODO: Periodically check if the DOM element is still there, and if not drop the closure.
-///   Maybe whenever a DOM node is replaced or truncated we figure out all of it's
-///   descendants somehow and invalidate those closures..? Need to plan this out..
-///   At it stands now this hashmap will grow anytime a new element with closures is
-///   appended or replaced and we will never free those closures.
-///
-/// TODO: Instead of periodically checking as mentioned above.. keep track of the IDs of all elements
-///  that have children that have closures.
-///  Add a mutation observer to each of those parent elements listening for removals of any
-///  of their children. Then when one of their children if removed look up its ID and drop all of
-///  its closures.
-pub type ActiveClosures = HashMap<u32, Vec<EventAttribFn>>;
+mod events;
 
 /// Used for keeping a real DOM node up to date based on the current VirtualNode
 /// and a new incoming VirtualNode that represents our latest DOM state.
 pub struct DomUpdater {
     current_vdom: VirtualNode,
     /// The closures that are currently attached to elements in the page.
-    ///
-    /// We keep these around so that they don't get dropped (and thus stop working);
-    ///
-    /// FIXME: Drop them when the element is no longer in the page. Need to figure out
-    /// a good strategy for when to do this.
-    pub active_closures: ActiveClosures,
+    /// We keep these around so that they don't get dropped (and thus stop working).
+    pub events: EventsByNodeIdx,
     root_node: Node,
+    // We hold onto these since if we drop the listener it can no longer be called.
+    event_delegation_listeners: HashMap<&'static str, Box<dyn AsRef<JsValue>>>,
 }
 
 impl DomUpdater {
@@ -45,12 +27,18 @@ impl DomUpdater {
     ///
     /// A root `Node` will be created but not added to your DOM.
     pub fn new(current_vdom: VirtualNode) -> DomUpdater {
-        let created_node = current_vdom.create_dom_node();
-        DomUpdater {
+        let mut events = EventsByNodeIdx::new();
+        let created_node = current_vdom.create_dom_node(0, &mut events);
+
+        let mut dom_updater = DomUpdater {
             current_vdom,
-            active_closures: created_node.closures,
-            root_node: created_node.node,
-        }
+            root_node: created_node,
+            events,
+            event_delegation_listeners: HashMap::new(),
+        };
+        dom_updater.attach_event_listeners();
+
+        dom_updater
     }
 
     /// Create a new `DomUpdater`.
@@ -58,16 +46,13 @@ impl DomUpdater {
     /// A root `Node` will be created and append (as a child) to your passed
     /// in mount element.
     pub fn new_append_to_mount(current_vdom: VirtualNode, mount: &Element) -> DomUpdater {
-        let created_node = current_vdom.create_dom_node();
+        let dom_updater = Self::new(current_vdom);
 
         mount
-            .append_child(&created_node.node)
+            .append_child(&dom_updater.root_node)
             .expect("Could not append child to mount");
-        DomUpdater {
-            current_vdom,
-            active_closures: created_node.closures,
-            root_node: created_node.node,
-        }
+
+        dom_updater
     }
 
     /// Create a new `DomUpdater`.
@@ -75,15 +60,13 @@ impl DomUpdater {
     /// A root `Node` will be created and it will replace your passed in mount
     /// element.
     pub fn new_replace_mount(current_vdom: VirtualNode, mount: Element) -> DomUpdater {
-        let created_node = current_vdom.create_dom_node();
+        let dom_updater = Self::new(current_vdom);
+
         mount
-            .replace_with_with_node_1(&created_node.node)
+            .replace_with_with_node_1(&dom_updater.root_node)
             .expect("Could not replace mount element");
-        DomUpdater {
-            current_vdom,
-            active_closures: created_node.closures,
-            root_node: created_node.node,
-        }
+
+        dom_updater
     }
 
     /// Diff the current virtual dom with the new virtual dom that is being passed in.
@@ -93,9 +76,13 @@ impl DomUpdater {
     pub fn update(&mut self, new_vdom: VirtualNode) {
         let patches = diff(&self.current_vdom, &new_vdom);
 
-        let active_closures = patch(self.root_node.clone(), &patches).unwrap();
-
-        self.active_closures.extend(active_closures);
+        patch(
+            self.root_node.clone(),
+            &new_vdom,
+            &mut self.events,
+            &patches,
+        )
+        .unwrap();
 
         self.current_vdom = new_vdom;
     }

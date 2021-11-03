@@ -1,18 +1,27 @@
-use crate::patch::Patch;
 use std::cmp::min;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use crate::dom_updater::ActiveClosures;
-use crate::{AttributeValue, PatchSpecialAttribute};
+use virtual_node::event::insert_non_delegated_event;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{Element, HtmlInputElement, HtmlTextAreaElement, Node, Text};
 
+use crate::event::{EventHandler, EventsByNodeIdx, ManagedEvent};
+use crate::patch::Patch;
+use crate::prelude::EVENTS_ID_PROP;
+use crate::{AttributeValue, PatchSpecialAttribute, VirtualNode};
+
 /// Apply all of the patches to our old root node in order to create the new root node
-/// that we desire.
+/// that we desire. Also, update the `EventsByNodeIdx` with the new virtual node's event callbacks.
+///
 /// This is usually used after diffing two virtual nodes.
-pub fn patch<N: Into<Node>>(root_node: N, patches: &[Patch]) -> Result<ActiveClosures, JsValue> {
+pub fn patch<N: Into<Node>>(
+    root_node: N,
+    new_vnode: &VirtualNode,
+    managed_events: &mut EventsByNodeIdx,
+    patches: &[Patch],
+) -> Result<(), JsValue> {
     let root_node: Node = root_node.into();
 
     let mut cur_node_idx = 0;
@@ -26,9 +35,6 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &[Patch]) -> Result<ActiveClo
     let mut element_nodes_to_patch = HashMap::new();
     let mut text_nodes_to_patch = HashMap::new();
 
-    // Closures that were added to the DOM during this patch operation.
-    let mut active_closures = HashMap::new();
-
     find_nodes(
         root_node,
         &mut cur_node_idx,
@@ -41,13 +47,12 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &[Patch]) -> Result<ActiveClo
         let patch_node_idx = patch.node_idx();
 
         if let Some(element) = element_nodes_to_patch.get(&patch_node_idx) {
-            let new_closures = apply_element_patch(&element, &patch)?;
-            active_closures.extend(new_closures);
+            apply_element_patch(&element, &patch, managed_events)?;
             continue;
         }
 
         if let Some(text_node) = text_nodes_to_patch.get(&patch_node_idx) {
-            apply_text_patch(&text_node, &patch)?;
+            apply_text_patch(&text_node, &patch, managed_events)?;
             continue;
         }
 
@@ -57,15 +62,17 @@ pub fn patch<N: Into<Node>>(root_node: N, patches: &[Patch]) -> Result<ActiveClo
         )
     }
 
-    Ok(active_closures)
+    overwrite_events(new_vnode, &mut 0, managed_events);
+
+    Ok(())
 }
 
 fn find_nodes(
     root_node: Node,
-    cur_node_idx: &mut usize,
-    nodes_to_find: &mut HashSet<usize>,
-    element_nodes_to_patch: &mut HashMap<usize, Element>,
-    text_nodes_to_patch: &mut HashMap<usize, Text>,
+    cur_node_idx: &mut u32,
+    nodes_to_find: &mut HashSet<u32>,
+    element_nodes_to_patch: &mut HashMap<u32, Element>,
+    text_nodes_to_patch: &mut HashMap<u32, Text>,
 ) {
     if nodes_to_find.len() == 0 {
         return;
@@ -119,15 +126,31 @@ fn find_nodes(
             }
             _other => {
                 // Ignoring unsupported child node type
-                // TODO: What do we do with this situation? Log a warning?
+                // TODO: What do we do with this situation?
             }
         }
     }
 }
 
-fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, JsValue> {
-    let active_closures = HashMap::new();
+fn overwrite_events(node: &VirtualNode, node_idx: &mut u32, managed_events: &mut EventsByNodeIdx) {
+    if let Some(elem) = node.as_velement_ref() {
+        for (event_name, event) in elem.events.iter() {
+            managed_events.overwrite_event_attrib_fn(*node_idx, event_name, event.clone());
+        }
 
+        for child in elem.children.iter() {
+            *node_idx += 1;
+
+            overwrite_events(child, node_idx, managed_events);
+        }
+    }
+}
+
+fn apply_element_patch(
+    node: &Element,
+    patch: &Patch,
+    managed_events: &mut EventsByNodeIdx,
+) -> Result<(), JsValue> {
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
             for (attrib_name, attrib_val) in attributes.iter() {
@@ -149,21 +172,21 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
                 }
             }
 
-            Ok(active_closures)
+            Ok(())
         }
         Patch::RemoveAttributes(_node_idx, attributes) => {
             for attrib_name in attributes.iter() {
                 node.remove_attribute(attrib_name)?;
             }
 
-            Ok(active_closures)
+            Ok(())
         }
-        Patch::Replace(_node_idx, new_node) => {
-            let created_node = new_node.create_dom_node();
+        Patch::Replace(node_idx, new_node) => {
+            let created_node = new_node.create_dom_node(*node_idx, managed_events);
 
-            node.replace_with_with_node_1(&created_node.node)?;
+            node.replace_with_with_node_1(&created_node)?;
 
-            Ok(created_node.closures)
+            Ok(())
         }
         Patch::TruncateChildren(_node_idx, num_children_remaining) => {
             let children = node.child_nodes();
@@ -195,22 +218,18 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
                 child_count -= 1;
             }
 
-            Ok(active_closures)
+            Ok(())
         }
-        Patch::AppendChildren(_node_idx, new_nodes) => {
+        Patch::AppendChildren(node_idx, new_nodes) => {
             let parent = &node;
 
-            let mut active_closures = HashMap::new();
-
             for new_node in new_nodes {
-                let created_node = new_node.create_dom_node();
+                let created_node = new_node.create_dom_node(*node_idx, managed_events);
 
-                parent.append_child(&created_node.node)?;
-
-                active_closures.extend(created_node.closures);
+                parent.append_child(&created_node)?;
             }
 
-            Ok(active_closures)
+            Ok(())
         }
         Patch::ChangeText(_node_idx, _new_node) => {
             unreachable!("Elements should not receive ChangeText patches.")
@@ -219,7 +238,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
             node.set_attribute("value", value.as_string().unwrap())?;
             maybe_set_value_property(node, value.as_string().unwrap());
 
-            Ok(active_closures)
+            Ok(())
         }
         Patch::SpecialAttribute(special) => match special {
             PatchSpecialAttribute::CallOnCreateElem(_node_idx, new_node) => {
@@ -229,7 +248,7 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
                     .special_attributes
                     .maybe_call_on_create_elem(&node);
 
-                Ok(active_closures)
+                Ok(())
             }
             PatchSpecialAttribute::SetDangerousInnerHtml(_node_idx, new_node) => {
                 let new_inner_html = new_node
@@ -242,24 +261,87 @@ fn apply_element_patch(node: &Element, patch: &Patch) -> Result<ActiveClosures, 
 
                 node.set_inner_html(new_inner_html);
 
-                Ok(active_closures)
+                Ok(())
             }
             PatchSpecialAttribute::RemoveDangerousInnerHtml(_node_idx) => {
                 node.set_inner_html("");
 
-                Ok(active_closures)
+                Ok(())
             }
         },
+        Patch::RemoveEventsId(_) => {
+            js_sys::Reflect::set(node, &EVENTS_ID_PROP.into(), &JsValue::UNDEFINED).unwrap();
+
+            Ok(())
+        }
+        Patch::SetEventsId(node_idx) => {
+            js_sys::Reflect::set(
+                node,
+                &EVENTS_ID_PROP.into(),
+                &format!("{}{}", managed_events.events_id_props_prefix(), node_idx).into(),
+            )
+            .unwrap();
+
+            Ok(())
+        }
+        Patch::AddEvents(node_idx, new_events) => {
+            for (event_name, event) in new_events {
+                if event_name.is_delegated() {
+                    managed_events.insert_managed_event(
+                        *node_idx,
+                        (*event_name).clone(),
+                        ManagedEvent::Delegated((*event).clone()),
+                    );
+                } else {
+                    insert_non_delegated_event(node, event_name, event, *node_idx, managed_events);
+                }
+            }
+
+            Ok(())
+        }
+        Patch::RemoveEvents(node_idx, events) => {
+            for (event_name, event) in events {
+                if !event_name.is_delegated() {
+                    let managed = managed_events.remove_managed_event(node_idx, event_name);
+                    match managed {
+                        ManagedEvent::NonDelegated(_, wrapper) => {
+                            node.remove_event_listener_with_callback(
+                                event_name.without_on_prefix(),
+                                wrapper.as_ref().as_ref().unchecked_ref(),
+                            )
+                            .unwrap();
+                        }
+                        _ => unreachable!(),
+                    };
+
+                    // node.remove_event_listener_with_callback(event_name.without_on_prefix(), )
+                    // TODO: Add a wasm-bindgen-test to events.rs that fails until we
+                    //  remove event listener from the DOM node here.
+                }
+
+                managed_events.remove_event_handler(node_idx, event_name);
+            }
+
+            Ok(())
+        }
+        Patch::RemoveAllManagedEventsWithNodeIdx(node_idx) => {
+            managed_events.remove_node(node_idx);
+            Ok(())
+        }
     }
 }
 
-fn apply_text_patch(node: &Text, patch: &Patch) -> Result<(), JsValue> {
+fn apply_text_patch(
+    node: &Text,
+    patch: &Patch,
+    events: &mut EventsByNodeIdx,
+) -> Result<(), JsValue> {
     match patch {
         Patch::ChangeText(_node_idx, new_node) => {
             node.set_node_value(Some(&new_node.text));
         }
-        Patch::Replace(_node_idx, new_node) => {
-            node.replace_with_with_node_1(&new_node.create_dom_node().node)?;
+        Patch::Replace(node_idx, new_node) => {
+            node.replace_with_with_node_1(&new_node.create_dom_node(*node_idx, events))?;
         }
         other => unreachable!(
             "Text nodes should only receive ChangeText or Replace patches, not {:?}.",

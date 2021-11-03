@@ -20,7 +20,9 @@ wasm_bindgen_test_configure!(run_in_browser);
 #[wasm_bindgen_test]
 fn nested_divs() {
     let vdiv = html! { <div> <div> <div></div> </div> </div> };
-    let div: Element = vdiv.create_dom_node().node.unchecked_into();
+    let div: Element = vdiv
+        .create_dom_node(0, &mut EventsByNodeIdx::new())
+        .unchecked_into();
 
     assert_eq!(&div.inner_html(), "<div><div></div></div>");
 }
@@ -44,7 +46,9 @@ fn nested_divs() {
 #[wasm_bindgen_test]
 fn div_with_attributes() {
     let vdiv = html! { <div id="id-here" class="two classes"></div> };
-    let div: Element = vdiv.create_dom_node().node.unchecked_into();
+    let div: Element = vdiv
+        .create_dom_node(0, &mut EventsByNodeIdx::new())
+        .unchecked_into();
 
     assert_eq!(&div.id(), "id-here");
 
@@ -52,32 +56,6 @@ fn div_with_attributes() {
     assert!(div.class_list().contains("classes"));
 
     assert_eq!(div.class_list().length(), 2);
-}
-
-/// wasm-pack test --chrome --headless crates/percy-dom --test create_element -- click_event
-#[wasm_bindgen_test]
-fn click_event() {
-    let clicked = Rc::new(Cell::new(false));
-    let clicked_clone = Rc::clone(&clicked);
-
-    let div = html! {
-     <div
-         onclick=move |_ev: MouseEvent| {
-             clicked_clone.set(true);
-         }
-     >
-     </div>
-    };
-
-    let click_event = Event::new("click").unwrap();
-
-    let div = div.create_dom_node().node;
-
-    (EventTarget::from(div))
-        .dispatch_event(&click_event)
-        .unwrap();
-
-    assert_eq!(*clicked, Cell::new(true));
 }
 
 /// Verify that when we create a new element we call it's on_create_elem function.
@@ -101,7 +79,9 @@ fn on_create_elem_new_node() {
         }),
     ));
 
-    let div: Element = div.create_dom_node().node.unchecked_into();
+    let div: Element = div
+        .create_dom_node(0, &mut EventsByNodeIdx::new())
+        .unchecked_into();
 
     assert_eq!(div.inner_html(), "Hello world");
 }
@@ -125,12 +105,13 @@ fn on_create_elem_triggered_via_patch() {
         }),
     ));
 
-    let div = start.create_dom_node();
+    let mut events = EventsByNodeIdx::new();
+    let div = start.create_dom_node(0, &mut events);
 
     let patches = percy_dom::diff(&start, &end);
-    percy_dom::patch(div.node.clone(), &patches).unwrap();
+    percy_dom::patch(div.clone(), &end, &mut events, &patches).unwrap();
 
-    let div: Element = div.node.unchecked_into();
+    let div: Element = div.unchecked_into();
     assert_eq!(div.inner_html(), "Hello world");
 }
 
@@ -159,11 +140,12 @@ fn on_create_elem_not_triggered_via_patch_if_same_id() {
         }),
     ));
 
-    let div = start.create_dom_node();
+    let mut events = EventsByNodeIdx::new();
+    let div = start.create_dom_node(0, &mut events);
 
     let patches = percy_dom::diff(&start, &end);
-    percy_dom::patch(div.node.clone(), &patches).unwrap();
+    percy_dom::patch(div.clone(), &end, &mut events, &patches).unwrap();
 
-    let div: Element = div.node.unchecked_into();
+    let div: Element = div.unchecked_into();
     assert_eq!(div.id(), "new");
 }

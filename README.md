@@ -103,7 +103,7 @@ cp app.css public/
 
 use wasm_bindgen::prelude::*;
 use web_sys;
-use web_sys::MouseEvent;
+use percy_dom::event::MouseEvent;
 
 use percy_dom::prelude::*;
 
