@@ -2,8 +2,8 @@ use crate::parser::{is_self_closing, is_valid_tag, HtmlParser};
 use crate::tag::Attr;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, quote_spanned};
-use syn::Expr;
 use syn::__private::TokenStream2;
+use syn::{Expr, ExprClosure};
 
 impl HtmlParser {
     /// Parse an incoming Tag::Open
@@ -89,26 +89,7 @@ fn create_valid_node(
 
         match value {
             Expr::Closure(closure) => {
-                // TODO: Use this to decide Box<FnMut(_, _, _, ...)
-                // After we merge the DomUpdater
-                let _arg_count = closure.inputs.len();
-
-                let add_closure = quote! {
-                    #[cfg(target_arch = "wasm32")]
-                    {
-                        let closure = Closure::wrap(
-                            Box::new(#value) as Box<dyn FnMut(_)>
-                        );
-                        let closure_rc = std::rc::Rc::new(closure);
-                        #var_name_node.as_velement_mut().expect("Not an element")
-                            .events.0.insert(#key.to_string(), closure_rc);
-                    }
-
-                    #[cfg(not(target_arch = "wasm32"))]
-                    {
-                        let _ = #value;
-                    }
-                };
+                let add_closure = insert_closure_tokens(var_name_node, &key, closure);
 
                 tokens.push(add_closure);
             }
@@ -121,6 +102,37 @@ fn create_valid_node(
                 tokens.push(insert_attribute);
             }
         };
+    }
+}
+
+// Create the tokens that insert a closure into the virtual element.
+fn insert_closure_tokens(
+    var_name_node: &Ident,
+    event_name: &str,
+    closure: &ExprClosure,
+) -> TokenStream {
+    // Used to create type placeholders..:
+    //  Box<FnMut(_, _, _, ...)
+    let arg_count = closure.inputs.len();
+    let arg_type_placeholders: Vec<TokenStream2> =
+        (0..arg_count).into_iter().map(|_| quote! { _ }).collect();
+
+    quote! {
+      #[cfg(target_arch = "wasm32")]
+      {
+
+          let closure = Closure::wrap(
+              Box::new(#closure) as Box<dyn FnMut(#(#arg_type_placeholders)*)>
+          );
+          let closure_rc = std::rc::Rc::new(closure);
+          #var_name_node.as_velement_mut().expect("Not an element")
+              .events.0.insert(#event_name.to_string(), closure_rc);
+      }
+
+      #[cfg(not(target_arch = "wasm32"))]
+      {
+          let _ = #closure;
+      }
     }
 }
 

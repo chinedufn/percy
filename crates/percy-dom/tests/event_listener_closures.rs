@@ -3,7 +3,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test closures
+//! wasm-pack test --chrome --headless crates/percy-dom --test event_listener_closures
 
 use percy_dom::prelude::*;
 use percy_dom::DomUpdater;
@@ -20,6 +20,8 @@ wasm_bindgen_test_configure!(run_in_browser);
 /// then drop the virtual node, the event listener still works.
 /// This ensures that the DomUpdater is holding onto a reference counted pointer to the event
 /// listener closure.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test event_listener_closures -- closure_not_dropped
 #[wasm_bindgen_test]
 fn closure_not_dropped() {
     let text = Rc::new(RefCell::new("Start Text".to_string()));
@@ -87,17 +89,15 @@ fn closure_not_dropped() {
     );
 }
 
-// We're just making sure that things compile - other tests give us confidence that the closure
-// will work just fine.
-//
-// https://github.com/chinedufn/percy/issues/81
-//
-//#[wasm_bindgen_test]
-//fn closure_with_no_params_compiles() {
-//    let _making_sure_this_works = html! {
-//        <div onclick=|| {}></div>
-//    };
-//}
+/// Verify that we can create a closure that does not have any arguments.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test event_listener_closures -- closure_with_no_arguments
+#[wasm_bindgen_test]
+fn closure_with_no_arguments() {
+    let _ = html! {
+        <div onclick=|| {}></div>
+    };
+}
 
 fn make_input_component(text_clone: Rc<RefCell<String>>) -> VirtualNode {
     html! {
@@ -112,3 +112,14 @@ fn make_input_component(text_clone: Rc<RefCell<String>>) -> VirtualNode {
         >
     }
 }
+
+// TODO: Right now if you patch a div that has events over a div that does not have events the new
+//  events will not get .addEventListener'd into the DOM. The diff/patch algorithm isn't paying
+//  attention to events.
+//  One approach to fix this would be to have a single event on the root node for each event i.e.
+//   one onclick, one ondrop, etc.
+//   When it is triggered it looks at the event target and then gets the vdom id for that node.
+//    It then looks up the corresponding closure for that node and calls it with the event.
+//   When we diff, the diff algorithm encodes which closures to remove, add, or overwrite.
+//    This does not modify the DOM in any way, but instead adds/removes/overwrites the callbacks
+//    associated with the given dom node ID.
