@@ -113,11 +113,7 @@ fn insert_closure_tokens(
     event_name: &str,
     closure: &ExprClosure,
 ) -> TokenStream {
-    // Used to create type placeholders..:
-    //  Box<FnMut(_, _, _, ...)
     let arg_count = closure.inputs.len();
-    let arg_type_placeholders: Vec<TokenStream2> =
-        (0..arg_count).into_iter().map(|_| quote! { _ }).collect();
 
     if arg_count == 0 {
         quote! {
@@ -138,6 +134,9 @@ fn insert_closure_tokens(
             );
         }
     } else {
+        let arg_type_placeholders: Vec<TokenStream2> =
+            (0..arg_count).into_iter().map(|_| quote! { _ }).collect();
+
         quote! {
           #[cfg(target_arch = "wasm32")]
           {
@@ -146,10 +145,9 @@ fn insert_closure_tokens(
                   Box::new(#closure) as Box<dyn FnMut(#(#arg_type_placeholders)*)>
               );
               let closure_rc = std::rc::Rc::new(closure);
-              let closure_rc = closure_rc as std::rc::Rc<dyn AsRef<wasm_bindgen::JsValue>>;
 
               #var_name_node.as_velement_mut().unwrap()
-                  .events.insert_unsupported_signature(#event_name.into(), closure_rc.into());
+                  .events.__insert_unsupported_signature(#event_name.into(), closure_rc);
           }
 
           #[cfg(not(target_arch = "wasm32"))]

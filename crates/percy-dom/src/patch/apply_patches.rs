@@ -7,7 +7,7 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{Element, HtmlInputElement, HtmlTextAreaElement, Node, Text};
 
-use crate::event::{EventHandler, EventsByNodeIdx, ManagedEvent};
+use crate::event::{EventsByNodeIdx, ManagedEvent};
 use crate::patch::Patch;
 use crate::prelude::EVENTS_ID_PROP;
 use crate::{AttributeValue, PatchSpecialAttribute, VirtualNode};
@@ -29,7 +29,7 @@ pub fn patch<N: Into<Node>>(
     let mut nodes_to_find = HashSet::new();
 
     for patch in patches {
-        nodes_to_find.insert(patch.node_idx());
+        nodes_to_find.insert(patch.old_node_idx());
     }
 
     let mut element_nodes_to_patch = HashMap::new();
@@ -44,7 +44,7 @@ pub fn patch<N: Into<Node>>(
     );
 
     for patch in patches {
-        let patch_node_idx = patch.node_idx();
+        let patch_node_idx = patch.old_node_idx();
 
         if let Some(element) = element_nodes_to_patch.get(&patch_node_idx) {
             apply_element_patch(&element, &patch, managed_events)?;
@@ -181,8 +181,12 @@ fn apply_element_patch(
 
             Ok(())
         }
-        Patch::Replace(node_idx, new_node) => {
-            let created_node = new_node.create_dom_node(*node_idx, managed_events);
+        Patch::Replace {
+            old_idx: _,
+            new_idx,
+            new_node,
+        } => {
+            let created_node = new_node.create_dom_node(*new_idx, managed_events);
 
             node.replace_with_with_node_1(&created_node)?;
 
@@ -220,11 +224,14 @@ fn apply_element_patch(
 
             Ok(())
         }
-        Patch::AppendChildren(node_idx, new_nodes) => {
+        Patch::AppendChildren {
+            old_idx: _,
+            new_nodes,
+        } => {
             let parent = &node;
 
-            for new_node in new_nodes {
-                let created_node = new_node.create_dom_node(*node_idx, managed_events);
+            for (new_idx, new_node) in new_nodes {
+                let created_node = new_node.create_dom_node(*new_idx, managed_events);
 
                 parent.append_child(&created_node)?;
             }
@@ -300,7 +307,7 @@ fn apply_element_patch(
             Ok(())
         }
         Patch::RemoveEvents(node_idx, events) => {
-            for (event_name, event) in events {
+            for (event_name, _event) in events {
                 if !event_name.is_delegated() {
                     let managed = managed_events.remove_managed_event(node_idx, event_name);
                     match managed {
@@ -340,8 +347,12 @@ fn apply_text_patch(
         Patch::ChangeText(_node_idx, new_node) => {
             node.set_node_value(Some(&new_node.text));
         }
-        Patch::Replace(node_idx, new_node) => {
-            node.replace_with_with_node_1(&new_node.create_dom_node(*node_idx, events))?;
+        Patch::Replace {
+            old_idx: _,
+            new_idx,
+            new_node,
+        } => {
+            node.replace_with_with_node_1(&new_node.create_dom_node(*new_idx, events))?;
         }
         other => unreachable!(
             "Text nodes should only receive ChangeText or Replace patches, not {:?}.",
