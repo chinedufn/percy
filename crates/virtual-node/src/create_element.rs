@@ -1,15 +1,18 @@
-use std::collections::HashMap;
-
 use web_sys::{Document, Element};
 
-use crate::{AttributeValue, CreatedNode, EventAttribFn, VElement, VirtualNode};
+use crate::event::EventsByNodeIdx;
+use crate::{AttributeValue, VElement, VirtualNode};
 
 mod add_events;
 
 impl VElement {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
-    pub fn create_element_node(&self) -> CreatedNode<Element> {
+    pub(crate) fn create_element_node(
+        &self,
+        node_idx: &mut u32,
+        events: &mut EventsByNodeIdx,
+    ) -> Element {
         let document = web_sys::window().unwrap().document().unwrap();
 
         let element = if html_validation::is_svg_namespace(&self.tag) {
@@ -19,8 +22,6 @@ impl VElement {
         } else {
             document.create_element(&self.tag).unwrap()
         };
-
-        let mut closures = HashMap::new();
 
         self.attrs.iter().for_each(|(name, value)| {
             match value {
@@ -35,23 +36,17 @@ impl VElement {
             };
         });
 
-        self.add_events(&element, &mut closures);
+        self.add_events(&element, events, *node_idx);
 
-        self.append_children_to_dom(&element, &document, &mut closures);
+        self.append_children_to_dom(&element, &document, node_idx, events);
 
-        #[cfg(target_arch = "wasm32")]
-        {
-            &self.special_attributes.maybe_call_on_create_elem(&element);
+        self.special_attributes.maybe_call_on_create_elem(&element);
 
-            if let Some(inner_html) = &self.special_attributes.dangerous_inner_html {
-                element.set_inner_html(inner_html);
-            }
+        if let Some(inner_html) = &self.special_attributes.dangerous_inner_html {
+            element.set_inner_html(inner_html);
         }
 
-        CreatedNode {
-            node: element,
-            closures,
-        }
+        element
     }
 }
 
@@ -60,11 +55,14 @@ impl VElement {
         &self,
         element: &Element,
         document: &Document,
-        closures: &mut HashMap<u32, Vec<EventAttribFn>>,
+        node_idx: &mut u32,
+        events: &mut EventsByNodeIdx,
     ) {
         let mut previous_node_was_text = false;
 
         self.children.iter().for_each(|child| {
+            *node_idx += 1;
+
             match child {
                 VirtualNode::Text(text_node) => {
                     let current_node = element.as_ref() as &web_sys::Node;
@@ -91,10 +89,8 @@ impl VElement {
                 VirtualNode::Element(element_node) => {
                     previous_node_was_text = false;
 
-                    let child = element_node.create_element_node();
-                    let child_elem: Element = child.node;
-
-                    closures.extend(child.closures);
+                    let child = element_node.create_element_node(node_idx, events);
+                    let child_elem: Element = child;
 
                     element.append_child(&child_elem).unwrap();
                 }

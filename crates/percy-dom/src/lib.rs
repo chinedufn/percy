@@ -13,9 +13,6 @@ extern crate wasm_bindgen;
 pub use wasm_bindgen::prelude::Closure;
 pub use wasm_bindgen::JsCast;
 
-pub extern crate web_sys;
-pub use web_sys::*;
-
 pub use virtual_node::*;
 
 mod diff;
@@ -24,8 +21,6 @@ pub use crate::diff::*;
 mod patch;
 pub use crate::patch::*;
 
-// FIXME: Remove this and have users depend on html-macro directly.
-//  That way we don't need to re-release this crate whenever we update html-macro.
 pub use html_macro::html;
 
 mod dom_updater;
@@ -34,6 +29,8 @@ pub use self::dom_updater::DomUpdater;
 /// Exports structs and macros that you'll almost always want access to in a virtual-dom
 /// powered application
 pub mod prelude {
+    // TODO: look through this prelue and remove anything that isn't necessary.
+
     pub use crate::dom_updater::DomUpdater;
     pub use crate::VirtualNode;
     pub use html_macro::html;

@@ -9,14 +9,14 @@ use html_macro::html;
 use std::collections::HashMap;
 use virtual_node::{IterableNodes, VElement, VText, View, VirtualNode};
 
-struct HtmlMacroTest {
-    generated: VirtualNode,
-    expected: VirtualNode,
+pub(crate) struct HtmlMacroTest {
+    pub generated: VirtualNode,
+    pub expected: VirtualNode,
 }
 
 impl HtmlMacroTest {
     /// Ensure that the generated and the expected virtual node are equal.
-    fn test(self) {
+    pub fn test(self) {
         assert_eq!(self.expected, self.generated);
     }
 }
@@ -41,18 +41,6 @@ fn one_attr() {
     HtmlMacroTest {
         generated: html! { <div id="hello-world"></div> },
         expected: expected.into(),
-    }
-    .test();
-}
-
-/// Events are ignored in non wasm-32 targets
-#[test]
-fn ignore_events_on_non_wasm32_targets() {
-    HtmlMacroTest {
-        generated: html! {
-            <div onclick=|_: u8|{}></div>
-        },
-        expected: html! {<div></div>},
     }
     .test();
 }
@@ -389,24 +377,6 @@ fn space_before_and_after_empty_list() {
         expected: html! {<div> </div>},
     }
     .test()
-}
-
-/// As of July 2021 we don't make use of closures outside of the wasm32 target.
-/// In the future we'll want to be able to use an emulated DOM in not(wasm32) so that we can
-/// simulate and test events, but there isn't a crate for this today.
-///
-/// So, in the meantime, this test ensures that while we don't actually use the closure we still
-/// emit it so that any captured variables are marked as used.
-///
-/// Before this test we used to just throw away the closure tokens in not(wasm32) targets.
-#[test]
-#[deny(unused)] // <------- Ensures that the moved variable is seen as used.
-fn closure_moved_variables_used() {
-    let moved_var = ();
-
-    html! {
-        <button onclick=move || {let _ = moved_var;}></button>
-    };
 }
 
 /// Verify that an Option::None virtual node gets ignored.

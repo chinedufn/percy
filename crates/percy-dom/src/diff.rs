@@ -1,3 +1,4 @@
+use crate::event::{EventHandler, EventName};
 use crate::{AttributeValue, Patch, PatchSpecialAttribute};
 use crate::{VElement, VirtualNode};
 use std::cmp::min;
@@ -13,30 +14,36 @@ pub fn diff<'a>(old: &'a VirtualNode, new: &'a VirtualNode) -> Vec<Patch<'a>> {
 fn diff_recursive<'a, 'b>(
     old: &'a VirtualNode,
     new: &'a VirtualNode,
-    cur_node_idx: &'b mut usize,
+    cur_node_idx: &'b mut u32,
 ) -> Vec<Patch<'a>> {
     let mut patches = vec![];
-    let mut should_fully_replace_node = false;
 
     let node_variants_different = mem::discriminant(old) != mem::discriminant(new);
-    if node_variants_different {
-        should_fully_replace_node = true;
-    }
+    let mut element_tags_different = false;
 
     if let (VirtualNode::Element(old_element), VirtualNode::Element(new_element)) = (old, new) {
-        let element_tags_different = old_element.tag != new_element.tag;
-        if element_tags_different {
-            should_fully_replace_node = true;
-        }
+        element_tags_different = old_element.tag != new_element.tag;
     }
 
+    let should_fully_replace_node = node_variants_different || element_tags_different;
+
     if should_fully_replace_node {
-        patches.push(Patch::Replace(*cur_node_idx, &new));
-        if let VirtualNode::Element(old_element_node) = old {
-            for child in old_element_node.children.iter() {
-                increment_node_idx_for_children(child, cur_node_idx);
+        if let Some(velem) = old.as_velement_ref() {
+            if velem.events.has_events() {
+                patches.push(Patch::RemoveAllManagedEventsWithNodeIdx(*cur_node_idx));
             }
         }
+
+        let replaced_node_idx = *cur_node_idx;
+
+        if let VirtualNode::Element(old_element_node) = old {
+            for child in old_element_node.children.iter() {
+                process_deleted_children(child, cur_node_idx, &mut patches);
+            }
+        }
+
+        patches.push(Patch::Replace(replaced_node_idx, &new));
+
         return patches;
     }
 
@@ -50,6 +57,9 @@ fn diff_recursive<'a, 'b>(
         (VirtualNode::Element(old_element), VirtualNode::Element(new_element)) => {
             let mut attributes_to_add: HashMap<&str, &AttributeValue> = HashMap::new();
             let mut attributes_to_remove: Vec<&str> = vec![];
+
+            let mut events_to_add = HashMap::new();
+            let mut events_to_remove = vec![];
 
             find_attributes_to_add(
                 *cur_node_idx,
@@ -66,11 +76,26 @@ fn diff_recursive<'a, 'b>(
                 new_element,
             );
 
+            find_events_to_add(&mut events_to_add, old_element, new_element);
+            find_events_to_remove(
+                &mut events_to_add,
+                &mut events_to_remove,
+                old_element,
+                new_element,
+            );
+
             if attributes_to_add.len() > 0 {
                 patches.push(Patch::AddAttributes(*cur_node_idx, attributes_to_add));
             }
             if attributes_to_remove.len() > 0 {
                 patches.push(Patch::RemoveAttributes(*cur_node_idx, attributes_to_remove));
+            }
+
+            if events_to_remove.len() > 0 {
+                patches.push(Patch::RemoveEvents(*cur_node_idx, events_to_remove));
+            }
+            if events_to_add.len() > 0 {
+                patches.push(Patch::AddEvents(*cur_node_idx, events_to_add));
             }
 
             // FIXME: Move into function
@@ -118,6 +143,15 @@ fn diff_recursive<'a, 'b>(
                 (Some(_), None) | (None, None) => {}
             };
 
+            let old_elem_has_events = old_element.events.has_events();
+            let new_elem_has_events = new_element.events.has_events();
+
+            if !old_elem_has_events && new_elem_has_events {
+                patches.push(Patch::SetEventsId(*cur_node_idx));
+            } else if old_elem_has_events && !new_elem_has_events {
+                patches.push(Patch::RemoveEventsId(*cur_node_idx));
+            }
+
             generate_patches_for_children(cur_node_idx, old_element, new_element, &mut patches);
         }
         (VirtualNode::Text(_), VirtualNode::Element(_))
@@ -131,7 +165,7 @@ fn diff_recursive<'a, 'b>(
 
 /// Add attributes from the new element that are not already on the old one or that have changed.
 fn find_attributes_to_add<'a>(
-    cur_node_idx: usize,
+    cur_node_idx: u32,
     attributes_to_add: &mut HashMap<&'a str, &'a AttributeValue>,
     old_element: &VElement,
     new_element: &'a VElement,
@@ -178,8 +212,40 @@ fn find_attributes_to_remove<'a>(
     }
 }
 
+/// Add attributes from the new element that are not already on the old one or that have changed.
+fn find_events_to_add<'a>(
+    events_to_add: &mut HashMap<&'a EventName, &'a EventHandler>,
+    old_element: &VElement,
+    new_element: &'a VElement,
+) {
+    for (new_event_name, new_event) in new_element.events.iter() {
+        if !old_element.events.contains_key(new_event_name) {
+            events_to_add.insert(new_event_name, new_event);
+        }
+    }
+}
+
+/// Remove non delegated that were on the old element that are not present on the new element.
+fn find_events_to_remove<'a>(
+    events_to_add: &mut HashMap<&'a EventName, &'a EventHandler>,
+    events_to_remove: &mut Vec<(&'a EventName, &'a EventHandler)>,
+    old_element: &'a VElement,
+    new_element: &'a VElement,
+) {
+    for (old_event_name, old_event) in old_element.events.iter() {
+        if events_to_add.contains_key(old_event_name) {
+            continue;
+        };
+        if new_element.events.contains_key(old_event_name) {
+            continue;
+        }
+
+        events_to_remove.push((old_event_name, old_event));
+    }
+}
+
 fn generate_patches_for_children<'a>(
-    cur_node_idx: &mut usize,
+    cur_node_idx: &mut u32,
     old_element: &'a VElement,
     new_element: &'a VElement,
     patches: &mut Vec<Patch<'a>>,
@@ -204,30 +270,42 @@ fn generate_patches_for_children<'a>(
     }
     if new_child_count < old_child_count {
         for child in old_element.children[min_count..].iter() {
-            increment_node_idx_for_children(child, cur_node_idx);
+            process_deleted_children(child, cur_node_idx, patches);
         }
     }
 }
 
-fn increment_node_idx_for_children(old: &VirtualNode, cur_node_idx: &mut usize) {
+/// Recursively iterate over all of the children that were removed
+/// (either by replacing a node or truncating children)
+///
+/// - Increment cur_node_idx for each removed child
+/// - Push a patch to remove all tracked managed events for each removed child that had events
+fn process_deleted_children(old: &VirtualNode, cur_node_idx: &mut u32, patches: &mut Vec<Patch>) {
     *cur_node_idx += 1;
     if let VirtualNode::Element(element_node) = old {
+        if element_node.events.len() > 0 {
+            patches.push(Patch::RemoveAllManagedEventsWithNodeIdx(*cur_node_idx));
+        }
+
         for child in element_node.children.iter() {
-            increment_node_idx_for_children(&child, cur_node_idx);
+            process_deleted_children(&child, cur_node_idx, patches);
         }
     }
 }
 
 #[cfg(test)]
 mod diff_test_case;
-#[cfg(test)]
-use self::diff_test_case::*;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{html, wrap_closure, PatchSpecialAttribute, VText, VirtualNode};
+    use crate::event::EventName;
+    use crate::{html, wrap_closure, EventAttribFn, PatchSpecialAttribute, VText, VirtualNode};
     use std::collections::HashMap;
+    use std::rc::Rc;
+    use wasm_bindgen::JsValue;
+
+    use super::diff_test_case::*;
 
     #[test]
     fn replace_node() {
@@ -506,6 +584,188 @@ mod tests {
         .test();
     }
 
+    /// Verify that if a node goes from no events to having at least one event, we create a patch
+    /// to set the events ID on the dom node.
+    #[test]
+    fn set_events_id_if_events_added() {
+        let old = VElement::new("div");
+
+        let mut new = VElement::new("div");
+        new.events.insert(onclick_name(), mock_event_handler());
+
+        DiffTestCase {
+            old: VirtualNode::Element(old),
+            new: VirtualNode::Element(new),
+            expected: vec![
+                Patch::AddEvents(
+                    0,
+                    vec![(&EventName::ONCLICK, &mock_event_handler())]
+                        .into_iter()
+                        .collect(),
+                ),
+                Patch::SetEventsId(0),
+            ],
+        }
+        .test();
+    }
+
+    /// Verify that if a node already had a event and we are patching it with another
+    /// event we do not create a patch for setting the events ID.
+    #[test]
+    fn does_not_set_events_id_if_already_had_events() {
+        let mut old = VElement::new("div");
+        old.events.insert(onclick_name(), mock_event_handler());
+
+        let mut new = VElement::new("div");
+        new.events.insert(onclick_name(), mock_event_handler());
+
+        DiffTestCase {
+            old: VirtualNode::Element(old),
+            new: VirtualNode::Element(new),
+            expected: vec![],
+        }
+        .test();
+    }
+
+    /// Verify that if we previously had events but we no longer have any events we push a patch
+    /// to remove the events ID.
+    #[test]
+    fn removes_events_id_if_no_more_events() {
+        let mut old = VElement::new("div");
+        old.events.insert(onclick_name(), mock_event_handler());
+
+        let new = VElement::new("div");
+
+        DiffTestCase {
+            old: VirtualNode::Element(old),
+            new: VirtualNode::Element(new),
+            expected: vec![
+                Patch::RemoveEvents(
+                    0,
+                    vec![(&EventName::ONCLICK, &mock_event_handler())]
+                        .into_iter()
+                        .collect(),
+                ),
+                Patch::RemoveEventsId(0),
+            ],
+        }
+        .test();
+    }
+
+    /// Verify that if an element has added and removed multiple non-delegated events, the remove
+    /// event listener patches come before the add event listener patches.
+    /// This ensures that we can look up the old functions in the `EventsByNodeIdx` that we'll need
+    /// to pass into .remove_event_listener() before the SetEventListeners patch overwrites those
+    /// functions.
+    #[test]
+    fn remove_event_patches_come_before_add_event_patches() {
+        let mut old = VElement::new("div");
+        old.events.insert(oninput_name(), mock_event_handler());
+
+        let mut new = VElement::new("div");
+        new.events.insert(onmousemove_name(), mock_event_handler());
+
+        DiffTestCase {
+            old: VirtualNode::Element(old),
+            new: VirtualNode::Element(new),
+            expected: vec![
+                Patch::RemoveEvents(0, vec![(&oninput_name(), &mock_event_handler())]),
+                Patch::AddEvents(
+                    0,
+                    vec![(&onmousemove_name(), &mock_event_handler())]
+                        .into_iter()
+                        .collect(),
+                ),
+            ],
+        }
+        .test();
+    }
+
+    /// Verify that if a node has events but the node is replaced we push a patch to remove all
+    /// of its events from the EventsByNodeIdx.
+    /// We ensure that this event removal patch should come before the patch to replace the node,
+    /// so that we don't accidentally remove events that were for the node that replaced it.
+    #[test]
+    fn remove_tracked_events_if_replaced() {
+        let mut old = VElement::new("div");
+        old.events.insert(oninput_name(), mock_event_handler());
+
+        let new = VElement::new("some-other-element");
+
+        DiffTestCase {
+            old: VirtualNode::Element(old),
+            new: VirtualNode::Element(new),
+            expected: vec![
+                Patch::RemoveAllManagedEventsWithNodeIdx(0),
+                Patch::Replace(
+                    0,
+                    &VirtualNode::Element(VElement::new("some-other-element")),
+                ),
+            ],
+        }
+        .test();
+    }
+
+    /// Verify that if a node's ancestor (parent, grandparent, ..etc) was replaced we push a patch
+    /// to remove all of its events from the EventsByNodeIdx.
+    /// We ensure that this event removal patch should come before the patch to replace the node,
+    /// so that we don't accidentally remove events that were for the node that replaced it.
+    #[test]
+    fn removes_tracked_events_if_ancestor_replaced() {
+        // node idx 0
+        let mut old = VElement::new("div");
+        // node idx 1
+        old.children.push(VirtualNode::Element(VElement::new("a")));
+        // node idx 2
+        old.children.push(VirtualNode::text("b"));
+
+        // node idx 3
+        let mut child_of_old = VElement::new("div");
+        child_of_old
+            .events
+            .insert(oninput_name(), mock_event_handler());
+        old.children.push(VirtualNode::Element(child_of_old));
+
+        let new = VElement::new("some-other-element");
+
+        DiffTestCase {
+            old: VirtualNode::Element(old),
+            new: VirtualNode::Element(new),
+            expected: vec![
+                Patch::RemoveAllManagedEventsWithNodeIdx(3),
+                Patch::Replace(
+                    0,
+                    &VirtualNode::Element(VElement::new("some-other-element")),
+                ),
+            ],
+        }
+        .test();
+    }
+
+    /// Verify that if a child node is truncated and it had events we push a patch to remove all
+    /// of its events from the EventsByNodeIdx
+    #[test]
+    fn remove_tracked_events_if_truncated() {
+        let mut old = VElement::new("div");
+        let mut child_of_old = VElement::new("div");
+        child_of_old
+            .events
+            .insert(oninput_name(), mock_event_handler());
+        old.children.push(VirtualNode::Element(child_of_old));
+
+        let new = VElement::new("div");
+
+        DiffTestCase {
+            old: VirtualNode::Element(old),
+            new: VirtualNode::Element(new),
+            expected: vec![
+                Patch::TruncateChildren(0, 0),
+                Patch::RemoveAllManagedEventsWithNodeIdx(1),
+            ],
+        }
+        .test();
+    }
+
     fn set_on_create_elem_with_unique_id(node: &mut VirtualNode, on_create_elem_id: u32) {
         node.as_velement_mut()
             .unwrap()
@@ -518,5 +778,21 @@ mod tests {
             .unwrap()
             .special_attributes
             .dangerous_inner_html = Some(html.to_string());
+    }
+
+    fn mock_event_handler() -> EventHandler {
+        EventHandler::UnsupportedSignature(EventAttribFn(Rc::new(Box::new(JsValue::NULL))))
+    }
+
+    fn onclick_name() -> EventName {
+        "onclick".into()
+    }
+
+    fn oninput_name() -> EventName {
+        "oninput".into()
+    }
+
+    fn onmousemove_name() -> EventName {
+        "onmousemove".into()
     }
 }

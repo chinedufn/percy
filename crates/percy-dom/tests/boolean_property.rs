@@ -10,7 +10,8 @@ use wasm_bindgen_test::*;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 
-use percy_dom::Patch;
+use percy_dom::event::EventsByNodeIdx;
+use percy_dom::{Patch, VirtualNode};
 use std::collections::HashMap;
 use virtual_node::{AttributeValue, VElement};
 
@@ -25,7 +26,8 @@ fn create_elem_boolean_property_true() {
     elem.attrs
         .insert("disabled".to_string(), AttributeValue::Bool(true));
 
-    let node = elem.create_element_node().node;
+    let node: VirtualNode = elem.into();
+    let node = node.create_dom_node(0, &mut EventsByNodeIdx::new());
     assert!(node_as_button(&node).disabled());
 }
 
@@ -38,7 +40,8 @@ fn create_elem_boolean_property_false() {
     elem.attrs
         .insert("disabled".to_string(), AttributeValue::Bool(false));
 
-    let node = elem.create_element_node().node;
+    let node: VirtualNode = elem.into();
+    let node = node.create_dom_node(0, &mut EventsByNodeIdx::new());
     assert!(!node_as_button(&node).disabled());
 }
 
@@ -47,15 +50,21 @@ fn create_elem_boolean_property_false() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test boolean_property -- patch_elem_boolean_property_true
 #[wasm_bindgen_test]
 fn patch_elem_boolean_property_true() {
-    let elem = VElement::new("button");
+    let elem: VirtualNode = VElement::new("button").into();
 
-    let node = elem.create_element_node().node;
+    let node = elem.create_dom_node(0, &mut EventsByNodeIdx::new());
 
     let mut attributes = HashMap::new();
     let true_attribute = AttributeValue::Bool(true);
     attributes.insert("disabled", &true_attribute);
     let patch = Patch::AddAttributes(0, attributes);
-    percy_dom::patch(node.clone(), &vec![patch]).unwrap();
+    percy_dom::patch(
+        node.clone(),
+        &VirtualNode::element("..."),
+        &mut EventsByNodeIdx::new(),
+        &vec![patch],
+    )
+    .unwrap();
 
     assert!(node_as_button(&node).disabled());
 }
@@ -65,9 +74,9 @@ fn patch_elem_boolean_property_true() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test boolean_property -- patch_elem_boolean_property_false
 #[wasm_bindgen_test]
 fn patch_elem_boolean_property_false() {
-    let elem = VElement::new("button");
+    let elem: VirtualNode = VElement::new("button").into();
 
-    let node = elem.create_element_node().node;
+    let node = elem.create_dom_node(0, &mut EventsByNodeIdx::new());
     node.dyn_ref::<HtmlButtonElement>()
         .unwrap()
         .set_disabled(true);
@@ -77,7 +86,13 @@ fn patch_elem_boolean_property_false() {
     let false_attribute = AttributeValue::Bool(false);
     attributes.insert("disabled", &false_attribute);
     let patch = Patch::AddAttributes(0, attributes);
-    percy_dom::patch(node.clone(), &vec![patch]).unwrap();
+    percy_dom::patch(
+        node.clone(),
+        &VirtualNode::element(".."),
+        &mut EventsByNodeIdx::new(),
+        &vec![patch],
+    )
+    .unwrap();
 
     assert!(!node_as_button(&node).disabled());
 }

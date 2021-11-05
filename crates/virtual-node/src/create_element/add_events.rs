@@ -1,70 +1,35 @@
-use crate::{EventAttribFn, VElement};
+use crate::VElement;
 
-use lazy_static::lazy_static;
-use std::collections::HashMap;
-use std::sync::Mutex;
+use crate::event::{insert_non_delegated_event, EventsByNodeIdx, ManagedEvent};
 use web_sys::Element;
 
-lazy_static! {
-    static ref ELEM_UNIQUE_ID: Mutex<u32> = Mutex::new(0);
-}
-
-fn create_unique_identifier() -> u32 {
-    let mut elem_unique_id = ELEM_UNIQUE_ID.lock().unwrap();
-    *elem_unique_id += 1;
-    *elem_unique_id
-}
+use crate::event::EVENTS_ID_PROP;
+use js_sys::Reflect;
 
 impl VElement {
-    pub(super) fn add_events(
-        &self,
-        element: &Element,
-        closures: &mut HashMap<u32, Vec<EventAttribFn>>,
-    ) {
-        let needs_create_closures = self.events.0.len() > 0;
-
+    pub(super) fn add_events(&self, element: &Element, events: &EventsByNodeIdx, node_idx: u32) {
+        let needs_create_closures = self.events.has_events();
         if needs_create_closures {
-            let unique_id = create_unique_identifier();
+            for (onevent, callback) in self.events.events() {
+                let events_clone = events.clone();
 
-            element
-                .set_attribute("data-vdom-id".into(), &unique_id.to_string())
-                .expect("Could not set attribute on element");
+                Reflect::set(
+                    element,
+                    &EVENTS_ID_PROP.into(),
+                    &format!("{}{}", events_clone.events_id_props_prefix(), node_idx).into(),
+                )
+                .unwrap();
 
-            closures.insert(unique_id, vec![]);
-
-            #[cfg(target_arch = "wasm32")]
-            {
-                self.events.0.iter().for_each(|(onevent, callback)| {
-                    // onclick -> click
-                    let event_name = &onevent[2..];
-
-                    attach_event(&element, event_name, callback, closures, unique_id);
-                });
+                if onevent.is_delegated() {
+                    events.insert_managed_event(
+                        node_idx,
+                        onevent.clone(),
+                        ManagedEvent::Delegated(callback.clone()),
+                    );
+                } else {
+                    insert_non_delegated_event(element, onevent, callback, node_idx, events);
+                }
             }
         }
     }
-}
-
-// event_name is the name without the 'on' prefix
-//   -> "input" ... "click" ... "change" ... etc
-#[cfg(target_arch = "wasm32")]
-fn attach_event(
-    element: &web_sys::Element,
-    event_name: &str,
-    callback: &EventAttribFn,
-    closures: &mut HashMap<u32, Vec<EventAttribFn>>,
-    unique_id: u32,
-) {
-    use wasm_bindgen::JsCast;
-
-    let current_elem: &web_sys::EventTarget = element.dyn_ref().unwrap();
-
-    current_elem
-        .add_event_listener_with_callback(event_name, callback.as_ref().as_ref().unchecked_ref())
-        .unwrap();
-
-    closures
-        .get_mut(&unique_id)
-        .unwrap()
-        .push(std::rc::Rc::clone(callback));
 }

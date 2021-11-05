@@ -24,7 +24,7 @@ fn set_input_elem_value_property() {
         let start_input = html! {<input value=start>};
         let end_input = html! {<input value=end>};
 
-        let input_node = start_input.create_dom_node().node;
+        let input_node = start_input.create_dom_node(0, &mut EventsByNodeIdx::new());
 
         input_node
             .clone()
@@ -34,7 +34,13 @@ fn set_input_elem_value_property() {
 
         let patches = percy_dom::diff(&start_input, &end_input);
 
-        percy_dom::patch(input_node.clone(), &patches).unwrap();
+        percy_dom::patch(
+            input_node.clone(),
+            &end_input,
+            &mut EventsByNodeIdx::new(),
+            &patches,
+        )
+        .unwrap();
 
         assert_eq!(
             input_node.dyn_into::<HtmlInputElement>().unwrap().value(),
@@ -56,7 +62,7 @@ fn set_textarea_elem_value_property() {
         let start_textarea = html! {<textarea value=start>};
         let end_textarea = html! {<textarea value=end>};
 
-        let textarea_node = start_textarea.create_dom_node().node;
+        let textarea_node = start_textarea.create_dom_node(0, &mut EventsByNodeIdx::new());
 
         textarea_node
             .clone()
@@ -66,7 +72,13 @@ fn set_textarea_elem_value_property() {
 
         let patches = percy_dom::diff(&start_textarea, &end_textarea);
 
-        percy_dom::patch(textarea_node.clone(), &patches).unwrap();
+        percy_dom::patch(
+            textarea_node.clone(),
+            &end_textarea,
+            &mut EventsByNodeIdx::new(),
+            &patches,
+        )
+        .unwrap();
 
         assert_eq!(
             textarea_node

@@ -19,7 +19,7 @@ impl VText {
 
     /// Return a `Text` element from a `VirtualNode`, typically right before adding it
     /// into the DOM.
-    pub fn create_text_node(&self) -> Text {
+    pub(crate) fn create_text_node(&self) -> Text {
         let document = web_sys::window().unwrap().document().unwrap();
         document.create_text_node(&self.text)
     }

@@ -106,6 +106,8 @@ fn create_valid_node(
 }
 
 // Create the tokens that insert a closure into the virtual element.
+//
+// Tests can be found in crates/html-macro-test/src/events.rs
 fn insert_closure_tokens(
     var_name_node: &Ident,
     event_name: &str,
@@ -117,22 +119,45 @@ fn insert_closure_tokens(
     let arg_type_placeholders: Vec<TokenStream2> =
         (0..arg_count).into_iter().map(|_| quote! { _ }).collect();
 
-    quote! {
-      #[cfg(target_arch = "wasm32")]
-      {
+    if arg_count == 0 {
+        quote! {
+            #var_name_node.as_velement_mut().unwrap().events.insert_no_args(
+                #event_name.into(),
+                std::rc::Rc::new(
+                    std::cell::RefCell::new( #closure )
+                )
+            );
+        }
+    } else if event_name == "onclick" {
+        quote! {
+            #var_name_node.as_velement_mut().unwrap().events.insert_mouse_event(
+                #event_name.into(),
+                std::rc::Rc::new(
+                    std::cell::RefCell::new( #closure )
+                )
+            );
+        }
+    } else {
+        quote! {
+          #[cfg(target_arch = "wasm32")]
+          {
 
-          let closure = Closure::wrap(
-              Box::new(#closure) as Box<dyn FnMut(#(#arg_type_placeholders)*)>
-          );
-          let closure_rc = std::rc::Rc::new(closure);
-          #var_name_node.as_velement_mut().expect("Not an element")
-              .events.0.insert(#event_name.to_string(), closure_rc);
-      }
+              let closure = Closure::wrap(
+                  Box::new(#closure) as Box<dyn FnMut(#(#arg_type_placeholders)*)>
+              );
+              let closure_rc = std::rc::Rc::new(closure);
+              let closure_rc = closure_rc as std::rc::Rc<dyn AsRef<wasm_bindgen::JsValue>>;
 
-      #[cfg(not(target_arch = "wasm32"))]
-      {
-          let _ = #closure;
-      }
+              #var_name_node.as_velement_mut().unwrap()
+                  .events.insert_unsupported_signature(#event_name.into(), closure_rc.into());
+          }
+
+          #[cfg(not(target_arch = "wasm32"))]
+          {
+              // Ensures that the variables that the closure captures are considered used.
+              let _ = #closure;
+          }
+        }
     }
 }
 

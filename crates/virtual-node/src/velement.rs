@@ -36,7 +36,7 @@ impl VElement {
         VElement {
             tag: tag.into(),
             attrs: HashMap::new(),
-            events: Events(HashMap::new()),
+            events: Events::new(),
             children: vec![],
             special_attributes: SpecialAttributes::default(),
         }

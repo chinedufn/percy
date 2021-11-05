@@ -1,11 +1,16 @@
 //! Our Patch enum is intentionally kept in it's own file for easy inclusion into
 //! The Percy Book.
 
-use crate::{AttributeValue, VText, VirtualNode};
 use std::collections::HashMap;
 
-mod apply_patches;
 pub use apply_patches::patch;
+
+use crate::event::{EventHandler, EventName};
+use crate::{AttributeValue, VText, VirtualNode};
+
+mod apply_patches;
+
+type NodeIdx = u32;
 
 /// A Patch encodes an operation that modifies a real DOM element.
 ///
@@ -40,7 +45,8 @@ pub use apply_patches::patch;
 /// ```
 ///
 /// The patching process is tested in a real browser in crates/percy-dom/tests/diff_patch.rs
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
+#[cfg_attr(any(test, feature = "__test-utils"), derive(PartialEq))]
 pub enum Patch<'a> {
     /// Append a vector of child nodes to a parent node id.
     AppendChildren(NodeIdx, Vec<&'a VirtualNode>),
@@ -60,6 +66,20 @@ pub enum Patch<'a> {
     ChangeText(NodeIdx, &'a VText),
     /// Patches that apply to [`SpecialAttributes`].
     SpecialAttribute(PatchSpecialAttribute<'a>),
+    /// Remove the `__events_id__` property from the DOM node.
+    /// This happens when the node no longer has any events.
+    RemoveEventsId(NodeIdx),
+    /// Set the `__events_id__` property on the DOM node.
+    SetEventsId(NodeIdx),
+    /// Insert events in the EventsByNodeIdx.
+    /// If it is a non-delegated event the event will also get added to the DOM node.
+    AddEvents(NodeIdx, HashMap<&'a EventName, &'a EventHandler>),
+    /// Remove events from the EventsByNodeIdx.
+    /// If it is a non-delegated event the event will also get removed from the DOM node.
+    RemoveEvents(NodeIdx, Vec<(&'a EventName, &'a EventHandler)>),
+    /// Delete all events in the EventsByNodeIdx for the given index, since the node has been
+    /// removed from the DOM.
+    RemoveAllManagedEventsWithNodeIdx(NodeIdx),
 }
 
 /// Patches that apply to [`SpecialAttributes`].
@@ -72,9 +92,6 @@ pub enum PatchSpecialAttribute<'a> {
     /// Set the node's innerHTML to an empty string.
     RemoveDangerousInnerHtml(NodeIdx),
 }
-
-// TODO: u32 instead of usize
-type NodeIdx = usize;
 
 impl<'a> Patch<'a> {
     /// Every Patch is meant to be applied to a specific node within the DOM. Get the
@@ -94,6 +111,11 @@ impl<'a> Patch<'a> {
                 PatchSpecialAttribute::SetDangerousInnerHtml(node_idx, _) => *node_idx,
                 PatchSpecialAttribute::RemoveDangerousInnerHtml(node_idx) => *node_idx,
             },
+            Patch::RemoveEventsId(node_idx) => *node_idx,
+            Patch::SetEventsId(node_idx) => *node_idx,
+            Patch::RemoveEvents(node_idx, _) => *node_idx,
+            Patch::AddEvents(node_idx, _) => *node_idx,
+            Patch::RemoveAllManagedEventsWithNodeIdx(node_idx) => *node_idx,
         }
     }
 }

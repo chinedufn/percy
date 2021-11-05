@@ -9,11 +9,13 @@ repository = "https://github.com/chinedufn/percy"
 documentation = "https://chinedufn.github.io/percy/api/virtual_node/"
 edition = "2018"
 
+[features]
+MouseEvent = ["web-sys/MouseEvent"]
+
 [dependencies]
 js-sys = "0.3"
 wasm-bindgen = "0.2.33"
 html-validation = {path = "../html-validation", version = "0.1.1"}
-lazy_static = "1.0"
 
 [dependencies.web-sys]
 version = "0.3"
@@ -22,6 +24,7 @@ features = [
     "Document",
     "Element",
     "HtmlElement",
+    "Event",
     "EventTarget",
     "HtmlCollection",
     "Node",

@@ -1,18 +1,81 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
+use std::fmt::Formatter;
 use std::ops::{Deref, DerefMut};
+use std::rc::Rc;
+
+pub use self::event_handlers::*;
+pub use self::event_name::EventName;
+pub use self::events_by_node_idx::{EventsByNodeIdx, ManagedEvent, EVENTS_ID_PROP};
+pub use self::non_delegated_event_wrapper::insert_non_delegated_event;
+
+mod event_handlers;
+mod event_name;
+mod events_by_node_idx;
+mod non_delegated_event_wrapper;
+
+type EventAttribFnInner = std::rc::Rc<dyn AsRef<wasm_bindgen::JsValue>>;
 
 /// Box<dyn AsRef<JsValue>>> is our js_sys::Closure. Stored this way to allow us to store
 /// any Closure regardless of the types of its arguments.
-pub type EventAttribFn = std::rc::Rc<dyn AsRef<wasm_bindgen::JsValue>>;
+#[derive(Clone)]
+pub struct EventAttribFn(pub EventAttribFnInner);
 
-/// We need a custom implementation of fmt::Debug since JsValue doesn't
-/// implement debug.
-pub struct Events(pub HashMap<String, EventAttribFn>);
+/// We need a custom implementation of fmt::Debug since JsValue doesn't implement debug.
+#[derive(PartialEq)]
+pub struct Events {
+    events: HashMap<EventName, EventHandler>,
+}
 
-impl PartialEq for Events {
-    // TODO: What should happen here..? And why?
-    fn eq(&self, _rhs: &Self) -> bool {
+impl Events {
+    /// Whether or not there is at least one event.
+    pub fn has_events(&self) -> bool {
+        !self.events.is_empty()
+    }
+
+    /// All of the events.
+    pub fn events(&self) -> &HashMap<EventName, EventHandler> {
+        &self.events
+    }
+
+    /// Insert an event handler that does not have any arguments.
+    pub fn insert_no_args(&mut self, event_name: EventName, event: Rc<RefCell<dyn FnMut()>>) {
+        self.events.insert(event_name, EventHandler::NoArgs(event));
+    }
+
+    /// Insert an event handler with a signature that we do not currently support.
+    pub fn insert_unsupported_signature(&mut self, event_name: EventName, event: EventAttribFn) {
+        self.events
+            .insert(event_name, EventHandler::UnsupportedSignature(event));
+    }
+
+    /// Insert a mouse event handler.
+    pub fn insert_mouse_event(
+        &mut self,
+        event_name: EventName,
+        event: Rc<RefCell<dyn FnMut(MouseEvent)>>,
+    ) {
+        self.events
+            .insert(event_name, EventHandler::MouseEvent(event));
+    }
+}
+
+impl Events {
+    /// Create a new Events.
+    pub fn new() -> Self {
+        Events {
+            events: HashMap::new(),
+        }
+    }
+}
+
+// Allows us to easily derive PartialEq for some of the types that contain events.
+// Those PartialEq implementations are used for testing.
+// Maybe we can put some of the event related PartialEq implementations
+// behind a #[cfg(any(test, feature = "__test-utils"))].
+impl PartialEq for EventAttribFn {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
@@ -20,21 +83,45 @@ impl PartialEq for Events {
 impl fmt::Debug for Events {
     // Print out all of the event names for this VirtualNode
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let events: String = self.0.keys().map(|key| " ".to_string() + key).collect();
+        let events: String = self
+            .events
+            .keys()
+            .map(|key| " ".to_string() + key.with_on_prefix())
+            .collect();
         write!(f, "{}", events)
     }
 }
 
-impl Deref for Events {
-    type Target = HashMap<String, EventAttribFn>;
+impl fmt::Debug for EventAttribFn {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "event_handler()")
+    }
+}
+
+impl From<EventAttribFnInner> for EventAttribFn {
+    fn from(inner: EventAttribFnInner) -> Self {
+        EventAttribFn(inner)
+    }
+}
+
+impl Deref for EventAttribFn {
+    type Target = EventAttribFnInner;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
+impl Deref for Events {
+    type Target = HashMap<EventName, EventHandler>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.events
+    }
+}
+
 impl DerefMut for Events {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        &mut self.events
     }
 }

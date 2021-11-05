@@ -64,10 +64,10 @@ pub fn wrap_closure<F: FnMut(T) + 'static, T: FromWasmAbi + 'static>(func: F) ->
     let closure = Closure::wrap(Box::new(func) as Box<dyn FnMut(_)>);
     let closure_rc = std::rc::Rc::new(closure);
 
-    closure_rc
+    EventAttribFn(closure_rc)
 }
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn wrap_closure<F: FnMut(T) + 'static, T: FromWasmAbi + 'static>(_func: F) -> EventAttribFn {
-    Rc::new(JsValue::NULL)
+    EventAttribFn(Rc::new(JsValue::NULL))
 }
