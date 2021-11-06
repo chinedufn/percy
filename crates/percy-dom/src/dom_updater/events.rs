@@ -171,16 +171,29 @@ fn bubble_event(elem: web_sys::Element, mouse_event: MouseEvent, events: &Events
 // - [DONE] Add a test where we add a non delegated event, remove it, then add it again and verify that
 //       the text is modified only by the final event.
 //
-// - [ ] Merge
+// - [DONE] Merge
 //
-// - [ ] Add internal design docs on events
-//   - [ ] How delegated events
-//   - [ ] How non-delegated events
-//   - [ ] ...
-//   - [ ] How `stop_propagation()` works
+// - [DONE] In the Patch::Replace, add an `.old_node_idx` and `.new_node_idx`
 //
-// - [ ] In new commit make `OnCreateElem` take a `Key::(Num(isize), Str(&'static str), String(String))`
-//    instead of a u32.
+// - [DONE] In the `Patch::AppendChildren` add `.old_node_idx` and `.new_node_idx`
+//
+// - [DONE] Add diff test that we generate the correct new_node_idx when replacing a node.
+//
+// - [DONE] Add diff test that we generate the correct new_node_idx when appending a child node
+//       Create first node with no children, second node with two children, and verify that the
+//       children's new nodes indices are 1 and 2
+//
+// - [DONE] Add patch test to events.rs that we properly set the events ID on a replaced node using the new
+//       node idx (not the old)
+//
+// - [DONE] Add patch test to events.rs that we properly set the events id on an appended child using the
+//       new node Idx (not the old).
+//
+// - [DONE] Add patch test for replacing a text node with an element and that element has correct ID
+//
+// - [DONE] Add internal design docs on events
+//
+// - [ ] In new commit make `OnCreateElem` take a `Cow<'static, str>` instead of a u32.
 //
 // - [ ] Rename DomUpdater to PercyDom
 //

@@ -49,12 +49,21 @@ type NodeIdx = u32;
 #[cfg_attr(any(test, feature = "__test-utils"), derive(PartialEq))]
 pub enum Patch<'a> {
     /// Append a vector of child nodes to a parent node id.
-    AppendChildren(NodeIdx, Vec<&'a VirtualNode>),
+    #[allow(missing_docs)]
+    AppendChildren {
+        old_idx: NodeIdx,
+        new_nodes: Vec<(NodeIdx, &'a VirtualNode)>,
+    },
     /// For a `node_i32`, remove all children besides the first `len`
     TruncateChildren(NodeIdx, usize),
     /// Replace a node with another node. This typically happens when a node's tag changes.
     /// ex: <div> becomes <span>
-    Replace(NodeIdx, &'a VirtualNode),
+    #[allow(missing_docs)]
+    Replace {
+        old_idx: NodeIdx,
+        new_idx: NodeIdx,
+        new_node: &'a VirtualNode,
+    },
     /// The value attribute of a textarea or input element has not changed, but we will still patch
     /// it anyway in case something was typed into the field.
     ValueAttributeUnchanged(NodeIdx, &'a AttributeValue),
@@ -97,11 +106,11 @@ impl<'a> Patch<'a> {
     /// Every Patch is meant to be applied to a specific node within the DOM. Get the
     /// index of the DOM node that this patch should apply to. DOM nodes are indexed
     /// depth first with the root node in the tree having index 0.
-    pub fn node_idx(&self) -> NodeIdx {
+    pub(crate) fn old_node_idx(&self) -> NodeIdx {
         match self {
-            Patch::AppendChildren(node_idx, _) => *node_idx,
+            Patch::AppendChildren { old_idx, .. } => *old_idx,
             Patch::TruncateChildren(node_idx, _) => *node_idx,
-            Patch::Replace(node_idx, _) => *node_idx,
+            Patch::Replace { old_idx, .. } => *old_idx,
             Patch::AddAttributes(node_idx, _) => *node_idx,
             Patch::RemoveAttributes(node_idx, _) => *node_idx,
             Patch::ChangeText(node_idx, _) => *node_idx,
@@ -115,7 +124,12 @@ impl<'a> Patch<'a> {
             Patch::SetEventsId(node_idx) => *node_idx,
             Patch::RemoveEvents(node_idx, _) => *node_idx,
             Patch::AddEvents(node_idx, _) => *node_idx,
-            Patch::RemoveAllManagedEventsWithNodeIdx(node_idx) => *node_idx,
+            Patch::RemoveAllManagedEventsWithNodeIdx(node_idx) => {
+                // TODO: We don't actually need the old node for this particular patch..
+                //  so we should stop making use of this. Perhaps use `unreachable!()` and fix
+                //  the places where we use this to stop using it.
+                *node_idx
+            }
         }
     }
 }

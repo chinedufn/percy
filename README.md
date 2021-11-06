@@ -103,7 +103,6 @@ cp app.css public/
 
 use wasm_bindgen::prelude::*;
 use web_sys;
-use percy_dom::event::MouseEvent;
 
 use percy_dom::prelude::*;
 
@@ -134,7 +133,7 @@ impl App {
 
               <button
                 class="giant-button"
-                onclick=|_event: MouseEvent| {
+                onclick=|_event| {
                    web_sys::console::log_1(&"Button Clicked!".into());
                 }
               >

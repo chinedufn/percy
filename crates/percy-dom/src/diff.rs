@@ -8,13 +8,14 @@ use std::mem;
 /// Given two VirtualNode's generate Patch's that would turn the old virtual node's
 /// real DOM node equivalent into the new VirtualNode's real DOM node equivalent.
 pub fn diff<'a>(old: &'a VirtualNode, new: &'a VirtualNode) -> Vec<Patch<'a>> {
-    diff_recursive(&old, &new, &mut 0)
+    diff_recursive(&old, &new, &mut 0, &mut 0)
 }
 
 fn diff_recursive<'a, 'b>(
     old: &'a VirtualNode,
     new: &'a VirtualNode,
-    cur_node_idx: &'b mut u32,
+    old_node_idx: &'b mut u32,
+    new_node_idx: &'b mut u32,
 ) -> Vec<Patch<'a>> {
     let mut patches = vec![];
 
@@ -30,19 +31,29 @@ fn diff_recursive<'a, 'b>(
     if should_fully_replace_node {
         if let Some(velem) = old.as_velement_ref() {
             if velem.events.has_events() {
-                patches.push(Patch::RemoveAllManagedEventsWithNodeIdx(*cur_node_idx));
+                patches.push(Patch::RemoveAllManagedEventsWithNodeIdx(*old_node_idx));
             }
         }
 
-        let replaced_node_idx = *cur_node_idx;
+        let replaced_old_idx = *old_node_idx;
 
         if let VirtualNode::Element(old_element_node) = old {
             for child in old_element_node.children.iter() {
-                process_deleted_children(child, cur_node_idx, &mut patches);
+                process_deleted_old_node_child(child, old_node_idx, &mut patches);
             }
         }
 
-        patches.push(Patch::Replace(replaced_node_idx, &new));
+        patches.push(Patch::Replace {
+            old_idx: replaced_old_idx,
+            new_idx: *new_node_idx,
+            new_node: new,
+        });
+
+        if let VirtualNode::Element(new_element_node) = new {
+            for child in new_element_node.children.iter() {
+                increment_idx_for_child(child, new_node_idx);
+            }
+        }
 
         return patches;
     }
@@ -50,7 +61,7 @@ fn diff_recursive<'a, 'b>(
     match (old, new) {
         (VirtualNode::Text(old_text), VirtualNode::Text(new_text)) => {
             if old_text != new_text {
-                patches.push(Patch::ChangeText(*cur_node_idx, &new_text));
+                patches.push(Patch::ChangeText(*old_node_idx, &new_text));
             }
         }
 
@@ -62,7 +73,7 @@ fn diff_recursive<'a, 'b>(
             let mut events_to_remove = vec![];
 
             find_attributes_to_add(
-                *cur_node_idx,
+                *old_node_idx,
                 &mut attributes_to_add,
                 old_element,
                 new_element,
@@ -85,17 +96,17 @@ fn diff_recursive<'a, 'b>(
             );
 
             if attributes_to_add.len() > 0 {
-                patches.push(Patch::AddAttributes(*cur_node_idx, attributes_to_add));
+                patches.push(Patch::AddAttributes(*old_node_idx, attributes_to_add));
             }
             if attributes_to_remove.len() > 0 {
-                patches.push(Patch::RemoveAttributes(*cur_node_idx, attributes_to_remove));
+                patches.push(Patch::RemoveAttributes(*old_node_idx, attributes_to_remove));
             }
 
             if events_to_remove.len() > 0 {
-                patches.push(Patch::RemoveEvents(*cur_node_idx, events_to_remove));
+                patches.push(Patch::RemoveEvents(*old_node_idx, events_to_remove));
             }
             if events_to_add.len() > 0 {
-                patches.push(Patch::AddEvents(*cur_node_idx, events_to_add));
+                patches.push(Patch::AddEvents(*old_node_idx, events_to_add));
             }
 
             // FIXME: Move into function
@@ -105,19 +116,19 @@ fn diff_recursive<'a, 'b>(
             ) {
                 (None, Some(_)) => {
                     patches.push(Patch::SpecialAttribute(
-                        PatchSpecialAttribute::SetDangerousInnerHtml(*cur_node_idx, new),
+                        PatchSpecialAttribute::SetDangerousInnerHtml(*old_node_idx, new),
                     ));
                 }
                 (Some(old_inner), Some(new_inner)) => {
                     if old_inner != new_inner {
                         patches.push(Patch::SpecialAttribute(
-                            PatchSpecialAttribute::SetDangerousInnerHtml(*cur_node_idx, new),
+                            PatchSpecialAttribute::SetDangerousInnerHtml(*old_node_idx, new),
                         ));
                     }
                 }
                 (Some(_), None) => {
                     patches.push(Patch::SpecialAttribute(
-                        PatchSpecialAttribute::RemoveDangerousInnerHtml(*cur_node_idx),
+                        PatchSpecialAttribute::RemoveDangerousInnerHtml(*old_node_idx),
                     ));
                 }
                 (None, None) => {}
@@ -130,13 +141,13 @@ fn diff_recursive<'a, 'b>(
             ) {
                 (None, Some(_)) => {
                     patches.push(Patch::SpecialAttribute(
-                        PatchSpecialAttribute::CallOnCreateElem(*cur_node_idx, new),
+                        PatchSpecialAttribute::CallOnCreateElem(*old_node_idx, new),
                     ));
                 }
                 (Some((old_id, _)), Some((new_id, _))) => {
                     if new_id != old_id {
                         patches.push(Patch::SpecialAttribute(
-                            PatchSpecialAttribute::CallOnCreateElem(*cur_node_idx, new),
+                            PatchSpecialAttribute::CallOnCreateElem(*old_node_idx, new),
                         ));
                     }
                 }
@@ -147,12 +158,18 @@ fn diff_recursive<'a, 'b>(
             let new_elem_has_events = new_element.events.has_events();
 
             if !old_elem_has_events && new_elem_has_events {
-                patches.push(Patch::SetEventsId(*cur_node_idx));
+                patches.push(Patch::SetEventsId(*old_node_idx));
             } else if old_elem_has_events && !new_elem_has_events {
-                patches.push(Patch::RemoveEventsId(*cur_node_idx));
+                patches.push(Patch::RemoveEventsId(*old_node_idx));
             }
 
-            generate_patches_for_children(cur_node_idx, old_element, new_element, &mut patches);
+            generate_patches_for_children(
+                old_node_idx,
+                new_node_idx,
+                old_element,
+                new_element,
+                &mut patches,
+            );
         }
         (VirtualNode::Text(_), VirtualNode::Element(_))
         | (VirtualNode::Element(_), VirtualNode::Text(_)) => {
@@ -244,8 +261,9 @@ fn find_events_to_remove<'a>(
     }
 }
 
-fn generate_patches_for_children<'a>(
-    cur_node_idx: &mut u32,
+fn generate_patches_for_children<'a, 'b>(
+    old_node_idx: &'b mut u32,
+    new_node_idx: &'b mut u32,
     old_element: &'a VElement,
     new_element: &'a VElement,
     patches: &mut Vec<Patch<'a>>,
@@ -253,42 +271,86 @@ fn generate_patches_for_children<'a>(
     let old_child_count = old_element.children.len();
     let new_child_count = new_element.children.len();
 
-    if new_child_count > old_child_count {
-        let append_patch: Vec<&'a VirtualNode> =
-            new_element.children[old_child_count..].iter().collect();
-        patches.push(Patch::AppendChildren(*cur_node_idx, append_patch))
-    } else if new_child_count < old_child_count {
-        patches.push(Patch::TruncateChildren(*cur_node_idx, new_child_count))
+    let current_old_node_idx = *old_node_idx;
+
+    if new_child_count < old_child_count {
+        patches.push(Patch::TruncateChildren(
+            current_old_node_idx,
+            new_child_count,
+        ));
     }
 
     let min_count = min(old_child_count, new_child_count);
     for index in 0..min_count {
-        *cur_node_idx = *cur_node_idx + 1;
+        *old_node_idx += 1;
+        *new_node_idx += 1;
+
         let old_child = &old_element.children[index];
         let new_child = &new_element.children[index];
-        patches.append(&mut diff_recursive(&old_child, &new_child, cur_node_idx))
+        patches.append(&mut diff_recursive(
+            &old_child,
+            &new_child,
+            old_node_idx,
+            new_node_idx,
+        ))
     }
+
     if new_child_count < old_child_count {
         for child in old_element.children[min_count..].iter() {
-            process_deleted_children(child, cur_node_idx, patches);
+            process_deleted_old_node_child(child, old_node_idx, patches);
         }
+    } else if new_child_count > old_child_count {
+        let mut append_patch = vec![];
+
+        for new_node in new_element.children[old_child_count..].iter() {
+            *new_node_idx += 1;
+
+            append_patch.push((*new_node_idx, new_node));
+
+            if let Some(elem) = new_node.as_velement_ref() {
+                for child in elem.children.iter() {
+                    increment_idx_for_child(child, new_node_idx);
+                }
+            }
+        }
+
+        patches.push(Patch::AppendChildren {
+            old_idx: current_old_node_idx,
+            new_nodes: append_patch,
+        })
     }
 }
 
-/// Recursively iterate over all of the children that were removed
-/// (either by replacing a node or truncating children)
+/// Increment the `cur_node_idx` to account for this deleted node.
 ///
-/// - Increment cur_node_idx for each removed child
-/// - Push a patch to remove all tracked managed events for each removed child that had events
-fn process_deleted_children(old: &VirtualNode, cur_node_idx: &mut u32, patches: &mut Vec<Patch>) {
+/// Then iterate through all of its children, recursively, and increment the `cur_node_idx`.
+///
+/// Along the way we also push patches to remove all tracked events for deleted nodes
+/// (if they had events).
+fn process_deleted_old_node_child(
+    old_node: &VirtualNode,
+    cur_node_idx: &mut u32,
+    patches: &mut Vec<Patch>,
+) {
     *cur_node_idx += 1;
-    if let VirtualNode::Element(element_node) = old {
+    if let VirtualNode::Element(element_node) = old_node {
         if element_node.events.len() > 0 {
             patches.push(Patch::RemoveAllManagedEventsWithNodeIdx(*cur_node_idx));
         }
 
         for child in element_node.children.iter() {
-            process_deleted_children(&child, cur_node_idx, patches);
+            process_deleted_old_node_child(&child, cur_node_idx, patches);
+        }
+    }
+}
+
+/// Recursively increment the node idx for each child, depth first.
+fn increment_idx_for_child(new_node: &VirtualNode, new_node_idx: &mut u32) {
+    *new_node_idx += 1;
+
+    if let VirtualNode::Element(element_node) = new_node {
+        for child in element_node.children.iter() {
+            increment_idx_for_child(child, new_node_idx);
         }
     }
 }
@@ -303,6 +365,7 @@ mod tests {
     use crate::{html, wrap_closure, EventAttribFn, PatchSpecialAttribute, VText, VirtualNode};
     use std::collections::HashMap;
     use std::rc::Rc;
+    use virtual_node::IterableNodes;
     use wasm_bindgen::JsValue;
 
     use super::diff_test_case::*;
@@ -312,21 +375,69 @@ mod tests {
         DiffTestCase {
             old: html! { <div> </div> },
             new: html! { <span> </span> },
-            expected: vec![Patch::Replace(0, &html! { <span></span> })],
+            expected: vec![Patch::Replace {
+                old_idx: 0,
+                new_idx: 0,
+                new_node: &html! { <span></span> },
+            }],
         }
         .test();
         DiffTestCase {
             old: html! { <div> <b></b> </div> },
             new: html! { <div> <strong></strong> </div> },
-            expected: vec![Patch::Replace(1, &html! { <strong></strong> })],
+            expected: vec![Patch::Replace {
+                old_idx: 1,
+                new_idx: 1,
+                new_node: &html! { <strong></strong> },
+            }],
         }
         .test();
         DiffTestCase {
             old: html! { <div> <b>1</b> <b></b> </div> },
-            new: html! { <div> <i>1</i> <i></i> </div>},
+            new: html! { <div> <i>{"1"} {"2"}</i> <br /> </div>},
             expected: vec![
-                Patch::Replace(1, &html! { <i>1</i> }),
-                Patch::Replace(3, &html! { <i></i> }),
+                Patch::Replace {
+                    old_idx: 1,
+                    new_idx: 1,
+                    new_node: &html! { <i>{"1"} {"2"}</i> },
+                },
+                Patch::Replace {
+                    old_idx: 3,
+                    new_idx: 4,
+                    new_node: &html! { <br /> },
+                },
+            ],
+        }
+        .test();
+    }
+
+    /// Verify that we use the proper new node idx when we replace a node.
+    #[test]
+    fn replace_node_proper_new_node_idx() {
+        DiffTestCase {
+            old: html! {
+                <div>
+                  <div><em></em></div>
+                  <div></div>
+                </div>
+            },
+            new: html! {
+                <div>
+                  <span></span>
+                  <strong></strong>
+                </div>
+            },
+            expected: vec![
+                Patch::Replace {
+                    old_idx: 1,
+                    new_idx: 1,
+                    new_node: &html! { <span></span> },
+                },
+                Patch::Replace {
+                    old_idx: 3,
+                    new_idx: 2,
+                    new_node: &html! { <strong></strong> },
+                },
             ],
         }
         .test();
@@ -337,7 +448,50 @@ mod tests {
         DiffTestCase {
             old: html! { <div> <b></b> </div> },
             new: html! { <div> <b></b> <span></span> </div> },
-            expected: vec![Patch::AppendChildren(0, vec![&html! { <span></span> }])],
+            expected: vec![Patch::AppendChildren {
+                old_idx: 0,
+                new_nodes: vec![(2, &html! { <span></span> })],
+            }],
+        }
+        .test();
+    }
+
+    /// Verify that we use the proper new node idx for appended children.
+    #[test]
+    fn proper_new_node_idx_for_added_children() {
+        DiffTestCase {
+            old: html! {
+                <div>
+                  <span><em></em></span>
+                  <div>
+                    <br />
+                  </div>
+                </div>
+            },
+            new: html! {
+                <div>
+                  <i></i>
+                  <div>
+                    <br />
+                    <div><br /></div>
+                    <div></div>
+                  </div>
+                </div>
+            },
+            expected: vec![
+                Patch::Replace {
+                    old_idx: 1,
+                    new_idx: 1,
+                    new_node: &html! { <i></i>},
+                },
+                Patch::AppendChildren {
+                    old_idx: 3,
+                    new_nodes: vec![
+                        (4, &html! { <div><br /></div> }),
+                        (6, &html! { <div></div> }),
+                    ],
+                },
+            ],
         }
         .test();
     }
@@ -352,30 +506,51 @@ mod tests {
         .test();
         DiffTestCase {
             old: html! {
-            <div>
-             <span>
-               <b></b>
-               // This `i` tag will get removed
-               <i></i>
-             </span>
-             // This `strong` tag will get removed
-             <strong></strong>
-            </div> },
+              <div>
+                <span>
+                  <b></b>
+                  // This `i` tag will get removed
+                  <i></i>
+                </span>
+                // This `strong` tag will get removed
+                <strong></strong>
+              </div>
+            },
             new: html! {
-            <div>
-             <span>
-              <b></b>
-             </span>
-            </div> },
+              <div>
+                <span>
+                  <b></b>
+                </span>
+              </div>
+            },
             expected: vec![Patch::TruncateChildren(0, 1), Patch::TruncateChildren(1, 1)],
         }
         .test();
         DiffTestCase {
-            old: html! { <div> <b> <i></i> <i></i> </b> <b></b> </div> },
-            new: html! { <div> <b> <i></i> </b> <i></i> </div>},
+            old: html! {
+                <div>
+                  <b>
+                    <i></i>
+                    <i></i>
+                  </b>
+                  <b></b>
+                </div>
+            },
+            new: html! {
+                <div>
+                  <b>
+                    <i></i>
+                  </b>
+                  <i></i>
+                </div>
+            },
             expected: vec![
                 Patch::TruncateChildren(1, 1),
-                Patch::Replace(4, &html! { <i></i> }),
+                Patch::Replace {
+                    old_idx: 4,
+                    new_idx: 3,
+                    new_node: &html! { <i></i> },
+                },
             ],
         }
         .test();
@@ -578,7 +753,10 @@ mod tests {
             new,
             expected: vec![
                 Patch::SpecialAttribute(PatchSpecialAttribute::RemoveDangerousInnerHtml(0)),
-                Patch::AppendChildren(0, vec![&VirtualNode::element("em")]),
+                Patch::AppendChildren {
+                    old_idx: 0,
+                    new_nodes: vec![(1, &VirtualNode::element("em"))],
+                },
             ],
         }
         .test();
@@ -697,10 +875,11 @@ mod tests {
             new: VirtualNode::Element(new),
             expected: vec![
                 Patch::RemoveAllManagedEventsWithNodeIdx(0),
-                Patch::Replace(
-                    0,
-                    &VirtualNode::Element(VElement::new("some-other-element")),
-                ),
+                Patch::Replace {
+                    old_idx: 0,
+                    new_idx: 0,
+                    new_node: &VirtualNode::Element(VElement::new("some-other-element")),
+                },
             ],
         }
         .test();
@@ -733,10 +912,11 @@ mod tests {
             new: VirtualNode::Element(new),
             expected: vec![
                 Patch::RemoveAllManagedEventsWithNodeIdx(3),
-                Patch::Replace(
-                    0,
-                    &VirtualNode::Element(VElement::new("some-other-element")),
-                ),
+                Patch::Replace {
+                    old_idx: 0,
+                    new_idx: 0,
+                    new_node: &VirtualNode::Element(VElement::new("some-other-element")),
+                },
             ],
         }
         .test();

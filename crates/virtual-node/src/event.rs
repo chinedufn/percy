@@ -44,10 +44,15 @@ impl Events {
         self.events.insert(event_name, EventHandler::NoArgs(event));
     }
 
-    /// Insert an event handler with a signature that we do not currently support.
-    pub fn insert_unsupported_signature(&mut self, event_name: EventName, event: EventAttribFn) {
+    // Used by the html! macro
+    #[doc(hidden)]
+    pub fn __insert_unsupported_signature(
+        &mut self,
+        event_name: EventName,
+        event: EventAttribFnInner,
+    ) {
         self.events
-            .insert(event_name, EventHandler::UnsupportedSignature(event));
+            .insert(event_name, EventHandler::UnsupportedSignature(event.into()));
     }
 
     /// Insert a mouse event handler.

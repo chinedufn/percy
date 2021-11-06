@@ -209,6 +209,121 @@ fn patch_set_events_id() {
     assert!(events_id.as_string().is_some());
 }
 
+/// Verify that when replacing a node we set the __events_id__ property using the new_idx, not
+/// the old_idx.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test events -- replaced_element_gets_new_node_idx_as_events_id
+#[wasm_bindgen_test]
+fn replaced_element_gets_new_node_idx_as_events_id() {
+    let node: VirtualNode = html! {
+        <div id=random_id() onclick=||{}></div>
+    };
+    let mut events = EventsByNodeIdx::new();
+
+    let old_elem = node.create_dom_node(0, &mut events);
+    document().body().unwrap().append_child(&old_elem).unwrap();
+
+    let id = random_id();
+    let patch = Patch::Replace {
+        old_idx: 0,
+        new_idx: 99,
+        new_node: &html! { <div id=id onclick=|| {}></div> },
+    };
+
+    percy_dom::patch(
+        old_elem.clone(),
+        &VirtualNode::text("..."),
+        &mut events,
+        &[patch],
+    )
+    .unwrap();
+
+    let new_elem = get_element_by_id(id);
+    let events_id = js_sys::Reflect::get(&new_elem, &EVENTS_ID_PROP.into()).unwrap();
+    assert_eq!(
+        events_id.as_string().unwrap(),
+        format!("{}{}", events.events_id_props_prefix(), 99)
+    );
+}
+
+/// Verify that when replacing a text node we set the __events_id__ property using the new_idx, not
+/// the old_idx.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test events -- replaced_text_gets_new_node_idx_as_events_id
+#[wasm_bindgen_test]
+fn replaced_text_gets_new_node_idx_as_events_id() {
+    let node: VirtualNode = html! {
+        <div>
+            Some text
+        </div>
+    };
+    let mut events = EventsByNodeIdx::new();
+
+    let old_elem = node.create_dom_node(0, &mut events);
+    document().body().unwrap().append_child(&old_elem).unwrap();
+
+    let id = random_id();
+    let patch = Patch::Replace {
+        old_idx: 1,
+        new_idx: 55,
+        new_node: &html! {
+            <em id=id onclick=||{}></em>
+        },
+    };
+
+    percy_dom::patch(
+        old_elem.clone(),
+        &VirtualNode::text("..."),
+        &mut events,
+        &[patch],
+    )
+    .unwrap();
+
+    let new_elem = get_element_by_id(id);
+    let events_id = js_sys::Reflect::get(&new_elem, &EVENTS_ID_PROP.into()).unwrap();
+    assert_eq!(
+        events_id.as_string().unwrap(),
+        format!("{}{}", events.events_id_props_prefix(), 55)
+    );
+}
+
+/// Verify that when appending a child node we set the __events_id__ property using the new_idx,
+/// not the old_idx.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test events -- append_child_node_gets_new_node_idx_as_events_id
+#[wasm_bindgen_test]
+fn append_child_node_gets_new_node_idx_as_events_id() {
+    let node: VirtualNode = html! {
+        <div id=random_id() onclick=||{}></div>
+    };
+    let mut events = EventsByNodeIdx::new();
+
+    let elem = node.create_dom_node(0, &mut events);
+    document().body().unwrap().append_child(&elem).unwrap();
+
+    let appended_id = random_id();
+    let child = html! { <div id=appended_id onclick=||{}> </div> };
+    let patch = Patch::AppendChildren {
+        old_idx: 0,
+        new_nodes: vec![(99, &child)],
+    };
+
+    percy_dom::patch(
+        elem.clone(),
+        &VirtualNode::text("..."),
+        &mut events,
+        &[patch],
+    )
+    .unwrap();
+
+    let appended_elem = get_element_by_id(&appended_id);
+    let events_id = js_sys::Reflect::get(&appended_elem, &EVENTS_ID_PROP.into()).unwrap();
+    assert_eq!(
+        events_id.as_string().unwrap(),
+        format!("{}{}", events.events_id_props_prefix(), 99)
+    );
+}
+
 /// Verify that properly handle the patch that removes the __events_id__ property.
 ///
 /// wasm-pack test --chrome --headless crates/percy-dom --test events -- patch_remove_events_id
