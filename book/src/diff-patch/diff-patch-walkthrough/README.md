@@ -6,20 +6,20 @@ From a user's perspective, rendering on the client side looks roughly like this:
 // Create a first virtual DOM in application memory then
 // use this description to render into the real DOM
 let old_vdom = html! { <div> Old </div> };
-dom_updater.update(old_vdom);
+pdom.update(old_vdom);
 
 // Create a second virtual DOM in application memory then
 // apply a minimal set of changes to the DOM to get it to look like
 // this second virtual DOM representation
 let new_vdom = html! { <div> New </div> }
-dom_updater.update(new_vdom);
+pdom.update(new_vdom);
 
 
 // Create a thid virtual DOM in application memory then
 // apply a minimal set of changes to the DOM to get it to look like
 // this second virtual DOM representation
 let new_vdom = html! { <div> <span>Very New</span> </div> }
-dom_updater.update(new_vdom);
+pdom.update(new_vdom);
 ```
 
 On the code side of things, the process is

@@ -24,7 +24,7 @@ fn input_event_works() {
     let text = start_text();
 
     let mount = create_mount();
-    let _dom_updater = PercyDom::new_replace_mount(
+    let _pdom = PercyDom::new_replace_mount(
         input_node_with_events(id, vec![EventName::ONINPUT], text.clone(), APPEND_TEXT_ONE),
         mount,
     );
@@ -43,7 +43,7 @@ fn click_event_works() {
     let text = start_text();
 
     let mount = create_mount();
-    let _dom_updater = PercyDom::new_replace_mount(
+    let _pdom = PercyDom::new_replace_mount(
         div_node_with_event(id, vec![EventName::ONCLICK], text.clone(), APPEND_TEXT_ONE),
         mount,
     );
@@ -68,11 +68,11 @@ fn updated_non_delegated_event_handler() {
     let text = start_text();
 
     let mount = create_mount();
-    let mut dom_updater = PercyDom::new_replace_mount(
+    let mut pdom = PercyDom::new_replace_mount(
         input_node_with_events(id, vec![event.clone()], text.clone(), APPEND_TEXT_ONE),
         mount,
     );
-    dom_updater.update(input_node_with_events(
+    pdom.update(input_node_with_events(
         id,
         vec![event.clone()],
         text.clone(),
@@ -97,11 +97,11 @@ fn updated_delegated_event_handler() {
     let text = start_text();
 
     let mount = create_mount();
-    let mut dom_updater = PercyDom::new_replace_mount(
+    let mut pdom = PercyDom::new_replace_mount(
         div_node_with_event(id, vec![event.clone()], text.clone(), APPEND_TEXT_ONE),
         mount,
     );
-    dom_updater.update(div_node_with_event(
+    pdom.update(div_node_with_event(
         id,
         vec![event.clone()],
         text.clone(),
@@ -133,13 +133,13 @@ fn removes_old_non_delegated_event_listeners() {
     let three = input_node_with_events(id, vec![event.clone()], text.clone(), APPEND_TEXT_ONE);
 
     let mount = create_mount();
-    let mut dom_updater = PercyDom::new_replace_mount(one, mount);
+    let mut pdom = PercyDom::new_replace_mount(one, mount);
 
     // We hold onto the old closures so that they don't get invalidated.
-    let old_event = dom_updater.events.__get_event_wrapper_clone(&0, &event);
+    let old_event = pdom.events.__get_event_wrapper_clone(&0, &event);
 
-    dom_updater.update(two);
-    dom_updater.update(three);
+    pdom.update(two);
+    pdom.update(three);
 
     assert_text_unmodified(&text);
     send_foobar_event(id);
@@ -364,8 +364,8 @@ fn patch_add_non_delegated_event_listener() {
     let text = start_text();
 
     let mount = create_mount();
-    let mut dom_updater = PercyDom::new_replace_mount(VirtualNode::element("input"), mount);
-    dom_updater.update(input_node_with_events(
+    let mut pdom = PercyDom::new_replace_mount(VirtualNode::element("input"), mount);
+    pdom.update(input_node_with_events(
         id,
         vec![event.clone()],
         text.clone(),
@@ -390,14 +390,14 @@ fn patch_remove_non_delegated_event_listener() {
     let text = start_text();
 
     let mount = create_mount();
-    let mut dom_updater = PercyDom::new_replace_mount(
+    let mut pdom = PercyDom::new_replace_mount(
         input_node_with_events(id, vec![event.clone()], text.clone(), APPEND_TEXT_TWO),
         mount,
     );
 
-    assert!(dom_updater.events.get_event_handler(&0, &event).is_some());
-    dom_updater.update(html! { <input id=id onclick=|| {} />});
-    assert!(dom_updater.events.get_event_handler(&0, &event).is_none());
+    assert!(pdom.events.get_event_handler(&0, &event).is_some());
+    pdom.update(html! { <input id=id onclick=|| {} />});
+    assert!(pdom.events.get_event_handler(&0, &event).is_none());
 
     assert_text_unmodified(&text);
     send_input_event(id);
@@ -417,8 +417,8 @@ fn patch_add_delegated_event_listener() {
     let text = start_text();
 
     let mount = create_mount();
-    let mut dom_updater = PercyDom::new_replace_mount(VirtualNode::element("div"), mount);
-    dom_updater.update(div_node_with_event(
+    let mut pdom = PercyDom::new_replace_mount(VirtualNode::element("div"), mount);
+    pdom.update(div_node_with_event(
         id,
         vec![event.clone()],
         text.clone(),
@@ -443,14 +443,14 @@ fn patch_remove_delegated_event_listener() {
     let text = start_text();
 
     let mount = create_mount();
-    let mut dom_updater = PercyDom::new_replace_mount(
+    let mut pdom = PercyDom::new_replace_mount(
         div_node_with_event(id, vec![event.clone()], text.clone(), APPEND_TEXT_TWO),
         mount,
     );
 
-    assert!(dom_updater.events.get_event_handler(&0, &event).is_some());
-    dom_updater.update(html! { <div id=id oninput=||{}></div>});
-    assert!(dom_updater.events.get_event_handler(&0, &event).is_none());
+    assert!(pdom.events.get_event_handler(&0, &event).is_some());
+    pdom.update(html! { <div id=id oninput=||{}></div>});
+    assert!(pdom.events.get_event_handler(&0, &event).is_none());
 
     assert_text_unmodified(&text);
     send_click_event(id);
@@ -511,7 +511,7 @@ fn closure_with_arguments() {
         />
     };
     let mount = create_mount();
-    let _dom_updater = PercyDom::new_replace_mount(node, mount);
+    let _pdom = PercyDom::new_replace_mount(node, mount);
 
     assert_eq!(called.get(), false);
     send_input_event(id);
@@ -544,7 +544,7 @@ fn delegated_child_events_propagates_to_parent() {
         </div>
     };
     let mount = create_mount();
-    let _dom_updater = PercyDom::new_replace_mount(node, mount);
+    let _pdom = PercyDom::new_replace_mount(node, mount);
 
     assert_eq!(called.get(), false);
     send_click_event(id);
@@ -577,7 +577,7 @@ fn stop_propagation_on_delegated_event() {
         </div>
     };
     let mount = create_mount();
-    let _dom_updater = PercyDom::new_replace_mount(node, mount);
+    let _pdom = PercyDom::new_replace_mount(node, mount);
 
     assert_eq!(called.get(), false);
     send_click_event(id);

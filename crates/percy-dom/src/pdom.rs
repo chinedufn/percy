@@ -32,15 +32,15 @@ impl PercyDom {
         let mut events = EventsByNodeIdx::new();
         let created_node = current_vdom.create_dom_node(0, &mut events);
 
-        let mut dom_updater = PercyDom {
+        let mut pdom = PercyDom {
             current_vdom,
             root_node: created_node,
             events,
             event_delegation_listeners: HashMap::new(),
         };
-        dom_updater.attach_event_listeners();
+        pdom.attach_event_listeners();
 
-        dom_updater
+        pdom
     }
 
     /// Create a new `PercyDom`.
@@ -48,13 +48,13 @@ impl PercyDom {
     /// A root `Node` will be created and append (as a child) to your passed
     /// in mount element.
     pub fn new_append_to_mount(current_vdom: VirtualNode, mount: &Element) -> PercyDom {
-        let dom_updater = Self::new(current_vdom);
+        let pdom = Self::new(current_vdom);
 
         mount
-            .append_child(&dom_updater.root_node)
+            .append_child(&pdom.root_node)
             .expect("Could not append child to mount");
 
-        dom_updater
+        pdom
     }
 
     /// Create a new `PercyDom`.
@@ -62,13 +62,13 @@ impl PercyDom {
     /// A root `Node` will be created and it will replace your passed in mount
     /// element.
     pub fn new_replace_mount(current_vdom: VirtualNode, mount: Element) -> PercyDom {
-        let dom_updater = Self::new(current_vdom);
+        let pdom = Self::new(current_vdom);
 
         mount
-            .replace_with_with_node_1(&dom_updater.root_node)
+            .replace_with_with_node_1(&pdom.root_node)
             .expect("Could not replace mount element");
 
-        dom_updater
+        pdom
     }
 
     /// Diff the current virtual dom with the new virtual dom that is being passed in.
