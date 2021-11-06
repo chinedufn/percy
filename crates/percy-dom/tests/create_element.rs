@@ -73,7 +73,7 @@ fn on_create_elem_new_node() {
         .unwrap()
         .special_attributes
         .on_create_elem = Some((
-        0,
+        "0".into(),
         wrap_closure(move |elem: web_sys::Element| {
             elem.set_inner_html("Hello world");
         }),
@@ -99,7 +99,7 @@ fn on_create_elem_triggered_via_patch() {
         .unwrap()
         .special_attributes
         .on_create_elem = Some((
-        0,
+        "0".into(),
         wrap_closure(move |elem: web_sys::Element| {
             elem.set_inner_html("Hello world");
         }),
@@ -127,14 +127,14 @@ fn on_create_elem_not_triggered_via_patch_if_same_id() {
         .as_velement_mut()
         .unwrap()
         .special_attributes
-        .on_create_elem = Some((0, wrap_closure(|_elem: web_sys::Element| {})));
+        .on_create_elem = Some(("0".into(), wrap_closure(|_elem: web_sys::Element| {})));
 
     let mut end: VirtualNode = html! {<div id="new"></div>};
     end.as_velement_mut()
         .unwrap()
         .special_attributes
         .on_create_elem = Some((
-        0,
+        "0".into(),
         wrap_closure(move |elem: web_sys::Element| {
             panic!("CLOSURE SHOULD NOT GET CALLED");
         }),

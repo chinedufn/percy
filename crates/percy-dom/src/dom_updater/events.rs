@@ -193,10 +193,10 @@ fn bubble_event(elem: web_sys::Element, mouse_event: MouseEvent, events: &Events
 //
 // - [DONE] Add internal design docs on events
 //
-// - [ ] In new commit make `OnCreateElem` take a `Cow<'static, str>` instead of a u32.
+// - [DONE] In new commit make `OnCreateElem` take a `Cow<'static, str>` instead of a u32.
 //
 // - [ ] Rename DomUpdater to PercyDom
 //
-// - [ ] Use the afia dashboard and make sure events work as expected.
+// - [DONE] Use the afia dashboard and make sure events work as expected.
 //
 // - [ ] minor version bump for percy-dom and virtual-node

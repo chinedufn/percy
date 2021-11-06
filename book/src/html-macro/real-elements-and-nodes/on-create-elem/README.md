@@ -17,7 +17,7 @@ div.as_velement_mut()
     .unwrap()
     .special_attributes
     .on_create_elem = Some((
-        123,
+        "some-unique-key".into(),
         wrap_closure(move |elem: web_sys::Element| {
             elem.set_inner_html("Hello world");
         }),
