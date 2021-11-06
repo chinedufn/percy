@@ -108,7 +108,7 @@ use percy_dom::prelude::*;
 
 #[wasm_bindgen]
 struct App {
-  dom_updater: DomUpdater
+  dom_updater: PercyDom
 }
 
 #[wasm_bindgen]
@@ -121,7 +121,7 @@ impl App {
         let document = window.document().unwrap();
         let body = document.body().unwrap();
 
-        let mut dom_updater = DomUpdater::new_append_to_mount(start_view, &body);
+        let mut dom_updater = PercyDom::new_append_to_mount(start_view, &body);
 
         let greetings = "Hello, World!";
 

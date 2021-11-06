@@ -12,7 +12,9 @@ mod events;
 
 /// Used for keeping a real DOM node up to date based on the current VirtualNode
 /// and a new incoming VirtualNode that represents our latest DOM state.
-pub struct DomUpdater {
+///
+/// Also powers event delegation.
+pub struct PercyDom {
     current_vdom: VirtualNode,
     /// The closures that are currently attached to elements in the page.
     /// We keep these around so that they don't get dropped (and thus stop working).
@@ -22,15 +24,15 @@ pub struct DomUpdater {
     event_delegation_listeners: HashMap<&'static str, Box<dyn AsRef<JsValue>>>,
 }
 
-impl DomUpdater {
-    /// Create a new `DomUpdater`.
+impl PercyDom {
+    /// Create a new `PercyDom`.
     ///
     /// A root `Node` will be created but not added to your DOM.
-    pub fn new(current_vdom: VirtualNode) -> DomUpdater {
+    pub fn new(current_vdom: VirtualNode) -> PercyDom {
         let mut events = EventsByNodeIdx::new();
         let created_node = current_vdom.create_dom_node(0, &mut events);
 
-        let mut dom_updater = DomUpdater {
+        let mut dom_updater = PercyDom {
             current_vdom,
             root_node: created_node,
             events,
@@ -41,11 +43,11 @@ impl DomUpdater {
         dom_updater
     }
 
-    /// Create a new `DomUpdater`.
+    /// Create a new `PercyDom`.
     ///
     /// A root `Node` will be created and append (as a child) to your passed
     /// in mount element.
-    pub fn new_append_to_mount(current_vdom: VirtualNode, mount: &Element) -> DomUpdater {
+    pub fn new_append_to_mount(current_vdom: VirtualNode, mount: &Element) -> PercyDom {
         let dom_updater = Self::new(current_vdom);
 
         mount
@@ -55,11 +57,11 @@ impl DomUpdater {
         dom_updater
     }
 
-    /// Create a new `DomUpdater`.
+    /// Create a new `PercyDom`.
     ///
     /// A root `Node` will be created and it will replace your passed in mount
     /// element.
-    pub fn new_replace_mount(current_vdom: VirtualNode, mount: Element) -> DomUpdater {
+    pub fn new_replace_mount(current_vdom: VirtualNode, mount: Element) -> PercyDom {
         let dom_updater = Self::new(current_vdom);
 
         mount

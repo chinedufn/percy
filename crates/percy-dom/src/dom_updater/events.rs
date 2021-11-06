@@ -1,9 +1,9 @@
 use crate::event::{EventHandler, EventName, EventsByNodeIdx, MouseEvent, EVENTS_ID_PROP};
-use crate::{Closure, DomUpdater};
+use crate::{Closure, PercyDom};
 use js_sys::Reflect;
 use wasm_bindgen::JsCast;
 
-impl DomUpdater {
+impl PercyDom {
     /// Attach all of the event listeners that handle event delegation.
     pub(super) fn attach_event_listeners(&mut self) {
         self.attach_onclick_listener();
@@ -195,7 +195,7 @@ fn bubble_event(elem: web_sys::Element, mouse_event: MouseEvent, events: &Events
 //
 // - [DONE] In new commit make `OnCreateElem` take a `Cow<'static, str>` instead of a u32.
 //
-// - [ ] Rename DomUpdater to PercyDom
+// - [DONE] Rename DomUpdater to PercyDom
 //
 // - [DONE] Use the afia dashboard and make sure events work as expected.
 //

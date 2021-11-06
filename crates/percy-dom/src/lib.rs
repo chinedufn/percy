@@ -24,14 +24,14 @@ pub use crate::patch::*;
 pub use html_macro::html;
 
 mod dom_updater;
-pub use self::dom_updater::DomUpdater;
+pub use self::dom_updater::PercyDom;
 
 /// Exports structs and macros that you'll almost always want access to in a virtual-dom
 /// powered application
 pub mod prelude {
     // TODO: look through this prelude and remove anything that isn't necessary.
 
-    pub use crate::dom_updater::DomUpdater;
+    pub use crate::dom_updater::PercyDom;
     pub use crate::VirtualNode;
     pub use html_macro::html;
     pub use std::vec::IntoIter;
