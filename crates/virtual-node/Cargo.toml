@@ -1,6 +1,6 @@
 [package]
 name = "virtual-node"
-version = "0.2.16"
+version = "0.3.0"
 description = "A standalone Virtual DOM"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 keywords = ["virtual", "dom", "wasm", "browser", "webassembly"]

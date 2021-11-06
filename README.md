@@ -167,7 +167,7 @@ crate-type = ["cdylib"] # Don't forget this!
 [dependencies]
 wasm-bindgen = "0.2"
 js-sys = "0.3"
-percy-dom = "0.6"
+percy-dom = "0.7"
 
 [dependencies.web-sys]
 version = "0.3"
