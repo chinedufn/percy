@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>on_create_elem - Percy - Isomorphic Web Apps in Rust</title>
+        <title>Event Handling - Percy - Isomorphic Web Apps in Rust</title>
         
         
 
@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../../../introduction.html">Introduction</a></li><li class="spacer"></li><li class="chapter-item expanded "><a href="../../../views/index.html"><strong aria-hidden="true">1.</strong> Rendering Views</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../html-macro/index.html"><strong aria-hidden="true">1.1.</strong> Writing html!</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../html-macro/html-macro.html"><strong aria-hidden="true">1.1.1.</strong> Writing html!</a></li><li class="chapter-item expanded "><a href="../../../html-macro/classes/index.html"><strong aria-hidden="true">1.1.2.</strong> Classes</a></li><li class="chapter-item expanded "><a href="../../../html-macro/compile-time-errors.html"><strong aria-hidden="true">1.1.3.</strong> Compile Time Errors</a></li><li class="chapter-item expanded "><a href="../../../html-macro/text/index.html"><strong aria-hidden="true">1.1.4.</strong> Working with Text</a></li><li class="chapter-item expanded "><a href="../../../html-macro/custom-components/index.html"><strong aria-hidden="true">1.1.5.</strong> Custom Components</a></li><li class="chapter-item expanded "><a href="../../../html-macro/setting-inner-html/index.html"><strong aria-hidden="true">1.1.6.</strong> Setting Inner HTML</a></li><li class="chapter-item expanded "><a href="../../../html-macro/conditional-rendering/index.html"><strong aria-hidden="true">1.1.7.</strong> Conditional Rendering</a></li><li class="chapter-item expanded "><a href="../../../html-macro/real-elements-and-nodes/on-create-elem/index.html" class="active"><strong aria-hidden="true">1.1.8.</strong> Real Elements and Nodes</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../html-macro/real-elements-and-nodes/on-create-elem/index.html" class="active"><strong aria-hidden="true">1.1.8.1.</strong> on_create_elem</a></li></ol></li><li class="chapter-item expanded "><a href="../../../html-macro/boolean-attributes/index.html"><strong aria-hidden="true">1.1.9.</strong> Boolean Attributes</a></li></ol></li><li class="chapter-item expanded "><a href="../../../virtual-dom/index.html"><strong aria-hidden="true">1.2.</strong> Virtual DOM</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../virtual-dom/unit-testing-views.html"><strong aria-hidden="true">1.2.1.</strong> Unit Testing your Views</a></li></ol></li><li class="chapter-item expanded "><a href="../../../views/server-side-rendering/index.html"><strong aria-hidden="true">1.3.</strong> Server Side Rendering (SSR)</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../views/server-side-rendering/why-ssr.html"><strong aria-hidden="true">1.3.1.</strong> Why SSR</a></li><li class="chapter-item expanded "><a href="../../../views/server-side-rendering/how-to-ssr.html"><strong aria-hidden="true">1.3.2.</strong> How to SSR</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../../router/type-safe-url-param/index.html"><strong aria-hidden="true">2.</strong> Router</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../router/type-safe-url-param/index.html"><strong aria-hidden="true">2.1.</strong> Type Safe URL Params</a></li><li class="chapter-item expanded "><a href="../../../router/on-visit/index.html"><strong aria-hidden="true">2.2.</strong> On Visit Callback</a></li></ol></li><li class="chapter-item expanded "><a href="../../../css-in-rust.html"><strong aria-hidden="true">3.</strong> CSS in Rust</a></li><li class="chapter-item expanded "><a href="../../../contributing/index.html"><strong aria-hidden="true">4.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../contributing/getting-started.html"><strong aria-hidden="true">4.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../../../contributing/ways-to-contribute.html"><strong aria-hidden="true">4.2.</strong> Types of Contributions</a></li><li class="chapter-item expanded "><a href="../../../contributing/internal-design/index.html"><strong aria-hidden="true">4.3.</strong> Internal Design</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../diff-patch/index.html"><strong aria-hidden="true">4.3.1.</strong> Diff / Patch Algorithm</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../diff-patch/diff-patch-walkthrough/index.html"><strong aria-hidden="true">4.3.1.1.</strong> Diff / Patch Walkthrough</a></li><li class="chapter-item expanded "><a href="../../../diff-patch/fixing-diff-patch-issues/index.html"><strong aria-hidden="true">4.3.1.2.</strong> Fixing diff/patch issues</a></li></ol></li><li class="chapter-item expanded "><a href="../../../contributing/internal-design/sibling-text-nodes.html"><strong aria-hidden="true">4.3.2.</strong> Handling text siblings</a></li><li class="chapter-item expanded "><a href="../../../contributing/internal-design/event-handling/index.html"><strong aria-hidden="true">4.3.3.</strong> Event Handling</a></li><li class="chapter-item expanded "><a href="../../../contributing/router/index.html"><strong aria-hidden="true">4.3.4.</strong> Router</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../contributing/router/macro/index.html"><strong aria-hidden="true">4.3.4.1.</strong> route macro</a></li></ol></li></ol></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../../../introduction.html">Introduction</a></li><li class="spacer"></li><li class="chapter-item expanded "><a href="../../../views/index.html"><strong aria-hidden="true">1.</strong> Rendering Views</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../html-macro/index.html"><strong aria-hidden="true">1.1.</strong> Writing html!</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../html-macro/html-macro.html"><strong aria-hidden="true">1.1.1.</strong> Writing html!</a></li><li class="chapter-item expanded "><a href="../../../html-macro/classes/index.html"><strong aria-hidden="true">1.1.2.</strong> Classes</a></li><li class="chapter-item expanded "><a href="../../../html-macro/compile-time-errors.html"><strong aria-hidden="true">1.1.3.</strong> Compile Time Errors</a></li><li class="chapter-item expanded "><a href="../../../html-macro/text/index.html"><strong aria-hidden="true">1.1.4.</strong> Working with Text</a></li><li class="chapter-item expanded "><a href="../../../html-macro/custom-components/index.html"><strong aria-hidden="true">1.1.5.</strong> Custom Components</a></li><li class="chapter-item expanded "><a href="../../../html-macro/setting-inner-html/index.html"><strong aria-hidden="true">1.1.6.</strong> Setting Inner HTML</a></li><li class="chapter-item expanded "><a href="../../../html-macro/conditional-rendering/index.html"><strong aria-hidden="true">1.1.7.</strong> Conditional Rendering</a></li><li class="chapter-item expanded "><a href="../../../html-macro/real-elements-and-nodes/on-create-elem/index.html"><strong aria-hidden="true">1.1.8.</strong> Real Elements and Nodes</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../html-macro/real-elements-and-nodes/on-create-elem/index.html"><strong aria-hidden="true">1.1.8.1.</strong> on_create_elem</a></li></ol></li><li class="chapter-item expanded "><a href="../../../html-macro/boolean-attributes/index.html"><strong aria-hidden="true">1.1.9.</strong> Boolean Attributes</a></li></ol></li><li class="chapter-item expanded "><a href="../../../virtual-dom/index.html"><strong aria-hidden="true">1.2.</strong> Virtual DOM</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../virtual-dom/unit-testing-views.html"><strong aria-hidden="true">1.2.1.</strong> Unit Testing your Views</a></li></ol></li><li class="chapter-item expanded "><a href="../../../views/server-side-rendering/index.html"><strong aria-hidden="true">1.3.</strong> Server Side Rendering (SSR)</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../views/server-side-rendering/why-ssr.html"><strong aria-hidden="true">1.3.1.</strong> Why SSR</a></li><li class="chapter-item expanded "><a href="../../../views/server-side-rendering/how-to-ssr.html"><strong aria-hidden="true">1.3.2.</strong> How to SSR</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../../router/type-safe-url-param/index.html"><strong aria-hidden="true">2.</strong> Router</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../router/type-safe-url-param/index.html"><strong aria-hidden="true">2.1.</strong> Type Safe URL Params</a></li><li class="chapter-item expanded "><a href="../../../router/on-visit/index.html"><strong aria-hidden="true">2.2.</strong> On Visit Callback</a></li></ol></li><li class="chapter-item expanded "><a href="../../../css-in-rust.html"><strong aria-hidden="true">3.</strong> CSS in Rust</a></li><li class="chapter-item expanded "><a href="../../../contributing/index.html"><strong aria-hidden="true">4.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../contributing/getting-started.html"><strong aria-hidden="true">4.1.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../../../contributing/ways-to-contribute.html"><strong aria-hidden="true">4.2.</strong> Types of Contributions</a></li><li class="chapter-item expanded "><a href="../../../contributing/internal-design/index.html"><strong aria-hidden="true">4.3.</strong> Internal Design</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../diff-patch/index.html"><strong aria-hidden="true">4.3.1.</strong> Diff / Patch Algorithm</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../diff-patch/diff-patch-walkthrough/index.html"><strong aria-hidden="true">4.3.1.1.</strong> Diff / Patch Walkthrough</a></li><li class="chapter-item expanded "><a href="../../../diff-patch/fixing-diff-patch-issues/index.html"><strong aria-hidden="true">4.3.1.2.</strong> Fixing diff/patch issues</a></li></ol></li><li class="chapter-item expanded "><a href="../../../contributing/internal-design/sibling-text-nodes.html"><strong aria-hidden="true">4.3.2.</strong> Handling text siblings</a></li><li class="chapter-item expanded "><a href="../../../contributing/internal-design/event-handling/index.html" class="active"><strong aria-hidden="true">4.3.3.</strong> Event Handling</a></li><li class="chapter-item expanded "><a href="../../../contributing/router/index.html"><strong aria-hidden="true">4.3.4.</strong> Router</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../../contributing/router/macro/index.html"><strong aria-hidden="true">4.3.4.1.</strong> route macro</a></li></ol></li></ol></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -165,48 +165,30 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="real-elements-and-nodes"><a class="header" href="#real-elements-and-nodes">Real Elements and Nodes</a></h1>
-<p>You'll sometimes want to do something to the real DOM <a href="https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Node.html">Node</a> that gets created from your <code>VirtualNode</code>.</p>
-<p>You can accomplish this with the <code>SpecialAttributes.on_create_elem</code> attribute function.</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use virtual_node::wrap_closure;
-
-let mut div: VirtualNode = html! {
-&lt;div&gt;
-    &lt;span&gt;This span should get replaced&lt;/span&gt;
-&lt;/div&gt;
-};
-
-div.as_velement_mut()
-    .unwrap()
-    .special_attributes
-    .on_create_elem = Some((
-        123,
-        wrap_closure(move |elem: web_sys::Element| {
-            elem.set_inner_html(&quot;Hello world&quot;);
-        }),
-    ));
-
-let div: Element = div.create_dom_node().node.unchecked_into();
-
-assert_eq!(div.inner_html(), &quot;Hello world&quot;);
-<span class="boring">}
-</span></code></pre></pre>
+                        <h1 id="event-handling"><a class="header" href="#event-handling">Event Handling</a></h1>
+<p>There are two categories of events, delegated and per-node events.</p>
+<h2 id="delegated-events"><a class="header" href="#delegated-events">Delegated Events</a></h2>
+<p>For delegated events, we attach a single event listener to the application's mount point.</p>
+<p>So, say we have a delegated event <code>onclick</code>. If you create 50 DOM nodes with <code>onclick</code> handlers,
+only one <code>onclick</code> handler will be in the DOM.</p>
+<p>This event listener handles all events and handles bubbling and <code>.stop_propagation()</code>.</p>
+<h2 id="per-node-events"><a class="header" href="#per-node-events">Per-node Events</a></h2>
+<p>For per-node events we attach the event to the DOM node.</p>
+<p>So, say <code>onfoo</code> is a per-node event. If you create 50 DOM nodes with 50 <code>onfoo</code> handlers,
+there will be 50 <code>onfoo</code> callbacks in the DOM (one per node).</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../../../html-macro/conditional-rendering/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../../contributing/internal-design/sibling-text-nodes.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../../../html-macro/real-elements-and-nodes/on-create-elem/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../../../contributing/router/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -218,13 +200,13 @@ assert_eq!(div.inner_html(), &quot;Hello world&quot;);
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../../../html-macro/conditional-rendering/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../../contributing/internal-design/sibling-text-nodes.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="../../../html-macro/real-elements-and-nodes/on-create-elem/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../../../contributing/router/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
