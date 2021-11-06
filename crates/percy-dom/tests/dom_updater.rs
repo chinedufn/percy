@@ -1,4 +1,4 @@
-//! Ensure that our DomUpdater maintains Rc's to closures so that they work even
+//! Ensure that our PercyDom maintains Rc's to closures so that they work even
 //! after dropping virtual dom nodes.
 //!
 //! To run all tests in this file:
@@ -7,7 +7,7 @@
 
 use console_error_panic_hook;
 use percy_dom::prelude::*;
-use percy_dom::DomUpdater;
+use percy_dom::PercyDom;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen_test;
@@ -21,7 +21,7 @@ use std::ops::Deref;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
-// Verify that our DomUpdater's patch method works.
+// Verify that our PercyDom's patch method works.
 // We test a simple case here, since diff_patch.rs is responsible for testing more complex
 // diffing and patching.
 #[wasm_bindgen_test]
@@ -32,7 +32,7 @@ fn patches_dom() {
 
     let vdom = html! { <div></div> };
 
-    let mut dom_updater = DomUpdater::new(vdom);
+    let mut dom_updater = PercyDom::new(vdom);
 
     let new_vdom = html! { <div id="patched"></div> };
     dom_updater.update(new_vdom);
@@ -54,7 +54,7 @@ fn append_element_with_closure() {
     let body = document.body().unwrap();
 
     let old = html! { <div> </div> };
-    let mut dom_updater = DomUpdater::new_append_to_mount(old, &body);
+    let mut dom_updater = PercyDom::new_append_to_mount(old, &body);
 
     let text = Rc::new(RefCell::new("Start Text".to_string()));
     let text_clone = Rc::clone(&text);
@@ -99,7 +99,7 @@ fn append_element_with_closure() {
 }
 
 /// When you replace a DOM node with another DOM node we need to make sure that the closures
-/// from the new DOM node are stored by the DomUpdater otherwise they'll get dropped and
+/// from the new DOM node are stored by the PercyDom otherwise they'll get dropped and
 /// won't work.
 #[wasm_bindgen_test]
 fn updates_active_closure_on_replace() {
@@ -109,7 +109,7 @@ fn updates_active_closure_on_replace() {
     let body = document.body().unwrap();
 
     let old = html! { <div> </div> };
-    let mut dom_updater = DomUpdater::new_append_to_mount(old, &body);
+    let mut dom_updater = PercyDom::new_append_to_mount(old, &body);
 
     let text = Rc::new(RefCell::new("Start Text".to_string()));
     let text_clone = Rc::clone(&text);
