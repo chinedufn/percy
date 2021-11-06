@@ -3,7 +3,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack crates/percy-dom test eadless --chrome --test dom_updater
+//! wasm-pack crates/percy-dom test eadless --chrome --test pdom
 
 use console_error_panic_hook;
 use percy_dom::prelude::*;
@@ -32,15 +32,15 @@ fn patches_dom() {
 
     let vdom = html! { <div></div> };
 
-    let mut dom_updater = PercyDom::new(vdom);
+    let mut pdom = PercyDom::new(vdom);
 
     let new_vdom = html! { <div id="patched"></div> };
-    dom_updater.update(new_vdom);
+    pdom.update(new_vdom);
 
     document
         .body()
         .unwrap()
-        .append_child(&dom_updater.root_node())
+        .append_child(&pdom.root_node())
         .unwrap();
     assert_eq!(document.query_selector("#patched").unwrap().is_some(), true);
 }
@@ -54,7 +54,7 @@ fn append_element_with_closure() {
     let body = document.body().unwrap();
 
     let old = html! { <div> </div> };
-    let mut dom_updater = PercyDom::new_append_to_mount(old, &body);
+    let mut pdom = PercyDom::new_append_to_mount(old, &body);
 
     let text = Rc::new(RefCell::new("Start Text".to_string()));
     let text_clone = Rc::clone(&text);
@@ -82,7 +82,7 @@ fn append_element_with_closure() {
         // New node gets appended into the DOM.
         // We are testing that we've stored this new node's closures even though `new` will be dropped
         // at the end of this block.
-        dom_updater.update(append_node);
+        pdom.update(append_node);
     }
 
     let input_event = InputEvent::new("input").unwrap();
@@ -109,7 +109,7 @@ fn updates_active_closure_on_replace() {
     let body = document.body().unwrap();
 
     let old = html! { <div> </div> };
-    let mut dom_updater = PercyDom::new_append_to_mount(old, &body);
+    let mut pdom = PercyDom::new_append_to_mount(old, &body);
 
     let text = Rc::new(RefCell::new("Start Text".to_string()));
     let text_clone = Rc::clone(&text);
@@ -134,7 +134,7 @@ fn updates_active_closure_on_replace() {
         // New node replaces old node.
         // We are testing that we've stored this new node's closures even though `new` will be dropped
         // at the end of this block.
-        dom_updater.update(replace_node);
+        pdom.update(replace_node);
     }
 
     let input_event = InputEvent::new("input").unwrap();

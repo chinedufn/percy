@@ -16,7 +16,7 @@ use web_sys::Url;
 #[wasm_bindgen]
 pub struct Client {
     app: App,
-    dom_updater: PercyDom,
+    pdom: PercyDom,
 }
 
 // Expose globals from JS for things such as request animation frame
@@ -72,17 +72,17 @@ impl Client {
         let root_node = document()
             .get_element_by_id("isomorphic-rust-web-app")
             .unwrap();
-        let dom_updater = PercyDom::new_replace_mount(app.render(), root_node);
+        let pdom = PercyDom::new_replace_mount(app.render(), root_node);
 
         let store = Rc::clone(&app.store);
         intercept_relative_links(store);
 
-        Client { app, dom_updater }
+        Client { app, pdom }
     }
 
     pub fn render(&mut self) {
         let vdom = self.app.render();
-        self.dom_updater.update(vdom);
+        self.pdom.update(vdom);
     }
 }
 
