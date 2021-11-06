@@ -647,7 +647,7 @@ mod tests {
         let old = VirtualNode::element("div");
 
         let mut new = VirtualNode::element("div");
-        set_on_create_elem_with_unique_id(&mut new, 150);
+        set_on_create_elem_with_unique_id(&mut new, "150");
 
         DiffTestCase {
             old,
@@ -664,10 +664,10 @@ mod tests {
     #[test]
     fn same_on_create_elem_id() {
         let mut old = VirtualNode::element("div");
-        set_on_create_elem_with_unique_id(&mut old, 70);
+        set_on_create_elem_with_unique_id(&mut old, "70");
 
         let mut new = VirtualNode::element("div");
-        set_on_create_elem_with_unique_id(&mut new, 70);
+        set_on_create_elem_with_unique_id(&mut new, "70");
 
         DiffTestCase {
             old,
@@ -682,10 +682,10 @@ mod tests {
     #[test]
     fn different_on_create_elem_id() {
         let mut old = VirtualNode::element("div");
-        set_on_create_elem_with_unique_id(&mut old, 50);
+        set_on_create_elem_with_unique_id(&mut old, "50");
 
         let mut new = VirtualNode::element("div");
-        set_on_create_elem_with_unique_id(&mut new, 99);
+        set_on_create_elem_with_unique_id(&mut new, "99");
 
         DiffTestCase {
             old,
@@ -946,11 +946,14 @@ mod tests {
         .test();
     }
 
-    fn set_on_create_elem_with_unique_id(node: &mut VirtualNode, on_create_elem_id: u32) {
+    fn set_on_create_elem_with_unique_id(node: &mut VirtualNode, on_create_elem_id: &'static str) {
         node.as_velement_mut()
             .unwrap()
             .special_attributes
-            .on_create_elem = Some((on_create_elem_id, wrap_closure(|_: web_sys::Element| {})));
+            .on_create_elem = Some((
+            on_create_elem_id.into(),
+            wrap_closure(|_: web_sys::Element| {}),
+        ));
     }
 
     fn set_dangerous_inner_html(node: &mut VirtualNode, html: &str) {

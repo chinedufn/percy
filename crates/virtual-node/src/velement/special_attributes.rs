@@ -1,4 +1,5 @@
 use crate::EventAttribFn;
+use std::borrow::Cow;
 use std::rc::Rc;
 use wasm_bindgen::convert::FromWasmAbi;
 use wasm_bindgen::JsValue;
@@ -24,9 +25,9 @@ pub struct SpecialAttributes {
     /// };
     ///
     /// node.as_velement_mut().unwrap().special_attributes.on_create_elem =
-    ///     Some((12345, wrap_closure(on_create_elem)));
+    ///     Some(("some-unique-key".into(), wrap_closure(on_create_elem)));
     /// ```
-    pub on_create_elem: Option<(u32, EventAttribFn)>,
+    pub on_create_elem: Option<(Cow<'static, str>, EventAttribFn)>,
     /// Allows setting the innerHTML of an element. Be sure to escape all untrusted input to avoid
     /// cross site scripting attacks.
     pub dangerous_inner_html: Option<String>,
