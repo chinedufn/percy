@@ -35,7 +35,11 @@ pub mod prelude {
     pub use wasm_bindgen::prelude::Closure;
 
     pub use html_macro::html;
-    pub use virtual_node::{event::*, wrap_closure, EventAttribFn, IterableNodes, View};
+    pub use virtual_node::{EventAttribFn, IterableNodes, View};
+
+    // Used by the html-macro
+    #[doc(hidden)]
+    pub use virtual_node::event as __private__event;
 
     pub use crate::pdom::PercyDom;
     pub use crate::VirtualNode;

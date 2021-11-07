@@ -1,7 +1,6 @@
 use crate::tests::all_tests::HtmlMacroTest;
-use html_macro::html;
 use percy_dom::event::EventHandler;
-use virtual_node::VirtualNode;
+use percy_dom::prelude::*;
 
 /// Unsupported events that have arguments are wrapped using `wasm_bindgen::Closure::wrap`.
 ///
@@ -59,4 +58,21 @@ fn stores_onclick_events() {
         .get(&"onclick".into())
         .unwrap();
     assert!(matches!(event, EventHandler::MouseEvent(_)));
+}
+
+/// Verify that we do not need to provide the type for events that we support.
+///
+/// We make use of the passed in type inside each closure.
+/// If the test compile then we know that we did not get a `type annotations needed` error.
+#[test]
+fn eliding_event_arg_type() {
+    html! {
+        <div
+          onclick = |event| {
+            event.stop_propagation();
+          }
+          // TODO: As we add more supported events to `open_tag.rs` we can add tests for them here.
+        >
+        </div>
+    };
 }

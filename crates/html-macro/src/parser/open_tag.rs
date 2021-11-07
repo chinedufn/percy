@@ -3,7 +3,7 @@ use crate::tag::Attr;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, quote_spanned};
 use syn::__private::TokenStream2;
-use syn::{Expr, ExprClosure};
+use syn::{Expr, ExprClosure, Pat, PatType, Type};
 
 impl HtmlParser {
     /// Parse an incoming Tag::Open
@@ -125,14 +125,47 @@ fn insert_closure_tokens(
             );
         }
     } else if event_name == "onclick" {
-        quote! {
+        let tokens = quote! {
             #var_name_node.as_velement_mut().unwrap().events.insert_mouse_event(
                 #event_name.into(),
                 std::rc::Rc::new(
-                    std::cell::RefCell::new( #closure )
+                    std::cell::RefCell::new( event_callback )
                 )
             );
-        }
+        };
+
+        let tokens = if arg_count == 0 {
+            quote! {
+                let event_callback = #closure;
+                #tokens
+            }
+        } else {
+            let mut closure = closure.clone();
+            let arg0 = closure.inputs.first_mut().unwrap();
+
+            if let Pat::Ident(ident) = arg0 {
+                // Add the type to the closure to avoid `type annotations needed` errors.
+                // Example:
+                //   Start: |arg| {}
+                //   End: |arg: __private__event::MouseEvent| {}
+
+                let ident = Pat::Ident(ident.clone());
+
+                *arg0 = Pat::Type(PatType {
+                    attrs: vec![],
+                    pat: Box::new(ident),
+                    colon_token: Default::default(),
+                    ty: Box::new(Type::Verbatim(quote! {__private__event::MouseEvent})),
+                });
+            }
+
+            quote! {
+                let event_callback = #closure;
+                #tokens
+            }
+        };
+
+        tokens
     } else {
         let arg_type_placeholders: Vec<TokenStream2> =
             (0..arg_count).into_iter().map(|_| quote! { _ }).collect();
