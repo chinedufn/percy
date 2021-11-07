@@ -40,7 +40,8 @@ impl VElement {
 
         self.append_children_to_dom(&element, &document, node_idx, events);
 
-        self.special_attributes.maybe_call_on_create_elem(&element);
+        self.special_attributes
+            .maybe_call_on_create_element(&element);
 
         if let Some(inner_html) = &self.special_attributes.dangerous_inner_html {
             element.set_inner_html(inner_html);

@@ -96,6 +96,8 @@ pub enum Patch<'a> {
 pub enum PatchSpecialAttribute<'a> {
     /// Call the [`SpecialAttributes.on_create_elem`] function on the node.
     CallOnCreateElem(NodeIdx, &'a VirtualNode),
+    /// Call the [`SpecialAttributes.on_create_elem`] function on the node.
+    CallOnRemoveElem(NodeIdx, &'a VirtualNode),
     /// Set the node's innerHTML using the [`SpecialAttributes.dangerous_inner_html`].
     SetDangerousInnerHtml(NodeIdx, &'a VirtualNode),
     /// Set the node's innerHTML to an empty string.
@@ -119,6 +121,7 @@ impl<'a> Patch<'a> {
                 PatchSpecialAttribute::CallOnCreateElem(node_idx, _) => *node_idx,
                 PatchSpecialAttribute::SetDangerousInnerHtml(node_idx, _) => *node_idx,
                 PatchSpecialAttribute::RemoveDangerousInnerHtml(node_idx) => *node_idx,
+                PatchSpecialAttribute::CallOnRemoveElem(node_idx, _) => *node_idx,
             },
             Patch::RemoveEventsId(node_idx) => *node_idx,
             Patch::SetEventsId(node_idx) => *node_idx,

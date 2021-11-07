@@ -4,6 +4,7 @@
 
 use wasm_bindgen_test::*;
 
+use percy_dom::event::EventsByNodeIdx;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 

@@ -1,9 +1,12 @@
+use crate::parser::open_tag::event::insert_closure_tokens;
 use crate::parser::{is_self_closing, is_valid_tag, HtmlParser};
 use crate::tag::Attr;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, quote_spanned};
+use syn::Expr;
 use syn::__private::TokenStream2;
-use syn::{Expr, ExprClosure, Pat, PatType, Type};
+
+mod event;
 
 impl HtmlParser {
     /// Parse an incoming Tag::Open
@@ -83,14 +86,20 @@ fn create_valid_node(
 
     tokens.push(node);
 
+    // The "..." in
+    //   html! { <div key = "..." ></div>
+    let key_attr = attrs
+        .iter()
+        .find(|attr| attr.key.to_string() == "key")
+        .map(|attr| &attr.value);
+
     for attr in attrs.iter() {
         let key = format!("{}", attr.key);
         let value = &attr.value;
 
         match value {
             Expr::Closure(closure) => {
-                let add_closure = insert_closure_tokens(var_name_node, &key, closure);
-
+                let add_closure = insert_closure_tokens(var_name_node, attr, &closure, key_attr);
                 tokens.push(add_closure);
             }
             _ => {
@@ -102,93 +111,6 @@ fn create_valid_node(
                 tokens.push(insert_attribute);
             }
         };
-    }
-}
-
-// Create the tokens that insert a closure into the virtual element.
-//
-// Tests can be found in crates/html-macro-test/src/events.rs
-fn insert_closure_tokens(
-    var_name_node: &Ident,
-    event_name: &str,
-    closure: &ExprClosure,
-) -> TokenStream {
-    let arg_count = closure.inputs.len();
-
-    if arg_count == 0 {
-        quote! {
-            #var_name_node.as_velement_mut().unwrap().events.insert_no_args(
-                #event_name.into(),
-                std::rc::Rc::new(
-                    std::cell::RefCell::new( #closure )
-                )
-            );
-        }
-    } else if event_name == "onclick" {
-        let tokens = quote! {
-            #var_name_node.as_velement_mut().unwrap().events.insert_mouse_event(
-                #event_name.into(),
-                std::rc::Rc::new(
-                    std::cell::RefCell::new( event_callback )
-                )
-            );
-        };
-
-        let tokens = if arg_count == 0 {
-            quote! {
-                let event_callback = #closure;
-                #tokens
-            }
-        } else {
-            let mut closure = closure.clone();
-            let arg0 = closure.inputs.first_mut().unwrap();
-
-            if let Pat::Ident(ident) = arg0 {
-                // Add the type to the closure to avoid `type annotations needed` errors.
-                // Example:
-                //   Start: |arg| {}
-                //   End: |arg: __private__event::MouseEvent| {}
-
-                let ident = Pat::Ident(ident.clone());
-
-                *arg0 = Pat::Type(PatType {
-                    attrs: vec![],
-                    pat: Box::new(ident),
-                    colon_token: Default::default(),
-                    ty: Box::new(Type::Verbatim(quote! {__private__event::MouseEvent})),
-                });
-            }
-
-            quote! {
-                let event_callback = #closure;
-                #tokens
-            }
-        };
-
-        tokens
-    } else {
-        let arg_type_placeholders: Vec<TokenStream2> =
-            (0..arg_count).into_iter().map(|_| quote! { _ }).collect();
-
-        quote! {
-          #[cfg(target_arch = "wasm32")]
-          {
-
-              let closure = Closure::wrap(
-                  Box::new(#closure) as Box<dyn FnMut(#(#arg_type_placeholders)*)>
-              );
-              let closure_rc = std::rc::Rc::new(closure);
-
-              #var_name_node.as_velement_mut().unwrap()
-                  .events.__insert_unsupported_signature(#event_name.into(), closure_rc);
-          }
-
-          #[cfg(not(target_arch = "wasm32"))]
-          {
-              // Ensures that the variables that the closure captures are considered used.
-              let _ = #closure;
-          }
-        }
     }
 }
 

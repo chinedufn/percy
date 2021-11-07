@@ -60,6 +60,36 @@ fn stores_onclick_events() {
     assert!(matches!(event, EventHandler::MouseEvent(_)));
 }
 
+/// Verify that we can set the on create element function.
+#[test]
+fn on_create_element() {
+    let node: VirtualNode = html! {
+        <div key = "my-key" on_create_element=||{}> </div>
+    };
+    assert_eq!(
+        node.as_velement_ref()
+            .unwrap()
+            .special_attributes
+            .on_create_element_key(),
+        Some(&"my-key".into())
+    );
+}
+
+/// Verify that we can set the on remove element function.
+#[test]
+fn on_remove_element() {
+    let node: VirtualNode = html! {
+        <div key = "my-key" on_remove_element=||{}> </div>
+    };
+    assert_eq!(
+        node.as_velement_ref()
+            .unwrap()
+            .special_attributes
+            .on_remove_element_key(),
+        Some(&"my-key".into())
+    );
+}
+
 /// Verify that we do not need to provide the type for events that we support.
 ///
 /// We make use of the passed in type inside each closure.
@@ -68,10 +98,18 @@ fn stores_onclick_events() {
 fn eliding_event_arg_type() {
     html! {
         <div
+          key="123"
+
           onclick = |event| {
             event.stop_propagation();
           }
-          // TODO: As we add more supported events to `open_tag.rs` we can add tests for them here.
+          on_create_element = |element| {
+            element.id();
+          }
+          on_remove_element = |element| {
+            element.id();
+          }
+          // TODO: As we add more supported events to `open_tag.rs` we can add handlers for them here.
         >
         </div>
     };

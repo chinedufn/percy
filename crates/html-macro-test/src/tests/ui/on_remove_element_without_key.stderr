@@ -1,0 +1,10 @@
+error: Whenever you use the `on_remove_element=...` attribute,
+you must also use must use the `key="..."` attribute.
+
+Documentation:
+  -> https://chinedufn.github.io/percy/html-macro/real-elements-and-nodes/on-remove-elem/index.html
+
+ --> src/tests/ui/on_remove_element_without_key.rs
+  |
+  |         <div on_remove_element = ||{} >
+  |              ^^^^^^^^^^^^^^^^^

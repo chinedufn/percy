@@ -7,9 +7,8 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{Element, HtmlInputElement, HtmlTextAreaElement, Node, Text};
 
-use crate::event::{EventsByNodeIdx, ManagedEvent};
+use crate::event::{EventsByNodeIdx, ManagedEvent, EVENTS_ID_PROP};
 use crate::patch::Patch;
-use crate::prelude::EVENTS_ID_PROP;
 use crate::{AttributeValue, PatchSpecialAttribute, VirtualNode};
 
 /// Apply all of the patches to our old root node in order to create the new root node
@@ -253,7 +252,16 @@ fn apply_element_patch(
                     .as_velement_ref()
                     .unwrap()
                     .special_attributes
-                    .maybe_call_on_create_elem(&node);
+                    .maybe_call_on_create_element(&node);
+
+                Ok(())
+            }
+            PatchSpecialAttribute::CallOnRemoveElem(_, old_node) => {
+                old_node
+                    .as_velement_ref()
+                    .unwrap()
+                    .special_attributes
+                    .maybe_call_on_remove_element(node);
 
                 Ok(())
             }

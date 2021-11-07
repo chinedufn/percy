@@ -37,10 +37,13 @@ pub mod prelude {
     pub use html_macro::html;
     pub use virtual_node::{EventAttribFn, IterableNodes, View};
 
-    // Used by the html-macro
-    #[doc(hidden)]
-    pub use virtual_node::event as __private__event;
-
     pub use crate::pdom::PercyDom;
     pub use crate::VirtualNode;
+
+    // Used by the html-macro crate.
+    #[doc(hidden)]
+    pub mod __html_macro_helpers__ {
+        pub use virtual_node::event;
+        pub use web_sys;
+    }
 }
