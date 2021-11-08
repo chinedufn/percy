@@ -49,6 +49,14 @@ fn diff_recursive<'a, 'b>(
             new_node: new,
         });
 
+        if let Some(velem) = old.as_velement_ref() {
+            if velem.special_attributes.on_remove_element_key().is_some() {
+                patches.push(Patch::SpecialAttribute(
+                    PatchSpecialAttribute::CallOnRemoveElem(*old_node_idx, old),
+                ));
+            }
+        }
+
         if let VirtualNode::Element(new_element_node) = new {
             for child in new_element_node.children.iter() {
                 increment_idx_for_child(child, new_node_idx);
@@ -136,15 +144,15 @@ fn diff_recursive<'a, 'b>(
 
             // FIXME: Move into function
             match (
-                old_element.special_attributes.on_create_elem.as_ref(),
-                new_element.special_attributes.on_create_elem.as_ref(),
+                old_element.special_attributes.on_create_element_key(),
+                new_element.special_attributes.on_create_element_key(),
             ) {
                 (None, Some(_)) => {
                     patches.push(Patch::SpecialAttribute(
                         PatchSpecialAttribute::CallOnCreateElem(*old_node_idx, new),
                     ));
                 }
-                (Some((old_id, _)), Some((new_id, _))) => {
+                (Some(old_id), Some(new_id)) => {
                     if new_id != old_id {
                         patches.push(Patch::SpecialAttribute(
                             PatchSpecialAttribute::CallOnCreateElem(*old_node_idx, new),
@@ -153,6 +161,25 @@ fn diff_recursive<'a, 'b>(
                 }
                 (Some(_), None) | (None, None) => {}
             };
+
+            match (
+                old_element.special_attributes.on_remove_element_key(),
+                new_element.special_attributes.on_remove_element_key(),
+            ) {
+                (Some(_), None) => {
+                    patches.push(Patch::SpecialAttribute(
+                        PatchSpecialAttribute::CallOnRemoveElem(*old_node_idx, old),
+                    ));
+                }
+                (Some(old_id), Some(new_id)) => {
+                    if old_id != new_id {
+                        patches.push(Patch::SpecialAttribute(
+                            PatchSpecialAttribute::CallOnRemoveElem(*old_node_idx, old),
+                        ));
+                    }
+                }
+                _ => {}
+            }
 
             let old_elem_has_events = old_element.events.has_events();
             let new_elem_has_events = new_element.events.has_events();
@@ -327,15 +354,25 @@ fn generate_patches_for_children<'a, 'b>(
 ///
 /// Along the way we also push patches to remove all tracked events for deleted nodes
 /// (if they had events).
-fn process_deleted_old_node_child(
-    old_node: &VirtualNode,
+fn process_deleted_old_node_child<'a>(
+    old_node: &'a VirtualNode,
     cur_node_idx: &mut u32,
-    patches: &mut Vec<Patch>,
+    patches: &mut Vec<Patch<'a>>,
 ) {
     *cur_node_idx += 1;
     if let VirtualNode::Element(element_node) = old_node {
         if element_node.events.len() > 0 {
             patches.push(Patch::RemoveAllManagedEventsWithNodeIdx(*cur_node_idx));
+        }
+
+        if element_node
+            .special_attributes
+            .on_remove_element_key()
+            .is_some()
+        {
+            patches.push(Patch::SpecialAttribute(
+                PatchSpecialAttribute::CallOnRemoveElem(*cur_node_idx, old_node),
+            ));
         }
 
         for child in element_node.children.iter() {
@@ -362,7 +399,7 @@ mod diff_test_case;
 mod tests {
     use super::*;
     use crate::event::EventName;
-    use crate::{html, wrap_closure, EventAttribFn, PatchSpecialAttribute, VText, VirtualNode};
+    use crate::{html, EventAttribFn, PatchSpecialAttribute, VText, VirtualNode};
     use std::collections::HashMap;
     use std::rc::Rc;
     use virtual_node::IterableNodes;
@@ -649,11 +686,14 @@ mod tests {
         let mut new = VirtualNode::element("div");
         set_on_create_elem_with_unique_id(&mut new, "150");
 
+        let mut expected = VirtualNode::element("div");
+        set_on_create_elem_with_unique_id(&mut expected, "150");
+
         DiffTestCase {
             old,
             new,
             expected: vec![Patch::SpecialAttribute(
-                PatchSpecialAttribute::CallOnCreateElem(0, &VirtualNode::element("div")),
+                PatchSpecialAttribute::CallOnCreateElem(0, &expected),
             )],
         }
         .test();
@@ -687,12 +727,270 @@ mod tests {
         let mut new = VirtualNode::element("div");
         set_on_create_elem_with_unique_id(&mut new, "99");
 
+        let mut expected = VirtualNode::element("div");
+        set_on_create_elem_with_unique_id(&mut expected, "99");
+
         DiffTestCase {
             old,
             new,
             expected: vec![Patch::SpecialAttribute(
-                PatchSpecialAttribute::CallOnCreateElem(0, &VirtualNode::element("div")),
+                PatchSpecialAttribute::CallOnCreateElem(0, &expected),
             )],
+        }
+        .test();
+    }
+
+    /// Verify that we push an on remove elem patch if the new node has the special attribute
+    /// and the old node does not.
+    #[test]
+    fn on_remove_elem_for_replaced_elem() {
+        let mut old = VirtualNode::element("div");
+        set_on_remove_elem_with_unique_id(&mut old, "150");
+
+        let expected = {
+            let mut old = VirtualNode::element("div");
+            set_on_remove_elem_with_unique_id(&mut old, "150");
+
+            old
+        };
+
+        let new = VirtualNode::element("span");
+
+        DiffTestCase {
+            old,
+            new,
+            expected: vec![
+                Patch::Replace {
+                    old_idx: 0,
+                    new_idx: 0,
+                    new_node: &VirtualNode::element("span"),
+                },
+                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnRemoveElem(0, &expected)),
+            ],
+        }
+        .test();
+    }
+
+    /// Verify that we push on remove element patches for replaced children, their replaced
+    /// children, etc.
+    #[test]
+    fn on_remove_elem_for_replaced_children_recursively() {
+        let mut grandchild = VirtualNode::element("strong");
+        set_on_remove_elem_with_unique_id(&mut grandchild, "key");
+
+        let mut child = VirtualNode::element("em");
+        set_on_remove_elem_with_unique_id(&mut child, "key");
+
+        child.as_velement_mut().unwrap().children.push(grandchild);
+
+        let old = html! {
+            <div>
+                {child}
+            </div>
+        };
+
+        let expected_child = {
+            let mut grandchild = VirtualNode::element("strong");
+            set_on_remove_elem_with_unique_id(&mut grandchild, "key");
+
+            let mut child = VirtualNode::element("em");
+            set_on_remove_elem_with_unique_id(&mut child, "key");
+            child.as_velement_mut().unwrap().children.push(grandchild);
+
+            child
+        };
+        let expected_grandchild = {
+            let mut grandchild = VirtualNode::element("strong");
+            set_on_remove_elem_with_unique_id(&mut grandchild, "key");
+            grandchild
+        };
+
+        let new = VirtualNode::element("span");
+
+        DiffTestCase {
+            old,
+            new,
+            expected: vec![
+                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnRemoveElem(
+                    1,
+                    &expected_child,
+                )),
+                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnRemoveElem(
+                    2,
+                    &expected_grandchild,
+                )),
+                Patch::Replace {
+                    old_idx: 0,
+                    new_idx: 0,
+                    new_node: &VirtualNode::element("span"),
+                },
+            ],
+        }
+        .test();
+    }
+
+    /// Verify that we push on remove element patches for truncated children, their children,
+    /// etc.
+    #[test]
+    fn on_remove_elem_for_truncated_children_recursively() {
+        let mut grandchild = VirtualNode::element("strong");
+        set_on_remove_elem_with_unique_id(&mut grandchild, "key");
+
+        let mut child = VirtualNode::element("em");
+        set_on_remove_elem_with_unique_id(&mut child, "key");
+
+        child.as_velement_mut().unwrap().children.push(grandchild);
+
+        let old = html! {
+            <div>
+                <span></span>
+                // Gets truncated.
+                {child}
+            </div>
+        };
+
+        let new = html! {
+            <div>
+                <span></span>
+            </div>
+        };
+
+        let expected_child = {
+            let mut grandchild = VirtualNode::element("strong");
+            set_on_remove_elem_with_unique_id(&mut grandchild, "key");
+
+            let mut child = VirtualNode::element("em");
+            set_on_remove_elem_with_unique_id(&mut child, "key");
+            child.as_velement_mut().unwrap().children.push(grandchild);
+
+            child
+        };
+        let expected_grandchild = {
+            let mut grandchild = VirtualNode::element("strong");
+            set_on_remove_elem_with_unique_id(&mut grandchild, "key");
+            grandchild
+        };
+
+        DiffTestCase {
+            old,
+            new,
+            expected: vec![
+                Patch::TruncateChildren(0, 1),
+                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnRemoveElem(
+                    2,
+                    &expected_child,
+                )),
+                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnRemoveElem(
+                    3,
+                    &expected_grandchild,
+                )),
+            ],
+        }
+        .test();
+    }
+
+    /// Verify that when patching attributes, if the old has an on remove element callback but the
+    /// new node does not, we call the on remove element callback.
+    ///
+    /// But only for that element, since the element's below it might not get removed from the
+    /// DOM.
+    #[test]
+    fn new_node_does_not_have_on_remove_elem() {
+        let old_child = on_remove_node_with_on_remove_child();
+        let mut old = html! {
+            <div>
+                {old_child}
+            </div>
+        };
+        set_on_remove_elem_with_unique_id(&mut old, "some-key");
+
+        let expected = {
+            let old_child = on_remove_node_with_on_remove_child();
+            let mut old = html! {
+                <div>
+                    {old_child}
+                </div>
+            };
+            set_on_remove_elem_with_unique_id(&mut old, "some-key");
+
+            old
+        };
+
+        let new_child = on_remove_node_with_on_remove_child();
+        let new = html! {
+            <div>
+                {new_child}
+            </div>
+        };
+
+        DiffTestCase {
+            old,
+            new,
+            expected: vec![Patch::SpecialAttribute(
+                PatchSpecialAttribute::CallOnRemoveElem(0, &expected),
+            )],
+        }
+        .test();
+    }
+
+    /// Verify that when patching attributes, if the old and new node are of the same tag type but
+    /// have different on remove element ID, a patch is pushed.
+    ///
+    /// But only for that element, since the element's below it might not get removed from the
+    /// DOM.
+    #[test]
+    fn different_on_remove_elem_id() {
+        let old_child = on_remove_node_with_on_remove_child();
+        let mut old = html! {
+            <div>
+                {old_child}
+            </div>
+        };
+        set_on_remove_elem_with_unique_id(&mut old, "start");
+
+        let expected = {
+            let old_child = on_remove_node_with_on_remove_child();
+            let mut old = html! {
+                <div>
+                    {old_child}
+                </div>
+            };
+            set_on_remove_elem_with_unique_id(&mut old, "start");
+
+            old
+        };
+
+        let new_child = on_remove_node_with_on_remove_child();
+        let mut new = html! {
+            <div>
+                {new_child}
+            </div>
+        };
+        set_on_remove_elem_with_unique_id(&mut new, "end");
+
+        DiffTestCase {
+            old,
+            new,
+            expected: vec![Patch::SpecialAttribute(
+                PatchSpecialAttribute::CallOnRemoveElem(0, &expected),
+            )],
+        }
+        .test();
+    }
+
+    /// Verify that if the old and new node have the same on remove element ID, no patch is pushed.
+    #[test]
+    fn same_on_remove_elem_id() {
+        let mut old = VirtualNode::element("div");
+        set_on_remove_elem_with_unique_id(&mut old, "same");
+
+        let mut new = VirtualNode::element("div");
+        set_on_remove_elem_with_unique_id(&mut new, "same");
+
+        DiffTestCase {
+            old,
+            new,
+            expected: vec![],
         }
         .test();
     }
@@ -950,10 +1248,14 @@ mod tests {
         node.as_velement_mut()
             .unwrap()
             .special_attributes
-            .on_create_elem = Some((
-            on_create_elem_id.into(),
-            wrap_closure(|_: web_sys::Element| {}),
-        ));
+            .set_on_create_element(on_create_elem_id, |_: web_sys::Element| {});
+    }
+
+    fn set_on_remove_elem_with_unique_id(node: &mut VirtualNode, on_remove_elem_id: &'static str) {
+        node.as_velement_mut()
+            .unwrap()
+            .special_attributes
+            .set_on_remove_element(on_remove_elem_id, |_: web_sys::Element| {});
     }
 
     fn set_dangerous_inner_html(node: &mut VirtualNode, html: &str) {
@@ -961,6 +1263,25 @@ mod tests {
             .unwrap()
             .special_attributes
             .dangerous_inner_html = Some(html.to_string());
+    }
+
+    /// Return a node that has an on remove element function.
+    ///
+    /// This node has a child that also has an on remove element function.
+    ///
+    /// <div>
+    ///   <div></div>
+    /// </div>
+    fn on_remove_node_with_on_remove_child() -> VirtualNode {
+        let mut child = VirtualNode::element("div");
+        set_on_remove_elem_with_unique_id(&mut child, "555");
+
+        let mut node = VirtualNode::element("div");
+        set_on_remove_elem_with_unique_id(&mut node, "666");
+
+        node.as_velement_mut().unwrap().children.push(child);
+
+        node
     }
 
     fn mock_event_handler() -> EventHandler {

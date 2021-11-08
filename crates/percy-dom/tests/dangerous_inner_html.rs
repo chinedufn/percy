@@ -6,6 +6,7 @@
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
+use percy_dom::event::EventsByNodeIdx;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 use web_sys::Element;

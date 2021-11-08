@@ -92,6 +92,7 @@ impl VirtualNode {
     ///
     /// [`VElement`]: struct.VElement.html
     /// [`Element`]: enum.VirtualNode.html#variant.Element
+    // TODO: Rename to .as_velement()
     pub fn as_velement_ref(&self) -> Option<&VElement> {
         match self {
             VirtualNode::Element(ref element_node) => Some(element_node),
@@ -114,6 +115,7 @@ impl VirtualNode {
     ///
     /// [`VText`]: struct.VText.html
     /// [`Text`]: enum.VirtualNode.html#variant.Text
+    // TODO: Rename to .as_vtext()
     pub fn as_vtext_ref(&self) -> Option<&VText> {
         match self {
             VirtualNode::Text(ref text_node) => Some(text_node),

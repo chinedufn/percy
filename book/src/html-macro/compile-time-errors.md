@@ -2,7 +2,7 @@
 
 The `html-macro` provides compile time errors to help catch mistakes.
 
-Every compile time error is tested in `crates/html-macro-ui` using the [compiletest-rs](https://github.com/laumann/compiletest-rs)
+Every compile time error is tested in `crates/html-macro-ui` using the [trybuild](https://github.com/dtolnay/trybuild)
 crate.
 
 If you have an idea for an error that you don't see here [open an issue!](https://github.com/chinedufn/percy/issues/new)
@@ -42,4 +42,28 @@ This might happen if you've made a typo.
 
 ```
 {{#include ../../../crates/html-macro-test/src/tests/ui/invalid_html_tag.stderr}}
+```
+
+#### on create element without key
+
+You set the `on_create_element` but did not set a key.
+
+```rust
+{{#include ../../../crates/html-macro-test/src/tests/ui/on_create_element_without_key.rs}}
+```
+
+```
+{{#include ../../../crates/html-macro-test/src/tests/ui/on_create_element_without_key.stderr}}
+```
+
+#### on remove element without key
+
+You set the `on_remove_element` but did not set a key.
+
+```rust
+{{#include ../../../crates/html-macro-test/src/tests/ui/on_remove_element_without_key.rs}}
+```
+
+```
+{{#include ../../../crates/html-macro-test/src/tests/ui/on_remove_element_without_key.stderr}}
 ```

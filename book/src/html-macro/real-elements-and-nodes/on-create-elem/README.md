@@ -1,12 +1,9 @@
-# Real Elements and Nodes
+# On Create Element
 
-You'll sometimes want to do something to the real DOM [Node] that gets created from your `VirtualNode`.
-
-You can accomplish this with the `SpecialAttributes.on_create_elem` attribute function.
+The `on_create_elem` special attribute allows you to register a function that will be called
+when the element is first created.
 
 ```rust
-use virtual_node::wrap_closure;
-
 let mut div: VirtualNode = html! {
 <div>
     <span>This span should get replaced</span>
@@ -16,11 +13,11 @@ let mut div: VirtualNode = html! {
 div.as_velement_mut()
     .unwrap()
     .special_attributes
-    .on_create_elem = Some((
-        "some-unique-key".into(),
-        wrap_closure(move |elem: web_sys::Element| {
+    .set_on_create_element(
+        "some-key",
+        move |elem: web_sys::Element| {
             elem.set_inner_html("Hello world");
-        }),
+        },
     ));
 
 let div: Element = div.create_dom_node().node.unchecked_into();
@@ -28,4 +25,19 @@ let div: Element = div.create_dom_node().node.unchecked_into();
 assert_eq!(div.inner_html(), "Hello world");
 ```
 
-[Node]: https://rustwasm.github.io/wasm-bindgen/api/web_sys/struct.Node.html
+## Macro shorthand
+
+You can also use the `html!` macro to set the `on_create_element` function.
+
+```rust
+let _ = html! {
+  <div
+    key="some-key"
+	on_create_element = move |element: web_sys::Element| {
+	    element.set_inner_html("After");
+	}
+  >
+    Before
+  </div>
+}
+```

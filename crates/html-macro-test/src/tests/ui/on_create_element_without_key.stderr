@@ -1,0 +1,10 @@
+error: Whenever you use the `on_create_element=...` attribute,
+you must also use must use the `key="..."` attribute.
+
+Documentation:
+  -> https://chinedufn.github.io/percy/html-macro/real-elements-and-nodes/on-create-elem/index.html
+
+ --> src/tests/ui/on_create_element_without_key.rs
+  |
+  |         <div on_create_element = ||{} >
+  |              ^^^^^^^^^^^^^^^^^

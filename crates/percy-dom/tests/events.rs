@@ -4,7 +4,8 @@
 //!
 //! wasm-pack test --chrome --headless crates/percy-dom --test events
 
-use percy_dom::event::EVENTS_ID_PROP;
+use crate::testing_utilities::{create_mount, document, get_element_by_id, random_id};
+use percy_dom::event::{EventHandler, EventName, EventsByNodeIdx, ManagedEvent, EVENTS_ID_PROP};
 use percy_dom::prelude::*;
 use percy_dom::{Patch, PercyDom, VElement};
 use std::cell::{Cell, RefCell};
@@ -14,6 +15,8 @@ use wasm_bindgen_test;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
+
+mod testing_utilities;
 
 /// Verify that the oninput event works.
 ///
@@ -628,7 +631,6 @@ fn node_with_events(
 const START_TEXT: &'static str = "Start Text";
 const APPEND_TEXT_ONE: &'static str = "- append1";
 const APPEND_TEXT_TWO: &'static str = "- append2";
-const MOUNT_ID: &'static str = "mount";
 
 fn start_text() -> Rc<RefCell<String>> {
     Rc::new(RefCell::new(START_TEXT.to_string()))
@@ -652,22 +654,6 @@ fn assert_text_appended(text: &Rc<RefCell<String>>, append: &str) {
         format!("{}{}", START_TEXT, append),
         "Text should have been appended changed"
     );
-}
-
-fn document() -> web_sys::Document {
-    web_sys::window().unwrap().document().unwrap()
-}
-
-fn get_element_by_id(id: &str) -> web_sys::Element {
-    document().get_element_by_id(id).unwrap()
-}
-
-fn create_mount() -> web_sys::Element {
-    let mount = document().create_element("div").unwrap();
-    mount.set_id(MOUNT_ID);
-    document().body().unwrap().append_child(&mount).unwrap();
-
-    mount
 }
 
 fn send_input_event(id: &str) {
@@ -696,9 +682,4 @@ where
     web_sys::EventTarget::from(elem)
         .dispatch_event(&event)
         .unwrap();
-}
-
-// Tests share the same DOM, so IDs need to be unique across tests.
-fn random_id() -> &'static str {
-    Box::leak(Box::new(js_sys::Math::random().to_string()))
 }

@@ -1,6 +1,7 @@
 //! Kept in its own file to more easily import into the book
 
 use console_error_panic_hook;
+use percy_dom::event::EventsByNodeIdx;
 use percy_dom::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node};
