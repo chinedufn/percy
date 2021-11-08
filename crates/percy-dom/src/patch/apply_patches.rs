@@ -289,13 +289,19 @@ fn apply_element_patch(
 
             Ok(())
         }
-        Patch::SetEventsId(node_idx) => {
+        Patch::SetEventsId { old_idx, new_idx } => {
             js_sys::Reflect::set(
                 node,
                 &EVENTS_ID_PROP.into(),
-                &format!("{}{}", managed_events.events_id_props_prefix(), node_idx).into(),
+                &format!("{}{}", managed_events.events_id_props_prefix(), new_idx).into(),
             )
             .unwrap();
+
+            let move_over_old_events = old_idx != new_idx;
+
+            if move_over_old_events {
+                managed_events.move_events(old_idx, *new_idx);
+            }
 
             Ok(())
         }
