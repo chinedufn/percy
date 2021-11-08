@@ -106,6 +106,7 @@ impl EventsByNodeIdx {
         event: EventHandler,
     ) {
         let mut events = self.events.borrow_mut();
+
         let func = match events
             .entry(node_idx)
             .or_default()
@@ -117,6 +118,15 @@ impl EventsByNodeIdx {
         };
 
         *func = event;
+    }
+
+    /// Remove all of the events from one node ID and add them to another node ID.
+    pub fn move_events(&mut self, old_node_id: &u32, new_node_id: u32) {
+        let mut events = self.events.borrow_mut();
+
+        if let Some(old_events) = events.remove(old_node_id) {
+            events.insert(new_node_id, old_events);
+        }
     }
 
     /// Remove a managed event.

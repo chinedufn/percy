@@ -198,7 +198,10 @@ fn patch_set_events_id() {
 
     let elem = node.create_dom_node(0, &mut events);
 
-    let patch = Patch::SetEventsId(0);
+    let patch = Patch::SetEventsId {
+        old_idx: 0,
+        new_idx: 99,
+    };
 
     percy_dom::patch(
         elem.clone(),
@@ -209,7 +212,43 @@ fn patch_set_events_id() {
     .unwrap();
 
     let events_id = js_sys::Reflect::get(&elem, &EVENTS_ID_PROP.into()).unwrap();
-    assert!(events_id.as_string().is_some());
+    let events_id = events_id.as_string().unwrap();
+    let events_id = events_id.trim_start_matches(&events.events_id_props_prefix().to_string());
+    assert_eq!(events_id, "99");
+}
+
+/// Verify that if we apply a patch to set the node's events_id, we move all of its existing events
+/// over to the new ID.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test events -- set_events_id_moves_events
+#[wasm_bindgen_test]
+fn set_events_id_moves_events() {
+    let node: VirtualNode = html! {
+        <div id=random_id() onclick=||{}></div>
+    };
+    let mut events = EventsByNodeIdx::new();
+    events.insert_managed_event(
+        0,
+        EventName::ONCLICK,
+        ManagedEvent::Delegated(EventHandler::NoArgs(Rc::new(RefCell::new(|| {})))),
+    );
+
+    let elem = node.create_dom_node(0, &mut events);
+
+    let patch = Patch::SetEventsId {
+        old_idx: 0,
+        new_idx: 99,
+    };
+
+    percy_dom::patch(
+        elem.clone(),
+        &VirtualNode::text("..."),
+        &mut events,
+        &[patch],
+    )
+    .unwrap();
+
+    assert!(events.get_event_handler(&99, &EventName::ONCLICK).is_some());
 }
 
 /// Verify that when replacing a node we set the __events_id__ property using the new_idx, not

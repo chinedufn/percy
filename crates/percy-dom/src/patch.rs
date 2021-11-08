@@ -47,6 +47,8 @@ type NodeIdx = u32;
 /// The patching process is tested in a real browser in crates/percy-dom/tests/diff_patch.rs
 #[derive(Debug)]
 #[cfg_attr(any(test, feature = "__test-utils"), derive(PartialEq))]
+// TODO: Change all of these tuple structs with a `NodeIdx` to instead be `{old_idx: NodeIdx`} so
+//  we can more easily tell which patches use the old node's index vs. the new one's.
 pub enum Patch<'a> {
     /// Append a vector of child nodes to a parent node id.
     #[allow(missing_docs)]
@@ -79,7 +81,8 @@ pub enum Patch<'a> {
     /// This happens when the node no longer has any events.
     RemoveEventsId(NodeIdx),
     /// Set the `__events_id__` property on the DOM node.
-    SetEventsId(NodeIdx),
+    #[allow(missing_docs)]
+    SetEventsId { old_idx: NodeIdx, new_idx: NodeIdx },
     /// Insert events in the EventsByNodeIdx.
     /// If it is a non-delegated event the event will also get added to the DOM node.
     AddEvents(NodeIdx, HashMap<&'a EventName, &'a EventHandler>),
@@ -124,7 +127,7 @@ impl<'a> Patch<'a> {
                 PatchSpecialAttribute::CallOnRemoveElem(node_idx, _) => *node_idx,
             },
             Patch::RemoveEventsId(node_idx) => *node_idx,
-            Patch::SetEventsId(node_idx) => *node_idx,
+            Patch::SetEventsId { old_idx, .. } => *old_idx,
             Patch::RemoveEvents(node_idx, _) => *node_idx,
             Patch::AddEvents(node_idx, _) => *node_idx,
             Patch::RemoveAllManagedEventsWithNodeIdx(node_idx) => {
