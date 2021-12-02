@@ -334,10 +334,6 @@ fn apply_element_patch(
                         }
                         _ => unreachable!(),
                     };
-
-                    // node.remove_event_listener_with_callback(event_name.without_on_prefix(), )
-                    // TODO: Add a wasm-bindgen-test to events.rs that fails until we
-                    //  remove event listener from the DOM node here.
                 }
 
                 managed_events.remove_event_handler(node_idx, event_name);

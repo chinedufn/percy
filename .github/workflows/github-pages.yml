@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+  # Pull requests test we can build the book.
+  # We only deploy the book on the master branch.
   pull_request:
 
 jobs:
