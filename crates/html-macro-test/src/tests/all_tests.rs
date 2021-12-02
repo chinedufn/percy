@@ -182,9 +182,10 @@ fn vec_of_nodes() {
     .test();
 }
 
-/// Just make sure that this compiles since async, for, loop, and type are keywords
+/// Just make sure that this compiles since as, async, for, loop, and type are keywords
 #[test]
 fn keyword_attribute() {
+    html! { <link rel="prefetch" href="/style.css" as="style" /> };
     html! { <script src="/app.js" async="async" /> };
     html! { <label for="username">Username:</label> };
     html! { <audio loop="loop"><source src="/beep.mp3" type="audio/mpeg" /></audio> };

@@ -135,19 +135,23 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
 
     // Do we see an identifier such as `id`? If so proceed
     while input.peek(Ident)
+        || input.peek(Token![as])
         || input.peek(Token![async])
         || input.peek(Token![for])
         || input.peek(Token![loop])
         || input.peek(Token![type])
     {
         // <link rel="stylesheet" type="text/css"
-        //   .. async, for, loop, type need to be handled specially since they are keywords
+        //   .. as, async, for, loop, type need to be handled specially since they are keywords
+        let maybe_as_key: Option<Token![as]> = input.parse()?;
         let maybe_async_key: Option<Token![async]> = input.parse()?;
         let maybe_for_key: Option<Token![for]> = input.parse()?;
         let maybe_loop_key: Option<Token![loop]> = input.parse()?;
         let maybe_type_key: Option<Token![type]> = input.parse()?;
 
-        let key = if maybe_async_key.is_some() {
+        let key = if maybe_as_key.is_some() {
+            Ident::new("as", maybe_as_key.unwrap().span())
+        } else if maybe_async_key.is_some() {
             Ident::new("async", maybe_async_key.unwrap().span())
         } else if maybe_for_key.is_some() {
             Ident::new("for", maybe_for_key.unwrap().span())
@@ -170,6 +174,7 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
             value_tokens.extend(Some(tt));
 
             let has_attrib_key = input.peek(Ident)
+                || input.peek(Token![as])
                 || input.peek(Token![async])
                 || input.peek(Token![for])
                 || input.peek(Token![loop])
