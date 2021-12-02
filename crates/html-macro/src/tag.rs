@@ -153,7 +153,7 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
             Ident::new("as", maybe_as_key.unwrap().span())
         } else if maybe_async_key.is_some() {
             Ident::new("async", maybe_async_key.unwrap().span())
-        }else if maybe_for_key.is_some() {
+        } else if maybe_for_key.is_some() {
             Ident::new("for", maybe_for_key.unwrap().span())
         } else if maybe_loop_key.is_some() {
             Ident::new("loop", maybe_loop_key.unwrap().span())
