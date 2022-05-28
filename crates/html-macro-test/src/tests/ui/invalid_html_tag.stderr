@@ -1,11 +1,11 @@
 error: invalidtagname is not a valid HTML tag.
 
-If you are trying to use a valid HTML tag, perhaps there's a typo?
+       If you are trying to use a valid HTML tag, perhaps there's a typo?
 
-If you are trying to use a custom component, please capitalize the component name.
+       If you are trying to use a custom component, please capitalize the component name.
 
-custom components: https://chinedufn.github.io/percy/html-macro/custom-components/index.html
- --> $DIR/invalid_html_tag.rs:7:10
-  |
-7 |         <invalidtagname></invalidtagname>
-  |          ^^^^^^^^^^^^^^
+       custom components: https://chinedufn.github.io/percy/html-macro/custom-components/index.html
+  --> src/tests/ui/invalid_html_tag.rs
+   |
+   |         <invalidtagname></invalidtagname>
+   |          ^^^^^^^^^^^^^^

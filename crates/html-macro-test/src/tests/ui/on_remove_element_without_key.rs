@@ -1,3 +1,7 @@
+//! # To Run
+//!
+//! cargo test -p html-macro-test --lib ui -- trybuild=on_remove_element_without_key.rs
+
 extern crate percy_dom;
 use percy_dom::prelude::*;
 
