@@ -409,7 +409,11 @@ fn main() {
 <h4 id="invalid-html-tag"><a class="header" href="#invalid-html-tag">Invalid HTML tag</a></h4>
 <p>You're trying to use a tag that isn't in the HTML specification.
 This might happen if you've made a typo.</p>
-<pre><pre class="playground"><code class="language-rust">extern crate percy_dom;
+<pre><pre class="playground"><code class="language-rust">//! # To Run
+//!
+//! cargo test -p html-macro-test --lib ui -- trybuild=invalid_html_tag.rs
+
+extern crate percy_dom;
 use percy_dom::prelude::*;
 
 // Used a tag name that does not exist in the HTML spec
@@ -421,19 +425,23 @@ fn main() {
 </code></pre></pre>
 <pre><code>error: invalidtagname is not a valid HTML tag.
 
-If you are trying to use a valid HTML tag, perhaps there's a typo?
+       If you are trying to use a valid HTML tag, perhaps there's a typo?
 
-If you are trying to use a custom component, please capitalize the component name.
+       If you are trying to use a custom component, please capitalize the component name.
 
-custom components: https://chinedufn.github.io/percy/html-macro/custom-components/index.html
- --&gt; $DIR/invalid_html_tag.rs:7:10
-  |
-7 |         &lt;invalidtagname&gt;&lt;/invalidtagname&gt;
-  |          ^^^^^^^^^^^^^^
+       custom components: https://chinedufn.github.io/percy/html-macro/custom-components/index.html
+  --&gt; src/tests/ui/invalid_html_tag.rs
+   |
+   |         &lt;invalidtagname&gt;&lt;/invalidtagname&gt;
+   |          ^^^^^^^^^^^^^^
 </code></pre>
 <h4 id="on-create-element-without-key"><a class="header" href="#on-create-element-without-key">on create element without key</a></h4>
 <p>You set the <code>on_create_element</code> but did not set a key.</p>
-<pre><pre class="playground"><code class="language-rust">extern crate percy_dom;
+<pre><pre class="playground"><code class="language-rust">//! # To Run
+//!
+//! cargo test -p html-macro-test --lib ui -- trybuild=on_create_element_without_key.rs
+
+extern crate percy_dom;
 use percy_dom::prelude::*;
 
 // Used the `on_create_element` attribute without providing a key attribute.
@@ -445,19 +453,23 @@ fn main() {
 }
 </code></pre></pre>
 <pre><code>error: Whenever you use the `on_create_element=...` attribute,
-you must also use must use the `key=&quot;...&quot;` attribute.
+       you must also use must use the `key=&quot;...&quot;` attribute.
 
-Documentation:
-  -&gt; https://chinedufn.github.io/percy/html-macro/real-elements-and-nodes/on-create-elem/index.html
+       Documentation:
+         -&gt; https://chinedufn.github.io/percy/html-macro/real-elements-and-nodes/on-create-elem/index.html
 
- --&gt; src/tests/ui/on_create_element_without_key.rs
-  |
-  |         &lt;div on_create_element = ||{} &gt;
-  |              ^^^^^^^^^^^^^^^^^
+  --&gt; src/tests/ui/on_create_element_without_key.rs
+   |
+   |         &lt;div on_create_element = ||{} &gt;
+   |              ^^^^^^^^^^^^^^^^^
 </code></pre>
 <h4 id="on-remove-element-without-key"><a class="header" href="#on-remove-element-without-key">on remove element without key</a></h4>
 <p>You set the <code>on_remove_element</code> but did not set a key.</p>
-<pre><pre class="playground"><code class="language-rust">extern crate percy_dom;
+<pre><pre class="playground"><code class="language-rust">//! # To Run
+//!
+//! cargo test -p html-macro-test --lib ui -- trybuild=on_remove_element_without_key.rs
+
+extern crate percy_dom;
 use percy_dom::prelude::*;
 
 // Used the `on_remove_element` attribute without providing a key attribute.
@@ -469,15 +481,15 @@ fn main() {
 }
 </code></pre></pre>
 <pre><code>error: Whenever you use the `on_remove_element=...` attribute,
-you must also use must use the `key=&quot;...&quot;` attribute.
+       you must also use must use the `key=&quot;...&quot;` attribute.
 
-Documentation:
-  -&gt; https://chinedufn.github.io/percy/html-macro/real-elements-and-nodes/on-remove-elem/index.html
+       Documentation:
+         -&gt; https://chinedufn.github.io/percy/html-macro/real-elements-and-nodes/on-remove-elem/index.html
 
- --&gt; src/tests/ui/on_remove_element_without_key.rs
-  |
-  |         &lt;div on_remove_element = ||{} &gt;
-  |              ^^^^^^^^^^^^^^^^^
+  --&gt; src/tests/ui/on_remove_element_without_key.rs
+   |
+   |         &lt;div on_remove_element = ||{} &gt;
+   |              ^^^^^^^^^^^^^^^^^
 </code></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="working-with-text"><a class="header" href="#working-with-text">Working with Text</a></h1>
 <p>One of the most popular types of nodes in the DOM is the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Text">Text</a> node, and the `html! macro
