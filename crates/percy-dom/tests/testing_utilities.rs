@@ -9,7 +9,7 @@ pub fn document() -> web_sys::Document {
     web_sys::window().unwrap().document().unwrap()
 }
 
-pub fn append_to_document (elem: &web_sys::Element) {
+pub fn append_to_document(elem: &web_sys::Element) {
     document().body().unwrap().append_child(elem).unwrap();
 }
 

@@ -70,7 +70,7 @@ pub fn route(
     let params = route_fn.route_fn.decl.inputs;
 
     // [u8, Provided<MyAppState>]
-    let types = as_param_types(&params);
+    let _types = as_param_types(&params);
 
     // path = "/route/path"
     let mut path = None;
@@ -131,7 +131,7 @@ fn gen_route_creator(
             .collect(),
         _ => unimplemented!(""),
     };
-    let path_params_map: HashSet<String> = path_params.clone().into_iter().collect();
+    let _path_params_map: HashSet<String> = path_params.clone().into_iter().collect();
 
     let mut path_param_types = vec![];
     for path_param in path_params.iter() {
@@ -395,7 +395,7 @@ fn as_param_types(params: &Punctuated<FnArg, Token![,]>) -> Vec<&Type> {
             match arg {
                 // some_param_name: type
                 FnArg::Captured(captured) => match captured.pat {
-                    Pat::Ident(ref pat) => &captured.ty,
+                    Pat::Ident(ref _pat) => &captured.ty,
                     _ => unimplemented!("TODO: What should happen for other patterns?"),
                 },
                 _ => unimplemented!("TODO: What should happen for non captured args?"),
@@ -449,7 +449,7 @@ impl Parse for RouteAttr {
 
         // path = "/my/route/here"
         let key = input.parse::<Ident>()?;
-        let equals = input.parse::<Token![=]>()?;
+        let _equals = input.parse::<Token![=]>()?;
 
         if key == "path" {
             let path_val = input.parse::<Lit>()?;
