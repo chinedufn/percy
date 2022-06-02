@@ -15,6 +15,8 @@ members = [
   "crates/percy-css",
   "crates/percy-dom",
   "crates/percy-css-macro",
+  "crates/percy-preview",
+  "crates/percy-preview-app",
   "crates/percy-router",
   "crates/percy-router-macro",
   "crates/percy-router-macro-test",

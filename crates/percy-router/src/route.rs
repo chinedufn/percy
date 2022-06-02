@@ -1,5 +1,3 @@
-use percy_dom::VText;
-use percy_dom::VirtualNode;
 use std::fmt::Debug;
 use std::fmt::Error;
 use std::fmt::Formatter;
@@ -64,7 +62,7 @@ where
 /// Given a param_key &str and a param_val &str, get the corresponding route parameter
 ///
 /// ex: ("friend_count", "30")
-pub type ParseRouteParam = Box<Fn(&str, &str) -> Option<Box<dyn RouteParam>>>;
+pub type ParseRouteParam = Box<dyn Fn(&str, &str) -> Option<Box<dyn RouteParam>>>;
 
 /// A route specifies a path to match against. When a match is found a `view_creator` is used
 /// to return an `impl View` that can be used to render the appropriate content for that route.
