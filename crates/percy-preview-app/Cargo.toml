@@ -1,7 +1,11 @@
 [package]
 name = "percy-preview-app"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+description = "Preview virtual dom components"
+keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/chinedufn/percy"
 
 [lib]
 crate-type = ["cdylib"]
@@ -10,9 +14,9 @@ crate-type = ["cdylib"]
 app-world = "0.1"
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
-percy-dom = {path = "../percy-dom"}
-percy-router = {path = "../percy-router"}
-percy-preview = {path = "../percy-preview"}
+percy-dom = {path = "../percy-dom", version = "0.7.2"}
+percy-router = {path = "../percy-router", version = "0.3.2"}
+percy-preview = {path = "../percy-preview", version = "0.0.1"}
 wasm-bindgen = "0.2.80"
 
 [dependencies.web-sys]

@@ -49,11 +49,3 @@ fn create_percy_dom(dom_selector_of_mount: &str, start_view: VirtualNode) -> Per
     let pdom = PercyDom::new_append_to_mount(start_view, &mount);
     pdom
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn foo() {}
-}
