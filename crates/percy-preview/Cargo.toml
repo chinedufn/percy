@@ -1,7 +1,11 @@
 [package]
 name = "percy-preview"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+description = "Preview virtual dom components"
+keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/chinedufn/percy"
 
 [dependencies]
-virtual-node = {path = "../virtual-node"}
+virtual-node = {path = "../virtual-node", version = "0.3.1"}

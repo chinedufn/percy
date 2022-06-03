@@ -1,5 +1,7 @@
 mod message;
+
 pub use self::message::*;
+use std::ops::Deref;
 
 mod world_config;
 use self::resources::Resources;
@@ -16,9 +18,19 @@ pub(crate) struct World {
 
 pub(super) fn create_world(config: WorldConfig) -> World {
     World {
-        state: State {},
+        state: State {
+            previews: config.previews,
+        },
         resources: Resources {
             router: config.router,
         },
+    }
+}
+
+impl Deref for World {
+    type Target = State;
+
+    fn deref(&self) -> &Self::Target {
+        &self.state
     }
 }

@@ -60,6 +60,12 @@ impl From<Vec<VirtualNode>> for IterableNodes {
     }
 }
 
+impl<V: View> From<V> for IterableNodes {
+    fn from(from: V) -> Self {
+        IterableNodes(vec![from.render()])
+    }
+}
+
 impl<T: Into<IterableNodes>> From<Option<T>> for IterableNodes {
     fn from(opt: Option<T>) -> Self {
         if let Some(val) = opt {
