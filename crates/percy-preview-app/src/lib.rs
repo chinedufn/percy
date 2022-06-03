@@ -2,7 +2,8 @@
 
 #![deny(missing_docs)]
 
-use self::app::{AppConfig, PercyPreviewApp};
+pub use self::app::AppConfig;
+use self::app::PercyPreviewApp;
 use self::render::render_app;
 use std::sync::{Arc, Mutex};
 
@@ -17,11 +18,15 @@ mod view;
 
 /// A frontend web application that lets you preview your own application's view components.
 #[wasm_bindgen]
-pub struct PercyPreviewWebClient;
+pub struct PercyPreviewWebClient {
+    /// Rerender the application.
+    #[wasm_bindgen(skip)]
+    pub rerender: Arc<Mutex<Box<dyn FnMut() -> ()>>>,
+}
 
 impl PercyPreviewWebClient {
     /// Create a new preview application and append the application to a DOM node.
-    pub fn append_to_mount(config: AppConfig, dom_selector_of_mount: &str) {
+    pub fn new_append_to_mount(config: AppConfig, dom_selector_of_mount: &str) -> Self {
         std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
         let render: Arc<Mutex<Box<dyn FnMut() -> ()>>> = Arc::new(Mutex::new(Box::new(|| {})));
@@ -35,6 +40,10 @@ impl PercyPreviewWebClient {
         let render = create_render_scheduler(pdom, render);
 
         *render_clone.lock().unwrap() = render;
+
+        Self {
+            rerender: render_clone,
+        }
     }
 }
 

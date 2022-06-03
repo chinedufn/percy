@@ -57,7 +57,7 @@ mod previews {
     use percy_dom::prelude::*;
     use percy_preview::{Preview, Rerender};
 
-    pub fn preview_my_view(rerender: Rerender>) -> Preview {
+    pub fn preview_my_view(rerender: Rerender) -> Preview {
         let count = Arc::new(AtomicU32::new(0));
         let count_clone = count.clone();
 

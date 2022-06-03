@@ -12,7 +12,7 @@ pub(crate) fn create_router() -> Router {
 
 /// Used to
 pub(crate) struct RouteDataProvider {
-    world: AppWorldWrapper<World>,
+    pub(crate) world: AppWorldWrapper<World>,
 }
 
 impl RouteDataProvider {
