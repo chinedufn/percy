@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 anyhow = "1"
 clap = {version = "3.1", features = ["derive"]}
-notify = "4"
 percy-preview-server = {path = "../percy-preview-server"}
 tempfile = "3"
 tokio = {version = "1", features = ["rt"]}

@@ -1,5 +1,5 @@
 use crate::router::websocket::WEBSOCKET_ROUTE;
-use crate::{make_html, ServerConfig};
+use crate::{ServerConfig, WebsocketConnections};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
 use axum::routing::{get, get_service};
@@ -10,21 +10,20 @@ use tower_http::trace::{DefaultMakeSpan, TraceLayer};
 
 mod websocket;
 
-pub(crate) fn create_router(config: ServerConfig) -> Router {
-    let html = make_html(
-        "Percy Preview App",
-        &config.wasm_file_name,
-        &config.javascript_file_name,
-    );
-
+pub(crate) fn create_router(
+    config: ServerConfig,
+    html: String,
+    connections: WebsocketConnections,
+) -> Router {
     Router::new()
         .fallback(get(catch_all))
         .nest(
             "/static",
-            get_service(ServeDir::new(config.assets_dir)).handle_error(handle_error),
+            get_service(ServeDir::new(config.out_dir)).handle_error(handle_error),
         )
         .route(WEBSOCKET_ROUTE, get(websocket::websocket_handler))
         .layer(Extension(Arc::new(CatchAllHtml(html))))
+        .layer(Extension(connections))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::default().include_headers(true)),
