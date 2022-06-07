@@ -1,0 +1,31 @@
+[package]
+name = "component-preview"
+version = "0.1.0"
+edition = "2021"
+publish = []
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+preview = ["percy-preview", "percy-preview-app"]
+production = []
+
+[dependencies]
+console_error_panic_hook = "0.1"
+js-sys = "0.3"
+percy-dom = {path = "../../crates/percy-dom"}
+wasm-bindgen = "0.2.80"
+
+# Optional dependencies
+percy-preview = {optional = true, path = "../../crates/percy-preview"}
+percy-preview-app = {optional = true, path = "../../crates/percy-preview-app"}
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "Document",
+    "HtmlElement",
+    "Window",
+    "console",
+]

@@ -1,4 +1,3 @@
-use std::ops::Deref;
 use std::sync::{Arc, Mutex};
 
 use crate::create_router;
