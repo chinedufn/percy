@@ -2,6 +2,9 @@
 
 #![deny(missing_docs)]
 
+#[macro_use]
+extern crate sunbeam;
+
 pub use self::app::AppConfig;
 use self::app::PercyPreviewApp;
 use self::render::render_app;
@@ -15,6 +18,8 @@ mod app;
 mod render;
 mod routes;
 mod view;
+
+pub mod all_sunbeam_css;
 
 /// A frontend web application that lets you preview your own application's view components.
 #[wasm_bindgen]

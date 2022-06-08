@@ -57,8 +57,9 @@ impl View for IndexView {
         let active_preview = self.render_active_preview();
 
         html! {
-            // TODO: Use sunbeam-css instead of inline styles.. just quickly hacking..
-            <div style="display: flex; flex-direction: row;">
+            <div
+                class=css!("display-flex")
+            >
                 {preview_list}
                 {active_preview}
             </div>

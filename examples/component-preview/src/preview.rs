@@ -8,9 +8,7 @@ use percy_preview_app::{AppConfig, PercyPreviewWebClient};
 fn previews(rerender: Rerender) -> Vec<Preview> {
     use crate::views;
 
-    vec![views::controls_header::preview::controls_header_preview(
-        rerender,
-    )]
+    vec![views::login::preview::login_form_preview(rerender)]
 }
 
 /// Start the Percy preview application.

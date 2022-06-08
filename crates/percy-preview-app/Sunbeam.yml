@@ -1,0 +1,5 @@
+colors:
+  red: "#ff0000"
+screen_widths:
+  - 640
+  - 768

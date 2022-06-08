@@ -1,7 +1,6 @@
 use clap::Parser;
 use percy_preview_server::{start_server, ServerConfig};
 use std::path::PathBuf;
-use tempfile::TempDir;
 use tokio::runtime::Runtime;
 
 const DEFAULT_PORT: u16 = 16500;
@@ -20,15 +19,19 @@ pub(crate) struct Preview {
 
 impl Preview {
     pub fn run(self) -> anyhow::Result<()> {
-        let outdir = TempDir::new().unwrap().into_path();
-
         let port = self.port.unwrap_or(DEFAULT_PORT);
+
+        let out_dir = self.target.join(format!(
+            "percy-preview-{}",
+            self.crate_dir.file_name().unwrap().to_str().unwrap()
+        ));
+        std::fs::create_dir_all(&out_dir).unwrap();
 
         let server_config = ServerConfig {
             port,
             crate_dir: self.crate_dir,
             target_dir: self.target,
-            out_dir: outdir.clone(),
+            out_dir,
         };
 
         let runtime = Runtime::new().unwrap();

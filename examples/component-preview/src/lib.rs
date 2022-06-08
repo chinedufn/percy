@@ -2,6 +2,9 @@
 
 #![deny(missing_docs)]
 
+#[macro_use]
+extern crate sunbeam;
+
 use percy_dom::render::create_render_scheduler;
 use percy_dom::{PercyDom, VElement, VirtualNode};
 use std::sync::{Arc, Mutex};
