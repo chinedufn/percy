@@ -5,7 +5,9 @@ pub struct ControlsHeaderView {}
 impl View for ControlsHeaderView {
     fn render(&self) -> VirtualNode {
         html! {
-            <div> This is the component where you can control things like pausing the watcher </div>
+            <div>
+               This will be a controls component where you can control things like pausing the watcher.
+            </div>
         }
     }
 }

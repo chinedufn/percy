@@ -3,7 +3,14 @@
 #![deny(missing_docs)]
 
 use std::net::SocketAddr;
+use std::path::PathBuf;
+use std::sync::mpsc::channel;
 
+use crate::filesystem_watcher::{
+    start_fs_notification_receiver_thread, start_fs_notification_sender_thread,
+    NotificationReceiverConfig, NotificationSenderConfig,
+};
+use crate::websocket::WebsocketConnections;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 pub use self::config::ServerConfig;
@@ -11,19 +18,37 @@ pub use self::config::ServerConfig;
 mod config;
 mod router;
 
+mod filesystem_watcher;
+mod websocket;
+
 /// Start the Percy Preview server.
 pub async fn start_server(config: ServerConfig) {
     init_tracing();
 
-    let html = make_html(
-        "Percy Preview App",
-        &config.wasm_file_name,
-        &config.javascript_file_name,
-    );
-    std::fs::write(config.assets_dir.join("index.html"), html).unwrap();
+    let crate_library_name = get_crate_library_name(&config.crate_dir);
+
+    let wasm_file = format!("{}_bg.wasm", crate_library_name);
+    let javascript_file = format!("{}.js", crate_library_name);
+
+    let html = make_html("Percy Preview App", &wasm_file, &javascript_file);
+    std::fs::write(config.out_dir.join("index.html"), &html).unwrap();
+
+    let websocket_connections = WebsocketConnections::default();
+
+    let (refresh_tx, refresh_rx) = channel();
+    start_fs_notification_sender_thread(NotificationSenderConfig {
+        crate_dir: config.crate_dir.clone(),
+        target_dir: config.target_dir.clone(),
+        out_dir: config.out_dir.clone(),
+        refresh_tx,
+    });
+    start_fs_notification_receiver_thread(NotificationReceiverConfig {
+        connections: websocket_connections.clone(),
+        refresh_rx,
+    });
 
     let port = config.port;
-    let app = router::create_router(config);
+    let app = router::create_router(config, html, websocket_connections);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     println!("Percy Preview Server listening on port {}", port);
@@ -41,6 +66,16 @@ fn init_tracing() {
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
+}
+
+// /path/to/some-crate -> some_crate
+fn get_crate_library_name(crate_dir: &PathBuf) -> String {
+    crate_dir
+        .file_name()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .replace("-", "_")
 }
 
 fn make_html(title: &str, wasm: &str, javascript: &str) -> String {
@@ -66,6 +101,18 @@ fn make_html(title: &str, wasm: &str, javascript: &str) -> String {
           }}
       
           run()
+      </script>
+      <script>
+        const loc = window.location
+        const wsUrl = "ws://" + loc.host + "/ws";
+        
+        const socket = new WebSocket(wsUrl);
+        
+        socket.addEventListener('message', function (event) {{
+            console.log("Reloading")
+            window.location.reload();
+        }});
+      
       </script>
   </body>
 </html>
