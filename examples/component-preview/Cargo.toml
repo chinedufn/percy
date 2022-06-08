@@ -11,10 +11,15 @@ crate-type = ["cdylib"]
 preview = ["percy-preview", "percy-preview-app"]
 production = []
 
+[build-dependencies]
+sunbeam-build = "0.0.3-alpha"
+serde_yaml = "0.8"
+
 [dependencies]
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
 percy-dom = {path = "../../crates/percy-dom"}
+sunbeam = "0.0.3-alpha"
 wasm-bindgen = "0.2.80"
 
 # Optional dependencies

@@ -3,11 +3,12 @@ use axum::extract::ws::Message;
 use notify::{watcher, DebouncedEvent, RecursiveMode, Watcher};
 use std::path::PathBuf;
 use std::process::Command;
-use std::sync::mpsc::{channel, Receiver, RecvError, SendError, Sender};
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::Duration;
+use sunbeam_ir::{Classes, SunbeamConfig};
 
-// 0.2 is somewhat arbitrarily chosen.
-const WATCHER_DELAY_SECS: f32 = 0.2;
+// 0.3 is somewhat arbitrarily chosen.
+const WATCHER_DEBOUNCE_SECS: f32 = 0.3;
 
 pub(crate) struct NotificationSenderConfig {
     pub crate_dir: PathBuf,
@@ -26,7 +27,7 @@ pub(crate) fn start_fs_notification_sender_thread(
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
         let (tx, rx) = channel();
-        let mut watcher = watcher(tx, Duration::from_secs_f32(WATCHER_DELAY_SECS)).unwrap();
+        let mut watcher = watcher(tx, Duration::from_secs_f32(WATCHER_DEBOUNCE_SECS)).unwrap();
 
         watcher
             .watch(&config.crate_dir, RecursiveMode::Recursive)
@@ -38,11 +39,8 @@ pub(crate) fn start_fs_notification_sender_thread(
             let event = rx.recv().unwrap();
 
             match event {
-                DebouncedEvent::NoticeWrite(_)
-                | DebouncedEvent::NoticeRemove(_)
-                | DebouncedEvent::Create(_)
+                DebouncedEvent::Create(_)
                 | DebouncedEvent::Write(_)
-                | DebouncedEvent::Remove(_)
                 | DebouncedEvent::Rename(_, _) => {
                     match build(&config.crate_dir, &config.target_dir, &config.out_dir) {
                         Ok(_) => {
@@ -58,7 +56,7 @@ pub(crate) fn start_fs_notification_sender_thread(
                         }
                     }
                 }
-                DebouncedEvent::Rescan | DebouncedEvent::Chmod(_) | DebouncedEvent::Error(_, _) => {
+                _ => {
                     // Nothing to do...
                 }
             }
@@ -70,8 +68,9 @@ pub(crate) fn start_fs_notification_receiver_thread(config: NotificationReceiver
     std::thread::spawn(move || {
         let runtime = tokio::runtime::Runtime::new().unwrap();
         runtime.block_on(async move {
-            while let recv = config.refresh_rx.recv() {
-                match config.refresh_rx.recv() {
+            loop {
+                let recv = config.refresh_rx.recv();
+                match recv {
                     Ok(_) => {
                         let mut connections = config.connections.connections.lock().unwrap();
 
@@ -101,11 +100,16 @@ fn build(crate_dir: &PathBuf, target_dir: &PathBuf, out_dir: &PathBuf) -> anyhow
     let project_library_name = crate_dir.file_name().unwrap().to_str().unwrap();
     let project_library_name = project_library_name.replace("-", "_");
 
-    cargo_build(crate_dir, target_dir)?;
-    wasm_bindgen_build(&project_library_name, target_dir, out_dir)
+    cargo_build(crate_dir, target_dir, out_dir)?;
+    wasm_bindgen_build(&project_library_name, target_dir, out_dir)?;
+    run_sunbeam_build(&crate_dir, &out_dir)
 }
 
-fn cargo_build(project_dir: &PathBuf, target_dir: &PathBuf) -> anyhow::Result<()> {
+fn cargo_build(
+    project_dir: &PathBuf,
+    target_dir: &PathBuf,
+    out_dir: &PathBuf,
+) -> anyhow::Result<()> {
     let mut cmd = Command::new("cargo");
 
     let output = cmd
@@ -117,6 +121,7 @@ fn cargo_build(project_dir: &PathBuf, target_dir: &PathBuf) -> anyhow::Result<()
         .args(&["--target", "wasm32-unknown-unknown"])
         .args(&["--features", "preview"])
         .env("CARGO_TARGET_DIR", target_dir)
+        .env("SUNBEAM_DIR", out_dir.canonicalize().unwrap())
         .spawn()?
         .wait_with_output()?;
 
@@ -159,4 +164,31 @@ fn wasm_bindgen_build(
             String::from_utf8(output.stderr).unwrap()
         ));
     }
+}
+
+fn run_sunbeam_build(crate_dir: &PathBuf, out_dir: &PathBuf) -> anyhow::Result<()> {
+    let crate_sunbeam_config =
+        serde_yaml::from_str(&std::fs::read_to_string(crate_dir.join("Sunbeam.yml")).unwrap())?;
+
+    let all_sunbeam = out_dir.join("all_sunbeam_css.rs");
+
+    if !all_sunbeam.exists() {
+        return Err(anyhow::anyhow!(
+            "All sunbeam file does not exist: {:?}",
+            all_sunbeam
+        ));
+    }
+
+    let mut classes =
+        sunbeam_build::parse_rust_files(std::iter::once(all_sunbeam), &crate_sunbeam_config)?;
+
+    let percy_preview_app_sunbeam_config: SunbeamConfig =
+        serde_yaml::from_str(percy_preview_app::all_sunbeam_css::SUNBEAM_CONFIG_YML).unwrap();
+    for class in percy_preview_app::all_sunbeam_css::all() {
+        classes.extend(Classes::parse_str(class, &percy_preview_app_sunbeam_config).unwrap());
+    }
+
+    std::fs::write(out_dir.join("app.css"), classes.to_css_file_contents())?;
+
+    Ok(())
 }

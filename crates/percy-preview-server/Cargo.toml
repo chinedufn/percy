@@ -8,6 +8,10 @@ anyhow = "1"
 axum = {version = "0.5", features = ["headers", "ws"]}
 headers = "0.3"
 notify = "4"
+percy-preview-app = {path = "../percy-preview-app"}
+serde_yaml = "0.8"
+sunbeam-build = "0.0.3-alpha"
+sunbeam-ir = "0.0.3-alpha"
 tokio = {version = "1", features = ["full"]}
 tracing = "0.1"
 tracing-subscriber = {version = "0.3", features = ["env-filter"]}

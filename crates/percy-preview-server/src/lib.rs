@@ -86,7 +86,7 @@ fn make_html(title: &str, wasm: &str, javascript: &str) -> String {
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" type="text/css" href="app.css"/>
+      <link rel="stylesheet" type="text/css" href="/static/app.css"/>
       <title>{title}</title>
   </head>
   <body style='margin: 0; padding: 0; width: 100%; height: 100%;'>
