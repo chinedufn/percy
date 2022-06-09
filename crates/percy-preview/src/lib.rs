@@ -18,7 +18,7 @@ pub struct Preview {
     /// A url friendly version of the name.
     name_url_friendly: UrlFriendlyString,
     /// Render the preview
-    render: Rc<RefCell<dyn FnMut() -> VirtualNode>>,
+    renderer: Rc<RefCell<dyn FnMut() -> VirtualNode>>,
 }
 
 /// A string that only contains letters, numbers, hyphens and underscores.
@@ -31,7 +31,7 @@ impl Preview {
         Preview {
             name: name.to_string(),
             name_url_friendly,
-            render,
+            renderer: render,
         }
     }
 
@@ -45,9 +45,9 @@ impl Preview {
         &self.name_url_friendly.0
     }
 
-    /// Render the preview.
-    pub fn render(&self) -> &Rc<RefCell<dyn FnMut() -> VirtualNode>> {
-        &self.render
+    /// Returns a function that can be used to render the preview.
+    pub fn renderer(&self) -> &Rc<RefCell<dyn FnMut() -> VirtualNode>> {
+        &self.renderer
     }
 }
 

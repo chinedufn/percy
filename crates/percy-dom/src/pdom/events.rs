@@ -24,7 +24,7 @@ impl PercyDom {
         let callback = Closure::wrap(callback);
 
         self.root_node
-            .add_event_listener_with_callback(event, callback.as_ref().as_ref().unchecked_ref())
+            .add_event_listener_with_callback(event, callback.as_ref().unchecked_ref())
             .unwrap();
 
         self.event_delegation_listeners

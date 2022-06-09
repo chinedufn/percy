@@ -4,5 +4,8 @@ mod message_handlers;
 ///
 /// For example, a Msg might get sent when a button is clicked.
 pub enum Msg {
-    ProvideRouteData,
+    /// Attach the route data provider to the router.
+    AttachRouteDataProvider,
+    /// Set the active URL path, such as "/some/path".
+    SetPath(String),
 }

@@ -23,13 +23,16 @@ features = [
     "Document",
     "Element",
     "EventTarget",
+    "History",
     "HtmlCollection",
     "HtmlElement",
     "HtmlInputElement",
     "HtmlTextAreaElement",
+    "Location",
     "Node",
     "NodeList",
     "Text",
+    "Url",
     "Window",
 ]
 

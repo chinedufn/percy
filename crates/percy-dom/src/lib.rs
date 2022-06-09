@@ -26,6 +26,7 @@ mod patch;
 mod pdom;
 
 pub mod render;
+pub mod single_page_app;
 
 /// Exports structs and macros that you'll almost always want access to in a virtual-dom
 /// powered application

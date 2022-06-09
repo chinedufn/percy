@@ -5,7 +5,10 @@ use percy_router::prelude::*;
 pub(crate) fn create_router() -> Router {
     use crate::view;
 
-    let router = Router::new(create_routes![view::index_route::render_index_route]);
+    let router = Router::new(create_routes![
+        view::index_route::render_index_route,
+        view::visualize_component_route::render_visualize_component_route,
+    ]);
 
     router
 }
