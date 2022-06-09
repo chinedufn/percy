@@ -1,6 +1,6 @@
 [package]
 name = "percy-preview"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 description = "Preview virtual dom components"
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
