@@ -21,6 +21,7 @@ js-sys = "0.3"
 percy-dom = {path = "../../crates/percy-dom"}
 sunbeam = "0.0.3-alpha"
 wasm-bindgen = "0.2.80"
+wasm-bindgen-futures = "0.4"
 
 # Optional dependencies
 percy-preview = {optional = true, path = "../../crates/percy-preview"}

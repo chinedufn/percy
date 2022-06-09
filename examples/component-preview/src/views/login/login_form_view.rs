@@ -34,6 +34,6 @@ pub mod preview {
             }
         };
 
-        Preview::new("Login Form View", Rc::new(RefCell::new(render)))
+        Preview::new("Login Form", Rc::new(RefCell::new(render)))
     }
 }

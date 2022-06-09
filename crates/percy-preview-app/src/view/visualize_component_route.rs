@@ -1,15 +1,24 @@
 use crate::routes::RouteDataProvider;
 use percy_dom::prelude::*;
 use percy_router::prelude::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 
-#[route(path = "/")]
-pub(crate) fn render_index_route(provider: Provided<RouteDataProvider>) -> VirtualNode {
-    let route_data = provider.get_index_route_data();
-    IndexView { data: route_data }.render()
+/// A page that lets you view a component preview.
+#[route(path = "/components/:component_name_url_friendly")]
+pub(crate) fn render_visualize_component_route(
+    provider: Provided<RouteDataProvider>,
+    component_name_url_friendly: String,
+) -> VirtualNode {
+    let route_data = provider.get_visualize_component_route_data(&component_name_url_friendly);
+    ComponentView { data: route_data }.render()
 }
 
 impl RouteDataProvider {
-    fn get_index_route_data(&self) -> IndexRouteData {
+    fn get_visualize_component_route_data(
+        &self,
+        component_name_url_friendly: &str,
+    ) -> ComponentVisualizerRouteData {
         let world = self.world.read();
 
         let preview_list: Vec<PreviewListEntry> = world
@@ -21,12 +30,24 @@ impl RouteDataProvider {
             })
             .collect();
 
-        IndexRouteData { preview_list }
+        let active_preview = world.previews.iter().find_map(|preview| {
+            if preview.name_url_friendly() != component_name_url_friendly {
+                return None;
+            }
+
+            Some(preview.renderer().clone())
+        });
+
+        ComponentVisualizerRouteData {
+            preview_list,
+            active_preview,
+        }
     }
 }
 
-struct IndexRouteData {
+struct ComponentVisualizerRouteData {
     preview_list: Vec<PreviewListEntry>,
+    active_preview: Option<Rc<RefCell<dyn FnMut() -> VirtualNode>>>,
 }
 
 struct PreviewListEntry {
@@ -34,13 +55,14 @@ struct PreviewListEntry {
     name_url_friendly: String,
 }
 
-struct IndexView {
-    data: IndexRouteData,
+struct ComponentView {
+    data: ComponentVisualizerRouteData,
 }
 
-impl View for IndexView {
+impl View for ComponentView {
     fn render(&self) -> VirtualNode {
         let preview_list = self.render_preview_list();
+        let active_preview = self.render_active_preview();
 
         // TODO: Create a `MainContentView` that renders the main navigation and some content.
         //  Re-use this across the index route and the visualize component route
@@ -48,16 +70,16 @@ impl View for IndexView {
             <div
                 class=css!("display-flex")
             >
-              {preview_list}
-              <div>
-                Home page here
-              </div>
+                {preview_list}
+                <div>
+                    {active_preview}
+                </div>
             </div>
         }
     }
 }
 
-impl IndexView {
+impl ComponentView {
     /// Render a list of links to component previews.
     /// Clicking on a link will show the relevant component.
     fn render_preview_list(&self) -> VirtualNode {
@@ -89,5 +111,21 @@ impl IndexView {
                 </div>
             </div>
         }
+    }
+
+    /// Render the component that is currently being previewed.
+    fn render_active_preview(&self) -> Option<VirtualNode> {
+        let data = &self.data;
+
+        let active_preview = data.active_preview.as_ref()?;
+        let active_preview = (active_preview.borrow_mut())();
+
+        let active_preview = html! {
+            <div>
+                {active_preview}
+            </div>
+        };
+
+        Some(active_preview)
     }
 }

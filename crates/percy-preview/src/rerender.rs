@@ -17,7 +17,7 @@ pub struct Rerender {
 
 impl Rerender {
     /// Create a new Rerender
-    pub fn new(render: Render) -> Self {
+    pub fn new() -> Self {
         Rerender {
             render: Arc::new(Mutex::new(Box::new(|| {}))),
         }

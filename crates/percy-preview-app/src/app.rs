@@ -1,15 +1,17 @@
 use std::sync::{Arc, Mutex};
 
-use crate::create_router;
 use app_world::AppWorldWrapper;
+
+use crate::create_router;
+
+pub(crate) use self::config::AppConfig;
+pub use self::world::async_task_spawner;
+use self::world::{create_world, WorldConfig};
+pub(crate) use self::world::{Msg, World};
 
 mod config;
 
-pub use self::config::AppConfig;
-
 mod world;
-pub(crate) use self::world::World;
-use self::world::{create_world, Msg, WorldConfig};
 
 /// Powers an application that can be used to preview view components.
 pub(crate) struct PercyPreviewApp {
@@ -22,13 +24,15 @@ impl PercyPreviewApp {
         let router = create_router();
 
         let world = create_world(WorldConfig {
+            async_task_spawner: config.async_task_spawner,
+            after_path_change: config.after_path_change,
             previews: config.previews,
             render,
             router,
         });
         let world = AppWorldWrapper::new(world);
 
-        world.msg(Msg::ProvideRouteData);
+        world.msg(Msg::AttachRouteDataProvider);
 
         Self { world }
     }
