@@ -1,6 +1,6 @@
 [package]
 name = "percy-preview-app"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 description = "Preview virtual dom components"
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
@@ -15,9 +15,9 @@ serde_yaml = "0.8"
 app-world = "0.1"
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
-percy-dom = {path = "../percy-dom", version = "0.7.2"}
-percy-router = {path = "../percy-router", version = "0.3.2"}
-percy-preview = {path = "../percy-preview", version = "0.0.1"}
+percy-dom = {path = "../percy-dom", version = "0.7.3"}
+percy-router = {path = "../percy-router", version = "0.3.3"}
+percy-preview = {path = "../percy-preview", version = "0.0.2"}
 sunbeam = "0.0.3-alpha"
 wasm-bindgen = "0.2.80"
 
