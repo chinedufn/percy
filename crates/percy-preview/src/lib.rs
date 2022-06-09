@@ -15,6 +15,9 @@ mod rerender;
 pub struct Preview {
     /// The name of this preview
     name: String,
+    /// A description of the preview.
+    /// This gets displayed above the preview.
+    description: Option<String>,
     /// A url friendly version of the name.
     name_url_friendly: UrlFriendlyString,
     /// Render the preview
@@ -30,6 +33,7 @@ impl Preview {
         let name_url_friendly = UrlFriendlyString::new(name.to_string());
         Preview {
             name: name.to_string(),
+            description: None,
             name_url_friendly,
             renderer: render,
         }
@@ -43,6 +47,16 @@ impl Preview {
     /// A URL friendly version of the name.
     pub fn name_url_friendly(&self) -> &String {
         &self.name_url_friendly.0
+    }
+
+    /// The preview's description.
+    pub fn description(&self) -> &Option<String> {
+        &self.description
+    }
+
+    /// The preview's description.
+    pub fn set_description(&mut self, description: Option<String>) {
+        self.description = description;
     }
 
     /// Returns a function that can be used to render the preview.
