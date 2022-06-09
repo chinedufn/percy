@@ -33,7 +33,12 @@ pub(crate) fn start_fs_notification_sender_thread(
             .watch(&config.crate_dir, RecursiveMode::Recursive)
             .unwrap();
 
-        build(&config.crate_dir, &config.target_dir, &config.out_dir);
+        match build(&config.crate_dir, &config.target_dir, &config.out_dir) {
+            Ok(_) => {}
+            Err(err) => {
+                eprintln!("{}", err)
+            }
+        };
 
         loop {
             let event = rx.recv().unwrap();

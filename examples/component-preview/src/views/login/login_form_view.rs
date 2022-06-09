@@ -34,6 +34,11 @@ pub mod preview {
             }
         };
 
-        Preview::new("Login Form", Rc::new(RefCell::new(render)))
+        let mut preview = Preview::new("Login Form", Rc::new(RefCell::new(render)));
+        preview.set_description(Some(
+            "This is the login form preview's description.".to_string(),
+        ));
+
+        preview
     }
 }

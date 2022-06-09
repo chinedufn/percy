@@ -35,7 +35,10 @@ impl RouteDataProvider {
                 return None;
             }
 
-            Some(preview.renderer().clone())
+            Some(ActivePreview {
+                description: (*preview.description()).clone(),
+                render_fn: preview.renderer().clone(),
+            })
         });
 
         ComponentVisualizerRouteData {
@@ -47,7 +50,12 @@ impl RouteDataProvider {
 
 struct ComponentVisualizerRouteData {
     preview_list: Vec<PreviewListEntry>,
-    active_preview: Option<Rc<RefCell<dyn FnMut() -> VirtualNode>>>,
+    active_preview: Option<ActivePreview>,
+}
+
+struct ActivePreview {
+    render_fn: Rc<RefCell<dyn FnMut() -> VirtualNode>>,
+    description: Option<String>,
 }
 
 struct PreviewListEntry {
@@ -118,11 +126,18 @@ impl ComponentView {
         let data = &self.data;
 
         let active_preview = data.active_preview.as_ref()?;
-        let active_preview = (active_preview.borrow_mut())();
+
+        let description = active_preview
+            .description
+            .as_ref()
+            .map(|d| html! { <p> {d} </p> });
+        let rendered_preview = (active_preview.render_fn.borrow_mut())();
 
         let active_preview = html! {
             <div>
-                {active_preview}
+              {description}
+
+              {rendered_preview}
             </div>
         };
 
