@@ -1,6 +1,6 @@
 [package]
 name = "percy-router"
-version = "0.3.3"
+version = "0.3.4"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 edition = "2018"
 description = "A router for client side web applications with server side rendering support"

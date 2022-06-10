@@ -13,7 +13,7 @@ pub(crate) fn create_router() -> Router {
     router
 }
 
-/// Used to
+/// Used to provide data to a route.
 pub(crate) struct RouteDataProvider {
     pub(crate) world: AppWorldWrapper<World>,
 }

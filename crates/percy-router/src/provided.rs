@@ -43,7 +43,7 @@ impl<T> Clone for Provided<T> {
 
 impl Router {
     /// Provide the application state data that different routes need.
-    pub fn provide<T: 'static>(&mut self, provided: T) {
+    pub fn provide<T: 'static>(&self, provided: T) {
         let provided = Provided {
             data: Rc::new(provided),
         };
