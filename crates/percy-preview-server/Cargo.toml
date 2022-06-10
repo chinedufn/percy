@@ -1,6 +1,6 @@
 [package]
 name = "percy-preview-server"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 
 [dependencies]
@@ -10,8 +10,8 @@ headers = "0.3"
 notify = "4"
 percy-preview-app = {path = "../percy-preview-app"}
 serde_yaml = "0.8"
-sunbeam-build = "0.0.3-alpha"
-sunbeam-ir = "0.0.3-alpha"
+sunbeam-build = "0.0.4-alpha"
+sunbeam-ir = "0.0.4-alpha"
 tokio = {version = "1", features = ["full"]}
 tracing = "0.1"
 tracing-subscriber = {version = "0.3", features = ["env-filter"]}
