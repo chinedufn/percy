@@ -13,6 +13,7 @@ pub use wasm_bindgen::JsCast;
 // access to `Closure` when creating event handlers.
 pub use wasm_bindgen::prelude::Closure;
 
+#[cfg(feature = "macro")]
 pub use html_macro::html;
 pub use virtual_node::*;
 
@@ -37,6 +38,7 @@ pub mod prelude {
 
     pub use wasm_bindgen::prelude::Closure;
 
+    #[cfg(feature = "macro")]
     pub use html_macro::html;
     pub use virtual_node::{EventAttribFn, IterableNodes, View};
 
