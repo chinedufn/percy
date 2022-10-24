@@ -52,7 +52,7 @@ impl Router {
 
         let provided = Box::new(provided);
 
-        self.provided.lock().unwrap().insert(type_id, provided);
+        self.provided.borrow_mut().insert(type_id, provided);
     }
 }
 
@@ -69,7 +69,7 @@ mod tests {
         let router = Router::new(vec![]);
         router.provide(State { count: 50 });
 
-        let state = router.provided.lock().unwrap();
+        let state = router.provided.borrow();
         let state = state
             .get(&TypeId::of::<Provided<State>>())
             .unwrap()

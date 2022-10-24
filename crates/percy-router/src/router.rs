@@ -4,11 +4,12 @@ use crate::Route;
 use percy_dom::prelude::*;
 use std::any::Any;
 use std::any::TypeId;
+use std::cell::RefCell;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::rc::Rc;
 
 /// A map of TypeId's to Box<Provided<T>> (stored as Box<dyn Any>)
-pub type ProvidedMap = Arc<Mutex<HashMap<TypeId, Box<dyn Any>>>>;
+pub type ProvidedMap = Rc<RefCell<HashMap<TypeId, Box<dyn Any>>>>;
 
 /// Holds all of the routes for an application.
 ///
@@ -18,7 +19,7 @@ pub type ProvidedMap = Arc<Mutex<HashMap<TypeId, Box<dyn Any>>>>;
 ///
 /// Then if we find a matching route we'll return it.
 pub struct Router {
-    route_handlers: Vec<Arc<dyn RouteHandler>>,
+    route_handlers: Vec<Rc<dyn RouteHandler>>,
     pub(crate) provided: ProvidedMap,
 }
 
@@ -52,11 +53,11 @@ impl Router {
     /// # use percy_router::prelude::Router;
     /// let router = Router::new(create_routes![index_route, products_route]);
     /// ```
-    pub fn new(mut route_handlers: Vec<Arc<dyn RouteHandler>>) -> Self {
-        let provided = Arc::new(Mutex::new(HashMap::new()));
+    pub fn new(mut route_handlers: Vec<Rc<dyn RouteHandler>>) -> Self {
+        let provided = Rc::new(RefCell::new(HashMap::new()));
 
         for route_handler in route_handlers.iter_mut() {
-            route_handler.set_provided(Arc::clone(&provided));
+            route_handler.set_provided(Rc::clone(&provided));
         }
 
         Self {
@@ -66,7 +67,7 @@ impl Router {
     }
 
     /// Return the matching RouteHandler given some `incoming_route`
-    pub fn matching_route_handler(&self, incoming_route: &str) -> Option<&Arc<dyn RouteHandler>> {
+    pub fn matching_route_handler(&self, incoming_route: &str) -> Option<&Rc<dyn RouteHandler>> {
         for route_handler in self.route_handlers.iter() {
             if route_handler.matches(incoming_route) {
                 return Some(route_handler);
