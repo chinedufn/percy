@@ -178,8 +178,6 @@ impl Route {
 mod tests {
     use super::*;
     use percy_dom::prelude::*;
-    use std::cell::RefCell;
-    use std::rc::Rc;
 
     struct MyView {
         id: u32,
