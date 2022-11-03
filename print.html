@@ -597,23 +597,17 @@ assert_eq!(div.inner_html(), &quot;&lt;span&gt;hi&lt;/span&gt;&quot;);
 <span class="boring">}
 </span></code></pre></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="conditional-rendering"><a class="header" href="#conditional-rendering">Conditional Rendering</a></h1>
-<p>Sometimes you'll want to conditionally render some html without an else statement. This isn't actually possible in Rust
-because an if-else statement is an expression, this means that you can assign this to a variable as the types of the then
-and else branches don't match.</p>
-<p>Although this is quite a common practice in React and other web frameworks, and is supported in Percy.</p>
-<p>You'll be able to include if statements without an else branch inside the html macro.</p>
+<p>Sometimes you'll want to conditionally render some html. You can use an <code>Option</code>.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>fn conditional_render() {
+    let maybe_render: Option&lt;VirtualNode&gt; = make_view();
+
     html! {
         &lt;div&gt;
             &lt;h1&gt;Hello World&lt;/h1&gt;
-            {if should_show_child() {
-                html! {
-                    &lt;p&gt;This child component will only render if the condition evaluates to true&lt;/p&gt;
-                }
-            }}
+            { maybe_render }
         &lt;/div&gt;
     }
 }
