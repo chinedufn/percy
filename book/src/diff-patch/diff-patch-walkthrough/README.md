@@ -97,7 +97,7 @@ Nodes are traversed depth first by recursively diffing children before proceedin
 There are several different types of patches that are described in our `Patch` enum.
 
  ```rust
-{{#include ../../../../crates/percy-dom/src/patch/mod.rs}}
+{{#include ../../../../crates/percy-dom/src/patch/apply_patches.rs}}
  ```
 
 When patching we iterate over our vector of patches, look at the node index for the patch, then
