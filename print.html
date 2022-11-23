@@ -1353,7 +1353,389 @@ Nodes are traversed depth first by recursively diffing children before proceedin
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>{{#include ../../../../crates/percy-dom/src/patch/mod.rs}}
+</span>use std::cmp::min;
+use std::collections::HashMap;
+use std::collections::HashSet;
+
+use virtual_node::event::insert_non_delegated_event;
+use wasm_bindgen::JsCast;
+use wasm_bindgen::JsValue;
+use web_sys::{Element, HtmlInputElement, HtmlTextAreaElement, Node, Text};
+
+use crate::event::{EventsByNodeIdx, ManagedEvent, EVENTS_ID_PROP};
+use crate::patch::Patch;
+use crate::{AttributeValue, PatchSpecialAttribute, VirtualNode};
+
+/// Apply all of the patches to our old root node in order to create the new root node
+/// that we desire. Also, update the `EventsByNodeIdx` with the new virtual node's event callbacks.
+///
+/// This is usually used after diffing two virtual nodes.
+pub fn patch&lt;N: Into&lt;Node&gt;&gt;(
+   root_node: N,
+   new_vnode: &amp;VirtualNode,
+   managed_events: &amp;mut EventsByNodeIdx,
+   patches: &amp;[Patch],
+) -&gt; Result&lt;(), JsValue&gt; {
+   let root_node: Node = root_node.into();
+
+   let mut cur_node_idx = 0;
+
+   let mut nodes_to_find = HashSet::new();
+
+   for patch in patches {
+       nodes_to_find.insert(patch.old_node_idx());
+   }
+
+   let mut element_nodes_to_patch = HashMap::new();
+   let mut text_nodes_to_patch = HashMap::new();
+
+   find_nodes(
+       root_node,
+       &amp;mut cur_node_idx,
+       &amp;mut nodes_to_find,
+       &amp;mut element_nodes_to_patch,
+       &amp;mut text_nodes_to_patch,
+   );
+
+   for patch in patches {
+       let patch_node_idx = patch.old_node_idx();
+
+       if let Some(element) = element_nodes_to_patch.get(&amp;patch_node_idx) {
+           apply_element_patch(&amp;element, &amp;patch, managed_events)?;
+           continue;
+       }
+
+       if let Some(text_node) = text_nodes_to_patch.get(&amp;patch_node_idx) {
+           apply_text_patch(&amp;text_node, &amp;patch, managed_events)?;
+           continue;
+       }
+
+       unreachable!(
+           &quot;We didn't find the element or next node that we were supposed to patch ({}).&quot;,
+           patch_node_idx
+       )
+   }
+
+   overwrite_events(new_vnode, &amp;mut 0, managed_events);
+
+   Ok(())
+}
+
+fn find_nodes(
+   root_node: Node,
+   cur_node_idx: &amp;mut u32,
+   nodes_to_find: &amp;mut HashSet&lt;u32&gt;,
+   element_nodes_to_patch: &amp;mut HashMap&lt;u32, Element&gt;,
+   text_nodes_to_patch: &amp;mut HashMap&lt;u32, Text&gt;,
+) {
+   if nodes_to_find.len() == 0 {
+       return;
+   }
+
+   // We use child_nodes() instead of children() because children() ignores text nodes
+   let children = root_node.child_nodes();
+   let child_node_count = children.length();
+
+   // If the root node matches, mark it for patching
+   if nodes_to_find.get(&amp;cur_node_idx).is_some() {
+       match root_node.node_type() {
+           Node::ELEMENT_NODE =&gt; {
+               element_nodes_to_patch.insert(*cur_node_idx, root_node.unchecked_into());
+           }
+           Node::TEXT_NODE =&gt; {
+               text_nodes_to_patch.insert(*cur_node_idx, root_node.unchecked_into());
+           }
+           other =&gt; unimplemented!(&quot;Unsupported root node type: {}&quot;, other),
+       }
+       nodes_to_find.remove(&amp;cur_node_idx);
+   }
+
+   *cur_node_idx += 1;
+
+   for i in 0..child_node_count {
+       let node = children.item(i).unwrap();
+
+       match node.node_type() {
+           Node::ELEMENT_NODE =&gt; {
+               find_nodes(
+                   node,
+                   cur_node_idx,
+                   nodes_to_find,
+                   element_nodes_to_patch,
+                   text_nodes_to_patch,
+               );
+           }
+           Node::TEXT_NODE =&gt; {
+               if nodes_to_find.get(&amp;cur_node_idx).is_some() {
+                   text_nodes_to_patch.insert(*cur_node_idx, node.unchecked_into());
+               }
+
+               *cur_node_idx += 1;
+           }
+           Node::COMMENT_NODE =&gt; {
+               // At this time we do not support user entered comment nodes, so if we see a comment
+               // then it was a delimiter created by percy-dom in order to ensure that two
+               // neighboring text nodes did not get merged into one by the browser. So we skip
+               // over this percy-dom generated comment node.
+           }
+           _other =&gt; {
+               // Ignoring unsupported child node type
+               // TODO: What do we do with this situation?
+           }
+       }
+   }
+}
+
+fn overwrite_events(node: &amp;VirtualNode, node_idx: &amp;mut u32, managed_events: &amp;mut EventsByNodeIdx) {
+   if let Some(elem) = node.as_velement_ref() {
+       for (event_name, event) in elem.events.iter() {
+           managed_events.overwrite_event_attrib_fn(*node_idx, event_name, event.clone());
+       }
+
+       for child in elem.children.iter() {
+           *node_idx += 1;
+
+           overwrite_events(child, node_idx, managed_events);
+       }
+   }
+}
+
+fn apply_element_patch(
+   node: &amp;Element,
+   patch: &amp;Patch,
+   managed_events: &amp;mut EventsByNodeIdx,
+) -&gt; Result&lt;(), JsValue&gt; {
+   match patch {
+       Patch::AddAttributes(_node_idx, attributes) =&gt; {
+           for (attrib_name, attrib_val) in attributes.iter() {
+               match attrib_val {
+                   AttributeValue::String(val_str) =&gt; {
+                       node.set_attribute(attrib_name, val_str)?;
+
+                       if attrib_name == &amp;&quot;value&quot; {
+                           maybe_set_value_property(node, val_str)
+                       }
+                   }
+                   AttributeValue::Bool(val_bool) =&gt; {
+                       if *val_bool {
+                           node.set_attribute(attrib_name, &quot;&quot;)?;
+                       } else {
+                           node.remove_attribute(attrib_name)?;
+                       }
+                   }
+               }
+           }
+
+           Ok(())
+       }
+       Patch::RemoveAttributes(_node_idx, attributes) =&gt; {
+           for attrib_name in attributes.iter() {
+               node.remove_attribute(attrib_name)?;
+           }
+
+           Ok(())
+       }
+       Patch::Replace {
+           old_idx: _,
+           new_idx,
+           new_node,
+       } =&gt; {
+           let created_node = new_node.create_dom_node(*new_idx, managed_events);
+
+           node.replace_with_with_node_1(&amp;created_node)?;
+
+           Ok(())
+       }
+       Patch::TruncateChildren(_node_idx, num_children_remaining) =&gt; {
+           let children = node.child_nodes();
+           let mut child_count = children.length();
+
+           // We skip over any separators that we placed between two text nodes
+           //   -&gt; `&lt;!--ptns--&gt;`
+           //  and trim all children that come after our new desired `num_children_remaining`
+           let mut non_separator_children_found = 0;
+
+           for index in 0 as u32..child_count {
+               let child = children
+                   .get(min(index, child_count - 1))
+                   .expect(&quot;Potential child to truncate&quot;);
+
+               // If this is a comment node then we know that it is a `&lt;!--ptns--&gt;`
+               // text node separator that was created in virtual_node/mod.rs.
+               if child.node_type() == Node::COMMENT_NODE {
+                   continue;
+               }
+
+               non_separator_children_found += 1;
+
+               if non_separator_children_found &lt;= *num_children_remaining as u32 {
+                   continue;
+               }
+
+               node.remove_child(&amp;child).expect(&quot;Truncated children&quot;);
+               child_count -= 1;
+           }
+
+           Ok(())
+       }
+       Patch::AppendChildren {
+           old_idx: _,
+           new_nodes,
+       } =&gt; {
+           let parent = &amp;node;
+
+           for (new_idx, new_node) in new_nodes {
+               let created_node = new_node.create_dom_node(*new_idx, managed_events);
+
+               parent.append_child(&amp;created_node)?;
+           }
+
+           Ok(())
+       }
+       Patch::ChangeText(_node_idx, _new_node) =&gt; {
+           unreachable!(&quot;Elements should not receive ChangeText patches.&quot;)
+       }
+       Patch::ValueAttributeUnchanged(_node_idx, value) =&gt; {
+           node.set_attribute(&quot;value&quot;, value.as_string().unwrap())?;
+           maybe_set_value_property(node, value.as_string().unwrap());
+
+           Ok(())
+       }
+       Patch::SpecialAttribute(special) =&gt; match special {
+           PatchSpecialAttribute::CallOnCreateElem(_node_idx, new_node) =&gt; {
+               new_node
+                   .as_velement_ref()
+                   .unwrap()
+                   .special_attributes
+                   .maybe_call_on_create_element(&amp;node);
+
+               Ok(())
+           }
+           PatchSpecialAttribute::CallOnRemoveElem(_, old_node) =&gt; {
+               old_node
+                   .as_velement_ref()
+                   .unwrap()
+                   .special_attributes
+                   .maybe_call_on_remove_element(node);
+
+               Ok(())
+           }
+           PatchSpecialAttribute::SetDangerousInnerHtml(_node_idx, new_node) =&gt; {
+               let new_inner_html = new_node
+                   .as_velement_ref()
+                   .unwrap()
+                   .special_attributes
+                   .dangerous_inner_html
+                   .as_ref()
+                   .unwrap();
+
+               node.set_inner_html(new_inner_html);
+
+               Ok(())
+           }
+           PatchSpecialAttribute::RemoveDangerousInnerHtml(_node_idx) =&gt; {
+               node.set_inner_html(&quot;&quot;);
+
+               Ok(())
+           }
+       },
+       Patch::RemoveEventsId(_) =&gt; {
+           js_sys::Reflect::set(node, &amp;EVENTS_ID_PROP.into(), &amp;JsValue::UNDEFINED).unwrap();
+
+           Ok(())
+       }
+       Patch::SetEventsId { old_idx, new_idx } =&gt; {
+           js_sys::Reflect::set(
+               node,
+               &amp;EVENTS_ID_PROP.into(),
+               &amp;format!(&quot;{}{}&quot;, managed_events.events_id_props_prefix(), new_idx).into(),
+           )
+           .unwrap();
+
+           let move_over_old_events = old_idx != new_idx;
+
+           if move_over_old_events {
+               managed_events.move_events(old_idx, *new_idx);
+           }
+
+           Ok(())
+       }
+       Patch::AddEvents(node_idx, new_events) =&gt; {
+           for (event_name, event) in new_events {
+               if event_name.is_delegated() {
+                   managed_events.insert_managed_event(
+                       *node_idx,
+                       (*event_name).clone(),
+                       ManagedEvent::Delegated((*event).clone()),
+                   );
+               } else {
+                   insert_non_delegated_event(node, event_name, event, *node_idx, managed_events);
+               }
+           }
+
+           Ok(())
+       }
+       Patch::RemoveEvents(node_idx, events) =&gt; {
+           for (event_name, _event) in events {
+               if !event_name.is_delegated() {
+                   let managed = managed_events.remove_managed_event(node_idx, event_name);
+                   match managed {
+                       ManagedEvent::NonDelegated(_, wrapper) =&gt; {
+                           node.remove_event_listener_with_callback(
+                               event_name.without_on_prefix(),
+                               wrapper.as_ref().as_ref().unchecked_ref(),
+                           )
+                           .unwrap();
+                       }
+                       _ =&gt; unreachable!(),
+                   };
+               }
+
+               managed_events.remove_event_handler(node_idx, event_name);
+           }
+
+           Ok(())
+       }
+       Patch::RemoveAllManagedEventsWithNodeIdx(node_idx) =&gt; {
+           managed_events.remove_node(node_idx);
+           Ok(())
+       }
+   }
+}
+
+fn apply_text_patch(
+   node: &amp;Text,
+   patch: &amp;Patch,
+   events: &amp;mut EventsByNodeIdx,
+) -&gt; Result&lt;(), JsValue&gt; {
+   match patch {
+       Patch::ChangeText(_node_idx, new_node) =&gt; {
+           node.set_node_value(Some(&amp;new_node.text));
+       }
+       Patch::Replace {
+           old_idx: _,
+           new_idx,
+           new_node,
+       } =&gt; {
+           node.replace_with_with_node_1(&amp;new_node.create_dom_node(*new_idx, events))?;
+       }
+       other =&gt; unreachable!(
+           &quot;Text nodes should only receive ChangeText or Replace patches, not {:?}.&quot;,
+           other,
+       ),
+   };
+
+   Ok(())
+}
+
+// See crates/percy-dom/tests/value_attribute.rs
+fn maybe_set_value_property(node: &amp;Element, value: &amp;str) {
+   if let Some(input_node) = node.dyn_ref::&lt;HtmlInputElement&gt;() {
+       input_node.set_value(value);
+   } else if let Some(textarea_node) = node.dyn_ref::&lt;HtmlTextAreaElement&gt;() {
+       textarea_node.set_value(value)
+   }
+}
 <span class="boring">}
 </span></code></pre></pre>
 <p>When patching we iterate over our vector of patches, look at the node index for the patch, then
