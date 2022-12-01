@@ -11,9 +11,10 @@
 
 use std::fmt;
 
-use crate::event::EventsByNodeIdx;
+use crate::event::{VirtualEventNode, VirtualEvents};
 use web_sys::{self, Node};
 
+pub use self::create_element::VIRTUAL_NODE_MARKER_PROPERTY;
 pub use self::event::EventAttribFn;
 pub use self::iterable_nodes::*;
 pub use self::velement::*;
@@ -134,16 +135,15 @@ impl VirtualNode {
         }
     }
 
-    /// Create and return a `CreatedNode` instance (containing a DOM `Node`
-    /// together with potentially related closures) for this virtual node.
-    pub fn create_dom_node(&self, node_idx: u32, events: &mut EventsByNodeIdx) -> Node {
-        let mut copy = node_idx;
-        let copy = &mut copy;
-
+    /// Create and return a [`web_sys::Node`] along with its events.
+    pub fn create_dom_node(&self, events: &mut VirtualEvents) -> (Node, VirtualEventNode) {
         match self {
-            VirtualNode::Text(text_node) => text_node.create_text_node().into(),
+            VirtualNode::Text(text_node) => {
+                (text_node.create_text_node().into(), VirtualEventNode::Text)
+            }
             VirtualNode::Element(element_node) => {
-                element_node.create_element_node(copy, events).into()
+                let (elem, events) = element_node.create_element_node(events);
+                (elem.into(), VirtualEventNode::Element(events))
             }
         }
     }

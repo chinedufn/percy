@@ -6,7 +6,7 @@
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
-use percy_dom::event::EventsByNodeIdx;
+use percy_dom::event::VirtualEvents;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
 use web_sys::Element;
@@ -27,7 +27,8 @@ fn new_elem_inner_html() {
         .dangerous_inner_html = Some("<span>hi</span>".to_string());
 
     let div: Element = div
-        .create_dom_node(0, &mut EventsByNodeIdx::new())
+        .create_dom_node(&mut VirtualEvents::new())
+        .0
         .unchecked_into();
 
     assert_eq!(div.inner_html(), "<span>hi</span>");
@@ -52,10 +53,12 @@ fn inner_html_overwrite() {
         .special_attributes
         .dangerous_inner_html = Some("<span>NEW</span>".to_string());
 
-    let div = start.create_dom_node(0, &mut EventsByNodeIdx::new());
+    let mut events = VirtualEvents::new();
+    let (div, enode) = start.create_dom_node(&mut events);
+    events.set_root(enode);
 
     let patches = percy_dom::diff(&start, &end);
-    percy_dom::patch(div.clone(), &end, &mut EventsByNodeIdx::new(), &patches).unwrap();
+    percy_dom::patch(div.clone(), &end, &mut events, &patches).unwrap();
 
     let div: Element = div.unchecked_into();
     assert_eq!(div.inner_html(), "<span>NEW</span>");
@@ -76,10 +79,12 @@ fn remove_inner_html() {
 
     let end: VirtualNode = VirtualNode::element("div");
 
-    let div = start.create_dom_node(0, &mut EventsByNodeIdx::new());
+    let mut events = VirtualEvents::new();
+    let (div, enode) = start.create_dom_node(&mut events);
+    events.set_root(enode);
 
     let patches = percy_dom::diff(&start, &end);
-    percy_dom::patch(div.clone(), &end, &mut EventsByNodeIdx::new(), &patches).unwrap();
+    percy_dom::patch(div.clone(), &end, &mut events, &patches).unwrap();
 
     let div: Element = div.unchecked_into();
     assert_eq!(div.inner_html(), "");

@@ -6,7 +6,7 @@
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
-use percy_dom::event::EventsByNodeIdx;
+use percy_dom::event::VirtualEvents;
 use testing_utilities::random_id;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
@@ -37,7 +37,8 @@ fn on_create_elem_new_node() {
         });
 
     let div: Element = div
-        .create_dom_node(0, &mut EventsByNodeIdx::new())
+        .create_dom_node(&mut VirtualEvents::new())
+        .0
         .unchecked_into();
 
     assert_eq!(div.inner_html(), "Hello world");
@@ -61,8 +62,9 @@ fn on_create_elem_triggered_via_patch() {
             elem.set_inner_html("Hello world");
         });
 
-    let mut events = EventsByNodeIdx::new();
-    let div = start.create_dom_node(0, &mut events);
+    let mut events = VirtualEvents::new();
+    let (div, enode) = start.create_dom_node(&mut events);
+    events.set_root(enode);
 
     let patches = percy_dom::diff(&start, &end);
     percy_dom::patch(div.clone(), &end, &mut events, &patches).unwrap();
@@ -93,8 +95,9 @@ fn on_create_elem_not_triggered_via_patch_if_same_id() {
             panic!("On create element function should not have gotten called.");
         });
 
-    let mut events = EventsByNodeIdx::new();
-    let div = start.create_dom_node(0, &mut events);
+    let mut events = VirtualEvents::new();
+    let (div, enode) = start.create_dom_node(&mut events);
+    events.set_root(enode);
 
     let patches = percy_dom::diff(&start, &end);
     percy_dom::patch(div.clone(), &end, &mut events, &patches).unwrap();

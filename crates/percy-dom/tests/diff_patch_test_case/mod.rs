@@ -1,7 +1,7 @@
 //! Kept in its own file to more easily import into the book
 
 use console_error_panic_hook;
-use percy_dom::event::EventsByNodeIdx;
+use percy_dom::event::VirtualEvents;
 use percy_dom::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node};
@@ -23,10 +23,11 @@ impl<'a> DiffPatchTest<'a> {
     pub fn test(&mut self) {
         console_error_panic_hook::set_once();
 
-        let mut events = EventsByNodeIdx::new();
+        let mut events = VirtualEvents::new();
 
         // Create a DOM node of the virtual root node
-        let root_node: Node = self.old.create_dom_node(0, &mut events);
+        let (root_node, enode) = self.old.create_dom_node(&mut events);
+        events.set_root(enode);
 
         // Clone since percy_dom::patch takes ownership of the root node.
         let patched_root_node: Node = root_node.clone();

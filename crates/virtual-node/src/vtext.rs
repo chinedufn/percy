@@ -1,5 +1,6 @@
 use std::fmt;
 
+use crate::create_element::set_virtual_node_marker;
 use web_sys::Text;
 
 /// Represents a text node
@@ -21,7 +22,11 @@ impl VText {
     /// into the DOM.
     pub(crate) fn create_text_node(&self) -> Text {
         let document = web_sys::window().unwrap().document().unwrap();
-        document.create_text_node(&self.text)
+        let text = document.create_text_node(&self.text);
+
+        set_virtual_node_marker(&text);
+
+        text
     }
 }
 

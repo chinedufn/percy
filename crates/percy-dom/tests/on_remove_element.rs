@@ -11,7 +11,7 @@ use std::cell::Cell;
 use std::rc::Rc;
 use wasm_bindgen_test::*;
 
-use crate::testing_utilities::{create_mount, get_element_by_id, random_id};
+use crate::testing_utilities::{create_mount, random_id};
 use percy_dom::prelude::*;
 
 mod testing_utilities;

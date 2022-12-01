@@ -1,7 +1,7 @@
 //! Diff virtual-doms and patch the real DOM
 
 use crate::diff::diff;
-use crate::event::EventsByNodeIdx;
+use crate::event::VirtualEvents;
 use crate::patch::patch;
 use std::collections::HashMap;
 use virtual_node::VirtualNode;
@@ -17,8 +17,8 @@ mod events;
 pub struct PercyDom {
     current_vdom: VirtualNode,
     /// The closures that are currently attached to elements in the page.
-    /// We keep these around so that they don't get dropped (and thus stop working).
-    pub events: EventsByNodeIdx,
+    /// We keep these around so that they don't get dropped,  (and thus stop working).
+    pub events: VirtualEvents,
     root_node: Node,
     // We hold onto these since if we drop the listener it can no longer be called.
     event_delegation_listeners: HashMap<&'static str, Box<dyn AsRef<JsValue>>>,
@@ -29,8 +29,9 @@ impl PercyDom {
     ///
     /// A root `Node` will be created but not added to your DOM.
     pub fn new(current_vdom: VirtualNode) -> PercyDom {
-        let mut events = EventsByNodeIdx::new();
-        let created_node = current_vdom.create_dom_node(0, &mut events);
+        let mut events = VirtualEvents::new();
+        let (created_node, events_node) = current_vdom.create_dom_node(&mut events);
+        events.set_root(events_node);
 
         let mut pdom = PercyDom {
             current_vdom,

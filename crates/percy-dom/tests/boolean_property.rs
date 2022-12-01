@@ -10,7 +10,7 @@ use wasm_bindgen_test::*;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 
-use percy_dom::event::EventsByNodeIdx;
+use percy_dom::event::VirtualEvents;
 use percy_dom::{Patch, VirtualNode};
 use std::collections::HashMap;
 use virtual_node::{AttributeValue, VElement};
@@ -27,7 +27,7 @@ fn create_elem_boolean_property_true() {
         .insert("disabled".to_string(), AttributeValue::Bool(true));
 
     let node: VirtualNode = elem.into();
-    let node = node.create_dom_node(0, &mut EventsByNodeIdx::new());
+    let node = node.create_dom_node(&mut VirtualEvents::new()).0;
     assert!(node_as_button(&node).disabled());
 }
 
@@ -41,7 +41,7 @@ fn create_elem_boolean_property_false() {
         .insert("disabled".to_string(), AttributeValue::Bool(false));
 
     let node: VirtualNode = elem.into();
-    let node = node.create_dom_node(0, &mut EventsByNodeIdx::new());
+    let node = node.create_dom_node(&mut VirtualEvents::new()).0;
     assert!(!node_as_button(&node).disabled());
 }
 
@@ -52,16 +52,19 @@ fn create_elem_boolean_property_false() {
 fn patch_elem_boolean_property_true() {
     let elem: VirtualNode = VElement::new("button").into();
 
-    let node = elem.create_dom_node(0, &mut EventsByNodeIdx::new());
+    let mut events = VirtualEvents::new();
+    let (node, events_node) = elem.create_dom_node(&mut events);
+    events.set_root(events_node);
 
     let mut attributes = HashMap::new();
     let true_attribute = AttributeValue::Bool(true);
     attributes.insert("disabled", &true_attribute);
     let patch = Patch::AddAttributes(0, attributes);
+
     percy_dom::patch(
         node.clone(),
         &VirtualNode::element("..."),
-        &mut EventsByNodeIdx::new(),
+        &mut events,
         &vec![patch],
     )
     .unwrap();
@@ -76,7 +79,10 @@ fn patch_elem_boolean_property_true() {
 fn patch_elem_boolean_property_false() {
     let elem: VirtualNode = VElement::new("button").into();
 
-    let node = elem.create_dom_node(0, &mut EventsByNodeIdx::new());
+    let mut events = VirtualEvents::new();
+    let (node, events_node) = elem.create_dom_node(&mut events);
+    events.set_root(events_node);
+
     node.dyn_ref::<HtmlButtonElement>()
         .unwrap()
         .set_disabled(true);
@@ -89,7 +95,7 @@ fn patch_elem_boolean_property_false() {
     percy_dom::patch(
         node.clone(),
         &VirtualNode::element(".."),
-        &mut EventsByNodeIdx::new(),
+        &mut events,
         &vec![patch],
     )
     .unwrap();

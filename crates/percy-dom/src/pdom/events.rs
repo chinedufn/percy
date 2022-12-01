@@ -1,6 +1,7 @@
-use crate::event::{EventHandler, EventName, EventsByNodeIdx, MouseEvent, EVENTS_ID_PROP};
+use crate::event::{EventHandler, EventName, MouseEvent, VirtualEvents, ELEMENT_EVENTS_ID_PROP};
 use crate::{Closure, PercyDom};
 use js_sys::Reflect;
+use virtual_node::event::ElementEventsId;
 use wasm_bindgen::JsCast;
 
 impl PercyDom {
@@ -33,15 +34,16 @@ impl PercyDom {
 }
 
 // Call the event, then call it on its parent, etc
-fn bubble_event(elem: web_sys::Element, mouse_event: MouseEvent, events: &EventsByNodeIdx) {
-    let events_id = Reflect::get(&elem, &EVENTS_ID_PROP.into()).unwrap();
+fn bubble_event(elem: web_sys::Element, mouse_event: MouseEvent, events: &VirtualEvents) {
+    let events_id = Reflect::get(&elem, &ELEMENT_EVENTS_ID_PROP.into()).unwrap();
     let events_id = events_id.as_string();
 
     if let Some(events_id) = events_id {
         let events_id = events_id.trim_start_matches(&events.events_id_props_prefix().to_string());
-        let node_id: u32 = events_id.parse().unwrap();
+        let events_id: u32 = events_id.parse().unwrap();
+        let events_id = ElementEventsId::new(events_id);
 
-        let cb = events.get_event_handler(&node_id, &EventName::ONCLICK);
+        let cb = events.get_event_handler(&events_id, &EventName::ONCLICK);
 
         if let Some(cb) = cb {
             match cb {
