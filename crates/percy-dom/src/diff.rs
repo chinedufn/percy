@@ -31,7 +31,7 @@ fn diff_recursive<'a, 'b>(
     if should_fully_replace_node {
         if let Some(velem) = old.as_velement_ref() {
             if velem.events.has_events() {
-                patches.push(Patch::RemoveAllManagedEventsWithNodeIdx(*old_node_idx));
+                patches.push(Patch::RemoveAllVirtualEventsWithNodeIdx(*old_node_idx));
             }
         }
 
@@ -179,25 +179,6 @@ fn diff_recursive<'a, 'b>(
                     }
                 }
                 _ => {}
-            }
-
-            let old_elem_has_events = old_element.events.has_events();
-            let new_elem_has_events = new_element.events.has_events();
-
-            if !old_elem_has_events && new_elem_has_events {
-                patches.push(Patch::SetEventsId {
-                    old_idx: *old_node_idx,
-                    new_idx: *new_node_idx,
-                });
-            } else if old_elem_has_events && !new_elem_has_events {
-                patches.push(Patch::RemoveEventsId(*old_node_idx));
-            } else if old_elem_has_events && new_elem_has_events {
-                if old_node_idx != new_node_idx {
-                    patches.push(Patch::SetEventsId {
-                        old_idx: *old_node_idx,
-                        new_idx: *new_node_idx,
-                    });
-                }
             }
 
             generate_patches_for_children(
@@ -372,7 +353,7 @@ fn process_deleted_old_node_child<'a>(
     *cur_node_idx += 1;
     if let VirtualNode::Element(element_node) = old_node {
         if element_node.events.len() > 0 {
-            patches.push(Patch::RemoveAllManagedEventsWithNodeIdx(*cur_node_idx));
+            patches.push(Patch::RemoveAllVirtualEventsWithNodeIdx(*cur_node_idx));
         }
 
         if element_node
@@ -1070,75 +1051,6 @@ mod tests {
         .test();
     }
 
-    /// Verify that if a node goes from no events to having at least one event, we create a patch
-    /// to set the events ID on the dom node.
-    #[test]
-    fn set_events_id_if_events_added() {
-        let old = VElement::new("div");
-
-        let mut new = VElement::new("div");
-        new.events.insert(onclick_name(), mock_event_handler());
-
-        DiffTestCase {
-            old: VirtualNode::Element(old),
-            new: VirtualNode::Element(new),
-            expected: vec![
-                Patch::AddEvents(
-                    0,
-                    vec![(&EventName::ONCLICK, &mock_event_handler())]
-                        .into_iter()
-                        .collect(),
-                ),
-                Patch::SetEventsId {
-                    old_idx: 0,
-                    new_idx: 0,
-                },
-            ],
-        }
-        .test();
-    }
-
-    /// Verify that we set the proper old and new node indices in the set events ID patch.
-    #[test]
-    fn uses_correct_new_node_idx_in_set_events_id_patch() {
-        let old = html! {
-            <div>
-                <em> <area /> </em>
-                <div></div>
-            </div>
-        };
-
-        let new = html! {
-            <div>
-                <span></span>
-                <div onclick=||{}></div>
-            </div>
-        };
-
-        DiffTestCase {
-            old,
-            new,
-            expected: vec![
-                Patch::Replace {
-                    old_idx: 1,
-                    new_idx: 1,
-                    new_node: &VirtualNode::element("span"),
-                },
-                Patch::AddEvents(
-                    3,
-                    vec![(&EventName::ONCLICK, &mock_event_handler())]
-                        .into_iter()
-                        .collect(),
-                ),
-                Patch::SetEventsId {
-                    old_idx: 3,
-                    new_idx: 2,
-                },
-            ],
-        }
-        .test();
-    }
-
     /// Verify that if a node already had a event and we are patching it with another
     /// event we do not create a patch for setting the events ID.
     #[test]
@@ -1153,59 +1065,6 @@ mod tests {
             old: VirtualNode::Element(old),
             new: VirtualNode::Element(new),
             expected: vec![],
-        }
-        .test();
-    }
-
-    /// Verify that if an earlier node in the tree was replaced, and a later node has events, all
-    /// nodes after it get their events ID increased based on the number of elements removed.
-    #[test]
-    fn resets_events_id_if_earlier_nodes_replaced() {
-        let old = html! {
-            <div>
-                // This node gets replaced
-                <span>
-                    <em>
-                        <area />
-                    </em>
-                </span>
-
-                <strong onclick=|| {}>
-                    <div></div>
-                    <a onclick=|| {}></a>
-                </strong>
-            </div>
-        };
-
-        let new = html! {
-            <div>
-                <div></div>
-
-                <strong onclick=|| {}>
-                    <div></div>
-                    <a onclick=|| {}></a>
-                </strong>
-            </div>
-        };
-
-        DiffTestCase {
-            old,
-            new,
-            expected: vec![
-                Patch::Replace {
-                    old_idx: 1,
-                    new_idx: 1,
-                    new_node: &VirtualNode::element("div"),
-                },
-                Patch::SetEventsId {
-                    old_idx: 4,
-                    new_idx: 2,
-                },
-                Patch::SetEventsId {
-                    old_idx: 6,
-                    new_idx: 4,
-                },
-            ],
         }
         .test();
     }
@@ -1264,115 +1123,10 @@ mod tests {
         .test();
     }
 
-    /// Verify that if somewhere earlier in the tree there were child nodes truncated
-    /// (so the net number of earlier nodes decreased) we push a patch to set the later node's
-    /// events ID.
-    #[test]
-    fn resets_events_if_if_earlier_nodes_truncated() {
-        let old = html! {
-            <div>
-                // This node gets its children truncated.
-                <span>
-                    <em></em>
-                    <area />
-                </span>
-
-                <strong onclick=|| {}>
-                    <div></div>
-                    <a onclick=|| {}></a>
-                </strong>
-            </div>
-        };
-
-        let new = html! {
-            <div>
-                <span>
-                    <em></em>
-                </span>
-
-                <strong onclick=|| {}>
-                    <div></div>
-                    <a onclick=|| {}></a>
-                </strong>
-            </div>
-        };
-
-        DiffTestCase {
-            old,
-            new,
-            expected: vec![
-                Patch::TruncateChildren(1, 1),
-                Patch::SetEventsId {
-                    old_idx: 4,
-                    new_idx: 3,
-                },
-                Patch::SetEventsId {
-                    old_idx: 6,
-                    new_idx: 5,
-                },
-            ],
-        }
-        .test();
-    }
-
-    /// Verify that if somewhere earlier in the tree there were child nodes appended
-    /// (so the net number of earlier nodes increased) we push a patch to set the later node's
-    /// events ID.
-    #[test]
-    fn resets_events_if_if_earlier_nodes_appended() {
-        let old = html! {
-            <div>
-                // This node gets its children appended to.
-                <span>
-                    <em></em>
-                </span>
-
-                <strong onclick=|| {}>
-                    <div></div>
-                    <a onclick=|| {}></a>
-                </strong>
-            </div>
-        };
-
-        let new = html! {
-            <div>
-                <span>
-                    <em></em>
-                    <area />
-                </span>
-
-                <strong onclick=|| {}>
-                    <div></div>
-                    <a onclick=|| {}></a>
-                </strong>
-            </div>
-        };
-
-        DiffTestCase {
-            old,
-            new,
-            expected: vec![
-                Patch::AppendChildren {
-                    old_idx: 1,
-                    new_nodes: vec![(3, &VirtualNode::element("area"))],
-                },
-                Patch::SetEventsId {
-                    old_idx: 3,
-                    new_idx: 4,
-                },
-                Patch::SetEventsId {
-                    old_idx: 5,
-                    new_idx: 6,
-                },
-            ],
-        }
-        .test();
-    }
-
     /// Verify that if we previously had events but we no longer have any events we push a patch
-    /// to remove the events ID.
+    /// to remove the virtual events.
     #[test]
-    fn removes_events_id_if_no_more_events() {
+    fn removes_events_if_no_more_events() {
         let mut old = VElement::new("div");
         old.events.insert(onclick_name(), mock_event_handler());
 
@@ -1381,15 +1135,12 @@ mod tests {
         DiffTestCase {
             old: VirtualNode::Element(old),
             new: VirtualNode::Element(new),
-            expected: vec![
-                Patch::RemoveEvents(
-                    0,
-                    vec![(&EventName::ONCLICK, &mock_event_handler())]
-                        .into_iter()
-                        .collect(),
-                ),
-                Patch::RemoveEventsId(0),
-            ],
+            expected: vec![Patch::RemoveEvents(
+                0,
+                vec![(&EventName::ONCLICK, &mock_event_handler())]
+                    .into_iter()
+                    .collect(),
+            )],
         }
         .test();
     }
@@ -1438,7 +1189,7 @@ mod tests {
             old: VirtualNode::Element(old),
             new: VirtualNode::Element(new),
             expected: vec![
-                Patch::RemoveAllManagedEventsWithNodeIdx(0),
+                Patch::RemoveAllVirtualEventsWithNodeIdx(0),
                 Patch::Replace {
                     old_idx: 0,
                     new_idx: 0,
@@ -1475,7 +1226,7 @@ mod tests {
             old: VirtualNode::Element(old),
             new: VirtualNode::Element(new),
             expected: vec![
-                Patch::RemoveAllManagedEventsWithNodeIdx(3),
+                Patch::RemoveAllVirtualEventsWithNodeIdx(3),
                 Patch::Replace {
                     old_idx: 0,
                     new_idx: 0,
@@ -1504,7 +1255,7 @@ mod tests {
             new: VirtualNode::Element(new),
             expected: vec![
                 Patch::TruncateChildren(0, 0),
-                Patch::RemoveAllManagedEventsWithNodeIdx(1),
+                Patch::RemoveAllVirtualEventsWithNodeIdx(1),
             ],
         }
         .test();

@@ -1,18 +1,23 @@
+use js_sys::Reflect;
+use wasm_bindgen::JsValue;
 use web_sys::{Document, Element};
 
-use crate::event::EventsByNodeIdx;
-use crate::{AttributeValue, VElement, VirtualNode};
+use crate::event::{VirtualEventElement, VirtualEvents};
+use crate::{AttributeValue, VElement, VirtualEventNode, VirtualNode};
 
 mod add_events;
+
+// Used to indicate that a DOM node was created from a virtual-node.
+#[doc(hidden)]
+pub const VIRTUAL_NODE_MARKER_PROPERTY: &'static str = "__v__";
 
 impl VElement {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
     pub(crate) fn create_element_node(
         &self,
-        node_idx: &mut u32,
-        events: &mut EventsByNodeIdx,
-    ) -> Element {
+        events: &mut VirtualEvents,
+    ) -> (Element, VirtualEventElement) {
         let document = web_sys::window().unwrap().document().unwrap();
 
         let element = if html_validation::is_svg_namespace(&self.tag) {
@@ -22,6 +27,7 @@ impl VElement {
         } else {
             document.create_element(&self.tag).unwrap()
         };
+        set_virtual_node_marker(&element);
 
         self.attrs.iter().for_each(|(name, value)| {
             match value {
@@ -36,9 +42,11 @@ impl VElement {
             };
         });
 
-        self.add_events(&element, events, *node_idx);
+        let events_id = events.unique_events_id();
+        let mut event_elem = VirtualEventElement::new(events_id);
+        self.add_events(&element, events, events_id);
 
-        self.append_children_to_dom(&element, &document, node_idx, events);
+        self.append_children_to_dom(&element, &document, &mut event_elem, events);
 
         self.special_attributes
             .maybe_call_on_create_element(&element);
@@ -47,7 +55,7 @@ impl VElement {
             element.set_inner_html(inner_html);
         }
 
-        element
+        (element, event_elem)
     }
 }
 
@@ -56,14 +64,12 @@ impl VElement {
         &self,
         element: &Element,
         document: &Document,
-        node_idx: &mut u32,
-        events: &mut EventsByNodeIdx,
+        event_node: &mut VirtualEventElement,
+        events: &mut VirtualEvents,
     ) {
         let mut previous_node_was_text = false;
 
         self.children.iter().for_each(|child| {
-            *node_idx += 1;
-
             match child {
                 VirtualNode::Text(text_node) => {
                     let current_node = element.as_ref() as &web_sys::Node;
@@ -76,6 +82,7 @@ impl VElement {
                     // `ptns` = Percy text node separator
                     if previous_node_was_text {
                         let separator = document.create_comment("ptns");
+                        set_virtual_node_marker(&separator);
                         current_node
                             .append_child(separator.as_ref() as &web_sys::Node)
                             .unwrap();
@@ -84,18 +91,32 @@ impl VElement {
                     current_node
                         .append_child(&text_node.create_text_node())
                         .unwrap();
+                    event_node.push_child(VirtualEventNode::Text);
 
                     previous_node_was_text = true;
                 }
                 VirtualNode::Element(element_node) => {
                     previous_node_was_text = false;
 
-                    let child = element_node.create_element_node(node_idx, events);
+                    let (child, child_events) = element_node.create_element_node(events);
                     let child_elem: Element = child;
 
                     element.append_child(&child_elem).unwrap();
+                    event_node.push_child(VirtualEventNode::Element(child_events))
                 }
             }
         });
     }
+}
+
+/// Set a property on a node that can be used to know if a node was created by Percy.
+pub(crate) fn set_virtual_node_marker(node: &JsValue) {
+    let unused_data = 123;
+
+    Reflect::set(
+        &node.into(),
+        &VIRTUAL_NODE_MARKER_PROPERTY.into(),
+        &unused_data.into(),
+    )
+    .unwrap();
 }

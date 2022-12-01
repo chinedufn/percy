@@ -3,7 +3,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack crates/percy-dom test eadless --chrome --test pdom
+//! wasm-pack test --chrome --headless crates/percy-dom --test pdom
 
 use console_error_panic_hook;
 use percy_dom::prelude::*;
@@ -21,9 +21,11 @@ use std::ops::Deref;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
-// Verify that our PercyDom's patch method works.
-// We test a simple case here, since diff_patch.rs is responsible for testing more complex
-// diffing and patching.
+/// Verify that our PercyDom's patch method works.
+/// We test a simple case here, since diff_patch.rs is responsible for testing more complex
+/// diffing and patching.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test pdom -- patches_dom
 #[wasm_bindgen_test]
 fn patches_dom() {
     console_error_panic_hook::set_once();
@@ -46,6 +48,8 @@ fn patches_dom() {
 }
 
 /// Verify that closures work for elements appended to the DOM.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test pdom -- append_element_with_closure
 #[wasm_bindgen_test]
 fn append_element_with_closure() {
     console_error_panic_hook::set_once();
@@ -101,6 +105,8 @@ fn append_element_with_closure() {
 /// When you replace a DOM node with another DOM node we need to make sure that the closures
 /// from the new DOM node are stored by the PercyDom otherwise they'll get dropped and
 /// won't work.
+///
+/// wasm-pack test --chrome --headless crates/percy-dom --test pdom -- updates_active_closure_on_replace
 #[wasm_bindgen_test]
 fn updates_active_closure_on_replace() {
     console_error_panic_hook::set_once();

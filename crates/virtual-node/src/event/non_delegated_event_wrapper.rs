@@ -1,6 +1,5 @@
-use crate::event::{
-    EventHandler, EventName, EventsByNodeIdx, ManagedEvent, MouseEvent, EVENTS_ID_PROP,
-};
+use crate::event::virtual_events::ElementEventsId;
+use crate::event::{EventHandler, EventName, MouseEvent, VirtualEvents, ELEMENT_EVENTS_ID_PROP};
 use js_sys::Reflect;
 use std::rc::Rc;
 use wasm_bindgen::closure::Closure;
@@ -11,8 +10,8 @@ pub fn insert_non_delegated_event(
     element: &web_sys::Element,
     onevent: &EventName,
     callback: &EventHandler,
-    node_idx: u32,
-    events: &EventsByNodeIdx,
+    events_id: ElementEventsId,
+    events: &VirtualEvents,
 ) {
     let events_clone = events.clone();
 
@@ -24,17 +23,17 @@ pub fn insert_non_delegated_event(
     let callback_wrapper = move |event: web_sys::Event| {
         let this_elem = event.current_target().unwrap();
 
-        let events_id = Reflect::get(&this_elem, &EVENTS_ID_PROP.into()).unwrap();
+        let events_id = Reflect::get(&this_elem, &ELEMENT_EVENTS_ID_PROP.into()).unwrap();
         let events_id = events_id.as_string();
         let events_id = events_id.unwrap();
 
         let events_id =
             events_id.trim_start_matches(&events_clone.events_id_props_prefix().to_string());
-        let node_id: u32 = events_id.parse().unwrap();
+        let events_id: u32 = events_id.parse().unwrap();
 
         let event_name = EventName::new(on_event_clone.clone().into());
         let cb = events_clone
-            .get_event_handler(&node_id, &event_name)
+            .get_event_handler(&ElementEventsId::new(events_id), &event_name)
             .unwrap();
 
         match cb {
@@ -62,9 +61,10 @@ pub fn insert_non_delegated_event(
         )
         .unwrap();
 
-    events.insert_managed_event(
-        node_idx,
+    events.insert_event(
+        events_id,
         onevent.clone(),
-        ManagedEvent::NonDelegated(callback.clone(), Rc::new(callback_wrapper)),
+        callback.clone(),
+        Some(Rc::new(callback_wrapper)),
     );
 }

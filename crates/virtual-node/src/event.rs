@@ -7,13 +7,16 @@ use std::rc::Rc;
 
 pub use self::event_handlers::*;
 pub use self::event_name::EventName;
-pub use self::events_by_node_idx::{EventsByNodeIdx, ManagedEvent, EVENTS_ID_PROP};
 pub use self::non_delegated_event_wrapper::insert_non_delegated_event;
+pub(crate) use self::virtual_events::set_events_id;
+pub use self::virtual_events::{
+    ElementEventsId, VirtualEventElement, VirtualEventNode, VirtualEvents, ELEMENT_EVENTS_ID_PROP,
+};
 
 mod event_handlers;
 mod event_name;
-mod events_by_node_idx;
 mod non_delegated_event_wrapper;
+mod virtual_events;
 
 type EventAttribFnInner = std::rc::Rc<dyn AsRef<wasm_bindgen::JsValue>>;
 

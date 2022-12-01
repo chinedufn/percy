@@ -77,12 +77,6 @@ pub enum Patch<'a> {
     ChangeText(NodeIdx, &'a VText),
     /// Patches that apply to [`SpecialAttributes`].
     SpecialAttribute(PatchSpecialAttribute<'a>),
-    /// Remove the `__events_id__` property from the DOM node.
-    /// This happens when the node no longer has any events.
-    RemoveEventsId(NodeIdx),
-    /// Set the `__events_id__` property on the DOM node.
-    #[allow(missing_docs)]
-    SetEventsId { old_idx: NodeIdx, new_idx: NodeIdx },
     /// Insert events in the EventsByNodeIdx.
     /// If it is a non-delegated event the event will also get added to the DOM node.
     AddEvents(NodeIdx, HashMap<&'a EventName, &'a EventHandler>),
@@ -91,7 +85,7 @@ pub enum Patch<'a> {
     RemoveEvents(NodeIdx, Vec<(&'a EventName, &'a EventHandler)>),
     /// Delete all events in the EventsByNodeIdx for the given index, since the node has been
     /// removed from the DOM.
-    RemoveAllManagedEventsWithNodeIdx(NodeIdx),
+    RemoveAllVirtualEventsWithNodeIdx(NodeIdx),
 }
 
 /// Patches that apply to [`SpecialAttributes`].
@@ -126,14 +120,12 @@ impl<'a> Patch<'a> {
                 PatchSpecialAttribute::RemoveDangerousInnerHtml(node_idx) => *node_idx,
                 PatchSpecialAttribute::CallOnRemoveElem(node_idx, _) => *node_idx,
             },
-            Patch::RemoveEventsId(node_idx) => *node_idx,
-            Patch::SetEventsId { old_idx, .. } => *old_idx,
             Patch::RemoveEvents(node_idx, _) => *node_idx,
             Patch::AddEvents(node_idx, _) => *node_idx,
-            Patch::RemoveAllManagedEventsWithNodeIdx(node_idx) => {
+            Patch::RemoveAllVirtualEventsWithNodeIdx(node_idx) => {
                 // TODO: We don't actually need the old node for this particular patch..
                 //  so we should stop making use of this. Perhaps use `unreachable!()` and fix
-                //  the places where we use this to stop using it.
+                //  the places where we use this to stop calling this `.old_node_idx` function.
                 *node_idx
             }
         }

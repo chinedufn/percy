@@ -1,10 +1,14 @@
 //! Verify that when we set the value attribute for an input or textarea element we also call
 //! .set_value(value) on the element. Without this the `.value()` method on the element won't
 //! return the new value.
+//!
+//! To run all tests in this file:
+//!
+//! wasm-pack test --chrome --headless crates/percy-dom --test value_attribute
 
 use wasm_bindgen_test::*;
 
-use percy_dom::event::EventsByNodeIdx;
+use percy_dom::event::VirtualEvents;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 
@@ -25,7 +29,9 @@ fn set_input_elem_value_property() {
         let start_input = html! {<input value=start>};
         let end_input = html! {<input value=end>};
 
-        let input_node = start_input.create_dom_node(0, &mut EventsByNodeIdx::new());
+        let mut events = VirtualEvents::new();
+        let (input_node, enode) = start_input.create_dom_node(&mut events);
+        events.set_root(enode);
 
         input_node
             .clone()
@@ -35,13 +41,7 @@ fn set_input_elem_value_property() {
 
         let patches = percy_dom::diff(&start_input, &end_input);
 
-        percy_dom::patch(
-            input_node.clone(),
-            &end_input,
-            &mut EventsByNodeIdx::new(),
-            &patches,
-        )
-        .unwrap();
+        percy_dom::patch(input_node.clone(), &end_input, &mut events, &patches).unwrap();
 
         assert_eq!(
             input_node.dyn_into::<HtmlInputElement>().unwrap().value(),
@@ -63,7 +63,9 @@ fn set_textarea_elem_value_property() {
         let start_textarea = html! {<textarea value=start>};
         let end_textarea = html! {<textarea value=end>};
 
-        let textarea_node = start_textarea.create_dom_node(0, &mut EventsByNodeIdx::new());
+        let mut events = VirtualEvents::new();
+        let (textarea_node, enode) = start_textarea.create_dom_node(&mut events);
+        events.set_root(enode);
 
         textarea_node
             .clone()
@@ -73,13 +75,7 @@ fn set_textarea_elem_value_property() {
 
         let patches = percy_dom::diff(&start_textarea, &end_textarea);
 
-        percy_dom::patch(
-            textarea_node.clone(),
-            &end_textarea,
-            &mut EventsByNodeIdx::new(),
-            &patches,
-        )
-        .unwrap();
+        percy_dom::patch(textarea_node.clone(), &end_textarea, &mut events, &patches).unwrap();
 
         assert_eq!(
             textarea_node
