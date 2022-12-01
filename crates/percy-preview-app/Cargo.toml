@@ -15,8 +15,8 @@ serde_yaml = "0.8"
 app-world = "0.1"
 console_error_panic_hook = "0.1"
 js-sys = "0.3"
-percy-dom = {path = "../percy-dom", version = "0.7.3"}
-percy-router = {path = "../percy-router", version = "0.3.3"}
+percy-dom = {path = "../percy-dom", version = "0.8"}
+percy-router = {path = "../percy-router", version = "0.4"}
 percy-preview = {path = "../percy-preview", version = "0.0.3"}
 sunbeam = "0.0.4-alpha"
 wasm-bindgen = "0.2.80"
