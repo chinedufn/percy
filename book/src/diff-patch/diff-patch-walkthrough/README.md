@@ -68,10 +68,10 @@ This patch says to replace the node with index of 1, which is currently a `<br>`
 How does the diffing algorithm determine the index?
 
 As we encounter nodes in our old virtual dom we increment a node index, the root node being index 0.
-Nodes are traversed depth first by recursively diffing children before proceeding to siblings.
+Nodes are traversed breadth.
 
  ```ignore
-// Nodes are indexed depth first.
+// Nodes are indexed breadth first.
 
              .─.
             ( 0 )
@@ -80,13 +80,13 @@ Nodes are traversed depth first by recursively diffing children before proceedin
          │           │
          ▼           ▼
         .─.         .─.
-       ( 1 )       ( 4 )
+       ( 1 )       ( 2 )
         `┬'         `─'
     ┌────┴───┐       │
     │        │       ├─────┬─────┐
     ▼        ▼       │     │     │
    .─.      .─.      ▼     ▼     ▼
-  ( 2 )    ( 3 )    .─.   .─.   .─.
+  ( 3 )    ( 4 )    .─.   .─.   .─.
    `─'      `─'    ( 5 ) ( 6 ) ( 7 )
                     `─'   `─'   `─'
  ```

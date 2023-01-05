@@ -4,7 +4,9 @@
 //!
 //! wasm-pack test --chrome --headless crates/percy-dom --test events
 
-use crate::testing_utilities::{create_mount, document, get_element_by_id, random_id};
+use crate::testing_utilities::{
+    create_mount, document, get_element_by_id, random_id, send_click_event, send_input_event,
+};
 use percy_dom::event::{EventHandler, EventName, VirtualEvents, ELEMENT_EVENTS_ID_PROP};
 use percy_dom::prelude::*;
 use percy_dom::{Patch, PercyDom, VElement};
@@ -410,7 +412,6 @@ fn truncate_children_then_append_child_with_events() {
     let event = EventName::ONINPUT;
     assert_eq!(event.is_delegated(), false);
 
-    let id_start = random_id();
     let id_end = random_id();
     let text = start_text();
 
@@ -616,30 +617,7 @@ fn assert_text_appended(text: &Rc<RefCell<String>>, append: &str) {
     );
 }
 
-fn send_input_event(id: &str) {
-    send_event::<web_sys::HtmlInputElement>(id, &web_sys::InputEvent::new("input").unwrap());
-}
-
-fn send_foobar_event(id: &str) {
-    let event = web_sys::Event::new("foobar").unwrap();
-    send_event::<web_sys::Element>(id, &event);
-}
-
-fn send_click_event(id: &str) {
-    let mouse_event = web_sys::MouseEvent::new("click").unwrap();
-    mouse_event.init_mouse_event_with_can_bubble_arg("click", true);
-
-    send_event::<web_sys::HtmlElement>(id, &virtual_node::event::MouseEvent::new(mouse_event));
-}
-
-fn send_event<T>(elem_id: &str, event: &web_sys::Event)
-where
-    T: JsCast,
-    web_sys::EventTarget: From<T>,
-{
-    let elem: T = get_element_by_id(elem_id).dyn_into().unwrap();
-
-    web_sys::EventTarget::from(elem)
-        .dispatch_event(&event)
-        .unwrap();
-}
+// fn send_foobar_event(id: &str) {
+//     let event = web_sys::Event::new("foobar").unwrap();
+//     send_event::<web_sys::Element>(id, &event);
+// }

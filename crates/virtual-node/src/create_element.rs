@@ -1,4 +1,6 @@
 use js_sys::Reflect;
+use std::cell::RefCell;
+use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::{Document, Element};
 
@@ -17,7 +19,7 @@ impl VElement {
     pub(crate) fn create_element_node(
         &self,
         events: &mut VirtualEvents,
-    ) -> (Element, VirtualEventElement) {
+    ) -> (Element, VirtualEventNode) {
         let document = web_sys::window().unwrap().document().unwrap();
 
         let element = if html_validation::is_svg_namespace(&self.tag) {
@@ -42,11 +44,19 @@ impl VElement {
             };
         });
 
-        let events_id = events.unique_events_id();
-        let mut event_elem = VirtualEventElement::new(events_id);
-        self.add_events(&element, events, events_id);
+        let mut event_elem = events.create_element_node();
+        self.add_events(
+            &element,
+            events,
+            event_elem.as_element().unwrap().events_id(),
+        );
 
-        self.append_children_to_dom(&element, &document, &mut event_elem, events);
+        self.append_children_to_dom(
+            &element,
+            &document,
+            event_elem.as_element_mut().unwrap(),
+            events,
+        );
 
         self.special_attributes
             .maybe_call_on_create_element(&element);
@@ -70,7 +80,7 @@ impl VElement {
         let mut previous_node_was_text = false;
 
         self.children.iter().for_each(|child| {
-            match child {
+            let child_events_node = match child {
                 VirtualNode::Text(text_node) => {
                     let current_node = element.as_ref() as &web_sys::Node;
 
@@ -91,9 +101,10 @@ impl VElement {
                     current_node
                         .append_child(&text_node.create_text_node())
                         .unwrap();
-                    event_node.push_child(VirtualEventNode::Text);
 
                     previous_node_was_text = true;
+
+                    events.create_text_node()
                 }
                 VirtualNode::Element(element_node) => {
                     previous_node_was_text = false;
@@ -102,9 +113,13 @@ impl VElement {
                     let child_elem: Element = child;
 
                     element.append_child(&child_elem).unwrap();
-                    event_node.push_child(VirtualEventNode::Element(child_events))
+
+                    child_events
                 }
-            }
+            };
+
+            let child_events_node = Rc::new(RefCell::new(child_events_node));
+            event_node.append_child(child_events_node.clone());
         });
     }
 }
