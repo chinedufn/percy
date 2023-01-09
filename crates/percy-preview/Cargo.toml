@@ -8,4 +8,4 @@ license = "MIT/Apache-2.0"
 repository = "https://github.com/chinedufn/percy"
 
 [dependencies]
-virtual-node = {path = "../virtual-node", version = "0.4"}
+virtual-node = {path = "../virtual-node", version = "0.5"}
