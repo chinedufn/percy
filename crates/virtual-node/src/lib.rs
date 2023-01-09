@@ -138,12 +138,13 @@ impl VirtualNode {
     /// Create and return a [`web_sys::Node`] along with its events.
     pub fn create_dom_node(&self, events: &mut VirtualEvents) -> (Node, VirtualEventNode) {
         match self {
-            VirtualNode::Text(text_node) => {
-                (text_node.create_text_node().into(), VirtualEventNode::Text)
-            }
+            VirtualNode::Text(text_node) => (
+                text_node.create_text_node().into(),
+                events.create_text_node(),
+            ),
             VirtualNode::Element(element_node) => {
                 let (elem, events) = element_node.create_element_node(events);
-                (elem.into(), VirtualEventNode::Element(events))
+                (elem.into(), events)
             }
         }
     }

@@ -9,6 +9,8 @@ use web_sys::{Element, Node};
 /// A test case that both diffing and patching are working in a real browser
 pub struct DiffPatchTest<'a> {
     /// Description of the test case.
+    /// TODO: Delete the description.. not that useful and easy to forget to update after
+    ///  copy/pasting another similar test.
     pub desc: &'static str,
     /// The old virtual node.
     pub old: VirtualNode,

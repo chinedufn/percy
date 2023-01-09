@@ -1,8 +1,7 @@
 use js_sys::Reflect;
 use std::cell::RefCell;
-use std::cmp::min;
-use std::collections::HashMap;
 use std::collections::HashSet;
+use std::collections::{HashMap, VecDeque};
 use std::rc::Rc;
 
 use virtual_node::event::{insert_non_delegated_event, ElementEventsId, VirtualEventNode};
@@ -16,156 +15,175 @@ use crate::patch::Patch;
 use crate::{AttributeValue, PatchSpecialAttribute, VirtualNode};
 
 /// Apply all of the patches to our old root node in order to create the new root node
-/// that we desire. Also, update the `EventsByNodeIdx` with the new virtual node's event callbacks.
+/// that we desire. Also, update the `VirtualEvents` with the new virtual node's event callbacks.
 ///
 /// This is usually used after diffing two virtual nodes.
 // Tested in a browser in `percy-dom/tests`
 pub fn patch<N: Into<Node>>(
-    root_node: N,
+    root_dom_node: N,
     new_vnode: &VirtualNode,
     virtual_events: &mut VirtualEvents,
     patches: &[Patch],
 ) -> Result<(), JsValue> {
-    let root_node: Node = root_node.into();
-
     let root_events_node = virtual_events.root();
-
-    let mut cur_node_idx = 0;
 
     let mut nodes_to_find = HashSet::new();
 
     for patch in patches {
-        nodes_to_find.insert(patch.old_node_idx());
+        patch.insert_node_indices_to_find(&mut nodes_to_find);
     }
 
-    let mut element_nodes_to_patch = HashMap::new();
-    let mut text_nodes_to_patch = HashMap::new();
+    let mut node_queue = VecDeque::new();
+    node_queue.push_back(NodeToProcess {
+        node: root_dom_node.into(),
+        events_node: root_events_node.clone(),
+        events_node_parent: None,
+        node_idx: 0,
+    });
 
-    let mut events_id_for_old_node_idx: HashMap<u32, ElementEventsId> = HashMap::new();
+    let mut ctx = PatchContext {
+        next_node_idx: 1,
+        nodes_to_find,
+        found_nodes: HashMap::new(),
+        events_id_for_old_node_idx: HashMap::new(),
+        node_queue,
+    };
 
-    find_nodes(
-        root_node,
-        root_events_node.clone(),
-        &mut cur_node_idx,
-        &mut nodes_to_find,
-        &mut element_nodes_to_patch,
-        &mut text_nodes_to_patch,
-        &mut events_id_for_old_node_idx,
-    );
+    while ctx.nodes_to_find.len() >= 1 && ctx.node_queue.len() >= 1 {
+        find_nodes(&mut ctx);
+    }
 
     for patch in patches {
         let patch_node_idx = patch.old_node_idx();
 
-        if let Some((element, events_elem)) = element_nodes_to_patch.get(&patch_node_idx) {
-            apply_element_patch(
-                &element,
-                &mut events_elem.borrow_mut(),
-                &patch,
-                virtual_events,
-                &events_id_for_old_node_idx,
-            )?;
-            continue;
+        if let Some((_node, elem_or_text, events_elem)) = ctx.found_nodes.get(&patch_node_idx) {
+            match elem_or_text {
+                ElementOrText::Element(element) => {
+                    apply_element_patch(&element, events_elem, &patch, virtual_events, &ctx)?
+                }
+                ElementOrText::Text(text_node) => {
+                    apply_text_patch(&text_node, &patch, virtual_events, &events_elem.events_node)?;
+                }
+            };
+        } else {
+            // Right now this can happen if something outside of Percy goes into the DOM and
+            //  deletes an element that is managed by Percy.
+            panic!(
+                "We didn't find the element or text node that we were supposed to patch ({}).",
+                patch_node_idx
+            )
         }
-
-        if let Some((text_node, events_elem)) = text_nodes_to_patch.get(&patch_node_idx) {
-            apply_text_patch(&text_node, &patch, virtual_events, events_elem)?;
-            continue;
-        }
-
-        unreachable!(
-            "We didn't find the element or next node that we were supposed to patch ({}).",
-            patch_node_idx
-        )
     }
 
+    // FIXME: Remove patches as an argument.. just trying to track down a bug..
     overwrite_events(new_vnode, root_events_node, virtual_events);
 
     Ok(())
 }
 
-fn find_nodes(
-    current_node: Node,
+struct PatchContext {
+    next_node_idx: u32,
+    nodes_to_find: HashSet<u32>,
+    found_nodes: HashMap<u32, (Node, ElementOrText, EventsNodeAndParent)>,
+    events_id_for_old_node_idx: HashMap<u32, ElementEventsId>,
+    node_queue: VecDeque<NodeToProcess>,
+}
+struct NodeToProcess {
+    node: Node,
     events_node: Rc<RefCell<VirtualEventNode>>,
-    cur_node_idx: &mut u32,
-    nodes_to_find: &mut HashSet<u32>,
-    element_nodes_to_patch: &mut HashMap<u32, (Element, Rc<RefCell<VirtualEventNode>>)>,
-    text_nodes_to_patch: &mut HashMap<u32, (Text, Rc<RefCell<VirtualEventNode>>)>,
-    events_id_for_old_node_idx: &mut HashMap<u32, ElementEventsId>,
-) {
-    if nodes_to_find.len() == 0 {
-        return;
-    }
+    events_node_parent: Option<Rc<RefCell<VirtualEventNode>>>,
+    node_idx: u32,
+}
+enum ElementOrText {
+    Element(Element),
+    Text(Text),
+}
+struct EventsNodeAndParent {
+    events_node: Rc<RefCell<VirtualEventNode>>,
+    parent: Option<Rc<RefCell<VirtualEventNode>>>,
+}
 
-    // We use child_nodes() instead of children() because children() ignores text nodes
-    let children = current_node.child_nodes();
-    let child_node_count = children.length();
-
-    if let Some(events_elem) = events_node.borrow().as_element() {
-        let events_id = events_elem.events_id();
-        events_id_for_old_node_idx.insert(*cur_node_idx, events_id);
-    }
-
-    // If the root node matches, mark it for patching
-    if nodes_to_find.contains(&cur_node_idx) {
-        match current_node.node_type() {
+impl PatchContext {
+    fn store_found_node(&mut self, node_idx: u32, node: Node, events_node: EventsNodeAndParent) {
+        self.nodes_to_find.remove(&node_idx);
+        match node.node_type() {
             Node::ELEMENT_NODE => {
-                element_nodes_to_patch.insert(
-                    *cur_node_idx,
-                    (current_node.unchecked_into(), events_node.clone()),
-                );
+                let elem = ElementOrText::Element(node.clone().unchecked_into());
+                self.found_nodes.insert(node_idx, (node, elem, events_node));
             }
             Node::TEXT_NODE => {
-                text_nodes_to_patch.insert(
-                    *cur_node_idx,
-                    (current_node.unchecked_into(), events_node.clone()),
-                );
+                let text = ElementOrText::Text(node.clone().unchecked_into());
+                self.found_nodes.insert(node_idx, (node, text, events_node));
             }
             other => unimplemented!("Unsupported root node type: {}", other),
         }
-        nodes_to_find.remove(&cur_node_idx);
+    }
+}
+
+fn find_nodes(ctx: &mut PatchContext) {
+    if ctx.nodes_to_find.len() == 0 {
+        return;
     }
 
-    *cur_node_idx += 1;
+    let next = ctx.node_queue.pop_front();
+    if next.is_none() {
+        return;
+    }
+
+    let job = next.unwrap();
+    let node = job.node;
+    let events_node = job.events_node;
+    let events_node_parent = job.events_node_parent;
+    let cur_node_idx = job.node_idx;
+
+    if let Some(events_elem) = events_node.borrow().as_element() {
+        let events_id = events_elem.events_id();
+        ctx.events_id_for_old_node_idx
+            .insert(cur_node_idx, events_id);
+    }
+
+    if ctx.nodes_to_find.contains(&cur_node_idx) {
+        let events = EventsNodeAndParent {
+            events_node: events_node.clone(),
+            parent: events_node_parent,
+        };
+        ctx.store_found_node(cur_node_idx, node.clone(), events);
+    }
+
+    // We use child_nodes() instead of children() because children() ignores text nodes
+    let children = node.child_nodes();
+    let child_node_count = children.length();
 
     if child_node_count == 0 {
         return;
     }
 
-    let events_node = events_node.borrow();
-    let events_node_children = &events_node.as_element().unwrap().children();
+    let events_node_borrow = events_node.borrow();
+    let events_node_elem = &events_node_borrow.as_element().unwrap();
+    let mut next_child = events_node_elem.first_child();
 
-    let mut child_idx = 0;
     for i in 0..child_node_count {
         let child_node = children.item(i).unwrap();
+
         if !was_created_by_percy(&child_node) {
             continue;
         }
 
-        let events_child_node = events_node_children[child_idx].clone();
+        let next_node_idx = ctx.next_node_idx;
 
         match child_node.node_type() {
-            Node::ELEMENT_NODE => {
-                find_nodes(
-                    child_node,
-                    events_child_node,
-                    cur_node_idx,
-                    nodes_to_find,
-                    element_nodes_to_patch,
-                    text_nodes_to_patch,
-                    events_id_for_old_node_idx,
-                );
-                child_idx += 1;
-            }
-            Node::TEXT_NODE => {
-                if nodes_to_find.get(&cur_node_idx).is_some() {
-                    text_nodes_to_patch.insert(
-                        *cur_node_idx,
-                        (child_node.unchecked_into(), events_child_node),
-                    );
-                }
+            Node::ELEMENT_NODE | Node::TEXT_NODE => {
+                let events_child_node = next_child.unwrap();
+                next_child = events_child_node.borrow().next_sibling().cloned();
 
-                *cur_node_idx += 1;
-                child_idx += 1;
+                ctx.node_queue.push_back(NodeToProcess {
+                    node: child_node,
+                    events_node: events_child_node,
+                    events_node_parent: Some(events_node.clone()),
+                    node_idx: next_node_idx,
+                });
+
+                ctx.next_node_idx += 1;
             }
             Node::COMMENT_NODE => {
                 // At this time we do not support user entered comment nodes, so if we see a comment
@@ -195,20 +213,22 @@ fn overwrite_events(
             virtual_events.overwrite_event_attrib_fn(&events_id, event_name, event.clone());
         }
 
-        for (child_idx, child) in elem.children.iter().enumerate() {
-            let events_child = events_node.children()[child_idx].clone();
+        let mut events_child = events_node.first_child();
 
-            overwrite_events(child, events_child, virtual_events);
+        for child in elem.children.iter() {
+            let e = events_child.unwrap();
+            events_child = e.borrow().next_sibling().cloned();
+            overwrite_events(child, e, virtual_events);
         }
     }
 }
 
 fn apply_element_patch(
     node: &Element,
-    events_elem: &mut VirtualEventNode,
+    events_elem_and_parent: &EventsNodeAndParent,
     patch: &Patch,
     virtual_events: &mut VirtualEvents,
-    events_id_for_old_node_idx: &HashMap<u32, ElementEventsId>,
+    ctx: &PatchContext,
 ) -> Result<(), JsValue> {
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
@@ -242,64 +262,122 @@ fn apply_element_patch(
         }
         Patch::Replace {
             old_idx: _,
-            new_idx: _,
             new_node,
         } => {
             let (created_node, events) = new_node.create_dom_node(virtual_events);
 
             node.replace_with_with_node_1(&created_node)?;
-            *events_elem = events;
+
+            let mut events_elem = events_elem_and_parent.events_node.borrow_mut();
+            events_elem.replace_with_node(events);
 
             Ok(())
         }
-        Patch::TruncateChildren(_node_idx, num_children_remaining) => {
-            let children = node.child_nodes();
-            let mut child_count = children.length();
+        Patch::InsertBefore {
+            anchor_old_node_idx: _,
+            new_nodes,
+        } => {
+            let parent = node.parent_node().unwrap();
+            let parent: Element = parent.dyn_into().unwrap();
 
-            // We skip over any separators that we placed between two text nodes
-            //   -> `<!--ptns-->`
-            //  and trim all children that come after our new desired `num_children_remaining`
-            let mut non_separator_children_found = 0;
+            let events_parent = events_elem_and_parent.parent.as_ref().unwrap();
 
-            for index in 0 as u32..child_count {
-                let child = children
-                    .get(min(index, child_count - 1))
-                    .expect("Potential child to truncate");
+            for new_node in new_nodes {
+                let (created_node, events) = new_node.create_dom_node(virtual_events);
 
-                // If this is a comment node then we know that it is a `<!--ptns-->`
-                // text node separator that was created in virtual_node/mod.rs.
-                if child.node_type() == Node::COMMENT_NODE {
-                    continue;
-                }
-
-                non_separator_children_found += 1;
-
-                if non_separator_children_found <= *num_children_remaining as u32 {
-                    continue;
-                }
-
-                node.remove_child(&child).expect("Truncated children");
-                child_count -= 1;
+                parent.insert_before(&created_node, Some(&node))?;
+                events_parent.borrow_mut().insert_before(
+                    Rc::new(RefCell::new(events)),
+                    events_elem_and_parent.events_node.clone(),
+                );
             }
 
-            events_elem
-                .as_element_mut()
-                .unwrap()
-                .truncate_children(*num_children_remaining);
+            Ok(())
+        }
+        Patch::MoveNodesBefore {
+            anchor_old_node_idx: _,
+            to_move,
+        } => {
+            let parent = node.parent_node().unwrap();
+            let parent: Element = parent.dyn_into().unwrap();
+
+            let events_parent = events_elem_and_parent.parent.as_ref().unwrap();
+            let mut events_parent = events_parent.borrow_mut();
+
+            for to_move_node in to_move {
+                let (to_move_dom_node, _, to_move_node_events) =
+                    ctx.found_nodes.get(to_move_node).unwrap();
+
+                parent.insert_before(to_move_dom_node, Some(&node))?;
+
+                events_parent.remove_node_from_siblings(&to_move_node_events.events_node);
+                events_parent.insert_before(
+                    to_move_node_events.events_node.clone(),
+                    events_elem_and_parent.events_node.clone(),
+                );
+            }
+
+            Ok(())
+        }
+        Patch::RemoveChildren {
+            parent_old_node_idx: _,
+            to_remove,
+        } => {
+            let parent = node;
+
+            let events_elem = events_elem_and_parent.events_node.borrow_mut();
+            let mut events_parent = events_elem;
+
+            for idx in to_remove {
+                let (node_to_remove, _, events_node_to_remove) = ctx.found_nodes.get(idx).unwrap();
+                parent.remove_child(&node_to_remove)?;
+
+                events_parent.remove_node_from_siblings(&events_node_to_remove.events_node);
+            }
 
             Ok(())
         }
         Patch::AppendChildren {
-            old_idx: _,
+            parent_old_node_idx: _,
             new_nodes,
         } => {
             let parent = &node;
 
-            for (_node_idx, new_node) in new_nodes {
+            let events_elem = events_elem_and_parent.events_node.borrow_mut();
+            let mut events_parent = events_elem;
+
+            for new_node in new_nodes {
                 let (created_node, events) = new_node.create_dom_node(virtual_events);
 
                 parent.append_child(&created_node)?;
-                events_elem.as_element_mut().unwrap().push_child(events);
+
+                events_parent
+                    .as_element_mut()
+                    .unwrap()
+                    .append_child(Rc::new(RefCell::new(events)));
+            }
+
+            Ok(())
+        }
+        Patch::MoveToEndOfSiblings {
+            parent_old_node_idx: _,
+            siblings_to_move,
+        } => {
+            let parent = node;
+
+            let events_elem = events_elem_and_parent.events_node.borrow_mut();
+            let mut events_parent = events_elem;
+
+            for node in siblings_to_move {
+                let (dom_node_to_move, _, events_node_to_move) = ctx.found_nodes.get(node).unwrap();
+
+                parent.append_child(&dom_node_to_move)?;
+
+                events_parent.remove_node_from_siblings(&events_node_to_move.events_node);
+                events_parent
+                    .as_element_mut()
+                    .unwrap()
+                    .append_child(events_node_to_move.events_node.clone());
             }
 
             Ok(())
@@ -314,7 +392,7 @@ fn apply_element_patch(
             Ok(())
         }
         Patch::SpecialAttribute(special) => match special {
-            PatchSpecialAttribute::CallOnCreateElem(_node_idx, new_node) => {
+            PatchSpecialAttribute::CallOnCreateElemOnExistingNode(_node_idx, new_node) => {
                 new_node
                     .as_velement_ref()
                     .unwrap()
@@ -352,7 +430,7 @@ fn apply_element_patch(
             }
         },
         Patch::AddEvents(node_idx, new_events) => {
-            let events_id = events_id_for_old_node_idx.get(node_idx).unwrap();
+            let events_id = ctx.events_id_for_old_node_idx.get(node_idx).unwrap();
 
             for (event_name, event) in new_events {
                 if event_name.is_delegated() {
@@ -370,7 +448,7 @@ fn apply_element_patch(
             Ok(())
         }
         Patch::RemoveEvents(node_idx, events) => {
-            let events_id = events_id_for_old_node_idx.get(node_idx).unwrap();
+            let events_id = ctx.events_id_for_old_node_idx.get(node_idx).unwrap();
 
             for (event_name, _event) in events {
                 if !event_name.is_delegated() {
@@ -389,7 +467,7 @@ fn apply_element_patch(
             Ok(())
         }
         Patch::RemoveAllVirtualEventsWithNodeIdx(node_idx) => {
-            let events_id = events_id_for_old_node_idx.get(node_idx).unwrap();
+            let events_id = ctx.events_id_for_old_node_idx.get(node_idx).unwrap();
             virtual_events.remove_node(events_id);
             Ok(())
         }
@@ -408,18 +486,19 @@ fn apply_text_patch(
         }
         Patch::Replace {
             old_idx: _,
-            new_idx: _,
             new_node,
         } => {
             let (elem, enode) = new_node.create_dom_node(events);
             node.replace_with_with_node_1(&elem)?;
 
-            *events_elem.borrow_mut() = enode;
+            events_elem.borrow_mut().replace_with_node(enode);
         }
-        other => unreachable!(
-            "Text nodes should only receive ChangeText or Replace patches, not {:?}.",
-            other,
-        ),
+        other => {
+            unreachable!(
+                "Text nodes should only receive ChangeText or Replace patches, not {:?}.",
+                other,
+            )
+        }
     };
 
     Ok(())
@@ -439,7 +518,7 @@ fn maybe_set_value_property(node: &Element, value: &str) {
 // TODO: We need to know not just if the node was created by Percy... but if it was created by
 //  this percy-dom instance.. So give every PercyDom instance a random number and store that at the
 //  virtual node marker property value.
-fn was_created_by_percy(node: &web_sys::Node) -> bool {
+fn was_created_by_percy(node: &Node) -> bool {
     let marker = Reflect::get(&node, &VIRTUAL_NODE_MARKER_PROPERTY.into()).unwrap();
 
     match marker.as_f64() {
