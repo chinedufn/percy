@@ -47,7 +47,7 @@ impl HtmlParser {
             // things work but in reality a text node isn't a parent ever.
             // Just need to make the code DRY / refactor so that we can make things make
             // sense vs. just bolting things together.
-            parent_stack.push((0, Ident::new("unused", Span::call_site())));
+            parent_stack.push((0, Ident::new("__text__", Span::call_site())));
         }
 
         let var_name = Ident::new(format!("node_{}", idx).as_str(), Span::call_site());

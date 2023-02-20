@@ -60,8 +60,8 @@ fn set_input_elem_value_property() {
 #[wasm_bindgen_test]
 fn set_textarea_elem_value_property() {
     for (start, end) in vec![("BOTH EQUAL", "BOTH EQUAL"), ("NOT", "EQUAL")] {
-        let start_textarea = html! {<textarea value=start>};
-        let end_textarea = html! {<textarea value=end>};
+        let start_textarea = html! {<textarea value=start></textarea>};
+        let end_textarea = html! {<textarea value=end></textarea>};
 
         let mut events = VirtualEvents::new();
         let (textarea_node, enode) = start_textarea.create_dom_node(&mut events);

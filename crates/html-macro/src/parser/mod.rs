@@ -144,6 +144,19 @@ impl HtmlParser {
             }
         }
 
+        for (_, tag) in &self.parent_stack {
+            let is_text_node = tag == "__text__";
+            if is_text_node {
+                continue;
+            }
+
+            let tag_span = tag.span();
+            let error_missing_closing_tag = quote_spanned! {tag_span=>
+                compile_error!("Missing closing tag.");
+            };
+            tokens.push(error_missing_closing_tag);
+        }
+
         // Create a virtual node tree
         let node = quote! {
             {
