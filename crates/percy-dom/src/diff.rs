@@ -457,7 +457,7 @@ fn generate_patches_for_children<'a, 'b>(
     let mut new_tracked_indices = TrackedImplicitlyKeyableIndices::default();
 
     for (idx, new_child) in new_element.children.iter().enumerate() {
-        let implicit_key = new_tracked_indices.get_key_maybe_increment(new_child);
+        let implicit_key = new_tracked_indices.get_and_increment(new_child);
         let new_key = node_key(new_child, implicit_key);
 
         if let Some(new_key) = new_key {
@@ -470,7 +470,7 @@ fn generate_patches_for_children<'a, 'b>(
     ctx.increment_old_node_idx(old_element.children.len());
 
     for (idx, old_child) in old_element.children.iter().enumerate() {
-        let implicit_key = old_tracked_indices.get_key_maybe_increment(old_child);
+        let implicit_key = old_tracked_indices.get_and_increment(old_child);
         let old_key = node_key(old_child, implicit_key);
 
         match old_key {
@@ -529,7 +529,7 @@ fn generate_patches_for_children<'a, 'b>(
 
     let mut new_tracked_indices = TrackedImplicitlyKeyableIndices::default();
     for (new_child_idx, new_child_node) in new_element.children.iter().enumerate() {
-        let implicit_key = new_tracked_indices.get_key_maybe_increment(new_child_node);
+        let implicit_key = new_tracked_indices.get_and_increment(new_child_node);
         let key = node_key(new_child_node, implicit_key);
         let old_child_idx = key.as_ref().and_then(|key| longest_increasing.get(key));
 
@@ -712,10 +712,10 @@ fn maybe_push_move_before<'a>(ctx: &mut DiffContext<'a>, old_idx: u32, move_befo
     move_before.clear();
 }
 
-fn node_key(
-    node: &VirtualNode,
-    implicit_elem_key: Option<ElementKeyImplicit>,
-) -> Option<ElementKey> {
+fn node_key<'a>(
+    node: &'a VirtualNode,
+    implicit_elem_key: Option<ElementKeyImplicit<'a>>,
+) -> Option<ElementKey<'a>> {
     let elem = node.as_velement_ref()?;
 
     let explicit_key = elem
@@ -736,60 +736,53 @@ fn node_key(
 enum ElementKey<'a> {
     /// An explicit key set using the `key = "..."` attribute.
     Explicit(&'a str),
-    Implicit(ElementKeyImplicit),
+    Implicit(ElementKeyImplicit<'a>),
 }
 
-/// Implicit keys that we used for certain elements.
+/// An implicit key that we use for unkeyed elements elements.
 /// We do not use an implicit key if the element has an explicit key.
+///
+/// Using implicit keys helps ensure that we minimize the amount of nodes that get replaced,
+/// such that nodes tend to get moved and re-used instead.
+/// This helps avoid deleting and recreating inputs, textareas and other nodes that we want
+/// to preserve as they move around amongst their siblings.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(test, derive(Debug))]
-enum ElementKeyImplicit {
-    /// An implicit key that we use for focusable elements.
-    /// This ensures that, for example, when sibling nodes ar prepending these elements get moved
-    /// instead of deleted and recreated, meaning that if the element is currently focused in the
-    /// real DOM it won't lose its focus.
-    Focusable { focusable_idx: FocusableIdx },
+struct ElementKeyImplicit<'a> {
+    tag: &'a str,
+    /// The nodes index across all of its siblings of the same tag.
+    ///
+    /// If the siblings are "input, div, div, textarea, textarea", the input's
+    /// `idx_amongst_siblings_with_same_tag` would be 0
+    /// and the textareas' `idx_amongst_siblings_with_same_tag`s would be 0 and 1.
+    idx_amongst_siblings_with_same_tag: usize,
 }
 
-/// The nodes index across all of its focusable siblings of the same tag.
-/// So, the first input element sibling has index 0, then the next input element has index 1, etc.
-/// If the siblings are "input, div, div, textarea, textarea", the input's `focusable_idx` would be 0
-/// and the textareas' `focusable_idx`s would be 0 and 1.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(test, derive(Debug))]
-enum FocusableIdx {
-    Input(usize),
-    TextArea(usize),
-}
-
+// HashMap<Tag, Index amongst siblings with same tag>
 #[derive(Default)]
-struct TrackedImplicitlyKeyableIndices {
-    input: usize,
-    textarea: usize,
-}
+struct TrackedImplicitlyKeyableIndices<'a>(HashMap<&'a str, usize>);
 
-impl TrackedImplicitlyKeyableIndices {
-    /// If the element has an implicit key return it.
-    pub fn get_key_maybe_increment(&mut self, node: &VirtualNode) -> Option<ElementKeyImplicit> {
+impl<'a> TrackedImplicitlyKeyableIndices<'a> {
+    /// Return the elements implicit key.
+    pub fn get_and_increment(&mut self, node: &'a VirtualNode) -> Option<ElementKeyImplicit<'a>> {
         let elem = node.as_velement_ref()?;
-        let key = match elem.tag.as_str() {
-            "input" => {
-                let old_idx = self.input;
-                self.input += 1;
-                ElementKeyImplicit::Focusable {
-                    focusable_idx: FocusableIdx::Input(old_idx),
-                }
-            }
-            "textarea" => {
-                let old_idx = self.textarea;
-                self.textarea += 1;
-                ElementKeyImplicit::Focusable {
-                    focusable_idx: FocusableIdx::TextArea(old_idx),
-                }
-            }
-            _ => None?,
-        };
-        Some(key)
+
+        if elem.attrs.get("key").is_some() {
+            return None;
+        }
+
+        let tag = elem.tag.as_str();
+
+        let idx = self.0.entry(tag).or_insert(0);
+
+        let current = *idx;
+
+        *idx += 1;
+
+        Some(ElementKeyImplicit {
+            tag,
+            idx_amongst_siblings_with_same_tag: current,
+        })
     }
 }
 
@@ -2256,7 +2249,7 @@ mod tests {
         .test();
     }
 
-    /// Verify that we can re-order a list of keyed elements.
+    /// Verify that we can re-order a list of element where not every element has explicit keys.
     #[test]
     fn swap_keyed_and_unkeyed_elements() {
         DiffTestCase {
@@ -2272,9 +2265,9 @@ mod tests {
                 <em></em>
               </div>
             },
-            expected: vec![Patch::MoveToEndOfSiblings {
-                parent_old_node_idx: 0,
-                siblings_to_move: vec![1],
+            expected: vec![Patch::MoveNodesBefore {
+                anchor_old_node_idx: 1,
+                to_move: vec![2],
             }],
         }
         .test();
@@ -2569,6 +2562,13 @@ mod tests {
     /// simply move them.
     /// We want to move these elements instead of recreating them so that if one of them is focused
     /// it doesn't lose that focus.
+    ///
+    /// NOTE: This test was written before we implement automatic implicit keys for all unkeyed
+    ///  elements. At the time this test was written, only input and textarea elements were
+    ///  implicitly keyed.
+    ///  Nowadays we use implicit keys for all unkeyed siblings
+    ///  Still, going to keep this test around since it's simple enough that it shouldn't be a
+    ///  maintenance burden.
     #[test]
     fn preserve_focusable_elements() {
         // Prepend before one input.
@@ -2612,44 +2612,43 @@ mod tests {
         .test();
 
         // Prepend before two different focusable elements and swap the elements.
-        for combination in vec![("input", "textarea")] {
-            for (first, second) in [
-                (combination.0, combination.1),
-                (combination.1, combination.0),
-            ] {
-                let old_a = VirtualNode::element(first);
-                let new_a = VirtualNode::element(first);
+        let combination = ("input", "textarea");
+        for (first, second) in [
+            (combination.0, combination.1),
+            (combination.1, combination.0),
+        ] {
+            let old_a = VirtualNode::element(first);
+            let new_a = VirtualNode::element(first);
 
-                let old_b = VirtualNode::element(second);
-                let new_b = VirtualNode::element(second);
+            let old_b = VirtualNode::element(second);
+            let new_b = VirtualNode::element(second);
 
-                DiffTestCase {
-                    old: html! {
-                        <div>
-                          { old_a }
-                          { old_b }
-                        </div>
+            DiffTestCase {
+                old: html! {
+                    <div>
+                      { old_a }
+                      { old_b }
+                    </div>
+                },
+                new: html! {
+                    <div>
+                      <br />
+                      { new_b }
+                      { new_a }
+                    </div>
+                },
+                expected: vec![
+                    Patch::InsertBefore {
+                        anchor_old_node_idx: 1,
+                        new_nodes: vec![&VirtualNode::element("br")],
                     },
-                    new: html! {
-                        <div>
-                          <br />
-                          { new_b }
-                          { new_a }
-                        </div>
+                    Patch::MoveNodesBefore {
+                        anchor_old_node_idx: 1,
+                        to_move: vec![2],
                     },
-                    expected: vec![
-                        Patch::InsertBefore {
-                            anchor_old_node_idx: 1,
-                            new_nodes: vec![&VirtualNode::element("br")],
-                        },
-                        Patch::MoveNodesBefore {
-                            anchor_old_node_idx: 1,
-                            to_move: vec![2],
-                        },
-                    ],
-                }
-                .test();
+                ],
             }
+            .test();
         }
 
         // Swap two focusable elements with different tags.
@@ -2674,15 +2673,95 @@ mod tests {
         .test();
     }
 
-    /// Verify that if a focusable element has an explicit key the explicit key takes priority.
+    /// Verify that if sibling elements aren't keyed they are given implicit keys.
+    ///
+    /// We verify this by confirming that, when possible, unkeyed elements with the same tag
+    /// get moved instead of replaced.
+    ///
+    /// One reason that we implicitly key elements is that it helps with preserving focus states.
+    /// For example, imagine the following start and end nodes.
+    ///
+    /// ```text
+    /// start: <div> <input /> </div>
+    /// end: <div> <br /> <input /> </div>
+    /// ```
+    ///
+    /// If the input is focused at the start, we want it to still be focused after the patch is
+    /// applied.
+    /// By implicitly keying elements based on their tag we ensure that when the input gets moved
+    /// amongst its siblings it will get moved in the applied patch, instead of being
+    /// replaced and recreated.
+    #[test]
+    fn implicit_keys() {
+        // Swap implicitly keyed elements where one has children.
+        DiffTestCase {
+            old: html! {
+                <div>
+                  <div>
+                    <input />
+                  </div>
+                  <br />
+                </div>
+            },
+            new: html! {
+                <div>
+                  <br />
+                  <div>
+                    <input />
+                  </div>
+                </div>
+            },
+            expected: vec![Patch::MoveNodesBefore {
+                anchor_old_node_idx: 1,
+                to_move: vec![2],
+            }],
+        }
+        .test();
+    }
+
+    /// Verify that we can remove a keyed node that is in between two unkeyed nodes of the same tag.
+    #[test]
+    fn removed_keyed_node_between_unkeyed_nodes_all_same_tag() {
+        DiffTestCase {
+            old: html! {
+                <div>
+                  <div>
+                    <img />
+                  </div>
+                  <div key="2"></div>
+                  <div>
+                    <br />
+                  </div>
+                </div>
+            },
+            new: html! {
+                <div>
+                  <div>
+                    <img />
+                  </div>
+                  <div>
+                    <br />
+                  </div>
+                </div>
+            },
+            expected: vec![Patch::RemoveChildren {
+                parent_old_node_idx: 0,
+                to_remove: vec![2],
+            }],
+        }
+        .test();
+    }
+
+    /// Verify that if a focusable element has an explicit key the explicit key takes priority over
+    /// the implicit key.
     ///
     /// We confirm this by giving an explicit key to a focusable element, moving it, and ensuring
     /// that the keyed element gets moved.
     ///
-    /// If explicit keys did not take precedence over the implicit focusable element key then we
-    /// would not have moved the input element since we would have thought that nothing had changed.
+    /// If explicit keys did not take precedence over the implicit key then the element in our test
+    /// would not have moved.
     #[test]
-    fn prioritizes_explicit_key_over_focusable_element_key() {
+    fn prioritizes_explicit_key_over_implicit_key() {
         DiffTestCase {
             old: html! {
                 <div>
