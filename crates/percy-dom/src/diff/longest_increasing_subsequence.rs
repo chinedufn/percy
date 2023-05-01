@@ -1,5 +1,7 @@
+use crate::diff::ElementKey;
+
 const PLACEHOLDER_KEY_AND_IDX: KeyAndChildIdx = KeyAndChildIdx {
-    key: "...",
+    key: ElementKey::Explicit("..."),
     child_idx: 123,
 };
 const PLACEHOLDER_USIZE: usize = 55555;
@@ -7,7 +9,7 @@ const PLACEHOLDER_USIZE: usize = 55555;
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(test, derive(Debug))]
 pub(super) struct KeyAndChildIdx<'a> {
-    pub key: &'a str,
+    pub key: ElementKey<'a>,
     pub child_idx: usize,
 }
 
@@ -72,7 +74,7 @@ mod tests {
 
     const fn make_val(key: &'static str, val: usize) -> KeyAndChildIdx {
         KeyAndChildIdx {
-            key,
+            key: ElementKey::Explicit(key),
             child_idx: val,
         }
     }

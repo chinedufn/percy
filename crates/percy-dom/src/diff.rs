@@ -445,19 +445,23 @@ fn generate_patches_for_children<'a, 'b>(
     //       Optimize
 
     let old_child_count = old_element.children.len();
-    let new_child_count = new_element.children.len();
 
-    let mut key_to_old_child_idx: HashMap<String, usize> = HashMap::new();
-    let mut key_to_new_child_idx: HashMap<String, usize> = HashMap::new();
+    let mut key_to_old_child_idx: HashMap<ElementKey, usize> = HashMap::new();
+    let mut key_to_new_child_idx: HashMap<ElementKey, usize> = HashMap::new();
 
     let mut old_non_keyed_and_no_longer_keyed_nodes: VecDeque<usize> = Default::default();
 
-    let mut new_node_keys: HashMap<usize, String> = HashMap::new();
+    let mut new_node_keys: HashMap<usize, ElementKey> = HashMap::new();
 
-    for idx in 0..new_child_count {
-        let new_key = new_element.children.get(idx).and_then(|n| node_key(n));
+    let mut old_tracked_indices = TrackedImplicitlyKeyableIndices::default();
+    let mut new_tracked_indices = TrackedImplicitlyKeyableIndices::default();
+
+    for (idx, new_child) in new_element.children.iter().enumerate() {
+        let implicit_key = new_tracked_indices.get_key_maybe_increment(new_child);
+        let new_key = node_key(new_child, implicit_key);
+
         if let Some(new_key) = new_key {
-            new_node_keys.insert(idx, new_key.clone());
+            new_node_keys.insert(idx, new_key);
             key_to_new_child_idx.insert(new_key, idx);
         }
     }
@@ -466,7 +470,9 @@ fn generate_patches_for_children<'a, 'b>(
     ctx.increment_old_node_idx(old_element.children.len());
 
     for (idx, old_child) in old_element.children.iter().enumerate() {
-        let old_key = node_key(old_child);
+        let implicit_key = old_tracked_indices.get_key_maybe_increment(old_child);
+        let old_key = node_key(old_child, implicit_key);
+
         match old_key {
             Some(old_key) if key_to_new_child_idx.contains_key(&old_key) => {
                 key_to_old_child_idx.insert(old_key, idx);
@@ -481,7 +487,9 @@ fn generate_patches_for_children<'a, 'b>(
 
     for new_child_idx in 0..new_element.children.len() {
         let key = new_node_keys.get(&new_child_idx);
-        let key = if let Some(key) = key { key } else { continue };
+        let Some(key) = key else {
+            continue;
+        };
 
         let old_key_child_idx = key_to_old_child_idx.get(key);
         let old_key_child_idx = if let Some(k) = old_key_child_idx {
@@ -491,12 +499,12 @@ fn generate_patches_for_children<'a, 'b>(
         };
 
         old_child_indices_of_preserved_keys.push(KeyAndChildIdx {
-            key,
+            key: *key,
             child_idx: *old_key_child_idx,
         });
     }
 
-    let longest_increasing: HashMap<&str, usize> =
+    let longest_increasing: HashMap<ElementKey, usize> =
         get_longest_increasing_subsequence(&old_child_indices_of_preserved_keys)
             .into_iter()
             .map(|k| (k.key, k.child_idx))
@@ -519,11 +527,11 @@ fn generate_patches_for_children<'a, 'b>(
     // (Child idx, DiffJob)
     let mut jobs: Vec<(usize, DiffJob)> = vec![];
 
+    let mut new_tracked_indices = TrackedImplicitlyKeyableIndices::default();
     for (new_child_idx, new_child_node) in new_element.children.iter().enumerate() {
-        let key = node_key(new_child_node);
-        let old_child_idx = key
-            .as_ref()
-            .and_then(|key| longest_increasing.get(key.as_str()));
+        let implicit_key = new_tracked_indices.get_key_maybe_increment(new_child_node);
+        let key = node_key(new_child_node, implicit_key);
+        let old_child_idx = key.as_ref().and_then(|key| longest_increasing.get(key));
 
         match old_child_idx {
             Some(old_child_idx) => {
@@ -704,12 +712,88 @@ fn maybe_push_move_before<'a>(ctx: &mut DiffContext<'a>, old_idx: u32, move_befo
     move_before.clear();
 }
 
-fn node_key(node: &VirtualNode) -> Option<String> {
-    node.as_velement_ref()
-        .and_then(|v| v.attrs.get("key"))
-        .map(|k| k.to_string())
+fn node_key(
+    node: &VirtualNode,
+    implicit_elem_key: Option<ElementKeyImplicit>,
+) -> Option<ElementKey> {
+    let elem = node.as_velement_ref()?;
+
+    let explicit_key = elem
+        .attrs
+        .get("key")
+        .and_then(|k| k.as_string().map(String::as_str))
+        .map(ElementKey::Explicit);
+
+    if explicit_key.is_some() {
+        return explicit_key;
+    }
+
+    implicit_elem_key.map(ElementKey::Implicit)
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[cfg_attr(test, derive(Debug))]
+enum ElementKey<'a> {
+    /// An explicit key set using the `key = "..."` attribute.
+    Explicit(&'a str),
+    Implicit(ElementKeyImplicit),
+}
+
+/// Implicit keys that we used for certain elements.
+/// We do not use an implicit key if the element has an explicit key.
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[cfg_attr(test, derive(Debug))]
+enum ElementKeyImplicit {
+    /// An implicit key that we use for focusable elements.
+    /// This ensures that, for example, when sibling nodes ar prepending these elements get moved
+    /// instead of deleted and recreated, meaning that if the element is currently focused in the
+    /// real DOM it won't lose its focus.
+    Focusable { focusable_idx: FocusableIdx },
+}
+
+/// The nodes index across all of its focusable siblings of the same tag.
+/// So, the first input element sibling has index 0, then the next input element has index 1, etc.
+/// If the siblings are "input, div, div, textarea, textarea", the input's `focusable_idx` would be 0
+/// and the textareas' `focusable_idx`s would be 0 and 1.
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[cfg_attr(test, derive(Debug))]
+enum FocusableIdx {
+    Input(usize),
+    TextArea(usize),
+}
+
+#[derive(Default)]
+struct TrackedImplicitlyKeyableIndices {
+    input: usize,
+    textarea: usize,
+}
+
+impl TrackedImplicitlyKeyableIndices {
+    /// If the element has an implicit key return it.
+    pub fn get_key_maybe_increment(&mut self, node: &VirtualNode) -> Option<ElementKeyImplicit> {
+        let elem = node.as_velement_ref()?;
+        let key = match elem.tag.as_str() {
+            "input" => {
+                let old_idx = self.input;
+                self.input += 1;
+                ElementKeyImplicit::Focusable {
+                    focusable_idx: FocusableIdx::Input(old_idx),
+                }
+            }
+            "textarea" => {
+                let old_idx = self.input;
+                self.textarea += 1;
+                ElementKeyImplicit::Focusable {
+                    focusable_idx: FocusableIdx::TextArea(old_idx),
+                }
+            }
+            _ => None?,
+        };
+        Some(key)
+    }
+}
+
+// Kept in it's own file so that we can import it into the Percy book without extra indentation.
 #[cfg(test)]
 mod diff_test_case;
 
@@ -725,6 +809,7 @@ mod tests {
 
     use super::diff_test_case::*;
 
+    /// Verify that we can generate patches that replace a virtual node with another one.
     #[test]
     fn replace_node() {
         DiffTestCase {
@@ -867,6 +952,7 @@ mod tests {
         .test();
     }
 
+    /// Verify that we can append children to a virtual node.
     #[test]
     fn add_children() {
         DiffTestCase {
@@ -906,6 +992,7 @@ mod tests {
         .test();
     }
 
+    /// Verify that we can replace one node and add children to another node.
     #[test]
     fn replace_and_append() {
         DiffTestCase {
@@ -941,6 +1028,7 @@ mod tests {
         .test();
     }
 
+    /// Verify that we can truncate a node's children.
     #[test]
     fn truncate_children() {
         DiffTestCase {
@@ -995,6 +1083,7 @@ mod tests {
         .test();
     }
 
+    /// Verify that we can replace one node and truncate the children of another node.
     #[test]
     fn replace_and_truncate() {
         DiffTestCase {
@@ -1029,6 +1118,7 @@ mod tests {
         .test();
     }
 
+    /// Verify that we can add an attribute to a node.
     #[test]
     fn add_attributes() {
         let mut attributes = HashMap::new();
@@ -1050,6 +1140,7 @@ mod tests {
         .test();
     }
 
+    /// Verify that we can remove an attribute from a node.
     #[test]
     fn remove_attributes() {
         DiffTestCase {
@@ -1060,6 +1151,7 @@ mod tests {
         .test();
     }
 
+    /// Verify that we can change a node's attribute.
     #[test]
     fn change_attribute() {
         let mut attributes = HashMap::new();
@@ -1074,6 +1166,7 @@ mod tests {
         .test();
     }
 
+    /// Verify that we can change a text node's text.
     #[test]
     fn replace_text_node() {
         DiffTestCase {
@@ -2466,6 +2559,105 @@ mod tests {
             expected: vec![Patch::Replace {
                 old_idx: 1,
                 new_node: &new,
+            }],
+        }
+        .test();
+    }
+
+    /// Verify that when adding or removing nodes from a list of children we try to avoid replacing
+    /// focusable elements such as inputs and textarea elements and that instead, when possible, we
+    /// simply move them.
+    /// We want to move these elements instead of recreating them so that if one of them is focused
+    /// it doesn't lose that focus.
+    #[test]
+    fn preserve_focusable_elements() {
+        // Prepend before one input.
+        DiffTestCase {
+            old: html! {
+                <div>
+                  <input />
+                </div>
+            },
+            new: html! {
+                <div>
+                  <br />
+                  <input />
+                </div>
+            },
+            expected: vec![Patch::InsertBefore {
+                anchor_old_node_idx: 1,
+                new_nodes: vec![&VirtualNode::element("br")],
+            }],
+        }
+        .test();
+
+        // Prepend before one textarea.
+        DiffTestCase {
+            old: html! {
+                <div>
+                  <textarea />
+                </div>
+            },
+            new: html! {
+                <div>
+                  <br />
+                  <textarea />
+                </div>
+            },
+            expected: vec![Patch::InsertBefore {
+                anchor_old_node_idx: 1,
+                new_nodes: vec![&VirtualNode::element("br")],
+            }],
+        }
+        .test();
+
+        // Swap two focusable elements with different tags.
+        DiffTestCase {
+            old: html! {
+                <div>
+                  <input />
+                  <textarea />
+                </div>
+            },
+            new: html! {
+                <div>
+                  <textarea />
+                  <input />
+                </div>
+            },
+            expected: vec![Patch::MoveNodesBefore {
+                anchor_old_node_idx: 1,
+                to_move: vec![2],
+            }],
+        }
+        .test();
+    }
+
+    /// Verify that if a focusable element has an explicit key the explicit key takes priority.
+    ///
+    /// We confirm this by giving an explicit key to a focusable element, moving it, and ensuring
+    /// that the keyed element gets moved.
+    ///
+    /// If explicit keys did not take precedence over the implicit focusable element key then we
+    /// would not have moved the input element since we would have thought that nothing had changed.
+    #[test]
+    fn prioritizes_explicit_key_over_focusable_element_key() {
+        DiffTestCase {
+            old: html! {
+                <div>
+                  <input key="keyed" />
+                  <input />
+                </div>
+            },
+            new: html! {
+                <div>
+                  <input />
+                  <input key="keyed" />
+                </div>
+            },
+            expected: vec![Patch::MoveNodesBefore {
+                anchor_old_node_idx: 1,
+                to_move: vec![2],
             }],
         }
         .test();
