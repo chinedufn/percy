@@ -781,7 +781,7 @@ impl TrackedImplicitlyKeyableIndices {
                 }
             }
             "textarea" => {
-                let old_idx = self.input;
+                let old_idx = self.textarea;
                 self.textarea += 1;
                 ElementKeyImplicit::Focusable {
                     focusable_idx: FocusableIdx::TextArea(old_idx),
@@ -2610,6 +2610,47 @@ mod tests {
             }],
         }
         .test();
+
+        // Prepend before two different focusable elements and swap the elements.
+        for combination in vec![("input", "textarea")] {
+            for (first, second) in [
+                (combination.0, combination.1),
+                (combination.1, combination.0),
+            ] {
+                let old_a = VirtualNode::element(first);
+                let new_a = VirtualNode::element(first);
+
+                let old_b = VirtualNode::element(second);
+                let new_b = VirtualNode::element(second);
+
+                DiffTestCase {
+                    old: html! {
+                        <div>
+                          { old_a }
+                          { old_b }
+                        </div>
+                    },
+                    new: html! {
+                        <div>
+                          <br />
+                          { new_b }
+                          { new_a }
+                        </div>
+                    },
+                    expected: vec![
+                        Patch::InsertBefore {
+                            anchor_old_node_idx: 1,
+                            new_nodes: vec![&VirtualNode::element("br")],
+                        },
+                        Patch::MoveNodesBefore {
+                            anchor_old_node_idx: 1,
+                            to_move: vec![2],
+                        },
+                    ],
+                }
+                .test();
+            }
+        }
 
         // Swap two focusable elements with different tags.
         DiffTestCase {

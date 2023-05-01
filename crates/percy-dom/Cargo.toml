@@ -1,6 +1,6 @@
 [package]
 name = "percy-dom"
-version = "0.9.2"
+version = "0.9.3"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A standalone Virtual DOM creation, diffing and patching implementation"
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]
