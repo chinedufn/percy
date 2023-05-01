@@ -9,7 +9,6 @@ use web_sys::Url;
 /// callback with "/foo".
 pub fn intercept_relative_links<F: FnMut(String) -> () + 'static>(mut on_anchor_tag_click: F) {
     let on_anchor_click = move |event: web_sys::Event| {
-
         // Get the tag name of the element that was clicked
         let target = event
             .target()

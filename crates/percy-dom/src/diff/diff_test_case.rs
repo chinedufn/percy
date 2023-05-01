@@ -1,4 +1,4 @@
-//! Kept in it's own file to more easily import into the Percy book.
+//! Kept in it's own file to more easily import into the Percy book without extra indentation.
 
 use crate::diff::diff;
 use crate::patch::Patch;

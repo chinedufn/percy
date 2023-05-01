@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 use sunbeam_build::{files_in_dir_recursive_ending_with, SunbeamConfig};
 
 fn main() {
