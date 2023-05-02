@@ -75,7 +75,6 @@ pub fn patch<N: Into<Node>>(
         }
     }
 
-    // FIXME: Remove patches as an argument.. just trying to track down a bug..
     overwrite_events(new_vnode, root_events_node, virtual_events);
 
     Ok(())

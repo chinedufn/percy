@@ -456,6 +456,11 @@ fn generate_patches_for_children<'a, 'b>(
     let mut old_tracked_indices = TrackedImplicitlyKeyableIndices::default();
     let mut new_tracked_indices = TrackedImplicitlyKeyableIndices::default();
 
+    let mut old_child_indices_of_preserved_keys = vec![];
+
+    let node_idx_of_first_child = ctx.next_old_node_idx();
+    ctx.increment_old_node_idx(old_element.children.len());
+
     for (idx, new_child) in new_element.children.iter().enumerate() {
         let implicit_key = new_tracked_indices.get_and_increment(new_child);
         let new_key = node_key(new_child, implicit_key);
@@ -465,9 +470,6 @@ fn generate_patches_for_children<'a, 'b>(
             key_to_new_child_idx.insert(new_key, idx);
         }
     }
-
-    let node_idx_of_first_child = ctx.next_old_node_idx();
-    ctx.increment_old_node_idx(old_element.children.len());
 
     for (idx, old_child) in old_element.children.iter().enumerate() {
         let implicit_key = old_tracked_indices.get_and_increment(old_child);
@@ -482,8 +484,6 @@ fn generate_patches_for_children<'a, 'b>(
             }
         }
     }
-
-    let mut old_child_indices_of_preserved_keys = vec![];
 
     for new_child_idx in 0..new_element.children.len() {
         let key = new_node_keys.get(&new_child_idx);
@@ -577,7 +577,7 @@ fn generate_patches_for_children<'a, 'b>(
                 let old_child_idx = key.and_then(|key| key_to_old_child_idx.get(&key));
 
                 if let Some(old_child_idx) = old_child_idx {
-                    let old_idx = parent_old_node_idx + 1 + *old_child_idx as u32;
+                    let old_idx = node_idx_of_first_child + *old_child_idx as u32;
 
                     insert_before_or_move.push(InsertBeforeOrMoveBefore::MoveBefore(old_idx));
 
@@ -1105,6 +1105,53 @@ mod tests {
                 Patch::Replace {
                     old_idx: 2,
                     new_node: &html! { <strong></strong> },
+                },
+            ],
+        }
+        .test();
+    }
+
+    /// Verify that if we have two siblings, and each sibling has their own children, we can remove
+    /// the first sibling and then move one second sibling's children to be before another one of
+    /// the second sibling's children.
+    #[test]
+    fn remove_first_sibling_that_has_children_then_move_child_of_second_sibling() {
+        DiffTestCase {
+            old: html! {
+                <div>
+                  // span gets removed
+                  <span>
+                    <source />
+                    <source />
+                  </span>
+
+                  <div>
+                    // link gets moved to before the br
+                    <link />
+                    <param />
+                    <area />
+                    <br />
+                  </div>
+                </div>
+            },
+            new: html! {
+                <div>
+                  <div>
+                    <param />
+                    <area />
+                    <link />
+                    <br />
+                  </div>
+                </div>
+            },
+            expected: vec![
+                Patch::RemoveChildren {
+                    parent_old_node_idx: 0,
+                    to_remove: vec![1],
+                },
+                Patch::MoveNodesBefore {
+                    anchor_old_node_idx: 8,
+                    to_move: vec![5],
                 },
             ],
         }

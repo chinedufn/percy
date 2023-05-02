@@ -322,7 +322,7 @@ impl VirtualEventNode {
 
     /// Remove a child node from it's siblings.
     pub fn remove_node_from_siblings(&mut self, child: &Rc<RefCell<VirtualEventNode>>) {
-        let mut child = child.borrow_mut();
+        let mut child = &mut *child.borrow_mut();
         let is_first_sibling = child.previous_sibling.is_none();
         let is_last_sibling = child.next_sibling.is_none();
 
@@ -335,10 +335,7 @@ impl VirtualEventNode {
             parent.children.as_mut().unwrap().last_child = child.previous_sibling.clone().unwrap();
         }
 
-        match (
-            child.previous_sibling.clone().as_mut(),
-            child.next_sibling.as_mut(),
-        ) {
+        match (child.previous_sibling.as_mut(), child.next_sibling.as_mut()) {
             (Some(previous), Some(next)) => {
                 previous.borrow_mut().next_sibling = Some(next.clone());
                 next.borrow_mut().previous_sibling = Some(previous.clone());
