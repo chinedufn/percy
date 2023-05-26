@@ -18,8 +18,13 @@ impl PercyDom {
 
         let callback = move |event: web_sys::MouseEvent| {
             let target = event.target().unwrap();
+            // `dyn_into().unwrap()` was crashing in Firefox (but not Chrome) when running a
+            //  real-world application, even though our click event integration tests are passing
+            //  in Firefox.
+            //  This was observed in `web-sys 0.3.61`
+            let target_element: web_sys::Element = target.unchecked_into();
 
-            bubble_event(target.dyn_into().unwrap(), MouseEvent::new(event), &events);
+            bubble_event(target_element, MouseEvent::new(event), &events);
         };
         let callback = Box::new(callback) as Box<dyn FnMut(_)>;
         let callback = Closure::wrap(callback);
