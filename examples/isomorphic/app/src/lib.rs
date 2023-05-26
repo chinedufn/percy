@@ -116,7 +116,7 @@ fn download_contributors_json(store: Provided<Rc<RefCell<Store>>>) {
 // @book end on-visit-example
 
 fn make_router(store: Rc<RefCell<Store>>) -> Rc<Router> {
-    let mut router = Router::new(create_routes![home_route, contributors_route]);
+    let router = Router::new(create_routes![home_route, contributors_route]);
     router.provide(store);
 
     Rc::new(router)
