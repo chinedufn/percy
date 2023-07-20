@@ -6,7 +6,7 @@ description = "A macro for writing your CSS next to your views"
 keywords = ["css", "style", "stylesheet", "percy", "sheet"]
 documentation = "https://chinedufn.github.io/percy/api/percy_css_macro"
 repository = "https://github.com/chinedufn/percy"
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 
 [lib]
 proc-macro = true
