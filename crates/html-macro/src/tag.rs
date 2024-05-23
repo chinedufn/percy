@@ -105,16 +105,33 @@ impl Parse for Tag {
 
 /// `<div id="app" class=*CSS>`
 fn parse_open_tag(input: &mut ParseStream, open_bracket_span: Span) -> Result<Tag> {
-    let name: Ident = input.parse()?;
-
+    let mut name_parts = Vec::new();
+    
+    // Parse the first identifier
+    let first_ident: Ident = input.parse()?;
+    name_parts.push(first_ident.to_string());
+    
+    // Check if the next token is a '-'
+    while input.peek(Token![-]) {
+        // Consume the '-' token
+        input.parse::<Token![-]>()?;
+        
+        // Parse the next identifier
+        let next_ident: Ident = input.parse()?;
+        name_parts.push(next_ident.to_string());
+    }
+    
+    // Join the name parts to form the complete tag name
+    let name = Ident::new(&name_parts.join("-"), first_ident.span());
+    
     let attrs = parse_attributes(input)?;
-
+    
     let is_self_closing: Option<Token![/]> = input.parse()?;
     let is_self_closing = is_self_closing.is_some();
-
+    
     let closing_bracket = input.parse::<Token![>]>()?;
     let closing_bracket_span = closing_bracket.span();
-
+    
     Ok(Tag::Open {
         name,
         attrs,
@@ -130,40 +147,39 @@ fn parse_open_tag(input: &mut ParseStream, open_bracket_span: Span) -> Result<Ta
 /// As soon as we see
 ///     >
 /// We know that the element has no more attributes and our loop will end
+/// </div>
+/// 
+/// 
 fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
     let mut attrs = Vec::new();
 
-    // Do we see an identifier such as `id`? If so proceed
     while input.peek(Ident)
+        || input.peek(Token![-])
         || input.peek(Token![as])
         || input.peek(Token![async])
         || input.peek(Token![for])
         || input.peek(Token![loop])
         || input.peek(Token![type])
     {
-        // <link rel="stylesheet" type="text/css"
-        //   .. as, async, for, loop, type need to be handled specially since they are keywords
-        let maybe_as_key: Option<Token![as]> = input.parse()?;
-        let maybe_async_key: Option<Token![async]> = input.parse()?;
-        let maybe_for_key: Option<Token![for]> = input.parse()?;
-        let maybe_loop_key: Option<Token![loop]> = input.parse()?;
-        let maybe_type_key: Option<Token![type]> = input.parse()?;
+        let mut key_parts = Vec::new();
 
-        let key = if maybe_as_key.is_some() {
-            Ident::new("as", maybe_as_key.unwrap().span())
-        } else if maybe_async_key.is_some() {
-            Ident::new("async", maybe_async_key.unwrap().span())
-        } else if maybe_for_key.is_some() {
-            Ident::new("for", maybe_for_key.unwrap().span())
-        } else if maybe_loop_key.is_some() {
-            Ident::new("loop", maybe_loop_key.unwrap().span())
-        } else if maybe_type_key.is_some() {
-            Ident::new("type", maybe_type_key.unwrap().span())
-        } else {
-            input.parse()?
-        };
+        // Parse the first identifier or keyword
+        let first_ident = parse_ident_or_keyword(input)?;
+        key_parts.push(first_ident.to_string());
 
-        // =
+        // Check if the next token is a '-'
+        while input.peek(Token![-]) {
+            // Consume the '-' token
+            input.parse::<Token![-]>()?;
+
+            // Parse the next identifier
+            let next_ident: Ident = input.parse()?;
+            key_parts.push(next_ident.to_string());
+        }
+
+        // Join the key parts to form the complete attribute key
+        let key = Ident::new(&key_parts.join("-"), first_ident.span());
+
         input.parse::<Token![=]>()?;
 
         // Continue parsing tokens until we see the next attribute or a closing > tag
@@ -174,6 +190,7 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
             value_tokens.extend(Some(tt));
 
             let has_attrib_key = input.peek(Ident)
+                || input.peek(Token![-])
                 || input.peek(Token![as])
                 || input.peek(Token![async])
                 || input.peek(Token![for])
@@ -182,7 +199,6 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
             let peek_start_of_next_attr = has_attrib_key && input.peek2(Token![=]);
 
             let peek_end_of_tag = input.peek(Token![>]);
-
             let peek_self_closing = input.peek(Token![/]);
 
             if peek_end_of_tag || peek_start_of_next_attr || peek_self_closing {
@@ -191,14 +207,42 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
         }
 
         let value: Expr = syn::parse2(value_tokens)?;
-
         attrs.push(Attr { key, value });
     }
 
     Ok(attrs)
 }
 
-/// </div>
+
+fn parse_ident_or_keyword(input: &mut ParseStream) -> Result<Ident> {
+    let mut name = String::new();
+
+    if let Some(as_key) = input.parse::<Option<Token![as]>>()? {
+        name.push_str("as");
+    } else if let Some(async_key) = input.parse::<Option<Token![async]>>()? {
+        name.push_str("async");
+    } else if let Some(for_key) = input.parse::<Option<Token![for]>>()? {
+        name.push_str("for");
+    } else if let Some(loop_key) = input.parse::<Option<Token![loop]>>()? {
+        name.push_str("loop");
+    } else if let Some(type_key) = input.parse::<Option<Token![type]>>()? {
+        name.push_str("type");
+    } else {
+        let ident = input.parse::<Ident>()?;
+        name.push_str(&ident.to_string());
+    }
+    
+
+    while input.peek(Token![-]) {
+        input.parse::<Token![-]>()?;
+        let ident = input.parse::<Ident>()?;
+        name.push('-');
+        name.push_str(&ident.to_string());
+    }
+
+    Ok(Ident::new(&name, input.span()))
+}
+
 fn parse_close_tag(input: &mut ParseStream, first_angle_bracket_span: Span) -> Result<Tag> {
     let name: Ident = input.parse()?;
 

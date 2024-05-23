@@ -1,3 +1,6 @@
+// #![feature(trace_macros)]
+// trace_macros!(true);
+
 //! This is a catch-all module to place new tests as we go.
 //!
 //! Over time we'll pull tests out of here and organize them.
@@ -19,6 +22,20 @@ impl HtmlMacroTest {
     pub fn test(self) {
         assert_eq!(self.expected, self.generated);
     }
+}
+#[test]
+fn hyphenated_tag_name () {
+    let mut attrs = HashMap::new();
+    let id = "hx-trigger".into();
+    attrs.insert("hx-trigger".to_string(), id);
+    let mut expected = VElement::new("a");
+    expected.attrs = attrs;
+
+    HtmlMacroTest {
+        generated: html! { <a hx-trigger="click"></a> },
+        expected: expected.into(),
+    }
+    .test();
 }
 
 #[test]

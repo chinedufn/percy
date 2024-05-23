@@ -118,6 +118,7 @@ lazy_static! {
         "var",
         "video",
         "wbr",
+        "hx-trigger",
     ]
     .iter()
     .cloned()
