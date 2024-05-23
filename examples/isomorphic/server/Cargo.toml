@@ -7,6 +7,7 @@ edition = "2018"
 
 [features]
 default = ["with-actix"]
+# TODO: Remove actix-web in favor of axum. Easier to use.
 with-actix = ["actix-web", "actix-files", "actix-rt", "serde"]
 
 [dependencies]
@@ -14,9 +15,10 @@ chrono = "0.4.6"
 isomorphic-app = { path = "../app" }
 env_logger = "0.6.1"
 percy-dom = { path = "../../../crates/percy-dom" }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 # with-actix
-actix-web = {optional = true, version = "1.0.3"}
-actix-files = {optional = true, version = "0.1.3"}
-actix-rt = {optional = true, version = "0.2.3"}
-serde = {optional = true, version = "1.0.94"}
+actix-web = { optional = true, version = "4" }
+actix-files = { optional = true, version = "0.6" }
+actix-rt = { optional = true, version = "2.9" }
+serde = { optional = true, version = "1" }

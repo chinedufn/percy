@@ -214,7 +214,7 @@ fn parse_block(input: &mut ParseStream) -> Result<Tag> {
     let content;
     let brace_token = braced!(content in input);
 
-    let brace_span = brace_token.span;
+    let brace_span = brace_token.span.open();
 
     let block_expr = content.call(Block::parse_within)?;
 
@@ -312,4 +312,99 @@ fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
         start_span,
         end_span: most_recent_span,
     })
+}
+
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use quote::quote;
+    use syn::Lit;
+    use super::*;
+
+    /// Verify that we can parse opening tags.
+    ///
+    /// ## Testing Approach
+    /// - Iterate over macro tokens
+    ///   - Assert that the `Tag::Open` has the expected name, such as "div".
+    ///   - Assert that the `Tag::Open` is detected as self-closing, such as with "<br />".
+    ///   - Assert that the `Tag::Open` has the expected attributes, such as "<div id="hello">.
+    #[test]
+    fn open_tag_tests() {
+        let tests = [
+            // Verify that we can parse an open tag that does not have any attributes.
+            (
+                quote! { <div> },
+                ExpectedTag {
+                    name: "div",
+                    attributes: vec![],
+                    is_self_closing: false,
+                }
+            ),
+            // Verify that we can parse a self-closing open tag that does not have any attributes.
+            (
+                quote! { <br /> },
+                ExpectedTag {
+                    name: "br",
+                    attributes: vec![],
+                    is_self_closing: true,
+                }
+            ),
+            // Verify that we can parse an open tag that has one attribute.
+            (
+                quote! { <div id="hello"> },
+                ExpectedTag {
+                    name: "div",
+                    attributes: vec![("id", "hello")],
+                    is_self_closing: false,
+                },
+            )
+        ];
+
+        for (tokens, expected_tag) in tests {
+            let tokens_string = tokens.to_string();
+            let tag: Tag = syn::parse2(tokens).unwrap();
+
+            match tag {
+                Tag::Open { name, attrs, is_self_closing, .. } => {
+                    assert_eq!(
+                        &name.to_string(), expected_tag.name,
+                        "{}", tokens_string
+                    );
+
+
+                    assert_eq!(is_self_closing, expected_tag.is_self_closing, "{}", tokens_string);
+
+                    let expected_attrs: HashMap<&'static str, &'static str> =
+                        expected_tag.attributes.into_iter().collect();
+
+                    assert_eq!(attrs.len(), expected_attrs.len(), "{}", tokens_string);
+                    for attr in attrs {
+                        let attr_key = attr.key.to_string();
+
+                        let Expr::Lit(attr_val) = attr.value else {
+                            panic!()
+                        };
+                        let Lit::Str(attr_val_str) = attr_val.lit else {
+                            panic!()
+                        };
+
+                        let expected_val = expected_attrs.get(attr_key.as_str()).map(|val| val.to_string());
+
+                        assert_eq!(
+                            Some(attr_val_str.value()),
+                            expected_val,
+                        );
+                    }
+                }
+                not_open => panic!("Should have been an open tag. {:?}", not_open),
+            }
+        }
+    }
+
+    struct ExpectedTag {
+        name: &'static str,
+        attributes: Vec<(&'static str, &'static str)>,
+        is_self_closing: bool,
+    }
 }

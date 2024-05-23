@@ -35,7 +35,9 @@ fn provided_data_and_param() {
             .view("/users/10/favorite-meal/breakfast")
             .unwrap()
             .to_string(),
-        "<div> User 10 loves Breakfast </div>"
+// TODO: Requires proc macro APIs that are currently unstable - https://github.com/rust-lang/rust/issues/54725
+//         "<div> User 10 loves Breakfast </div>"
+        "<div>User10lovesBreakfast</div>"
     );
 }
 

@@ -4,7 +4,8 @@ use isomorphic_server::rocket_server::rocket;
 #[cfg(feature = "with-actix")]
 use isomorphic_server::actix_server::serve;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     env_logger::init();
 
     let static_files = {
@@ -27,5 +28,5 @@ fn main() {
 
     // cargo run -p server-www --features with-actix
     #[cfg(feature = "with-actix")]
-    serve(static_files)
+    serve(static_files).await
 }
