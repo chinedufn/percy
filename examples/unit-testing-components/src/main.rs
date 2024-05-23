@@ -72,7 +72,7 @@ mod tests {
                 .as_vtext_ref()
                 .expect("Not a text node")
                 .text,
-            " Please fill me up :( I am only 0.2587 percent full :( "
+            "Please fill me up :( I am only 0.2587 percent full :("
         )
     }
 }

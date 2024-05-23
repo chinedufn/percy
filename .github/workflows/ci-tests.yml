@@ -11,41 +11,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions-rs/cargo@v1
+      - uses: actions/checkout@v2
 
-    - name: Latest Rust Nightly
-      uses: actions-rs/toolchain@v1
-      with:
+      - uses: actions-rs/toolchain@v1
+        with:
           toolchain: nightly
           override: true
           # Used when testing with `wasm-pack test`
           target: wasm32-unknown-unknown
 
-    - name: Rust Version Info
-      run: rustc --version && cargo --version && echo $CARGO_HOME
+      - name: Rust Version Info
+        run: rustc --version && cargo --version && echo $CARGO_HOME
 
-    - name: Install wasm-pack
-      run: >
-            curl -L https://github.com/rustwasm/wasm-pack/releases/download/v0.10.0/wasm-pack-v0.10.0-x86_64-unknown-linux-musl.tar.gz
-            | tar --strip-components=1 --wildcards -xzf - "*/wasm-pack"
-            && chmod +x wasm-pack
-            && mv wasm-pack $HOME/.cargo/bin/
+      - name: Install wasm-pack
+        run: >
+          curl -L https://github.com/rustwasm/wasm-pack/releases/download/v0.10.0/wasm-pack-v0.10.0-x86_64-unknown-linux-musl.tar.gz
+          | tar --strip-components=1 --wildcards -xzf - "*/wasm-pack"
+          && chmod +x wasm-pack
+          && mv wasm-pack $HOME/.cargo/bin/
 
-    - name: Browser versions
-      run: wasm-pack --version && firefox --version
+      - name: Browser versions
+        run: wasm-pack --version && firefox --version
 
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-    - name: Run all tests
-      run: ./test.sh
+      - name: Run all tests
+        run: ./test.sh
 
-    # NOTE: We can start running the full test suite on stable after https://github.com/rust-lang/rust/issues/54725
-    - name: Check that Stable can compile
-      run: cargo +stable check --all
+      # NOTE: We can start running the full test suite on stable after https://github.com/rust-lang/rust/issues/54725
+      - name: Check that Stable can compile
+        run: cargo +stable check --all

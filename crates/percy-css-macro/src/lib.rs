@@ -114,7 +114,7 @@ fn write_css_to_file(css_file: &mut File, class: &str, input: TokenStream) {
         let first_quote_mark = css.find(r#"""#).unwrap();
         let last_quote_mark = css.rfind(r#"""#).unwrap();
         css.truncate(last_quote_mark);
-        let mut css = css.split_off(first_quote_mark + 1);
+        let css = css.split_off(first_quote_mark + 1);
 
         // Replace :host selectors with the class name of the :host element
         // A fake shadow-dom implementation.. if you will..

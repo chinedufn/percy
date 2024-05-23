@@ -11,7 +11,7 @@ impl HtmlParser {
         //
         // html { <div> { some_node } </div> }
         match stmt {
-            Stmt::Expr(expr) => {
+            Stmt::Expr(expr, _) => {
                 self.parse_expr(stmt, expr);
             }
             _ => {
@@ -42,7 +42,7 @@ impl HtmlParser {
     /// html! {
     ///     <div>
     ///         {if condition_is_true {
-    ///	            html! { <span>Hello World</span> }
+    ///                html! { <span>Hello World</span> }
     ///         }}
     ///     </div>
     /// }

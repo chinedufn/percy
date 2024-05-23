@@ -28,7 +28,7 @@ pub fn create_routes(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
     let mut tokens = vec![];
 
     for route in routes_to_create.routes {
-        let original_fn_name = route.segments.last().unwrap().into_tuple().0;
+        let original_fn_name = route.segments.last().unwrap();
         let original_fn_name = original_fn_name.ident.to_string();
 
         let path_to_module_segments =

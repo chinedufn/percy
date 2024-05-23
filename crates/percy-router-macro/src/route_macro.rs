@@ -60,14 +60,14 @@ pub fn route(
     let route_fn: RouteFn = parse_macro_input!(input as RouteFn);
 
     // my_route
-    let route_fn_name = route_fn.route_fn.ident;
+    let route_fn_name = route_fn.route_fn.sig.ident;
 
     // Create a new identifier called `create_my_route`
     let create_route = format!("create_{}", route_fn_name);
     let create_route = Ident::new(&create_route, route_fn_name.span());
 
     // [id: u8, state: Provided<MyAppState>]
-    let params = route_fn.route_fn.decl.inputs;
+    let params = route_fn.route_fn.sig.inputs;
 
     // [u8, Provided<MyAppState>]
     let _types = as_param_types(&params);
@@ -378,7 +378,7 @@ fn as_param_idents(params: &Punctuated<FnArg, Token![,]>) -> Vec<&Ident> {
         .map(|arg| {
             match arg {
                 // some_param_name: type
-                FnArg::Captured(captured) => match captured.pat {
+                FnArg::Typed(captured) => match captured.pat.as_ref() {
                     Pat::Ident(ref pat) => &pat.ident,
                     _ => unimplemented!("TODO: What should happen for other patterns?"),
                 },
@@ -394,8 +394,8 @@ fn as_param_types(params: &Punctuated<FnArg, Token![,]>) -> Vec<&Type> {
         .map(|arg| {
             match arg {
                 // some_param_name: type
-                FnArg::Captured(captured) => match captured.pat {
-                    Pat::Ident(ref _pat) => &captured.ty,
+                FnArg::Typed(captured) => match captured.pat.as_ref() {
+                    Pat::Ident(ref _pat) => captured.ty.as_ref(),
                     _ => unimplemented!("TODO: What should happen for other patterns?"),
                 },
                 _ => unimplemented!("TODO: What should happen for non captured args?"),

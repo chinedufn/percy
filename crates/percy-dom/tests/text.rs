@@ -6,6 +6,7 @@
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
+
 use wasm_bindgen_test::*;
 
 use percy_dom::prelude::*;
@@ -13,6 +14,7 @@ use percy_dom::prelude::*;
 wasm_bindgen_test_configure!(run_in_browser);
 
 mod diff_patch_test_case;
+
 use self::diff_patch_test_case::DiffPatchTest;
 
 // TODO: Add tests that we remove the `ptns` separator comments when we remove text nodes.
@@ -35,7 +37,7 @@ fn replace_text_node_with_text_node() {
         </div> },
         override_expected: None,
     }
-    .test();
+        .test();
 }
 
 /// wasm-pack test --chrome --headless crates/percy-dom --test text -- append_text_node
@@ -47,7 +49,7 @@ fn append_text_node() {
         new: html! { <div> Hello </div> },
         override_expected: None,
     }
-    .test();
+        .test();
 }
 
 /// wasm-pack test --chrome --headless crates/percy-dom --test text -- append_sibling_text_nodes
@@ -62,7 +64,7 @@ fn append_sibling_text_nodes() {
         new: html! { <div> {text1} {text2} </div> },
         override_expected: None,
     }
-    .test();
+        .test();
 }
 
 /// https://github.com/chinedufn/percy/issues/62
@@ -76,7 +78,7 @@ fn replace_element_with_text_node() {
         new: html! { <span> a </span> },
         override_expected: None,
     }
-    .test();
+        .test();
 }
 
 /// https://github.com/chinedufn/percy/issues/68
@@ -90,7 +92,7 @@ fn text_root_node() {
         new: html! { New text },
         override_expected: None,
     }
-    .test();
+        .test();
 }
 
 /// wasm-pack test --chrome --headless crates/percy-dom --test text -- replace_text_with_element
@@ -102,19 +104,27 @@ fn replace_text_with_element() {
         new: html! { <div><br></div> },
         override_expected: None,
     }
-    .test();
+        .test();
 }
 
 /// wasm-pack test --chrome --headless crates/percy-dom --test text -- text_node_siblings
 #[wasm_bindgen_test]
 fn text_node_siblings() {
-    // NOTE: Since there are two text nodes next to eachother we expect a `<!--ptns-->` separator in
-    // between them.
-    // @see virtual_node/mod.rs -> create_dom_node() for more information
-    // TODO: A little more spacing than there should be in between the text nodes ... but doesn't
-    //  impact the user experience so we can look into that later..
+    // TODO: Requires proc macro APIs that are currently unstable - https://github.com/rust-lang/rust/issues/54725
+    // // NOTE: Since there are two text nodes next to eachother we expect a `<!--ptns-->` separator in
+    // // between them.
+    // // @see virtual_node/mod.rs -> create_dom_node() for more information
+    // // TODO: A little more spacing than there should be in between the text nodes ... but doesn't
+    // //  impact the user experience so we can look into that later..
+    // let override_expected = Some(
+    //     r#"<div id="after"><span> The button has been clicked:  <!--ptns--> world </span></div>"#,
+    // );
+
+    // TODO: After the proc macro span APIs stabilize remove this in favor of the above commented out
+    //  code.
+    //   https://github.com/rust-lang/rust/issues/54725
     let override_expected = Some(
-        r#"<div id="after"><span> The button has been clicked:  <!--ptns--> world </span></div>"#,
+        r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#,
     );
 
     let old1 = VirtualNode::text("The button has been clicked: ");
@@ -137,5 +147,5 @@ fn text_node_siblings() {
         },
         override_expected,
     }
-    .test();
+        .test();
 }

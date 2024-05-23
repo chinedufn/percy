@@ -55,6 +55,7 @@ pub struct VirtualEvents {
     // Never changes after creation.
     events_id_props_prefix: f64,
 }
+
 struct VirtualEventsInner {
     root: Rc<RefCell<VirtualEventNode>>,
     events: HashMap<ElementEventsId, Rc<RefCell<HashMap<EventName, EventHandler>>>>,
@@ -89,6 +90,7 @@ pub struct VirtualEventElement {
     events_id: ElementEventsId,
     children: Option<VirtualEventElementChildren>,
 }
+
 #[derive(Debug)]
 struct VirtualEventElementChildren {
     first_child: Rc<RefCell<VirtualEventNode>>,
@@ -322,7 +324,7 @@ impl VirtualEventNode {
 
     /// Remove a child node from it's siblings.
     pub fn remove_node_from_siblings(&mut self, child: &Rc<RefCell<VirtualEventNode>>) {
-        let mut child = &mut *child.borrow_mut();
+        let child = &mut *child.borrow_mut();
         let is_first_sibling = child.previous_sibling.is_none();
         let is_last_sibling = child.next_sibling.is_none();
 
@@ -434,7 +436,7 @@ pub(crate) fn set_events_id(node: &JsValue, events: &VirtualEvents, events_id: E
         &ELEMENT_EVENTS_ID_PROP.into(),
         &format!("{}{}", events.events_id_props_prefix(), events_id.get()).into(),
     )
-    .unwrap();
+        .unwrap();
 }
 
 #[cfg(test)]
