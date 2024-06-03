@@ -50,10 +50,9 @@ pub async fn serve(static_files: String) {
             .route("/{path}", web::get().to(catch_all))
             .service(fs::Files::new("/static", static_files.as_str()).show_files_listing())
     })
-        .bind("0.0.0.0:7878")
-        .unwrap();
-    server
-        .run().await.unwrap();
+    .bind("0.0.0.0:7878")
+    .unwrap();
+    server.run().await.unwrap();
 
     println!("Actix server listening on port 7878");
 

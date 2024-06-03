@@ -90,12 +90,12 @@ fn create_valid_node(
     //   html! { <div key = "..." ></div>
     let key_attr = attrs
         .iter()
-        .find(|attr| attr.key.to_string() == "key")
-        .map(|attr| &attr.value);
+        .find(|attr| attr.key_string() == "key")
+        .map(|attr| attr.value());
 
     for attr in attrs.iter() {
-        let key = format!("{}", attr.key);
-        let value = &attr.value;
+        let key = attr.key_string();
+        let value = attr.value();
 
         match value {
             Expr::Closure(closure) => {
@@ -151,8 +151,8 @@ fn component_node(
     let component_props: Vec<proc_macro2::TokenStream> = attrs
         .into_iter()
         .map(|attr| {
-            let key = Ident::new(format!("{}", attr.key).as_str(), name.span());
-            let value = &attr.value;
+            let key = Ident::new(attr.key_string().as_str(), name.span());
+            let value = attr.value();
 
             quote! {
                 #key: #value,
