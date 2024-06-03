@@ -18,9 +18,9 @@ pub(super) fn insert_closure_tokens(
     key_attr_value: Option<&Expr>,
 ) -> TokenStream {
     let arg_count = closure.inputs.len();
-    let event_name = event_attribute.key.to_string();
+    let event_name = event_attribute.key_string();
 
-    let attr_key_span = &event_attribute.key.span();
+    let attr_key_span = &event_attribute.key_span();
 
     // TODO: Refactor duplicate code between these blocks.
     if event_name == "on_create_element" {

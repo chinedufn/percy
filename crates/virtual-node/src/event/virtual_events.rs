@@ -436,7 +436,7 @@ pub(crate) fn set_events_id(node: &JsValue, events: &VirtualEvents, events_id: E
         &ELEMENT_EVENTS_ID_PROP.into(),
         &format!("{}{}", events.events_id_props_prefix(), events_id.get()).into(),
     )
-        .unwrap();
+    .unwrap();
 }
 
 #[cfg(test)]

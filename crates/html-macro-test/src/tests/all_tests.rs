@@ -7,7 +7,7 @@
 
 use html_macro::html;
 use std::collections::HashMap;
-use virtual_node::{IterableNodes, VElement, VText, View, VirtualNode};
+use virtual_node::{AttributeValue, IterableNodes, VElement, VText, View, VirtualNode};
 
 #[must_use]
 pub(crate) struct HtmlMacroTest {
@@ -28,7 +28,7 @@ fn empty_div() {
         generated: html! { <div></div> },
         expected: VirtualNode::element("div"),
     }
-        .test();
+    .test();
 }
 
 #[test]
@@ -43,7 +43,7 @@ fn one_attr() {
         generated: html! { <div id="hello-world"></div> },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 #[test]
@@ -55,7 +55,7 @@ fn child_node() {
         generated: html! { <div><span></span></div> },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 #[test]
@@ -67,7 +67,7 @@ fn sibling_child_nodes() {
         generated: html! { <div><span></span><b></b></div> },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 /// Nested 3 nodes deep
@@ -83,16 +83,15 @@ fn three_nodes_deep() {
         generated: html! { <div><span><b></b></span></div> },
         expected: expected.into(),
     }
-        .test()
+    .test()
 }
-
 
 // TODO: Requires proc macro APIs that are currently unstable - https://github.com/rust-lang/rust/issues/54725
 // #[test]
 // fn sibling_text_nodes() {
 //     let mut expected = VElement::new("div");
 //     expected.children = vec![VirtualNode::text("This is a text node")];
-// 
+//
 //     HtmlMacroTest {
 //         generated: html! { <div>This is a text node</div> },
 //         expected: expected.into(),
@@ -116,7 +115,7 @@ fn nested_macro() {
         },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 /// If the first thing we see is a block then we grab whatever is inside it.
@@ -132,7 +131,7 @@ fn block_root() {
         },
         expected,
     }
-        .test();
+    .test();
 }
 
 // TODO: Requires proc macro APIs that are currently unstable - https://github.com/rust-lang/rust/issues/54725
@@ -140,13 +139,13 @@ fn block_root() {
 // #[test]
 // fn text_next_to_block() {
 //     let child = html! { <ul></ul> };
-// 
+//
 //     let mut expected = VElement::new("div");
 //     expected.children = vec![
 //         VirtualNode::text(" A bit of text "),
 //         VirtualNode::element("ul"),
 //     ];
-// 
+//
 //     HtmlMacroTest {
 //         generated: html! {
 //           <div>
@@ -165,7 +164,7 @@ fn block_root() {
 // #[test]
 // fn punctuation_token() {
 //     let text = "Hello, World";
-// 
+//
 //     HtmlMacroTest {
 //         generated: html! { Hello, World },
 //         expected: VirtualNode::text(text),
@@ -184,22 +183,29 @@ fn vec_of_nodes() {
         generated: html! { <div> { children } </div> },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 /// Just make sure that this compiles since as, async, for, loop, and type are keywords
 #[test]
 fn keyword_attribute() {
-    html! { <link rel="prefetch" href="/style.css" as="style" /> }
-    ;
-    html! { <script src="/app.js" async="async" /> }
-    ;
-    html! { <label for="username">Username:</label> }
-    ;
-    html! { <audio loop="loop"><source src="/beep.mp3" type="audio/mpeg" /></audio> }
-    ;
-    html! { <link rel="stylesheet" type="text/css" href="/app.css" /> }
-    ;
+    html! { <link rel="prefetch" href="/style.css" as="style" /> };
+    html! { <script src="/app.js" async="async" /> };
+    html! { <label for="username">Username:</label> };
+    html! { <audio loop="loop"><source src="/beep.mp3" type="audio/mpeg" /></audio> };
+    html! { <link rel="stylesheet" type="text/css" href="/app.css" /> };
+}
+
+/// Verify that we can use an attribute name that contains a hyphen.
+#[test]
+fn hyphenated_attribute() {
+    let element: VirtualNode = html! {
+        <meta http-equiv="refresh"/>
+    };
+    assert_eq!(
+        element.as_velement_ref().unwrap().attrs.get("http-equiv"),
+        Some(&AttributeValue::String("refresh".to_string()))
+    );
 }
 
 /// For unquoted text apostrophes should be parsed correctly
@@ -217,9 +223,9 @@ fn self_closing_tag_without_backslash() {
         "area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param", "command",
         "keygen", "source",
     ]
-        .into_iter()
-        .map(|tag| VirtualNode::element(tag))
-        .collect();
+    .into_iter()
+    .map(|tag| VirtualNode::element(tag))
+    .collect();
     expected.children = children;
 
     HtmlMacroTest {
@@ -231,7 +237,7 @@ fn self_closing_tag_without_backslash() {
         },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 /// Verify that our self closing tags work with backslashes
@@ -243,7 +249,7 @@ fn self_closing_tag_with_backslace() {
         },
         expected: VirtualNode::element("br"),
     }
-        .test();
+    .test();
 }
 
 #[test]
@@ -262,7 +268,7 @@ fn if_true_block() {
         },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 #[test]
@@ -285,7 +291,7 @@ fn if_false_block() {
         },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 #[test]
@@ -301,7 +307,7 @@ fn single_branch_if_true_block() {
         },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 #[test]
@@ -317,7 +323,7 @@ fn single_branch_if_false_block() {
         },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 #[test]
@@ -345,7 +351,7 @@ fn custom_component_props() {
         },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 #[test]
@@ -373,7 +379,7 @@ fn custom_component_children() {
         },
         expected: expected.into(),
     }
-        .test();
+    .test();
 }
 
 /// Verify that we can properly render an empty list of virtual nodes that has a space after it.
@@ -387,7 +393,7 @@ fn space_before_and_after_empty_list() {
         generated: html! {<div> {elements} </div>},
         expected: html! {<div> </div>},
     }
-        .test()
+    .test()
 }
 
 /// Verify that an Option::None virtual node gets ignored.
@@ -399,7 +405,7 @@ fn option_none() {
         generated: html! {<div> {element} </div>},
         expected: html! {<div> </div>},
     }
-        .test()
+    .test()
 }
 
 /// Verify that an Some(VirtualNode) gets rendered.
@@ -411,7 +417,7 @@ fn option_some() {
         generated: html! {<div> {element} </div>},
         expected: html! {<div> <em></em> </div>},
     }
-        .test()
+    .test()
 }
 
 /// Verify that our macro to generate IterableNodes implementations for numbers works.
@@ -424,5 +430,5 @@ fn numbers() {
         generated: html! {<div> {num} {ref_num} </div>},
         expected: html! {<div> {"3"} {"4"} </div>},
     }
-        .test()
+    .test()
 }

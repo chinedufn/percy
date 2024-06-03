@@ -37,7 +37,7 @@ fn replace_text_node_with_text_node() {
         </div> },
         override_expected: None,
     }
-        .test();
+    .test();
 }
 
 /// wasm-pack test --chrome --headless crates/percy-dom --test text -- append_text_node
@@ -49,7 +49,7 @@ fn append_text_node() {
         new: html! { <div> Hello </div> },
         override_expected: None,
     }
-        .test();
+    .test();
 }
 
 /// wasm-pack test --chrome --headless crates/percy-dom --test text -- append_sibling_text_nodes
@@ -64,7 +64,7 @@ fn append_sibling_text_nodes() {
         new: html! { <div> {text1} {text2} </div> },
         override_expected: None,
     }
-        .test();
+    .test();
 }
 
 /// https://github.com/chinedufn/percy/issues/62
@@ -78,7 +78,7 @@ fn replace_element_with_text_node() {
         new: html! { <span> a </span> },
         override_expected: None,
     }
-        .test();
+    .test();
 }
 
 /// https://github.com/chinedufn/percy/issues/68
@@ -92,7 +92,7 @@ fn text_root_node() {
         new: html! { New text },
         override_expected: None,
     }
-        .test();
+    .test();
 }
 
 /// wasm-pack test --chrome --headless crates/percy-dom --test text -- replace_text_with_element
@@ -104,7 +104,7 @@ fn replace_text_with_element() {
         new: html! { <div><br></div> },
         override_expected: None,
     }
-        .test();
+    .test();
 }
 
 /// wasm-pack test --chrome --headless crates/percy-dom --test text -- text_node_siblings
@@ -123,9 +123,8 @@ fn text_node_siblings() {
     // TODO: After the proc macro span APIs stabilize remove this in favor of the above commented out
     //  code.
     //   https://github.com/rust-lang/rust/issues/54725
-    let override_expected = Some(
-        r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#,
-    );
+    let override_expected =
+        Some(r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#);
 
     let old1 = VirtualNode::text("The button has been clicked: ");
     let old2 = VirtualNode::text("hello");
@@ -147,5 +146,5 @@ fn text_node_siblings() {
         },
         override_expected,
     }
-        .test();
+    .test();
 }

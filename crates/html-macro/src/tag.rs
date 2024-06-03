@@ -1,4 +1,5 @@
 use proc_macro2::{Span, TokenStream, TokenTree};
+use quote::{quote_spanned, ToTokens};
 use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
 use syn::token::Brace;
@@ -69,8 +70,28 @@ pub enum TagKind {
 /// etc...
 #[derive(Debug)]
 pub struct Attr {
-    pub key: Ident,
-    pub value: Expr,
+    key: TokenStream,
+    key_span: Span,
+    value: Expr,
+}
+impl Attr {
+    /// Get the attribute's key as a String.
+    ///
+    /// If the attribute's tokens were `quote!{ http - equiv }`
+    /// the string will be "http-equiv".
+    pub fn key_string(&self) -> String {
+        self.key.to_string().replace(" ", "")
+    }
+
+    /// Get the span for the attribute's key.
+    pub fn key_span(&self) -> Span {
+        self.key_span
+    }
+
+    /// Get the attribute's value, such as the "refresh" in `<div http-equiv = "refresh"> </div>.
+    pub fn value(&self) -> &Expr {
+        &self.value
+    }
 }
 
 impl Parse for Tag {
@@ -141,27 +162,7 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
         || input.peek(Token![loop])
         || input.peek(Token![type])
     {
-        // <link rel="stylesheet" type="text/css"
-        //   .. as, async, for, loop, type need to be handled specially since they are keywords
-        let maybe_as_key: Option<Token![as]> = input.parse()?;
-        let maybe_async_key: Option<Token![async]> = input.parse()?;
-        let maybe_for_key: Option<Token![for]> = input.parse()?;
-        let maybe_loop_key: Option<Token![loop]> = input.parse()?;
-        let maybe_type_key: Option<Token![type]> = input.parse()?;
-
-        let key = if maybe_as_key.is_some() {
-            Ident::new("as", maybe_as_key.unwrap().span())
-        } else if maybe_async_key.is_some() {
-            Ident::new("async", maybe_async_key.unwrap().span())
-        } else if maybe_for_key.is_some() {
-            Ident::new("for", maybe_for_key.unwrap().span())
-        } else if maybe_loop_key.is_some() {
-            Ident::new("loop", maybe_loop_key.unwrap().span())
-        } else if maybe_type_key.is_some() {
-            Ident::new("type", maybe_type_key.unwrap().span())
-        } else {
-            input.parse()?
-        };
+        let (key, key_span) = parse_attribute_key(input)?;
 
         // =
         input.parse::<Token![=]>()?;
@@ -192,10 +193,73 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
 
         let value: Expr = syn::parse2(value_tokens)?;
 
-        attrs.push(Attr { key, value });
+        attrs.push(Attr {
+            key,
+            key_span,
+            value,
+        });
     }
 
     Ok(attrs)
+}
+
+/// Parse an attribute key such as the "http-equiv" in
+/// `<meta http-equiv="refresh" />`
+fn parse_attribute_key(input: &mut ParseStream) -> Result<(TokenStream, Span)> {
+    let first_key_segment = parse_attribute_key_segment(input)?;
+
+    let maybe_hyphen: Option<Token![-]> = input.parse()?;
+
+    let attribute_key;
+    if let Some(hyphen) = maybe_hyphen {
+        let next_segment = parse_attribute_key_segment(input)?;
+
+        let combined_span = first_key_segment
+            .span()
+            .join(hyphen.span())
+            .unwrap()
+            .join(next_segment.span())
+            .unwrap();
+
+        attribute_key = (
+            quote_spanned! {combined_span=> #first_key_segment - #next_segment },
+            combined_span,
+        );
+    } else {
+        attribute_key = (
+            first_key_segment.to_token_stream(),
+            first_key_segment.span(),
+        );
+    }
+
+    Ok(attribute_key)
+}
+
+/// Parse a segment within an attribute key, such as the "http" or "equiv" in
+/// `<meta http-equiv="refresh" />`
+fn parse_attribute_key_segment(input: &mut ParseStream) -> Result<Ident> {
+    // <link rel="stylesheet" type="text/css"
+    //   .. as, async, for, loop, type need to be handled specially since they are keywords
+    let maybe_as_key: Option<Token![as]> = input.parse()?;
+    let maybe_async_key: Option<Token![async]> = input.parse()?;
+    let maybe_for_key: Option<Token![for]> = input.parse()?;
+    let maybe_loop_key: Option<Token![loop]> = input.parse()?;
+    let maybe_type_key: Option<Token![type]> = input.parse()?;
+
+    let key = if let Some(as_key) = maybe_as_key {
+        Ident::new("as", as_key.span())
+    } else if let Some(async_key) = maybe_async_key {
+        Ident::new("async", async_key.span())
+    } else if let Some(for_key) = maybe_for_key {
+        Ident::new("for", for_key.span())
+    } else if let Some(loop_key) = maybe_loop_key {
+        Ident::new("loop", loop_key.span())
+    } else if let Some(type_key) = maybe_type_key {
+        Ident::new("type", type_key.span())
+    } else {
+        input.parse()?
+    };
+    Ok(key)
 }
 
 /// </div>
@@ -314,13 +378,12 @@ fn parse_text_node(input: &mut ParseStream) -> Result<Tag> {
     })
 }
 
-
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-    use quote::quote;
-    use syn::Lit;
     use super::*;
+    use quote::quote;
+    use std::collections::HashMap;
+    use syn::Lit;
 
     /// Verify that we can parse opening tags.
     ///
@@ -339,7 +402,7 @@ mod tests {
                     name: "div",
                     attributes: vec![],
                     is_self_closing: false,
-                }
+                },
             ),
             // Verify that we can parse a self-closing open tag that does not have any attributes.
             (
@@ -348,7 +411,7 @@ mod tests {
                     name: "br",
                     attributes: vec![],
                     is_self_closing: true,
-                }
+                },
             ),
             // Verify that we can parse an open tag that has one attribute.
             (
@@ -358,7 +421,16 @@ mod tests {
                     attributes: vec![("id", "hello")],
                     is_self_closing: false,
                 },
-            )
+            ),
+            // Verify that we can parse an open tag that has one hyphenated attribute.
+            (
+                quote! { <meta http-equiv="refresh" /> },
+                ExpectedTag {
+                    name: "meta",
+                    attributes: vec![("http-equiv", "refresh")],
+                    is_self_closing: true,
+                },
+            ),
         ];
 
         for (tokens, expected_tag) in tests {
@@ -366,21 +438,26 @@ mod tests {
             let tag: Tag = syn::parse2(tokens).unwrap();
 
             match tag {
-                Tag::Open { name, attrs, is_self_closing, .. } => {
+                Tag::Open {
+                    name,
+                    attrs,
+                    is_self_closing,
+                    ..
+                } => {
+                    assert_eq!(&name.to_string(), expected_tag.name, "{}", tokens_string);
+
                     assert_eq!(
-                        &name.to_string(), expected_tag.name,
-                        "{}", tokens_string
+                        is_self_closing, expected_tag.is_self_closing,
+                        "{}",
+                        tokens_string
                     );
-
-
-                    assert_eq!(is_self_closing, expected_tag.is_self_closing, "{}", tokens_string);
 
                     let expected_attrs: HashMap<&'static str, &'static str> =
                         expected_tag.attributes.into_iter().collect();
 
                     assert_eq!(attrs.len(), expected_attrs.len(), "{}", tokens_string);
                     for attr in attrs {
-                        let attr_key = attr.key.to_string();
+                        let attr_key = attr.key_string();
 
                         let Expr::Lit(attr_val) = attr.value else {
                             panic!()
@@ -389,12 +466,11 @@ mod tests {
                             panic!()
                         };
 
-                        let expected_val = expected_attrs.get(attr_key.as_str()).map(|val| val.to_string());
+                        let expected_val = expected_attrs
+                            .get(attr_key.as_str())
+                            .map(|val| val.to_string());
 
-                        assert_eq!(
-                            Some(attr_val_str.value()),
-                            expected_val,
-                        );
+                        assert_eq!(Some(attr_val_str.value()), expected_val,);
                     }
                 }
                 not_open => panic!("Should have been an open tag. {:?}", not_open),
