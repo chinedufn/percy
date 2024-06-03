@@ -164,8 +164,10 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
     {
         let (key, key_span) = parse_attribute_key(input)?;
 
+        println!("PARSING EQUALS");
         // =
         input.parse::<Token![=]>()?;
+        println!("PARSED EQUALS");
 
         // Continue parsing tokens until we see the next attribute or a closing > tag
         let mut value_tokens = TokenStream::new();
@@ -174,13 +176,23 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
             let tt: TokenTree = input.parse()?;
             value_tokens.extend(Some(tt));
 
-            let has_attrib_key = input.peek(Ident)
+            let next_token_is_attrib_key = input.peek(Ident)
                 || input.peek(Token![as])
                 || input.peek(Token![async])
                 || input.peek(Token![for])
                 || input.peek(Token![loop])
                 || input.peek(Token![type]);
-            let peek_start_of_next_attr = has_attrib_key && input.peek2(Token![=]);
+
+            // The `=` in:
+            //   class="hello-world"
+            //
+            // Or the `-` in:
+            //   http-equiv="refresh"
+            let next_next_token_is_equals_or_hyphen =
+                input.peek2(Token![=]) || input.peek2(Token![-]);
+
+            let peek_start_of_next_attr =
+                next_token_is_attrib_key && next_next_token_is_equals_or_hyphen;
 
             let peek_end_of_tag = input.peek(Token![>]);
 
@@ -428,6 +440,21 @@ mod tests {
                 ExpectedTag {
                     name: "meta",
                     attributes: vec![("http-equiv", "refresh")],
+                    is_self_closing: true,
+                },
+            ),
+            // Verify that we can parse an element that has a hyphenated attribute as its second
+            // attribute.
+            (
+                quote! {
+                  <path
+                    d="M1,5 a2,2"
+                    stroke-linejoin="miter"
+                  />
+                },
+                ExpectedTag {
+                    name: "path",
+                    attributes: vec![("d", "M1,5 a2,2"), ("stroke-linejoin", "miter")],
                     is_self_closing: true,
                 },
             ),
