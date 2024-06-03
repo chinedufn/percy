@@ -1,6 +1,6 @@
 [package]
 name = "html-macro"
-version = "0.2.4"
+version = "0.2.5"
 description = "html macro"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 keywords = ["virtual", "dom", "wasm", "assembly", "webassembly"]

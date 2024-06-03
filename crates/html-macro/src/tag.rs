@@ -164,10 +164,8 @@ fn parse_attributes(input: &mut ParseStream) -> Result<Vec<Attr>> {
     {
         let (key, key_span) = parse_attribute_key(input)?;
 
-        println!("PARSING EQUALS");
         // =
         input.parse::<Token![=]>()?;
-        println!("PARSED EQUALS");
 
         // Continue parsing tokens until we see the next attribute or a closing > tag
         let mut value_tokens = TokenStream::new();
