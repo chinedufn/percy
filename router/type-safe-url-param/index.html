@@ -210,8 +210,8 @@ fn provided_data_and_param() {
             .view(&quot;/users/10/favorite-meal/breakfast&quot;)
             .unwrap()
             .to_string(),
-// TODO: Requires proc macro APIs that are currently unstable - https://github.com/rust-lang/rust/issues/54725
-//         &quot;&lt;div&gt; User 10 loves Breakfast &lt;/div&gt;&quot;
+        // TODO: Requires proc macro APIs that are currently unstable - https://github.com/rust-lang/rust/issues/54725
+        //         &quot;&lt;div&gt; User 10 loves Breakfast &lt;/div&gt;&quot;
         &quot;&lt;div&gt;User10lovesBreakfast&lt;/div&gt;&quot;
     );
 }
