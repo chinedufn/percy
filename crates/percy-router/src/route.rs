@@ -121,7 +121,7 @@ impl Route {
             return false;
         }
 
-        // Iterate through all of the segments and verify that they match, or if it's a
+        // Iterate over every segment and verify that they match, or if it's a
         // RouteParam segment verify that we can parse it
         for (index, defined_segment) in defined_segments.iter().enumerate() {
             if defined_segment.len() == 0 {
@@ -140,15 +140,18 @@ impl Route {
                 // tacos
                 let incoming_param_value = incoming_segments[index];
 
-                return (self.route_param_parser)(param_name.as_str(), incoming_param_value)
-                    .is_some();
-            }
+                let matches =
+                    (self.route_param_parser)(param_name.as_str(), incoming_param_value).is_some();
+                if !matches {
+                    return false;
+                }
+            } else {
+                // Compare segments on the same level
+                let incoming_segment = incoming_segments[index];
 
-            // Compare segments on the same level
-            let incoming_segment = incoming_segments[index];
-
-            if defined_segment != &incoming_segment {
-                return false;
+                if defined_segment != &incoming_segment {
+                    return false;
+                }
             }
         }
 
@@ -177,46 +180,11 @@ impl Route {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use percy_dom::prelude::*;
 
-    struct MyView {
-        id: u32,
-    }
-
-    impl View for MyView {
-        fn render(&self) -> VirtualNode {
-            let id = VirtualNode::text(self.id.to_string());
-            html! { <div> {id} </div> }
-        }
-    }
-
-    #[test]
-    fn route_type_safety() {
-        MatchRouteTestCase {
-            desc: "Typed route parameters",
-            route_definition: "/users/:id",
-            matches: vec![
-                ("/users/5", true, "5 should match since it is a u32"),
-                (
-                    "/users/foo",
-                    false,
-                    "foo should not match since it is not a u32",
-                ),
-            ],
-        }
-        .test();
-    }
-
-    #[test]
-    fn route_cascade() {
-        MatchRouteTestCase {
-            desc: "Make sure that `/` route doesn't capture `/other-routes`",
-            route_definition: "/",
-            matches: vec![("/foo", false, "routes should not match additional segments")],
-        }
-        .test();
-    }
-
+    /// Verify that we can get the route parameter value for a given route parameter.
+    ///
+    /// For a route definition is `/:id`, and a path "/5" we confirm that when we ask for the
+    /// "id" parameter of the path we get back "5".
     #[test]
     fn find_route_param() {
         let route = Route::new(
@@ -233,11 +201,59 @@ mod tests {
         assert_eq!(route.find_route_param("/5", "id"), Some("5"));
     }
 
+    /// Verify that route parameters such as `/:id` are typed.
+    ///
+    /// For instance, confirm that a route parameter that has an integer type does not match a
+    /// string.
+    #[test]
+    fn route_type_safety() {
+        MatchRouteTestCase {
+            route_definition: "/users/:id",
+            matches: vec![
+                // Verify that an integer matches a parameter that is defined as an integer.
+                ("/users/5", true),
+                // Verify that a string does not match a parameter that is defined as an integer.
+                ("/users/foo", false),
+            ],
+        }
+            .test();
+    }
+
+    /// Verify that a `/` route definition doesn't capture `/some-route`.
+    #[test]
+    fn route_cascade() {
+        MatchRouteTestCase {
+            route_definition: "/",
+            matches: vec![
+                // Verify that a "/" segment is not a catch-all.
+                // So, "/" should not match "/foo".
+                ("/foo", false),
+            ],
+        }
+            .test();
+    }
+
+    /// Verify that we correctly match when a static segment comes after a dynamic segment.
+    ///
+    /// This helps ensure that are not ignoring segments that come after a dynamic segment.
+    #[test]
+    fn static_segment_after_dynamic_segment() {
+        MatchRouteTestCase {
+            route_definition: "/:id/foo",
+            matches: vec![
+                // Verify that a correct segment after a dynamic segment leads to a match.
+                ("/5/foo", true),
+                // Verify that an incorrect segment after a dynamic segment does not lead to a match.
+                ("/5/bar", false),
+            ],
+        }
+            .test();
+    }
+
     struct MatchRouteTestCase {
-        desc: &'static str,
         route_definition: &'static str,
-        // (route ... should it match ... description of test)
-        matches: Vec<(&'static str, bool, &'static str)>,
+        // (path, should it match)
+        matches: Vec<(&'static str, bool)>,
     }
 
     impl MatchRouteTestCase {
@@ -259,9 +275,8 @@ mod tests {
                 assert_eq!(
                     route.matches(match_case.0),
                     match_case.1,
-                    "{}\n{}",
-                    self.desc,
-                    match_case.2
+                    "Test case failed: {}",
+                    match_case.0,
                 );
             }
         }
