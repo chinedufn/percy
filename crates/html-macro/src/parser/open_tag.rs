@@ -103,6 +103,11 @@ fn create_valid_node(
                 tokens.push(add_closure);
             }
             _ => {
+                // NOTE: The `AttributeValue`'s documentation mentions that contributors can search
+                //  for `#value.into()` to find where the `AttributeValue`'s `From` implementation
+                //  is used.
+                //  So, if we change this code such that it no longer says `#value.into()`, we
+                //  should update the `AttributeValue's` `From` implementation's documentation.
                 let insert_attribute = quote! {
                     #var_name_node.as_velement_mut().expect("Not an element")
                         .attrs.insert(#key.to_string(), #value.into());
