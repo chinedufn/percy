@@ -64,65 +64,76 @@ impl Into<JsValue> for AttributeValue {
     }
 }
 
-impl From<String> for AttributeValue {
-    fn from(s: String) -> Self {
-        AttributeValue::String(s)
+mod from_impls {
+    //! These `From` implementations are used by the `html-macro` to convert an arbitrary expression
+    //! into an [`AttributeValue`].
+    //! Relying on the `From` impl allows us to create an `AttributeValue` without needing the
+    //! `AttributeValue` type to be in scope. This means that the generated macro code does not
+    //! require `AttributeValue` to be in scope.
+    //! To find this use case, search for `#value.into()` within the `crates/html-macro` crate.
+
+    use super::*;
+
+    impl From<String> for AttributeValue {
+        fn from(s: String) -> Self {
+            AttributeValue::String(s)
+        }
     }
-}
 
-impl From<&String> for AttributeValue {
-    fn from(s: &String) -> Self {
-        AttributeValue::String(s.to_string())
+    impl From<&String> for AttributeValue {
+        fn from(s: &String) -> Self {
+            AttributeValue::String(s.to_string())
+        }
     }
-}
 
-impl From<&str> for AttributeValue {
-    fn from(s: &str) -> Self {
-        AttributeValue::String(s.to_string())
+    impl From<&str> for AttributeValue {
+        fn from(s: &str) -> Self {
+            AttributeValue::String(s.to_string())
+        }
     }
-}
 
-impl<S: AsRef<str>, const N: usize> From<[S; N]> for AttributeValue {
-    fn from(vals: [S; N]) -> Self {
-        let mut combined = "".to_string();
+    impl<S: AsRef<str>, const N: usize> From<[S; N]> for AttributeValue {
+        fn from(vals: [S; N]) -> Self {
+            let mut combined = "".to_string();
 
-        for (idx, val) in vals.iter().enumerate() {
-            if idx != 0 {
-                combined += " ";
+            for (idx, val) in vals.iter().enumerate() {
+                if idx != 0 {
+                    combined += " ";
+                }
+
+                combined += val.as_ref();
             }
 
-            combined += val.as_ref();
+            AttributeValue::String(combined)
         }
-
-        AttributeValue::String(combined)
     }
-}
 
-impl<S: AsRef<str>> From<Vec<S>> for AttributeValue {
-    fn from(vals: Vec<S>) -> Self {
-        let mut combined = "".to_string();
+    impl<S: AsRef<str>> From<Vec<S>> for AttributeValue {
+        fn from(vals: Vec<S>) -> Self {
+            let mut combined = "".to_string();
 
-        for (idx, val) in vals.iter().enumerate() {
-            if idx != 0 {
-                combined += " ";
+            for (idx, val) in vals.iter().enumerate() {
+                if idx != 0 {
+                    combined += " ";
+                }
+
+                combined += val.as_ref();
             }
 
-            combined += val.as_ref();
+            AttributeValue::String(combined)
         }
-
-        AttributeValue::String(combined)
     }
-}
 
-impl From<bool> for AttributeValue {
-    fn from(b: bool) -> Self {
-        AttributeValue::Bool(b)
+    impl From<bool> for AttributeValue {
+        fn from(b: bool) -> Self {
+            AttributeValue::Bool(b)
+        }
     }
-}
 
-impl From<&bool> for AttributeValue {
-    fn from(b: &bool) -> Self {
-        AttributeValue::Bool(*b)
+    impl From<&bool> for AttributeValue {
+        fn from(b: &bool) -> Self {
+            AttributeValue::Bool(*b)
+        }
     }
 }
 
