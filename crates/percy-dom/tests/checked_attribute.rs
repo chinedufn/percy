@@ -5,7 +5,7 @@
 //! directly. `percy` ensures that this is true.
 //!
 //! See the tests for more details.
-//! Start with `patch_uses_set_checked_function`.
+//! Start with [`patch_uses_set_checked_function`].
 //!
 //! To run all tests in this file:
 //!
