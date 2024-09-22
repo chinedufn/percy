@@ -100,6 +100,10 @@ pub enum Patch<'a> {
     /// The value attribute of a textarea or input element has not changed, but we will still patch
     /// it anyway in case something was typed into the field.
     ValueAttributeUnchanged(BreadthFirstNodeIdx, &'a AttributeValue),
+    /// The checked attribute of a input element has not changed, but we will still patch
+    /// it anyway in case the checkbox was toggled by the user. Otherwise the checkbox
+    /// could have a different state to what is rendered.
+    CheckedAttributeUnchanged(BreadthFirstNodeIdx, &'a AttributeValue),
     /// Add attributes that the new node has that the old node does not
     AddAttributes(BreadthFirstNodeIdx, HashMap<&'a str, &'a AttributeValue>),
     /// Remove attributes that the old node had that the new node doesn't
@@ -153,6 +157,7 @@ impl<'a> Patch<'a> {
             Patch::RemoveAttributes(node_idx, _) => *node_idx,
             Patch::ChangeText(node_idx, _) => *node_idx,
             Patch::ValueAttributeUnchanged(node_idx, _) => *node_idx,
+            Patch::CheckedAttributeUnchanged(node_idx, _) => *node_idx,
             Patch::SpecialAttribute(special) => match special {
                 PatchSpecialAttribute::CallOnCreateElemOnExistingNode(node_idx, _) => *node_idx,
                 PatchSpecialAttribute::SetDangerousInnerHtml(node_idx, _) => *node_idx,
@@ -208,6 +213,9 @@ impl<'a> Patch<'a> {
                 to_find.insert(*node_idx);
             }
             Patch::ValueAttributeUnchanged(node_idx, _) => {
+                to_find.insert(*node_idx);
+            }
+            Patch::CheckedAttributeUnchanged(node_idx, _) => {
                 to_find.insert(*node_idx);
             }
             Patch::SpecialAttribute(special) => match special {

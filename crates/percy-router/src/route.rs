@@ -216,7 +216,7 @@ mod tests {
                 ("/users/foo", false),
             ],
         }
-            .test();
+        .test();
     }
 
     /// Verify that a `/` route definition doesn't capture `/some-route`.
@@ -230,7 +230,7 @@ mod tests {
                 ("/foo", false),
             ],
         }
-            .test();
+        .test();
     }
 
     /// Verify that we correctly match when a static segment comes after a dynamic segment.
@@ -247,7 +247,7 @@ mod tests {
                 ("/5/bar", false),
             ],
         }
-            .test();
+        .test();
     }
 
     struct MatchRouteTestCase {

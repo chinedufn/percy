@@ -16,6 +16,7 @@
       - [On Create Element](./html-macro/real-elements-and-nodes/on-create-elem/README.md)
       - [On Remove Element](./html-macro/real-elements-and-nodes/on-remove-elem/README.md)
     - [Boolean Attributes](./html-macro/boolean-attributes/README.md)
+    - [Special Attributes](./html-macro/special-attributes/README.md)
   - [Lists](./lists/README.md)
   - [Virtual DOM](./virtual-dom/README.md)
     - [Unit Testing your Views](./virtual-dom/unit-testing-views.md)

@@ -282,6 +282,8 @@ fn find_attributes_to_add<'a>(
                     attributes_to_add.insert(new_attr_name, new_attr_val);
                 } else if new_attr_name == "value" {
                     ctx.push_patch(Patch::ValueAttributeUnchanged(cur_node_idx, new_attr_val));
+                } else if new_attr_name == "checked" {
+                    ctx.push_patch(Patch::CheckedAttributeUnchanged(cur_node_idx, new_attr_val));
                 }
             }
             None => {
