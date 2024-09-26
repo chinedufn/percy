@@ -34,11 +34,11 @@ wasm_bindgen_test_configure!(run_in_browser);
 /// default checked state. i.e. Changing the default checkedness no longer affects the actual
 /// checkedness after the user has pressed the input.
 ///
-/// We want `html!{ ... checked=val ... }` to specify the checkedness of the checkbox, not
-/// the default checkedness. This is more intuitive: changing the value of `checked` changes
-/// the the checkbox's checkedness directly, rather than only when the dirty flag isn't set.
+/// We want `html!{ ... checked=val ... }` to specify the current checkedness of the checkbox
+/// directly - avoiding the checkbox rendering in a different state to what the developer
+/// specified in the virtual DOM.
 ///
-/// Using `set_checked` sets the actual checkbox's checkedness. Futhermore, it enables the
+/// Using web-sys's `set_checked` sets the actual checkbox's checkedness. Futhermore, it enables the
 /// dirty-checked flag (NB: BUT ONLY WHEN THE CHECKBOX STATE IS CHANGED), which we can test for.
 ///
 /// ## Test approach
@@ -54,7 +54,7 @@ wasm_bindgen_test_configure!(run_in_browser);
 ///     should affect the checkedness of the checkbox.)
 /// - Assert that the checkedness of the checkbox element is still B.
 #[wasm_bindgen_test]
-fn patch_uses_set_checked_function() {
+fn patch_sets_checked_property() {
     for checkedness in [false, true] {
         let start_input = html! {<input checked={!checkedness}>};
         let end_input = html! {<input checked=checkedness>};
@@ -84,7 +84,7 @@ fn patch_uses_set_checked_function() {
 ///
 /// ## Why?
 ///
-/// Note: the rationale given in [`patch_uses_set_checked_function`] is prerequisite reading.
+/// Note: the rationale given in [`patch_sets_checked_property`] is prerequisite reading.
 ///
 /// The user might interact with the checkbox in between the previous render and the next
 /// one, changing the checkedness state in the browser, but `diff` would not realize this
@@ -110,7 +110,7 @@ fn patch_uses_set_checked_function() {
 /// - Diff and patch with the virtual node still specifying it's checkedness as C.
 /// - Assert that the checkedness has been reset to C, even though the virtual node did not change.
 #[wasm_bindgen_test]
-fn patch_always_sets_checked() {
+fn patch_always_sets_checked_property_and_attribute() {
     for checkedness in [false, true] {
         let start_input = html! {<input checked=checkedness>};
         let end_input = html! {<input checked=checkedness>};
@@ -122,67 +122,41 @@ fn patch_always_sets_checked() {
         let input_elem = input_node.dyn_ref::<HtmlInputElement>().unwrap();
         assert_eq!(input_elem.checked(), checkedness);
 
-        input_elem.set_checked(!checkedness);
+        input_elem.set_checked(!checkedness); // modify checked property
+        input_elem.set_default_checked(!checkedness); // modify checked attribute
 
         let patches = percy_dom::diff(&start_input, &end_input);
         percy_dom::patch(input_node.clone(), &end_input, &mut events, &patches).unwrap();
 
         assert_eq!(input_elem.checked(), checkedness);
+        assert_eq!(input_elem.default_checked(), checkedness);
     }
 }
 
-/// Verify that `percy_dom::patch` does not add or remove the `checked` attribute
-/// due to specifying `checked` in `percy`'s `html!` macro.
+/// Verify that `vnode.to_string()` includes the `checked` attribute
+/// as a result of specifying `checked` in `percy`'s `html!` macro.
 ///
 /// ## Why?
 ///
-/// Note: the rationale given in [`patch_uses_set_checked_function`] is prerequisite reading.
+/// Note: the rationale given in [`patch_sets_checked_property`] is prerequisite reading.
 ///
-/// We do not want to override the default checkedness of the checkbox when the
-/// user of the `html!` macro specifies the checkedness using `checked`. This means
-/// that the `checked` HTML attribute should not be changed by specifying `checked`.
-///
-/// For example:
-/// - Developer sets default checkedness using `elem.set_attribute("checked", "")` on checkbox.
-/// - Developer specifies `checked=false` to toggle it off for now.
-/// - Developer stops specifying `checked`.
-/// - The form that the `elem` is a part of gets reset, changing the checkbox to its default state.
-/// - Developer expects it to return to the default checkedness they specified.
+/// While `html!`'s `checked` configures the `checked` property to declaratively specify
+/// the rendered checkbox state,  
+/// When performing server-side rendering, only the HTML reaches the client, not the
+/// (non-existent) DOM state. Therefore the HTML attribute's presence should correspond
+/// to `html!`'s `checked` state as well.
 ///
 /// ## Test approach
 ///
 /// - Create a a DOM node with the checkbox having some checkedness.
 /// - Add or remove the checked attribute.
-/// - Diff and patch with the virtual node with some checkedness (same or different).
-/// - Assert that the presence of the checked attribute has not changed.
+/// - Diff and patch with the virtual node with some new checkedness (same or different).
+/// - Assert that the presence of the checked attribute has changed to match the new checkedness.
 #[wasm_bindgen_test]
-fn percy_checked_does_not_add_or_remove_checked_attribute() {
-    for old_checkedness in [false, true] {
-        for new_checkedness in [false, true] {
-            for old_attribute_presence in [false, true] {
-                let old_input = html! {<input checked=old_checkedness>};
-                let end_input = html! {<input checked=new_checkedness>};
-
-                let mut events = VirtualEvents::new();
-                let (input_node, enode) = old_input.create_dom_node(&mut events);
-                events.set_root(enode);
-
-                let input_elem = input_node.dyn_ref::<HtmlInputElement>().unwrap();
-
-                if old_attribute_presence {
-                    input_elem.set_attribute("checked", "").unwrap();
-                } else {
-                    input_elem.remove_attribute("checked").unwrap();
-                }
-
-                let patches = percy_dom::diff(&old_input, &end_input);
-                percy_dom::patch(input_node.clone(), &end_input, &mut events, &patches).unwrap();
-
-                assert_eq!(
-                    input_elem.get_attribute("checked").is_some(),
-                    old_attribute_presence
-                );
-            }
-        }
+fn to_string_contains_checked_attribute() {
+    for (checkedness, html) in [(false, "<input>"), (true, "<input checked>")] {
+        let input = html! {<input checked=checkedness>};
+        let string = input.to_string();
+        assert_eq!(&string, html);
     }
 }

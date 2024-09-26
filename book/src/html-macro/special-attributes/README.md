@@ -4,52 +4,32 @@ Some attributes do not merely set or remove the corresponding HTML attribute of 
 
 ## `checked` Attribute
 
-Specifying `checked` causes `percy` to render the checkbox with the specified checkedness, INSTEAD of setting the default checkedness.
+According to the [HTML spec](https://html.spec.whatwg.org/multipage/input.html#attr-input-checked), the `checked` HTML attribute only controls the default checkedness.
+Changing the `checked` HTML attribute may not cause the checkbox's checkedness to change.
 
-The `checked` HTML attribute specifies the [default checkedness of an input element](https://html.spec.whatwg.org/multipage/input.html#attr-input-checked). It does not determine the checkedness of the checkbox directly.
+By contrast: specifying `html! { <input checked={bool} /> }` causes `percy` to always render the checkbox with the specified checkedness.
+- If the VDOM is updated from `html! { <input checked=true /> }` to `html { <input checked=false /> }`, the input element's checkedness will definitely change.
+- If the VDOM is updated from `html! { <input checked=true /> }` to `html { <input checked=true /> }`, the input element's checkedness will be reverted to `true` even if the user interacted with the checkbox in between.
 
-From the link above:
+`percy` updates both
+- the `checked` attribute (default checkedness, reflected in HTML) and,
+- the `checked` property (current checkedness, not reflected in HTML).
 
-> The checked content attribute is a boolean attribute that gives the default checkedness of the input element. When the checked content attribute is added, if the control does not have dirty checkedness, the user agent must set the checkedness of the element to true; when the checked content attribute is removed, if the control does not have dirty checkedness, the user agent must set the checkedness of the element to false.
-
-A developer is likely to use `html!`'s `checked` attribute and expect the value they specify to be the value that is rendered. Setting the `checked` HTML attribute alone does not achieve this.
-
-To avoid this, `html!`'s `checked` specifies the rendered checkedness directly, using `set_checked` behind the scenes.
-
-```rust
-html! { <input type="checkbox" checked=true> };
-```
-
-It's still possible to use `elem.set_attribute("checked", "")` and `elem.remove_attribute("checked")` to configure the default checkedness.
-
-```rust
-let vnode = html! {<input type="checkbox">};
-
-let mut events = VirtualEvents::new();
-let (input_node, enode) = vnode.create_dom_node(&mut events);
-events.set_root(enode);
-
-// Sets the default checkedness to true by setting the `checked` attribute.
-let input_elem = input_node.dyn_ref::<HtmlInputElement>().unwrap();
-input_elem.set_attribute("checked", "").unwrap();
-```
+This behavior is more desirable because `percy` developers are accustomed to declaratively controlling the DOM and rendered HTML.
 
 ## `value` Attribute
 
-Specifying `value` causes `percy` to render the the input's value as specified, as well as setting the default value.
+(Note, this is virtually identical to the above section on the `checked` attribute.)
 
-Similar to `checked`, the `value` HTML attribute [specifies the default value of an input element](https://html.spec.whatwg.org/multipage/input.html#attr-input-value). It does not determine the value of the element directly.
+According to the [HTML spec](https://html.spec.whatwg.org/multipage/input.html#attr-input-value), the `value` HTML attribute only controls the default value.
+Changing the `value` HTML attribute may not cause the input element's value to change.
 
-From the link above:
+By contrast: specifying `html! { <input value="..." /> }` causes `percy` to always render the input element with the specified value.
+- If the VDOM is updated from `html! { <input value="hello" /> }` to `html { <input value="goodbye" /> }`, the input element's value will definitely change.
+- If the VDOM is updated from `html! { <input value="hello" /> }` to `html { <input value="hello" /> }`, the input element's value will be reverted to `"hello"` even if the user interacted with the input element in between.
 
-> The value content attribute gives the default value of the input element. When the value content attribute is added, set, or removed, if the control's dirty value flag is false, the user agent must set the value of the element to the value of the value content attribute, if there is one, or the empty string otherwise, and then run the current value sanitization algorithm, if one is defined.
+`percy` updates both
+- the `value` attribute (default value, reflected in HTML) and,
+- the `value` property (current value, not reflected in HTML).
 
-A developer is likely to use `html!`'s `value` attribute and expect the value they specify to be the value that is rendered. Setting the `value` HTML attribute alone does not achieve this.
-
-To avoid this, `html!`'s `value` specifies the rendered value directly, using `set_value` behind the scenes.
-
-```rust
-html! { <input value="hello!"> };
-```
-
-Note that **unlike the `checked` attribute**, `percy` applies the specified value by setting the `value` attribute as well as using `set_value`.
+This behavior is more desirable because `percy` developers are accustomed to declaratively controlling the DOM and rendered HTML.
