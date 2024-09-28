@@ -19,8 +19,6 @@ This behavior is more desirable because `percy` developers are accustomed to dec
 
 ## `value` Attribute
 
-(Note, this is virtually identical to the above section on the `checked` attribute.)
-
 According to the [HTML spec](https://html.spec.whatwg.org/multipage/input.html#attr-input-value), the `value` HTML attribute only controls the default value.
 Changing the `value` HTML attribute may not cause the input element's value to change.
 
