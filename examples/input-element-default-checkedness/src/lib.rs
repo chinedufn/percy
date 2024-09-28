@@ -82,8 +82,12 @@ fn uncheck_both_checkboxes(
     percy_dom::patch(dom_root.clone(), &new_vdom_root, events, &patches).unwrap();
 }
 
+/// Verify that the `percy-dom`-controlled checkbox, `percy_checkbox`, and the
+/// `my_default_checked_checkbox` behave exactly as we expect when updating the checkedness:
+/// - Both `percy_checkbox`'s checkedness and default checkedness should change.
+/// - Only `my_default_checked_checkbox`'s checkedness should change, not default checkedness.
 #[wasm_bindgen_test]
-fn conduct_checked_modification_test() {
+fn checkbox_checkedness_update_test() {
     // Setup both checkboxes and create the DOM node tree.
     let (vdom_root, dom_root, mut events, my_checkbox) =
         setup_percy_dom_with_appended_child_checkbox();
