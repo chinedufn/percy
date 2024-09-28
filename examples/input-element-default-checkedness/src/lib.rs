@@ -1,6 +1,6 @@
-use percy_dom::{event::VirtualEvents, html, IterableNodes, JsCast, VElement, VirtualNode};
+use percy_dom::{event::VirtualEvents, html, JsCast, VirtualNode};
 use wasm_bindgen_test::*;
-use web_sys::{HtmlInputElement, Node};
+use web_sys::{Element, HtmlInputElement, Node};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -22,30 +22,22 @@ fn create_my_default_checked_checkbox() -> HtmlInputElement {
 
 fn setup_percy_dom_with_appended_child_checkbox(
 ) -> (VirtualNode, Node, VirtualEvents, HtmlInputElement) {
-    // This will be a checkbox that `percy-dom` controls.
-    let vdom_percy_checkbox = html! {
-        <input id="percy_checkbox" type="checkbox" checked=true>
-    };
-
     let my_default_checked_checkbox = create_my_default_checked_checkbox();
     let my_default_checked_checkbox_append = my_default_checked_checkbox.clone();
 
-    // Manually create a container VirtualNode that will append my-default-checked-checkbox
-    // onto its corresponding DOM element upon creation.
-    let mut vdom_checkbox_holder = VElement::new("div");
-    vdom_checkbox_holder
-        .attrs
-        .insert("id".into(), "checkbox_holder".into());
-    vdom_checkbox_holder.children.push(vdom_percy_checkbox);
-    vdom_checkbox_holder
-        .special_attributes
-        .set_on_create_element("key", move |e| {
-            e.append_child(&my_default_checked_checkbox_append).unwrap();
-        });
-
-    // Parent the container to some other node for the sake of example.
+    // This will be a checkbox that `percy-dom` controls.
     let vdom_root_node = html! {
-        <div id="root"> { VirtualNode::Element(vdom_checkbox_holder) } </div>
+        <div id="root">
+            <div
+                id="checkbox_holder"
+                key="key"
+                on_create_element=move |elem: Element| {
+                    elem.append_child(&my_default_checked_checkbox_append).unwrap();
+                }
+            >
+                <input id="percy_checkbox" type="checkbox" checked=true>
+            </div>
+        </div>
     };
 
     // Create the DOM nodes from the virtual DOM.
