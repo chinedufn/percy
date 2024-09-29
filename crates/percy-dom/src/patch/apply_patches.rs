@@ -241,18 +241,16 @@ fn apply_element_patch(
                         }
                     }
                     AttributeValue::Bool(val_bool) => {
-                        if *val_bool {
-                            node.set_attribute(attrib_name, "")?;
-                        } else {
-                            node.remove_attribute(attrib_name)?;
-                        }
-
-                        // Use `set_checked` in addition to `{set,remove}_attribute` for the `checked` attribute.
-                        // The "checked" attribute determines default checkedness,
-                        // but `percy` interprets `checked` as determining current checkedness too.
+                        // Use `set_checked` instead of `{set,remove}_attribute` for the `checked` attribute.
+                        // The "checked" attribute only determines default checkedness,
+                        // but `percy-dom` takes `checked` to specify the actual checkedness.
                         // See crates/percy-dom/tests/checked_attribute.rs for more info.
                         if *attrib_name == "checked" {
                             maybe_set_checked_property(node, *val_bool);
+                        } else if *val_bool {
+                            node.set_attribute(attrib_name, "")?;
+                        } else {
+                            node.remove_attribute(attrib_name)?;
                         }
                     }
                 }
@@ -399,14 +397,7 @@ fn apply_element_patch(
             Ok(())
         }
         Patch::CheckedAttributeUnchanged(_node_idx, value) => {
-            let value = value.as_bool().unwrap();
-            maybe_set_checked_property(node, value);
-
-            if value {
-                node.set_attribute("checked", "")?;
-            } else {
-                node.remove_attribute("checked")?;
-            }
+            maybe_set_checked_property(node, value.as_bool().unwrap());
 
             Ok(())
         }

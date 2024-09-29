@@ -24,7 +24,6 @@ members = [
   "crates/percy-router-macro-test",
   "crates/virtual-node",
   "examples/component-preview",
-  "examples/input-element-default-checkedness",
   "examples/isomorphic/app",
   "examples/isomorphic/client",
   "examples/isomorphic/server",
