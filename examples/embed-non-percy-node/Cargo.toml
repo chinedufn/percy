@@ -1,0 +1,16 @@
+[package]
+name = "embed-non-percy-node"
+version = "0.1.0"
+edition = "2021"
+publish = []
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+percy-dom = { path = "../../crates/percy-dom" }
+wasm-bindgen-test = "0.3"
+
+[dependencies.web-sys]
+version = "0.3"
+features = ["Document", "HtmlElement"]

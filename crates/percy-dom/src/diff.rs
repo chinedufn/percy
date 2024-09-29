@@ -282,6 +282,8 @@ fn find_attributes_to_add<'a>(
                     attributes_to_add.insert(new_attr_name, new_attr_val);
                 } else if new_attr_name == "value" {
                     ctx.push_patch(Patch::ValueAttributeUnchanged(cur_node_idx, new_attr_val));
+                } else if new_attr_name == "checked" {
+                    ctx.push_patch(Patch::CheckedAttributeUnchanged(cur_node_idx, new_attr_val));
                 }
             }
             None => {
@@ -1244,6 +1246,37 @@ mod tests {
             )],
         }
         .test();
+    }
+
+    /// Verify that if an input (e.g. checkbox) has `checked` specified, we always push a
+    /// patch for setting the checked attribute and property so that the checkbox is
+    /// rendered in the specified state, regardless if any intervening input has occurred.
+    #[test]
+    fn always_pushes_patch_for_checked() {
+        for checkedness in [false, true] {
+            DiffTestCase {
+                old: html! { <input checked={checkedness} /> },
+                new: html! { <input checked={checkedness} /> },
+                expected: vec![Patch::CheckedAttributeUnchanged(0, &checkedness.into())],
+            }
+            .test();
+        }
+
+        for old_checkedness in [false, true] {
+            let new_checkedness = !old_checkedness;
+
+            DiffTestCase {
+                old: html! { <input checked=old_checkedness /> },
+                new: html! { <input checked=new_checkedness /> },
+                expected: vec![Patch::AddAttributes(
+                    0,
+                    vec![("checked", &new_checkedness.into())]
+                        .into_iter()
+                        .collect(),
+                )],
+            }
+            .test();
+        }
     }
 
     /// Verify that we push an on create elem patch if the new node has the special attribute

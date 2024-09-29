@@ -7,9 +7,9 @@ use std::rc::Rc;
 
 pub struct Store {
     state: StateWrapper,
-    after_route: Option<Box<Fn(&str) -> ()>>,
+    after_route: Option<Box<dyn Fn(&str) -> ()>>,
     router: Option<Rc<Router>>,
-    listeners: Vec<Box<Fn() -> ()>>,
+    listeners: Vec<Box<dyn Fn() -> ()>>,
 }
 
 impl Store {
@@ -49,11 +49,11 @@ impl Store {
         }
     }
 
-    pub fn subscribe(&mut self, callback: Box<Fn() -> ()>) {
+    pub fn subscribe(&mut self, callback: Box<dyn Fn() -> ()>) {
         self.listeners.push(callback)
     }
 
-    pub fn set_after_route(&mut self, after_route: Box<Fn(&str) -> ()>) {
+    pub fn set_after_route(&mut self, after_route: Box<dyn Fn(&str) -> ()>) {
         self.after_route = Some(after_route);
     }
 

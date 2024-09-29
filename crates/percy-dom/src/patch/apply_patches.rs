@@ -241,7 +241,13 @@ fn apply_element_patch(
                         }
                     }
                     AttributeValue::Bool(val_bool) => {
-                        if *val_bool {
+                        // Use `set_checked` instead of `{set,remove}_attribute` for the `checked` attribute.
+                        // The "checked" attribute only determines default checkedness,
+                        // but `percy-dom` takes `checked` to specify the actual checkedness.
+                        // See crates/percy-dom/tests/checked_attribute.rs for more info.
+                        if *attrib_name == "checked" {
+                            maybe_set_checked_property(node, *val_bool);
+                        } else if *val_bool {
                             node.set_attribute(attrib_name, "")?;
                         } else {
                             node.remove_attribute(attrib_name)?;
@@ -390,6 +396,11 @@ fn apply_element_patch(
 
             Ok(())
         }
+        Patch::CheckedAttributeUnchanged(_node_idx, value) => {
+            maybe_set_checked_property(node, value.as_bool().unwrap());
+
+            Ok(())
+        }
         Patch::SpecialAttribute(special) => match special {
             PatchSpecialAttribute::CallOnCreateElemOnExistingNode(_node_idx, new_node) => {
                 new_node
@@ -509,6 +520,13 @@ fn maybe_set_value_property(node: &Element, value: &str) {
         input_node.set_value(value);
     } else if let Some(textarea_node) = node.dyn_ref::<HtmlTextAreaElement>() {
         textarea_node.set_value(value)
+    }
+}
+
+// See crates/percy-dom/tests/checked_attribute.rs
+fn maybe_set_checked_property(node: &Element, checked: bool) {
+    if let Some(input_node) = node.dyn_ref::<HtmlInputElement>() {
+        input_node.set_checked(checked);
     }
 }
 
