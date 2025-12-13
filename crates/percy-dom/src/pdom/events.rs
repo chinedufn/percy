@@ -65,9 +65,7 @@ fn bubble_event(elem: web_sys::Element, mouse_event: MouseEvent, events: &Virtua
         return;
     }
 
-    if let Some(parent) = elem.parent_node() {
-        if let Ok(parent) = parent.dyn_into() {
-            bubble_event(parent, mouse_event, events);
-        }
+    if let Some(parent) = elem.parent_element() {
+        bubble_event(parent, mouse_event, events);
     }
 }
