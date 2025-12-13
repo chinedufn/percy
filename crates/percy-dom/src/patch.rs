@@ -51,7 +51,7 @@ type BreadthFirstNodeIdx = u32;
 // We haven't thought deeply through the implications of breadth first vs. depth first diffing.
 // We can worry about that whenever we optimize our diffing and patching algorithms.
 #[derive(Debug)]
-#[cfg_attr(any(test, feature = "__test-utils"), derive(PartialEq))]
+#[cfg_attr(test, derive(PartialEq))]
 // TODO: Change all of these tuple structs with a `NodeIdx` to instead be `{old_idx: NodeIdx`} so
 //  we can more easily tell which patches use the old node's index vs. the new one's.
 pub enum Patch<'a> {

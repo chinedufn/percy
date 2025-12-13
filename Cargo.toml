@@ -1,6 +1,7 @@
 [package]
 name = "percy"
 version = "0.0.1"
+edition = "2024"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 description = "A modular toolkit for building interactive frontend browser apps with Rust + WebAssembly. Supports server side rendering."
 keywords = ["virtual", "dom", "wasm", "css", "webassembly"]
