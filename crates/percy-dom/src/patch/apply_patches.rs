@@ -282,8 +282,7 @@ fn apply_element_patch(
             anchor_old_node_idx: _,
             new_nodes,
         } => {
-            let parent = node.parent_node().unwrap();
-            let parent: Element = parent.dyn_into().unwrap();
+            let parent = node.parent_element().unwrap();
 
             let events_parent = events_elem_and_parent.parent.as_ref().unwrap();
 
@@ -303,8 +302,7 @@ fn apply_element_patch(
             anchor_old_node_idx: _,
             to_move,
         } => {
-            let parent = node.parent_node().unwrap();
-            let parent: Element = parent.dyn_into().unwrap();
+            let parent = node.parent_element().unwrap();
 
             let events_parent = events_elem_and_parent.parent.as_ref().unwrap();
             let mut events_parent = events_parent.borrow_mut();

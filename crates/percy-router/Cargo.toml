@@ -11,5 +11,5 @@ documentation = "https://chinedufn.github.io/percy/api/percy_router/"
 
 
 [dependencies]
-percy-dom = { path = "../percy-dom", version = "0.9"}
+percy-dom = { path = "../percy-dom", version = "0.10"}
 percy-router-macro = { path = "../percy-router-macro", version = "0.1.5" }
