@@ -9,3 +9,7 @@ node_modules
 tests/jsdom/jsdom_tests*
 examples/isomorphic/client/dist
 examples/isomorphic/client/build
+examples/isomorphic/worker/build
+examples/isomorphic/worker/dist
+examples/isomorphic/worker/.wrangler
+examples/isomorphic/worker/node_modules

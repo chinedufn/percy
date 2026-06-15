@@ -1,6 +1,9 @@
 # isomorphic web app example
 
-*TODO: Find a service where we can host a live version of the demo for free or cheaply.*
+Live demo: <https://percy.cinemarob.com>
+
+The demo is hosted on Cloudflare Workers with its static WebAssembly assets
+served by Workers Static Assets.
 
 ## Running Locally
 
