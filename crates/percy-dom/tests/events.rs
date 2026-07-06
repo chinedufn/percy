@@ -342,7 +342,7 @@ fn patch_remove_all_events_with_node_idx() {
     events.insert_event(
         events_id,
         EventName::ONCLICK,
-        EventHandler::UnsupportedSignature(EventAttribFn(Rc::new(JsValue::NULL))),
+        EventHandler::UnsupportedSignature(EventAttribFn::new_noop()),
         None,
     );
 

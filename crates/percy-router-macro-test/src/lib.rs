@@ -73,7 +73,7 @@ fn route_provided_data(state: Provided<State>) -> VirtualNode {
 
 #[test]
 fn provided_data() {
-    let mut router = Router::new(create_routes![route_provided_data]);
+    let router = Router::new(create_routes![route_provided_data]);
 
     router.provide(State { count: 50 });
 
@@ -100,7 +100,7 @@ fn route_provided_two_data(count: Provided<Count>, dollars: Provided<Money>) -> 
 
 #[test]
 fn provided_two_data() {
-    let mut router = Router::new(create_routes![route_provided_two_data]);
+    let router = Router::new(create_routes![route_provided_two_data]);
 
     router.provide(Count { count: 8 });
     router.provide(Money(99));
@@ -126,7 +126,7 @@ fn route_param_and_data(id: u16, state: Provided<SomeState>) -> VirtualNode {
 
 #[test]
 fn provided_param_and_data() {
-    let mut router = Router::new(create_routes![route_param_and_data]);
+    let router = Router::new(create_routes![route_param_and_data]);
 
     router.provide(SomeState { happy: true });
 
@@ -147,7 +147,7 @@ fn route_data_and_param(state: Provided<SomeState>, id: u32) -> VirtualNode {
 
 #[test]
 fn provided_data_and_param() {
-    let mut router = Router::new(create_routes![route_data_and_param]);
+    let router = Router::new(create_routes![route_data_and_param]);
 
     router.provide(SomeState { happy: false });
 
@@ -188,6 +188,11 @@ mod test_no_warnings {
     #[route(path = "/")]
     fn no_warnings() -> VirtualNode {
         unimplemented!()
+    }
+
+    #[expect(unused, reason = "Ensures that `no_warnings` is used.")]
+    fn used() {
+        let _ = no_warnings();
     }
 }
 

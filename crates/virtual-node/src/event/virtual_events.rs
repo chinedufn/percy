@@ -1,10 +1,8 @@
 use crate::event::event_name::EventName;
-use crate::event::EventHandler;
-use js_sys::Reflect;
+use crate::event::{EventHandler, EventWrapper};
 use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
 use std::rc::Rc;
-use wasm_bindgen::JsValue;
 
 // Every real DOM element that we create gets a property set on it that can be used to look up
 // its events in [`crate::VirtualEvents`].
@@ -26,12 +24,6 @@ impl ElementEventsId {
         self.0
     }
 }
-
-// Really only needs to be boxed.. but using an Rc let's us implement the
-//  removes_old_non_delegated_event_listeners test.
-// A future optimization could be using a feature flag to determine whether to Rc or Box this.
-// i.e. #[cfg(feature = "__test-utils")]
-pub(crate) type EventWrapper = Rc<dyn AsRef<JsValue>>;
 
 /// When we create a DOM node, we store all of it's closures and all of it's children's closures
 /// in VirtualEvents.
@@ -430,7 +422,12 @@ impl VirtualEventElement {
     }
 }
 
-pub(crate) fn set_events_id(node: &JsValue, events: &VirtualEvents, events_id: ElementEventsId) {
+pub(crate) fn set_events_id(
+    node: &wasm_bindgen::JsValue,
+    events: &VirtualEvents,
+    events_id: ElementEventsId,
+) {
+    use js_sys::Reflect;
     Reflect::set(
         &node.into(),
         &ELEMENT_EVENTS_ID_PROP.into(),

@@ -3,9 +3,11 @@ use crate::event::{EventHandler, EventName, MouseEvent, VirtualEvents, ELEMENT_E
 use js_sys::Reflect;
 use std::rc::Rc;
 use wasm_bindgen::closure::Closure;
-use wasm_bindgen::{JsCast, JsValue};
+use wasm_bindgen::JsCast;
 
-/// Insert a non-delegated event
+/// Attaches an event handler directly onto a DOM element.
+///
+/// See [`VirtualEvents`] and [`EventName::is_delegated`] for documentation regarding event delegation.
 pub fn insert_non_delegated_event(
     element: &web_sys::Element,
     onevent: &EventName,
@@ -41,12 +43,7 @@ pub fn insert_non_delegated_event(
             EventHandler::MouseEvent(mouse) => {
                 (mouse.borrow_mut())(MouseEvent::new(event.dyn_into().unwrap()));
             }
-            EventHandler::UnsupportedSignature(cb) => {
-                let cb: &js_sys::Function = cb.as_ref().as_ref().unchecked_ref();
-
-                let context = JsValue::NULL;
-                cb.call1(&context, &event).unwrap();
-            }
+            EventHandler::UnsupportedSignature(cb) => cb.call(&event),
         };
     };
 

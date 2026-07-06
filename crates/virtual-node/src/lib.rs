@@ -11,18 +11,19 @@
 
 use std::fmt;
 
-use crate::event::{VirtualEventNode, VirtualEvents};
-use web_sys::{self, Node};
-
+#[cfg(feature = "web")]
 pub use self::create_element::VIRTUAL_NODE_MARKER_PROPERTY;
+#[cfg(feature = "web")]
 pub use self::event::EventAttribFn;
 pub use self::iterable_nodes::*;
 pub use self::velement::*;
 pub use self::vtext::*;
 
+#[cfg(feature = "web")]
 pub mod event;
 pub mod test_utils;
 
+#[cfg(feature = "web")]
 mod create_element;
 
 mod iterable_nodes;
@@ -136,7 +137,11 @@ impl VirtualNode {
     }
 
     /// Create and return a [`web_sys::Node`] along with its events.
-    pub fn create_dom_node(&self, events: &mut VirtualEvents) -> (Node, VirtualEventNode) {
+    #[cfg(feature = "web")]
+    pub fn create_dom_node(
+        &self,
+        events: &mut self::event::VirtualEvents,
+    ) -> (web_sys::Node, crate::event::VirtualEventNode) {
         match self {
             VirtualNode::Text(text_node) => (
                 text_node.create_text_node().into(),

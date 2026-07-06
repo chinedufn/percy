@@ -1,7 +1,5 @@
 use std::fmt;
 
-use crate::create_element::set_virtual_node_marker;
-use web_sys::Text;
 
 /// Represents a text node
 #[derive(PartialEq)]
@@ -20,7 +18,10 @@ impl VText {
 
     /// Return a `Text` element from a `VirtualNode`, typically right before adding it
     /// into the DOM.
-    pub(crate) fn create_text_node(&self) -> Text {
+    #[cfg(feature = "web")]
+    pub(crate) fn create_text_node(&self) -> web_sys::Text {
+        use crate::create_element::set_virtual_node_marker;
+
         let document = web_sys::window().unwrap().document().unwrap();
         let text = document.create_text_node(&self.text);
 

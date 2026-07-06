@@ -4,11 +4,7 @@ use std::fmt::{Debug, Formatter};
 use std::ops::Deref;
 use std::rc::Rc;
 
-/// Event handlers such as the closure in `onclick = |event| {}`.
-///
-/// ## Cloning
-///
-/// Can be cheaply cloned since since inner types are reference counted.
+/// Event handlers such as the closure in `onclick = |mouse_event| {}`.
 #[derive(Clone)]
 pub enum EventHandler {
     /// A callback that does not contain any arguments.
