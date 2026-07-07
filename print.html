@@ -1754,7 +1754,7 @@ fn apply_element_patch(
                        virtual_events.remove_non_delegated_event_wrapper(events_id, event_name);
                    node.remove_event_listener_with_callback(
                        event_name.without_on_prefix(),
-                       wrapper.as_ref().as_ref().unchecked_ref(),
+                       wrapper.as_js_value().unwrap().as_ref().unchecked_ref(),
                    )
                    .unwrap();
                }
