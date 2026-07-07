@@ -1,9 +1,9 @@
 use proc_macro2::{Span, TokenStream, TokenTree};
-use quote::{quote_spanned, ToTokens};
+use quote::{ToTokens, quote_spanned};
 use syn::parse::{Parse, ParseStream, Result};
 use syn::spanned::Spanned;
 use syn::token::Brace;
-use syn::{braced, Block, Expr, Ident, Token};
+use syn::{Block, Expr, Ident, Token, braced};
 
 /// The different kinds of tokens that we parse.
 ///
@@ -224,12 +224,19 @@ fn parse_attribute_key(input: &mut ParseStream) -> Result<(TokenStream, Span)> {
     if let Some(hyphen) = maybe_hyphen {
         let next_segment = parse_attribute_key_segment(input)?;
 
-        let combined_span = first_key_segment
-            .span()
-            .join(hyphen.span())
-            .unwrap()
-            .join(next_segment.span())
-            .unwrap();
+        // As of July 2026, `Span::join` always returns `None` on stable. So we use `.unwrap_or`.
+        let combined_span = {
+            // `http-`
+            let first_segment_and_hyphen_span = first_key_segment
+                .span()
+                .join(hyphen.span())
+                .unwrap_or(first_key_segment.span());
+
+            // `http-equiv`
+            first_segment_and_hyphen_span
+                .join(next_segment.span())
+                .unwrap_or(first_segment_and_hyphen_span.span())
+        };
 
         attribute_key = (
             quote_spanned! {combined_span=> #first_key_segment - #next_segment },

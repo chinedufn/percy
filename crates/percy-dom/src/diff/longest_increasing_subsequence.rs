@@ -72,7 +72,7 @@ mod tests {
     const D: KeyAndChildIdx = make_val("d", 3);
     const E: KeyAndChildIdx = make_val("e", 4);
 
-    const fn make_val(key: &'static str, val: usize) -> KeyAndChildIdx {
+    const fn make_val(key: &'static str, val: usize) -> KeyAndChildIdx<'static> {
         KeyAndChildIdx {
             key: ElementKey::Explicit(key),
             child_idx: val,

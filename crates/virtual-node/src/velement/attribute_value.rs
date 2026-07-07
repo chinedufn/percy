@@ -1,5 +1,4 @@
 use std::fmt::{Display, Formatter};
-use wasm_bindgen::JsValue;
 
 /// The value associated with an element's attribute.
 ///
@@ -55,8 +54,9 @@ macro_rules! to_string_impls {
 }
 to_string_impls!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64);
 
-impl Into<JsValue> for AttributeValue {
-    fn into(self) -> JsValue {
+#[cfg(feature = "web")]
+impl Into<wasm_bindgen::JsValue> for AttributeValue {
+    fn into(self) -> wasm_bindgen::JsValue {
         match self {
             AttributeValue::String(s) => s.into(),
             AttributeValue::Bool(b) => b.into(),

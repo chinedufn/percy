@@ -794,15 +794,12 @@ mod diff_test_case;
 
 #[cfg(test)]
 mod tests {
+    use super::diff_test_case::*;
     use super::*;
     use crate::event::EventName;
     use crate::{html, EventAttribFn, PatchSpecialAttribute, VText, VirtualNode};
     use std::collections::HashMap;
-    use std::rc::Rc;
     use virtual_node::IterableNodes;
-    use wasm_bindgen::JsValue;
-
-    use super::diff_test_case::*;
 
     /// Verify that we can generate patches that replace a virtual node with another one.
     #[test]
@@ -2921,7 +2918,8 @@ mod tests {
     }
 
     fn mock_event_handler() -> EventHandler {
-        EventHandler::UnsupportedSignature(EventAttribFn(Rc::new(Box::new(JsValue::NULL))))
+        let closure = EventAttribFn::new_noop();
+        EventHandler::UnsupportedSignature(closure)
     }
 
     fn onclick_name() -> EventName {

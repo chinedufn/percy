@@ -1,10 +1,3 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::fmt;
-use std::fmt::Formatter;
-use std::ops::{Deref, DerefMut};
-use std::rc::Rc;
-
 pub use self::event_handlers::*;
 pub use self::event_name::EventName;
 pub use self::non_delegated_event_wrapper::insert_non_delegated_event;
@@ -12,18 +5,26 @@ pub(crate) use self::virtual_events::set_events_id;
 pub use self::virtual_events::{
     ElementEventsId, VirtualEventElement, VirtualEventNode, VirtualEvents, ELEMENT_EVENTS_ID_PROP,
 };
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
+use std::ops::{Deref, DerefMut};
+use std::rc::Rc;
+use wasm_bindgen::JsValue;
+use web_sys::Event;
 
 mod event_handlers;
 mod event_name;
 mod non_delegated_event_wrapper;
 mod virtual_events;
 
-type EventAttribFnInner = std::rc::Rc<dyn AsRef<wasm_bindgen::JsValue>>;
+/// A type-erased [`js_sys::Closure`]. Stored as a trait object to enable any number of arguments.
+pub(crate) type EventWrapper = std::rc::Rc<dyn EventCallback>;
 
-/// Box<dyn AsRef<JsValue>>> is our js_sys::Closure. Stored this way to allow us to store
-/// any Closure regardless of the types of its arguments.
+/// A handler for an event, such the closure in `onmyevent = || {}`.
 #[derive(Clone)]
-pub struct EventAttribFn(pub EventAttribFnInner);
+pub struct EventAttribFn(EventWrapper);
 
 /// We need a custom implementation of fmt::Debug since JsValue doesn't implement debug.
 #[derive(PartialEq)]
@@ -49,11 +50,7 @@ impl Events {
 
     // Used by the html! macro
     #[doc(hidden)]
-    pub fn __insert_unsupported_signature(
-        &mut self,
-        event_name: EventName,
-        event: EventAttribFnInner,
-    ) {
+    pub fn __insert_unsupported_signature(&mut self, event_name: EventName, event: EventWrapper) {
         self.events
             .insert(event_name, EventHandler::UnsupportedSignature(event.into()));
     }
@@ -75,6 +72,51 @@ impl Events {
         Events {
             events: HashMap::new(),
         }
+    }
+}
+
+/// A callback that runs when an event is triggered.
+///
+/// For instance, this might represent the closure in `onmyevent = |_| {}`.
+pub trait EventCallback {
+    /// Invoke the callback.
+    fn call(&self, event: &web_sys::Event);
+
+    /// Get the underlying [`wasm_bindgen::JsValue`].
+    fn as_js_value(&self) -> Option<&wasm_bindgen::JsValue>;
+}
+
+impl<T: ?Sized> EventCallback for wasm_bindgen::closure::Closure<T> {
+    fn call(&self, event: &web_sys::Event) {
+        use wasm_bindgen::JsCast;
+
+        let context = wasm_bindgen::JsValue::NULL;
+        let callback: &js_sys::Function = self.as_ref().as_ref().unchecked_ref();
+        callback.call1(&context, &event).unwrap();
+    }
+
+    fn as_js_value(&self) -> Option<&wasm_bindgen::JsValue> {
+        Some(self.as_ref())
+    }
+}
+
+impl EventAttribFn {
+    /// Currently used by `crates/percy-dom`'s test suite.
+    #[doc(hidden)]
+    pub fn new_noop() -> Self {
+        struct Noop;
+        impl EventCallback for Noop {
+            fn call(&self, _event: &Event) {}
+
+            fn as_js_value(&self) -> Option<&JsValue> {
+                None
+            }
+        }
+        Self(Rc::new(Noop))
+    }
+
+    pub(crate) fn call(&self, event: &web_sys::Event) {
+        self.0.call(event)
     }
 }
 
@@ -106,17 +148,9 @@ impl fmt::Debug for EventAttribFn {
     }
 }
 
-impl From<EventAttribFnInner> for EventAttribFn {
-    fn from(inner: EventAttribFnInner) -> Self {
+impl From<EventWrapper> for EventAttribFn {
+    fn from(inner: EventWrapper) -> Self {
         EventAttribFn(inner)
-    }
-}
-
-impl Deref for EventAttribFn {
-    type Target = EventAttribFnInner;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }
 

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use crate::event::Events;
 use crate::VirtualNode;
 
 pub use self::attribute_value::*;
@@ -20,7 +19,8 @@ pub struct VElement {
     ///
     /// Events natively handled in HTML such as onclick, onchange, oninput and others
     /// can be found in [`VElement.known_events`]
-    pub events: Events,
+    #[cfg(feature = "web")]
+    pub events: crate::event::Events,
     /// The children of this `VirtualNode`. So a <div> <em></em> </div> structure would
     /// have a parent div and one child, em.
     pub children: Vec<VirtualNode>,
@@ -36,7 +36,8 @@ impl VElement {
         VElement {
             tag: tag.into(),
             attrs: HashMap::new(),
-            events: Events::new(),
+            #[cfg(feature = "web")]
+            events: crate::event::Events::new(),
             children: vec![],
             special_attributes: SpecialAttributes::default(),
         }

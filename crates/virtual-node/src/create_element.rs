@@ -5,7 +5,8 @@ use wasm_bindgen::JsValue;
 use web_sys::{Document, Element};
 
 use crate::event::{VirtualEventElement, VirtualEvents};
-use crate::{AttributeValue, VElement, VirtualEventNode, VirtualNode};
+use crate::{AttributeValue, VElement,  VirtualNode};
+use crate::event::VirtualEventNode;
 
 mod add_events;
 

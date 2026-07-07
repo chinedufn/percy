@@ -1,6 +1,4 @@
 use std::borrow::Cow;
-use std::cell::RefCell;
-use std::ops::DerefMut;
 
 /// A specially supported attributes.
 #[derive(Default, PartialEq)]
@@ -8,10 +6,12 @@ pub struct SpecialAttributes {
     /// A a function that gets called when the virtual node is first turned into a real node.
     ///
     /// See [`SpecialAttributes.set_on_create_element`] for more documentation.
+    #[cfg(feature = "web")]
     on_create_element: Option<KeyAndElementFn>,
     /// A a function that gets called when the virtual node is first turned into a real node.
     ///
     /// See [`SpecialAttributes.set_on_remove_element`] for more documentation.
+    #[cfg(feature = "web")]
     on_remove_element: Option<KeyAndElementFn>,
     /// Allows setting the innerHTML of an element.
     ///
@@ -23,6 +23,7 @@ pub struct SpecialAttributes {
 
 impl SpecialAttributes {
     /// The key for the on create element function
+    #[cfg(feature = "web")]
     pub fn on_create_element_key(&self) -> Option<&Cow<'static, str>> {
         self.on_create_element.as_ref().map(|k| &k.key)
     }
@@ -59,6 +60,7 @@ impl SpecialAttributes {
     ///     .special_attributes
     ///     .set_on_create_element(key, on_create_elem);
     /// ```
+    #[cfg(feature = "web")]
     pub fn set_on_create_element<Key, Func>(&mut self, key: Key, func: Func)
     where
         Key: Into<Cow<'static, str>>,
@@ -66,7 +68,7 @@ impl SpecialAttributes {
     {
         self.on_create_element = Some(KeyAndElementFn {
             key: key.into(),
-            func: RefCell::new(ElementFunc::OneArg(Box::new(func))),
+            func: std::cell::RefCell::new(ElementFunc::OneArg(Box::new(func))),
         });
     }
 
@@ -77,13 +79,21 @@ impl SpecialAttributes {
         Key: Into<Cow<'static, str>>,
         Func: FnMut() + 'static,
     {
-        self.on_create_element = Some(KeyAndElementFn {
-            key: key.into(),
-            func: RefCell::new(ElementFunc::NoArgs(Box::new(func))),
-        });
+        #[cfg(feature = "web")]
+        {
+            self.on_create_element = Some(KeyAndElementFn {
+                key: key.into(),
+                func: std::cell::RefCell::new(ElementFunc::NoArgs(Box::new(func))),
+            });
+        }
+        #[cfg(not(feature = "web"))]
+        {
+            let _ = (key, func);
+        }
     }
 
     /// If an `on_create_element` function was set, call it.
+    #[cfg(feature = "web")]
     pub fn maybe_call_on_create_element(&self, element: &web_sys::Element) {
         if let Some(on_create_elem) = &self.on_create_element {
             on_create_elem.call(element.clone());
@@ -95,6 +105,7 @@ impl SpecialAttributes {
 
 impl SpecialAttributes {
     /// The key for the on remove element function
+    #[cfg(feature = "web")]
     pub fn on_remove_element_key(&self) -> Option<&Cow<'static, str>> {
         self.on_remove_element.as_ref().map(|k| &k.key)
     }
@@ -131,6 +142,7 @@ impl SpecialAttributes {
     ///     .special_attributes
     ///     .set_on_remove_element(key, on_remove_elem);
     /// ```
+    #[cfg(feature = "web")]
     pub fn set_on_remove_element<Key, Func>(&mut self, key: Key, func: Func)
     where
         Key: Into<Cow<'static, str>>,
@@ -138,7 +150,7 @@ impl SpecialAttributes {
     {
         self.on_remove_element = Some(KeyAndElementFn {
             key: key.into(),
-            func: RefCell::new(ElementFunc::OneArg(Box::new(func))),
+            func: std::cell::RefCell::new(ElementFunc::OneArg(Box::new(func))),
         });
     }
 
@@ -149,13 +161,21 @@ impl SpecialAttributes {
         Key: Into<Cow<'static, str>>,
         Func: FnMut() + 'static,
     {
-        self.on_remove_element = Some(KeyAndElementFn {
-            key: key.into(),
-            func: RefCell::new(ElementFunc::NoArgs(Box::new(func))),
-        });
+        #[cfg(feature = "web")]
+        {
+            self.on_remove_element = Some(KeyAndElementFn {
+                key: key.into(),
+                func: std::cell::RefCell::new(ElementFunc::NoArgs(Box::new(func))),
+            });
+        }
+        #[cfg(not(feature = "web"))]
+        {
+            let _ = (key, func);
+        }
     }
 
     /// If an `on_remove_element` function was set, call it.
+    #[cfg(feature = "web")]
     pub fn maybe_call_on_remove_element(&self, element: &web_sys::Element) {
         if let Some(on_remove_elem) = &self.on_remove_element {
             on_remove_elem.call(element.clone());
@@ -165,18 +185,23 @@ impl SpecialAttributes {
     }
 }
 
+#[cfg(feature = "web")]
 struct KeyAndElementFn {
     key: Cow<'static, str>,
-    func: RefCell<ElementFunc>,
+    func: std::cell::RefCell<ElementFunc>,
 }
 
+#[cfg(feature = "web")]
 enum ElementFunc {
     NoArgs(Box<dyn FnMut()>),
     OneArg(Box<dyn FnMut(web_sys::Element)>),
 }
 
+#[cfg(feature = "web")]
 impl KeyAndElementFn {
     fn call(&self, element: web_sys::Element) {
+        use std::ops::DerefMut;
+
         match self.func.borrow_mut().deref_mut() {
             ElementFunc::NoArgs(func) => (func)(),
             ElementFunc::OneArg(func) => (func)(element),
@@ -184,6 +209,7 @@ impl KeyAndElementFn {
     }
 }
 
+#[cfg(feature = "web")]
 impl PartialEq for KeyAndElementFn {
     fn eq(&self, rhs: &Self) -> bool {
         self.key == rhs.key

@@ -1,6 +1,6 @@
 [package]
 name = "virtual-node"
-version = "0.5.0"
+version = "0.5.1"
 description = "A standalone Virtual DOM"
 authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
 keywords = ["virtual", "dom", "wasm", "browser", "webassembly"]
@@ -10,14 +10,19 @@ documentation = "https://chinedufn.github.io/percy/api/virtual_node/"
 edition = "2018"
 
 [features]
-MouseEvent = ["web-sys/MouseEvent"]
+# When we introduced the "web" feature in 2026, we made it the default to avoid introducing a breaking change.
+# We have not yet thought whether it is best to have it enabled by default.
+default = ["web"]
+web = ["js-sys", "wasm-bindgen", "web-sys"]
 
 [dependencies]
-js-sys = "0.3"
-wasm-bindgen = "0.2.33"
 html-validation = {path = "../html-validation", version = "0.1.1"}
 
+js-sys = {optional = true, version = "0.3"}
+wasm-bindgen = {optional = true, version = "0.2"}
+
 [dependencies.web-sys]
+optional = true
 version = "0.3"
 features = [
     "Comment",
@@ -35,4 +40,3 @@ features = [
     "MouseEvent",
     "InputEvent",
 ]
-
