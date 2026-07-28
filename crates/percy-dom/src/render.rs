@@ -2,8 +2,8 @@
 
 use crate::{PercyDom, VirtualNode};
 use std::{cell::Cell, rc::Rc};
-use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
+use wasm_bindgen::prelude::Closure;
 
 /// Given a [`PercyDom`] and a function that renders a [`VirtualNode`],
 /// return a function that can call that render function up to once per browser
@@ -31,7 +31,7 @@ use wasm_bindgen::JsCast;
 /// }
 ///
 /// impl MyApp {
-///     fn render(&self) -> VirtualNode {
+///     fn render(&self) -> VirtualNodeWebSys {
 ///         html! { <div>Count: { self.counter }</div> }
 ///     }
 /// }
@@ -54,7 +54,7 @@ use wasm_bindgen::JsCast;
 ///
 /// # fn make_percy_dom_somehow() -> PercyDom { unimplemented!() }
 /// ```
-pub fn create_render_scheduler<F: FnMut() -> VirtualNode + 'static>(
+pub fn create_render_scheduler<F: FnMut() -> VirtualNode<web_sys::Window> + 'static>(
     mut percy_dom: PercyDom,
     mut render: F,
 ) -> Box<dyn FnMut()> {

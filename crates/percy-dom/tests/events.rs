@@ -7,11 +7,12 @@
 use crate::testing_utilities::{
     create_mount, document, get_element_by_id, random_id, send_click_event, send_input_event,
 };
-use percy_dom::event::{EventHandler, EventName, VirtualEvents, ELEMENT_EVENTS_ID_PROP};
+use percy_dom::event::{ELEMENT_EVENTS_ID_PROP, EventHandler, EventName, VirtualEvents};
 use percy_dom::prelude::*;
-use percy_dom::{Patch, PercyDom, VElement};
+use percy_dom::{Patch, PercyDom, VirtualElement};
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
+use virtual_node::VirtualNodeWebSys;
 use virtual_node::event::ElementEventsId;
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_test;
@@ -124,7 +125,7 @@ fn updated_delegated_event_handler() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test events -- sets_events_id_on_created_elements
 #[wasm_bindgen_test]
 fn sets_events_id_on_created_elements() {
-    let vnode: VirtualNode = html! {
+    let vnode: VirtualNodeWebSys = html! {
         <div id="outer" oninput=||{}>
           <button id="inner" oninput=||{}></button>
           <button id="no-events"></button>
@@ -162,7 +163,7 @@ fn sets_events_id_on_created_elements() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test events -- replaced_element_with_element_events_work
 #[wasm_bindgen_test]
 fn replaced_element_with_element_events_work() {
-    let old_node: VirtualNode = html! {
+    let old_node: VirtualNodeWebSys = html! {
         <div>
             // Span gets replaced by an <em> below.
             <span></span>
@@ -193,7 +194,7 @@ fn replaced_element_with_element_events_work() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test events -- replaced_text_with_elem_events_work
 #[wasm_bindgen_test]
 fn replaced_text_with_elem_events_work() {
-    let old_node: VirtualNode = html! {
+    let old_node: VirtualNodeWebSys = html! {
         <div>
             Some text
         </div>
@@ -231,7 +232,7 @@ fn patch_add_non_delegated_event_listener() {
     let text = start_text();
 
     let mount = create_mount();
-    let mut pdom = PercyDom::new_replace_mount(VirtualNode::element("input"), mount);
+    let mut pdom = PercyDom::new_replace_mount(VirtualNode::new_element("input"), mount);
     pdom.update(input_node_with_events(
         id,
         vec![event.clone()],
@@ -285,7 +286,7 @@ fn patch_add_delegated_event_listener() {
     let text = start_text();
 
     let mount = create_mount();
-    let mut pdom = PercyDom::new_replace_mount(VirtualNode::element("div"), mount);
+    let mut pdom = PercyDom::new_replace_mount(VirtualNode::new_element("div"), mount);
     pdom.update(div_node_with_event(
         id,
         vec![event.clone()],
@@ -335,22 +336,24 @@ fn patch_remove_all_events_with_node_idx() {
 
     let patch = Patch::RemoveAllVirtualEventsWithNodeIdx(0);
 
-    let (node, enode) = VirtualNode::element("div").create_dom_node(&mut events);
+    let (node, enode) = VirtualNode::new_element("div").create_dom_node(&mut events);
     let events_id = enode.as_element().unwrap().events_id();
     events.set_root(enode);
 
     events.insert_event(
         events_id,
         EventName::ONCLICK,
-        EventHandler::UnsupportedSignature(EventAttribFn::new_noop()),
+        EventHandler::Custom(EventAttribFn::new_noop().0),
         None,
     );
 
-    percy_dom::patch(node, &VirtualNode::text("..."), &mut events, &[patch]).unwrap();
+    percy_dom::patch(node, &VirtualNode::new_text("..."), &mut events, &[patch]).unwrap();
 
-    assert!(events
-        .get_event_handler(&events_id, &EventName::ONCLICK)
-        .is_none());
+    assert!(
+        events
+            .get_event_handler(&events_id, &EventName::ONCLICK)
+            .is_none()
+    );
 }
 
 /// Verify that a node's events still work after adding a node before it in the DOM.
@@ -464,7 +467,7 @@ fn closure_with_arguments() {
 
     let id = random_id();
 
-    let node: VirtualNode = html! {
+    let node: VirtualNodeWebSys = html! {
         <input
           id=id
           oninput=move |event: web_sys::InputEvent| {
@@ -496,9 +499,9 @@ fn delegated_child_events_propagates_to_parent() {
 
     let id = random_id();
 
-    let node: VirtualNode = html! {
+    let node: VirtualNodeWebSys = html! {
         <div
-          onclick=move |_event: percy_dom::event::MouseEvent| {
+          onclick=move |_event: percy_dom::event::MouseEventWebSys| {
                called_clone.set(true);
           }
         >
@@ -527,14 +530,14 @@ fn stop_propagation_on_delegated_event() {
 
     let id = random_id();
 
-    let node: VirtualNode = html! {
+    let node: VirtualNodeWebSys = html! {
         <div
-          onclick=move |_event: percy_dom::event::MouseEvent| {
+          onclick=move |_event: percy_dom::event::MouseEventWebSys| {
                called_clone.set(true);
           }
         >
           <span id=id
-             onclick = |event: percy_dom::event::MouseEvent| {
+             onclick = |event: percy_dom::event::MouseEventWebSys| {
                event.stop_propagation();
              }
            ></span>
@@ -553,7 +556,7 @@ fn input_node_with_events(
     events: Vec<EventName>,
     text: Rc<RefCell<String>>,
     append: &'static str,
-) -> VirtualNode {
+) -> VirtualNodeWebSys {
     node_with_events("input", id, events, text, append)
 }
 
@@ -562,7 +565,7 @@ fn div_node_with_event(
     events: Vec<EventName>,
     text: Rc<RefCell<String>>,
     append: &'static str,
-) -> VirtualNode {
+) -> VirtualNodeWebSys {
     node_with_events("div", id, events, text, append)
 }
 
@@ -572,8 +575,8 @@ fn node_with_events(
     events: Vec<EventName>,
     text: Rc<RefCell<String>>,
     append: &'static str,
-) -> VirtualNode {
-    let mut elem = VElement::new(tag);
+) -> VirtualNodeWebSys {
+    let mut elem = VirtualElement::new(tag);
     elem.attrs.insert("id".to_string(), id.into());
 
     for event in events {

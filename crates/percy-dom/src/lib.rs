@@ -14,7 +14,24 @@ pub use wasm_bindgen::JsCast;
 pub use wasm_bindgen::prelude::Closure;
 
 #[cfg(feature = "macro")]
-pub use html_macro::html;
+html_macro::define_html_macro! {
+    /// Build a [`VirtualNode`] from a token stream.
+    ///
+    /// ## Examples
+    /// ```
+    /// # use percy_dom::prelude::*;
+    /// use percy_dom::html;
+    ///
+    /// let div = html! { <div> Hello, world. </div> };
+    /// ```
+    ///
+    /// [`VirtualNode`]: [`percy_dom::VirtualNode`]
+    html!
+    real_dom = $crate::prelude::__html_macro_helpers__::web_sys::Window,
+
+    calls = $crate::prelude::__html_macro_helpers__::html_macro::html_with_config,
+}
+
 pub use virtual_node::*;
 
 pub use crate::diff::*;
@@ -38,16 +55,19 @@ pub mod prelude {
 
     pub use wasm_bindgen::prelude::Closure;
 
-    #[cfg(feature = "macro")]
-    pub use html_macro::html;
     pub use virtual_node::{EventAttribFn, IterableNodes, View};
 
-    pub use crate::pdom::PercyDom;
+    #[cfg(feature = "macro")]
+    pub use html;
+
     pub use crate::VirtualNode;
+    pub use crate::VirtualNodeWebSys;
+    pub use crate::pdom::PercyDom;
 
     // Used by the html-macro crate.
     #[doc(hidden)]
     pub mod __html_macro_helpers__ {
+        pub use html_macro;
         pub use virtual_node::event;
         pub use web_sys;
     }

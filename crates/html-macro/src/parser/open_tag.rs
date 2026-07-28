@@ -1,10 +1,10 @@
 use crate::parser::open_tag::event::insert_closure_tokens;
-use crate::parser::{is_self_closing, is_valid_tag, HtmlParser};
+use crate::parser::{HtmlParser, is_self_closing, is_valid_tag};
 use crate::tag::Attr;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, quote_spanned};
-use syn::Expr;
 use syn::__private::TokenStream2;
+use syn::Expr;
 
 mod event;
 
@@ -16,6 +16,7 @@ impl HtmlParser {
         closing_span: &Span,
         attrs: &Vec<Attr>,
         is_self_closing_tag: bool,
+        real_dom_ty: &syn::Type,
     ) {
         self.set_most_recent_open_tag_end(closing_span.clone());
 
@@ -28,12 +29,12 @@ impl HtmlParser {
         // The root node is named `node_0`. All of it's descendants are node_1.. node_2.. etc.
         // This just comes from the `idx` variable
         // TODO: Not sure what the span is supposed to be so I just picked something..
-        let var_name_node = Ident::new(format!("node_{}", idx).as_str(), name.span());
+        let var_name_node = Ident::new(format!("node_{}", idx).as_str(), Span::call_site());
         let html_tag = format!("{}", name);
         let is_html_tag = is_valid_tag(&html_tag);
 
         if is_html_tag {
-            create_valid_node(&html_tag, attrs, &var_name_node, tokens);
+            create_valid_node(&html_tag, attrs, &var_name_node, tokens, real_dom_ty);
         } else if !html_tag.chars().next().unwrap().is_uppercase() {
             let compile_err = invalid_tag_compile_error(name, &html_tag, &var_name_node);
             tokens.push(compile_err);
@@ -79,9 +80,10 @@ fn create_valid_node(
     attrs: &Vec<Attr>,
     var_name_node: &Ident,
     tokens: &mut Vec<TokenStream2>,
+    real_dom_ty: &syn::Type,
 ) {
     let node = quote! {
-        let mut #var_name_node = VirtualNode::element(#html_tag);
+        let mut #var_name_node = VirtualNode::<#real_dom_ty>::new_element(#html_tag);
     };
 
     tokens.push(node);
@@ -109,7 +111,7 @@ fn create_valid_node(
                 //  So, if we change this code such that it no longer says `#value.into()`, we
                 //  should update the `AttributeValue's` `From` implementation's documentation.
                 let insert_attribute = quote! {
-                    #var_name_node.as_velement_mut().expect("Not an element")
+                    #var_name_node.as_elem_mut().expect("Not an element")
                         .attrs.insert(#key.to_string(), #value.into());
                 };
 
@@ -137,7 +139,7 @@ custom components: https://chinedufn.github.io/percy/html-macro/custom-component
 
     let compile_err = quote! {
         #invalid_tag_name_error
-        let mut #var_name_node = VirtualNode::text("error");
+        let mut #var_name_node = VirtualNode::new_text("error");
     };
 
     compile_err

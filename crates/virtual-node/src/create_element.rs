@@ -4,9 +4,9 @@ use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::{Document, Element};
 
-use crate::event::{VirtualEventElement, VirtualEvents};
-use crate::{AttributeValue, VElement,  VirtualNode};
 use crate::event::VirtualEventNode;
+use crate::event::{VirtualEventElement, VirtualEvents};
+use crate::{AttributeValue, VirtualElement, VirtualNode};
 
 mod add_events;
 
@@ -14,13 +14,16 @@ mod add_events;
 #[doc(hidden)]
 pub const VIRTUAL_NODE_MARKER_PROPERTY: &'static str = "__v__";
 
-impl VElement {
+impl VirtualElement<web_sys::Window> {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
     pub(crate) fn create_element_node(
         &self,
-        events: &mut VirtualEvents,
+        events: &mut VirtualEvents<web_sys::Window>,
     ) -> (Element, VirtualEventNode) {
+        // TODO: Instead of using `web_sys`, use the `RealDom` trait.
+        //  As in, make our DOM interactions method generic on any `crate::RealDom` instead of only
+        //  working with `web-sys`.
         let document = web_sys::window().unwrap().document().unwrap();
 
         let element = if html_validation::is_svg_namespace(&self.tag) {
@@ -70,13 +73,13 @@ impl VElement {
     }
 }
 
-impl VElement {
+impl VirtualElement<web_sys::Window> {
     fn append_children_to_dom(
         &self,
         element: &Element,
         document: &Document,
         event_node: &mut VirtualEventElement,
-        events: &mut VirtualEvents,
+        events: &mut VirtualEvents<web_sys::Window>,
     ) {
         let mut previous_node_was_text = false;
 

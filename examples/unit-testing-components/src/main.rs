@@ -1,4 +1,5 @@
 use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 
 fn main() {
     println!("To see this example in action:");
@@ -6,7 +7,7 @@ fn main() {
 }
 
 #[allow(unused)]
-fn full_water_bottle() -> VirtualNode {
+fn full_water_bottle() -> VirtualNodeWebSys {
     html! {
     <div>
         <span id="full-water">
@@ -17,12 +18,12 @@ fn full_water_bottle() -> VirtualNode {
 }
 
 #[allow(unused)]
-fn not_full_water_bottle(percent_full: f32) -> VirtualNode {
+fn not_full_water_bottle(percent_full: f32) -> VirtualNodeWebSys {
     let message = format!(
         "Please fill me up :( I am only {} percent full :(",
         percent_full
     );
-    let message = VirtualNode::text(&*message);
+    let message = VirtualNode::new_text(&*message);
 
     html! {
         <div id="not-ful-water">
@@ -32,7 +33,7 @@ fn not_full_water_bottle(percent_full: f32) -> VirtualNode {
 }
 
 #[allow(unused)]
-fn water_bottle_view(percent_full: f32) -> VirtualNode {
+fn water_bottle_view(percent_full: f32) -> VirtualNodeWebSys {
     if percent_full > 0.5 {
         full_water_bottle()
     } else {
@@ -51,7 +52,7 @@ mod tests {
                 .children_recursive()
                 .iter()
                 .filter(|v| {
-                    if let Some(elem) = v.as_velement_ref() {
+                    if let Some(elem) = v.as_elem() {
                         return elem.attrs.get("id") == Some(&"full-water".into());
                     }
 
@@ -65,11 +66,8 @@ mod tests {
         let water_view = water_bottle_view(0.2587);
 
         assert_eq!(
-            water_view
-                .as_velement_ref()
-                .expect("Not an element node")
-                .children[0]
-                .as_vtext_ref()
+            water_view.as_elem().expect("Not an element node").children[0]
+                .as_text()
                 .expect("Not a text node")
                 .text,
             "Please fill me up :( I am only 0.2587 percent full :("

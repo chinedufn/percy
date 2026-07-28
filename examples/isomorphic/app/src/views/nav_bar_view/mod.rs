@@ -1,5 +1,6 @@
 use percy_css_macro::css;
 use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 
 mod nav_bar_item_view;
 use self::nav_bar_item_view::NavBarItemView;
@@ -19,8 +20,8 @@ pub enum ActivePage {
     Contributors,
 }
 
-impl View for NavBarView {
-    fn render(&self) -> VirtualNode {
+impl View<web_sys::Window> for NavBarView {
+    fn render(&self) -> VirtualNodeWebSys {
         let home = NavBarItemView::new("/", "Isomorphic Web App", "");
         let contributors =
             NavBarItemView::new("/contributors", "Contributors", "margin-left: auto;");

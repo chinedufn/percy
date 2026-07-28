@@ -5,6 +5,7 @@ use crate::Msg;
 
 use percy_dom::prelude::*;
 
+use percy_dom::VirtualNodeWebSys;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -18,8 +19,8 @@ impl HomeView {
     }
 }
 
-impl View for HomeView {
-    fn render(&self) -> VirtualNode {
+impl View<web_sys::Window> for HomeView {
+    fn render(&self) -> VirtualNodeWebSys {
         let nav_bar = NavBarView::new(ActivePage::Home).render();
 
         let store = Rc::clone(&self.store);

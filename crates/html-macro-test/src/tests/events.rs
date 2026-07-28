@@ -19,11 +19,11 @@ fn ignore_unsupported_events_on_non_wasm32_targets_if_they_have_args() {
 /// Events that don't have arguments are always stored as EventHandler::NoArgs.
 #[test]
 fn store_unsupported_events_on_non_wasm32_targets_if_no_args() {
-    let node: VirtualNode = html! {
+    let node: VirtualNode<_> = html! {
         <div on_some_unsupported_event = || {} ></div>
     };
     let handler = node
-        .as_velement_ref()
+        .as_elem()
         .unwrap()
         .events
         .get(&"on_some_unsupported_event".into())
@@ -47,12 +47,12 @@ fn closure_moved_variables_used() {
 /// Verify that onclick events are stored.
 #[test]
 fn stores_onclick_events() {
-    let node: VirtualNode = html! {
-        <button onclick = |_: virtual_node::event::MouseEvent| {}> </button>
+    let node: VirtualNode<_> = html! {
+        <button onclick = |_: virtual_node::event::MouseEventWebSys| {}> </button>
     };
 
     let event = node
-        .as_velement_ref()
+        .as_elem()
         .unwrap()
         .events
         .get(&"onclick".into())
@@ -63,11 +63,11 @@ fn stores_onclick_events() {
 /// Verify that we can set the on create element function.
 #[test]
 fn on_create_element() {
-    let node: VirtualNode = html! {
+    let node: VirtualNode<_> = html! {
         <div key = "my-key" on_create_element=||{}> </div>
     };
     assert_eq!(
-        node.as_velement_ref()
+        node.as_elem()
             .unwrap()
             .special_attributes
             .on_create_element_key(),
@@ -78,11 +78,11 @@ fn on_create_element() {
 /// Verify that we can set the on remove element function.
 #[test]
 fn on_remove_element() {
-    let node: VirtualNode = html! {
+    let node: VirtualNode<_> = html! {
         <div key = "my-key" on_remove_element=||{}> </div>
     };
     assert_eq!(
-        node.as_velement_ref()
+        node.as_elem()
             .unwrap()
             .special_attributes
             .on_remove_element_key(),

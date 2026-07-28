@@ -3,6 +3,7 @@
 use console_error_panic_hook;
 use percy_dom::event::VirtualEvents;
 use percy_dom::prelude::*;
+use virtual_node::VirtualNodeWebSys;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node};
 
@@ -13,9 +14,9 @@ pub struct DiffPatchTest<'a> {
     ///  copy/pasting another similar test.
     pub desc: &'static str,
     /// The old virtual node.
-    pub old: VirtualNode,
+    pub old: VirtualNodeWebSys,
     /// The new virtual node.
-    pub new: VirtualNode,
+    pub new: VirtualNodeWebSys,
     /// By default we generate the expected based on `new.to_string()`. You can
     /// use this field to override the expected HTML after patching.
     pub override_expected: Option<&'a str>,

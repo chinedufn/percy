@@ -1,19 +1,23 @@
 use crate::diff::longest_increasing_subsequence::{
-    get_longest_increasing_subsequence, KeyAndChildIdx,
+    KeyAndChildIdx, get_longest_increasing_subsequence,
 };
 use crate::event::{EventHandler, EventName};
 use crate::{AttributeValue, Patch, PatchSpecialAttribute};
-use crate::{VElement, VirtualNode};
+use crate::{VirtualElement, VirtualNode};
 use std::collections::{HashMap, VecDeque};
 use std::mem;
+use virtual_node::event::RealDom;
 
 mod longest_increasing_subsequence;
 
 /// Given two VirtualNode's generate Patch's that would turn the old virtual node's
 /// real DOM node equivalent into the new VirtualNode's real DOM node equivalent.
-pub fn diff<'a>(old: &'a VirtualNode, new: &'a VirtualNode) -> Vec<Patch<'a>> {
+pub fn diff<'a, Handle: RealDom>(
+    old: &'a VirtualNode<Handle>,
+    new: &'a VirtualNode<Handle>,
+) -> Vec<Patch<'a, Handle>> {
     let old_node_idx = 0;
-    let mut diff_queue: VecDeque<DiffJob> = VecDeque::new();
+    let mut diff_queue: VecDeque<DiffJob<Handle>> = VecDeque::new();
 
     diff_queue.push_back(DiffJob {
         old_node_idx,
@@ -27,22 +31,22 @@ pub fn diff<'a>(old: &'a VirtualNode, new: &'a VirtualNode) -> Vec<Patch<'a>> {
     ctx.take_patches()
 }
 
-enum Job<'a> {
-    Diff(DiffJob<'a>),
-    ProcessDeleted(DeleteJob<'a>),
+enum Job<'a, Handle: RealDom> {
+    Diff(DiffJob<'a, Handle>),
+    ProcessDeleted(DeleteJob<'a, Handle>),
 }
 
 #[derive(Copy, Clone)]
-struct DiffJob<'a> {
+struct DiffJob<'a, Handle: RealDom> {
     // The old node's breadth-first index in the old tree.
     old_node_idx: u32,
-    old: &'a VirtualNode,
-    new: &'a VirtualNode,
+    old: &'a VirtualNode<Handle>,
+    new: &'a VirtualNode<Handle>,
 }
 
-struct DeleteJob<'a> {
+struct DeleteJob<'a, Handle: RealDom> {
     old_node_idx: u32,
-    old: &'a VirtualNode,
+    old: &'a VirtualNode<Handle>,
 }
 
 use self::diff_ctx::DiffContext;
@@ -51,13 +55,13 @@ mod diff_ctx {
 
     // Kept in its own module in order to keep fields private so that we can enforce the
     // DiffContext's API.
-    pub(super) struct DiffContext<'a> {
-        job_queue: VecDeque<Job<'a>>,
-        patches: Vec<Patch<'a>>,
+    pub(super) struct DiffContext<'a, Handle: RealDom> {
+        job_queue: VecDeque<Job<'a, Handle>>,
+        patches: Vec<Patch<'a, Handle>>,
         next_old_node_idx: u32,
     }
-    impl<'a> DiffContext<'a> {
-        pub fn new(old: &'a VirtualNode, new: &'a VirtualNode) -> Self {
+    impl<'a, Handle: RealDom> DiffContext<'a, Handle> {
+        pub fn new(old: &'a VirtualNode<Handle>, new: &'a VirtualNode<Handle>) -> Self {
             let mut job_queue = VecDeque::new();
             job_queue.push_back(Job::Diff(DiffJob {
                 old_node_idx: 0,
@@ -72,22 +76,22 @@ mod diff_ctx {
             }
         }
 
-        pub fn next_job(&mut self) -> Option<Job<'a>> {
+        pub fn next_job(&mut self) -> Option<Job<'a, Handle>> {
             self.job_queue.pop_front()
         }
 
-        pub fn push_diff_job(&mut self, diff_job: DiffJob<'a>) {
+        pub fn push_diff_job(&mut self, diff_job: DiffJob<'a, Handle>) {
             self.job_queue.push_back(Job::Diff(diff_job))
         }
 
-        pub fn push_delete_job(&mut self, delete_job: DeleteJob<'a>) {
+        pub fn push_delete_job(&mut self, delete_job: DeleteJob<'a, Handle>) {
             self.job_queue.push_back(Job::ProcessDeleted(delete_job))
         }
 
         /// We always push patches if the node has not been deleted.
         /// If the node or one of its ancestors has been deleted we only push patches that are
         /// applicable to deleted nodes.
-        pub fn push_patch(&mut self, patch: Patch<'a>) {
+        pub fn push_patch(&mut self, patch: Patch<'a, Handle>) {
             self.patches.push(patch);
         }
 
@@ -99,13 +103,13 @@ mod diff_ctx {
             self.next_old_node_idx += increment as u32;
         }
 
-        pub fn take_patches(self) -> Vec<Patch<'a>> {
+        pub fn take_patches(self) -> Vec<Patch<'a, Handle>> {
             self.patches
         }
     }
 }
 
-fn diff_recursive(ctx: &mut DiffContext) {
+fn diff_recursive<Handle: RealDom>(ctx: &mut DiffContext<Handle>) {
     let job = ctx.next_job();
     match job {
         Some(Job::Diff(diff_job)) => process_diff_job(ctx, diff_job),
@@ -116,7 +120,10 @@ fn diff_recursive(ctx: &mut DiffContext) {
     diff_recursive(ctx);
 }
 
-fn process_diff_job<'a>(ctx: &mut DiffContext<'a>, diff_job: DiffJob<'a>) {
+fn process_diff_job<'a, Handle: RealDom>(
+    ctx: &mut DiffContext<'a, Handle>,
+    diff_job: DiffJob<'a, Handle>,
+) {
     let old = diff_job.old;
     let new = diff_job.new;
     let old_node_idx = diff_job.old_node_idx;
@@ -200,7 +207,10 @@ fn process_diff_job<'a>(ctx: &mut DiffContext<'a>, diff_job: DiffJob<'a>) {
     };
 }
 
-fn process_delete_job<'a>(ctx: &mut DiffContext<'a>, delete_job: DeleteJob<'a>) {
+fn process_delete_job<'a, Handle: RealDom>(
+    ctx: &mut DiffContext<'a, Handle>,
+    delete_job: DeleteJob<'a, Handle>,
+) {
     if let VirtualNode::Element(element_node) = delete_job.old {
         if element_node.events.len() > 0 {
             ctx.push_patch(Patch::RemoveAllVirtualEventsWithNodeIdx(
@@ -223,8 +233,11 @@ fn process_delete_job<'a>(ctx: &mut DiffContext<'a>, delete_job: DeleteJob<'a>) 
 }
 
 /// Push patches for replacing a node.
-fn replace_node<'a>(diff_job: DiffJob<'a>, ctx: &mut DiffContext<'a>) {
-    if let Some(elem) = diff_job.old.as_velement_ref() {
+fn replace_node<'a, Handle: RealDom>(
+    diff_job: DiffJob<'a, Handle>,
+    ctx: &mut DiffContext<'a, Handle>,
+) {
+    if let Some(elem) = diff_job.old.as_elem() {
         if elem.events.has_events() {
             ctx.push_patch(Patch::RemoveAllVirtualEventsWithNodeIdx(
                 diff_job.old_node_idx,
@@ -232,7 +245,7 @@ fn replace_node<'a>(diff_job: DiffJob<'a>, ctx: &mut DiffContext<'a>) {
         }
     }
 
-    match diff_job.old.as_velement_ref() {
+    match diff_job.old.as_elem() {
         Some(elem) if elem.special_attributes.on_remove_element_key().is_some() => {
             ctx.push_patch(Patch::SpecialAttribute(
                 PatchSpecialAttribute::CallOnRemoveElem(diff_job.old_node_idx, diff_job.old),
@@ -248,7 +261,10 @@ fn replace_node<'a>(diff_job: DiffJob<'a>, ctx: &mut DiffContext<'a>) {
     maybe_push_delete_jobs_for_children(ctx, diff_job.old);
 }
 
-fn maybe_push_delete_jobs_for_children<'a>(ctx: &mut DiffContext<'a>, node: &'a VirtualNode) {
+fn maybe_push_delete_jobs_for_children<'a, Handle: RealDom>(
+    ctx: &mut DiffContext<'a, Handle>,
+    node: &'a VirtualNode<Handle>,
+) {
     if let VirtualNode::Element(old_element_node) = node {
         let node_idx_of_first_child = ctx.next_old_node_idx();
         ctx.increment_old_node_idx(old_element_node.children.len());
@@ -264,12 +280,12 @@ fn maybe_push_delete_jobs_for_children<'a>(ctx: &mut DiffContext<'a>, node: &'a 
 }
 
 /// Add attributes from the new element that are not already on the old one or that have changed.
-fn find_attributes_to_add<'a>(
+fn find_attributes_to_add<'a, Handle: RealDom>(
     cur_node_idx: u32,
     attributes_to_add: &mut HashMap<&'a str, &'a AttributeValue>,
-    old_element: &VElement,
-    new_element: &'a VElement,
-    ctx: &mut DiffContext<'a>,
+    old_element: &VirtualElement<Handle>,
+    new_element: &'a VirtualElement<Handle>,
+    ctx: &mut DiffContext<'a, Handle>,
 ) {
     for (new_attr_name, new_attr_val) in new_element.attrs.iter() {
         if new_attr_name == "key" {
@@ -294,11 +310,11 @@ fn find_attributes_to_add<'a>(
 }
 
 /// Remove attributes that were on the old element that are not present on the new element.
-fn find_attributes_to_remove<'a>(
+fn find_attributes_to_remove<'a, Handle: RealDom>(
     attributes_to_add: &mut HashMap<&str, &AttributeValue>,
     attributes_to_remove: &mut Vec<&'a str>,
-    old_element: &'a VElement,
-    new_element: &VElement,
+    old_element: &'a VirtualElement<Handle>,
+    new_element: &VirtualElement<Handle>,
 ) {
     for (old_attr_name, old_attr_val) in old_element.attrs.iter() {
         if old_attr_name == "key" {
@@ -323,10 +339,10 @@ fn find_attributes_to_remove<'a>(
 }
 
 /// Add attributes from the new element that are not already on the old one or that have changed.
-fn find_events_to_add<'a>(
-    events_to_add: &mut HashMap<&'a EventName, &'a EventHandler>,
-    old_element: &VElement,
-    new_element: &'a VElement,
+fn find_events_to_add<'a, Handle: RealDom>(
+    events_to_add: &mut HashMap<&'a EventName, &'a EventHandler<Handle>>,
+    old_element: &VirtualElement<Handle>,
+    new_element: &'a VirtualElement<Handle>,
 ) {
     for (new_event_name, new_event) in new_element.events.iter() {
         if !old_element.events.contains_key(new_event_name) {
@@ -336,11 +352,11 @@ fn find_events_to_add<'a>(
 }
 
 /// Remove non delegated that were on the old element that are not present on the new element.
-fn find_events_to_remove<'a>(
-    events_to_add: &mut HashMap<&'a EventName, &'a EventHandler>,
-    events_to_remove: &mut Vec<(&'a EventName, &'a EventHandler)>,
-    old_element: &'a VElement,
-    new_element: &'a VElement,
+fn find_events_to_remove<'a, Handle: RealDom>(
+    events_to_add: &mut HashMap<&'a EventName, &'a EventHandler<Handle>>,
+    events_to_remove: &mut Vec<(&'a EventName, &'a EventHandler<Handle>)>,
+    old_element: &'a VirtualElement<Handle>,
+    new_element: &'a VirtualElement<Handle>,
 ) {
     for (old_event_name, old_event) in old_element.events.iter() {
         if events_to_add.contains_key(old_event_name) {
@@ -354,12 +370,12 @@ fn find_events_to_remove<'a>(
     }
 }
 
-fn maybe_push_inner_html_patch<'a>(
-    new: &'a VirtualNode,
-    old_element: &VElement,
-    new_element: &VElement,
+fn maybe_push_inner_html_patch<'a, Handle: RealDom>(
+    new: &'a VirtualNode<Handle>,
+    old_element: &VirtualElement<Handle>,
+    new_element: &VirtualElement<Handle>,
     old_node_idx: u32,
-    ctx: &mut DiffContext<'a>,
+    ctx: &mut DiffContext<'a, Handle>,
 ) {
     match (
         old_element.special_attributes.dangerous_inner_html.as_ref(),
@@ -386,12 +402,12 @@ fn maybe_push_inner_html_patch<'a>(
     };
 }
 
-fn maybe_push_on_create_element_patch<'a>(
-    new: &'a VirtualNode,
-    old_element: &VElement,
-    new_element: &VElement,
+fn maybe_push_on_create_element_patch<'a, Handle: RealDom>(
+    new: &'a VirtualNode<Handle>,
+    old_element: &VirtualElement<Handle>,
+    new_element: &VirtualElement<Handle>,
     old_node_idx: u32,
-    ctx: &mut DiffContext<'a>,
+    ctx: &mut DiffContext<'a, Handle>,
 ) {
     match (
         old_element.special_attributes.on_create_element_key(),
@@ -413,12 +429,12 @@ fn maybe_push_on_create_element_patch<'a>(
     };
 }
 
-fn maybe_push_on_remove_element_patch<'a>(
-    old: &'a VirtualNode,
-    old_element: &VElement,
-    new_element: &VElement,
+fn maybe_push_on_remove_element_patch<'a, Handle: RealDom>(
+    old: &'a VirtualNode<Handle>,
+    old_element: &VirtualElement<Handle>,
+    new_element: &VirtualElement<Handle>,
     old_node_idx: u32,
-    ctx: &mut DiffContext<'a>,
+    ctx: &mut DiffContext<'a, Handle>,
 ) {
     let old_on_remove_elem_key = old_element.special_attributes.on_remove_element_key();
 
@@ -437,11 +453,11 @@ fn maybe_push_on_remove_element_patch<'a>(
     }
 }
 
-fn generate_patches_for_children<'a, 'b>(
+fn generate_patches_for_children<'a, 'b, Handle: RealDom>(
     parent_old_node_idx: u32,
-    old_element: &'a VElement,
-    new_element: &'a VElement,
-    ctx: &mut DiffContext<'a>,
+    old_element: &'a VirtualElement<Handle>,
+    new_element: &'a VirtualElement<Handle>,
+    ctx: &mut DiffContext<'a, Handle>,
 ) {
     // TODO: Refactor into smaller functions
     //       Optimize
@@ -512,8 +528,8 @@ fn generate_patches_for_children<'a, 'b>(
             .map(|k| (k.key, k.child_idx))
             .collect();
 
-    enum InsertBeforeOrMoveBefore<'a> {
-        InsertBefore(&'a VirtualNode),
+    enum InsertBeforeOrMoveBefore<'a, Handle: RealDom> {
+        InsertBefore(&'a VirtualNode<Handle>),
         MoveBefore(u32),
     }
     enum PlaceBeforeKind {
@@ -527,7 +543,7 @@ fn generate_patches_for_children<'a, 'b>(
     let mut insert_before_or_move = vec![];
 
     // (Child idx, DiffJob)
-    let mut jobs: Vec<(usize, DiffJob)> = vec![];
+    let mut jobs: Vec<(usize, DiffJob<Handle>)> = vec![];
 
     let mut new_tracked_indices = TrackedImplicitlyKeyableIndices::default();
     for (new_child_idx, new_child_node) in new_element.children.iter().enumerate() {
@@ -686,10 +702,10 @@ fn generate_patches_for_children<'a, 'b>(
     }
 }
 
-fn maybe_push_insert_before<'a>(
-    ctx: &mut DiffContext<'a>,
+fn maybe_push_insert_before<'a, Handle: RealDom>(
+    ctx: &mut DiffContext<'a, Handle>,
     old_idx: u32,
-    new_nodes: &mut Vec<&'a VirtualNode>,
+    new_nodes: &mut Vec<&'a VirtualNode<Handle>>,
 ) {
     if new_nodes.len() == 0 {
         return;
@@ -702,7 +718,11 @@ fn maybe_push_insert_before<'a>(
     new_nodes.clear();
 }
 
-fn maybe_push_move_before<'a>(ctx: &mut DiffContext<'a>, old_idx: u32, move_before: &mut Vec<u32>) {
+fn maybe_push_move_before<'a, Handle: RealDom>(
+    ctx: &mut DiffContext<'a, Handle>,
+    old_idx: u32,
+    move_before: &mut Vec<u32>,
+) {
     if move_before.len() == 0 {
         return;
     }
@@ -714,11 +734,11 @@ fn maybe_push_move_before<'a>(ctx: &mut DiffContext<'a>, old_idx: u32, move_befo
     move_before.clear();
 }
 
-fn node_key<'a>(
-    node: &'a VirtualNode,
+fn node_key<'a, Handle: RealDom>(
+    node: &'a VirtualNode<Handle>,
     implicit_elem_key: Option<ElementKeyImplicit<'a>>,
 ) -> Option<ElementKey<'a>> {
-    let elem = node.as_velement_ref()?;
+    let elem = node.as_elem()?;
 
     let explicit_key = elem
         .attrs
@@ -766,8 +786,11 @@ struct TrackedImplicitlyKeyableIndices<'a>(HashMap<&'a str, usize>);
 
 impl<'a> TrackedImplicitlyKeyableIndices<'a> {
     /// Return the elements implicit key.
-    pub fn get_and_increment(&mut self, node: &'a VirtualNode) -> Option<ElementKeyImplicit<'a>> {
-        let elem = node.as_velement_ref()?;
+    pub fn get_and_increment<Handle: RealDom>(
+        &mut self,
+        node: &'a VirtualNode<Handle>,
+    ) -> Option<ElementKeyImplicit<'a>> {
+        let elem = node.as_elem()?;
 
         if elem.attrs.get("key").is_some() {
             return None;
@@ -797,9 +820,9 @@ mod tests {
     use super::diff_test_case::*;
     use super::*;
     use crate::event::EventName;
-    use crate::{html, EventAttribFn, PatchSpecialAttribute, VText, VirtualNode};
+    use crate::{EventAttribFn, PatchSpecialAttribute, VirtualNode, VirtualText};
     use std::collections::HashMap;
-    use virtual_node::IterableNodes;
+    use virtual_node::{IterableNodes, VirtualNodeWebSys};
 
     /// Verify that we can generate patches that replace a virtual node with another one.
     #[test]
@@ -879,11 +902,11 @@ mod tests {
             expected: vec![
                 Patch::Replace {
                     old_idx: 5,
-                    new_node: &VirtualNode::element("em"),
+                    new_node: &VirtualNode::new_element("em"),
                 },
                 Patch::Replace {
                     old_idx: 6,
-                    new_node: &VirtualNode::element("i"),
+                    new_node: &VirtualNode::new_element("i"),
                 },
             ],
         }
@@ -1211,7 +1234,7 @@ mod tests {
         DiffTestCase {
             old: html! { Old },
             new: html! { New },
-            expected: vec![Patch::ChangeText(0, &VText::new("New"))],
+            expected: vec![Patch::ChangeText(0, &VirtualText::new("New"))],
         }
         .test();
     }
@@ -1280,12 +1303,12 @@ mod tests {
     /// and the old node does not.
     #[test]
     fn on_create_elem() {
-        let old = VirtualNode::element("div");
+        let old = VirtualNode::new_element("div");
 
-        let mut new = VirtualNode::element("div");
+        let mut new = VirtualNode::new_element("div");
         set_on_create_elem_with_unique_id(&mut new, "150");
 
-        let mut expected = VirtualNode::element("div");
+        let mut expected = VirtualNode::new_element("div");
         set_on_create_elem_with_unique_id(&mut expected, "150");
 
         DiffTestCase {
@@ -1364,10 +1387,10 @@ mod tests {
     /// do not push a CallOnCreateElem patch.
     #[test]
     fn same_on_create_elem_id() {
-        let mut old = VirtualNode::element("div");
+        let mut old = VirtualNode::new_element("div");
         set_on_create_elem_with_unique_id(&mut old, "70");
 
-        let mut new = VirtualNode::element("div");
+        let mut new = VirtualNode::new_element("div");
         set_on_create_elem_with_unique_id(&mut new, "70");
 
         DiffTestCase {
@@ -1382,13 +1405,13 @@ mod tests {
     /// a patch to call the new on_create_elem.
     #[test]
     fn different_on_create_elem_id() {
-        let mut old = VirtualNode::element("div");
+        let mut old = VirtualNode::new_element("div");
         set_on_create_elem_with_unique_id(&mut old, "50");
 
-        let mut new = VirtualNode::element("div");
+        let mut new = VirtualNode::new_element("div");
         set_on_create_elem_with_unique_id(&mut new, "99");
 
-        let mut expected = VirtualNode::element("div");
+        let mut expected = VirtualNode::new_element("div");
         set_on_create_elem_with_unique_id(&mut expected, "99");
 
         DiffTestCase {
@@ -1405,17 +1428,17 @@ mod tests {
     /// and the old node does not.
     #[test]
     fn on_remove_elem_for_replaced_elem() {
-        let mut old = VirtualNode::element("div");
+        let mut old = VirtualNode::new_element("div");
         set_on_remove_elem_with_unique_id(&mut old, "150");
 
         let expected = {
-            let mut old = VirtualNode::element("div");
+            let mut old = VirtualNode::new_element("div");
             set_on_remove_elem_with_unique_id(&mut old, "150");
 
             old
         };
 
-        let new = VirtualNode::element("span");
+        let new = VirtualNode::new_element("span");
 
         DiffTestCase {
             old,
@@ -1424,7 +1447,7 @@ mod tests {
                 Patch::SpecialAttribute(PatchSpecialAttribute::CallOnRemoveElem(0, &expected)),
                 Patch::Replace {
                     old_idx: 0,
-                    new_node: &VirtualNode::element("span"),
+                    new_node: &VirtualNode::new_element("span"),
                 },
             ],
         }
@@ -1452,7 +1475,7 @@ mod tests {
             expected: vec![
                 Patch::Replace {
                     old_idx: 0,
-                    new_node: &VirtualNode::element("span"),
+                    new_node: &VirtualNode::new_element("span"),
                 },
                 Patch::SpecialAttribute(PatchSpecialAttribute::CallOnRemoveElem(
                     1,
@@ -1483,13 +1506,13 @@ mod tests {
     /// Verify that we push on remove element patches for truncated children.
     #[test]
     fn on_remove_elem_for_truncated_children_recursively() {
-        let mut grandchild = VirtualNode::element("strong");
+        let mut grandchild = VirtualNode::new_element("strong");
         set_on_remove_elem_with_unique_id(&mut grandchild, "key");
 
-        let mut child = VirtualNode::element("em");
+        let mut child = VirtualNode::new_element("em");
         set_on_remove_elem_with_unique_id(&mut child, "key");
 
-        child.as_velement_mut().unwrap().children.push(grandchild);
+        child.as_elem_mut().unwrap().children.push(grandchild);
 
         let old = html! {
             <div>
@@ -1511,17 +1534,17 @@ mod tests {
         };
 
         let expected_child = {
-            let mut grandchild = VirtualNode::element("strong");
+            let mut grandchild = VirtualNode::new_element("strong");
             set_on_remove_elem_with_unique_id(&mut grandchild, "key");
 
-            let mut child = VirtualNode::element("em");
+            let mut child = VirtualNode::new_element("em");
             set_on_remove_elem_with_unique_id(&mut child, "key");
-            child.as_velement_mut().unwrap().children.push(grandchild);
+            child.as_elem_mut().unwrap().children.push(grandchild);
 
             child
         };
         let expected_grandchild = {
-            let mut grandchild = VirtualNode::element("strong");
+            let mut grandchild = VirtualNode::new_element("strong");
             set_on_remove_elem_with_unique_id(&mut grandchild, "key");
             grandchild
         };
@@ -1639,10 +1662,10 @@ mod tests {
     /// Verify that if the old and new node have the same on remove element ID, no patch is pushed.
     #[test]
     fn same_on_remove_elem_id() {
-        let mut old = VirtualNode::element("div");
+        let mut old = VirtualNode::new_element("div");
         set_on_remove_elem_with_unique_id(&mut old, "same");
 
-        let mut new = VirtualNode::element("div");
+        let mut new = VirtualNode::new_element("div");
         set_on_remove_elem_with_unique_id(&mut new, "same");
 
         DiffTestCase {
@@ -1657,10 +1680,10 @@ mod tests {
     /// an SetDangerousInnerHtml patch.
     #[test]
     fn same_dangerous_inner_html() {
-        let mut old = VirtualNode::element("div");
+        let mut old = VirtualNode::new_element("div");
         set_dangerous_inner_html(&mut old, "hi");
 
-        let mut new = VirtualNode::element("div");
+        let mut new = VirtualNode::new_element("div");
         set_dangerous_inner_html(&mut new, "hi");
 
         DiffTestCase {
@@ -1675,13 +1698,13 @@ mod tests {
     /// we push a patch to set the new inner html.
     #[test]
     fn different_dangerous_inner_html() {
-        let mut old = VirtualNode::element("div");
+        let mut old = VirtualNode::new_element("div");
         set_dangerous_inner_html(&mut old, "old");
 
-        let mut new = VirtualNode::element("div");
+        let mut new = VirtualNode::new_element("div");
         set_dangerous_inner_html(&mut new, "new");
 
-        let mut expected = VirtualNode::element("div");
+        let mut expected = VirtualNode::new_element("div");
         set_dangerous_inner_html(&mut expected, "new");
 
         DiffTestCase {
@@ -1699,7 +1722,7 @@ mod tests {
     /// children.
     #[test]
     fn remove_dangerous_inner_html() {
-        let mut old = VirtualNode::element("div");
+        let mut old = VirtualNode::new_element("div");
         set_dangerous_inner_html(&mut old, "hi");
 
         let new = html! { <div><em></em></div> };
@@ -1711,7 +1734,7 @@ mod tests {
                 Patch::SpecialAttribute(PatchSpecialAttribute::RemoveDangerousInnerHtml(0)),
                 Patch::AppendChildren {
                     parent_old_node_idx: 0,
-                    new_nodes: vec![&VirtualNode::element("em")],
+                    new_nodes: vec![&VirtualNode::new_element("em")],
                 },
             ],
         }
@@ -1722,10 +1745,10 @@ mod tests {
     /// event we do not create a patch for setting the events ID.
     #[test]
     fn does_not_set_events_id_if_already_had_events() {
-        let mut old = VElement::new("div");
+        let mut old = VirtualElement::new("div");
         old.events.insert(onclick_name(), mock_event_handler());
 
-        let mut new = VElement::new("div");
+        let mut new = VirtualElement::new("div");
         new.events.insert(onclick_name(), mock_event_handler());
 
         DiffTestCase {
@@ -1793,10 +1816,10 @@ mod tests {
     /// to remove the virtual events.
     #[test]
     fn removes_events_if_no_more_events() {
-        let mut old = VElement::new("div");
+        let mut old = VirtualElement::new("div");
         old.events.insert(onclick_name(), mock_event_handler());
 
-        let new = VElement::new("div");
+        let new = VirtualElement::new("div");
 
         DiffTestCase {
             old: VirtualNode::Element(old),
@@ -1818,10 +1841,10 @@ mod tests {
     /// functions.
     #[test]
     fn remove_event_patches_come_before_add_event_patches() {
-        let mut old = VElement::new("div");
+        let mut old = VirtualElement::new("div");
         old.events.insert(oninput_name(), mock_event_handler());
 
-        let mut new = VElement::new("div");
+        let mut new = VirtualElement::new("div");
         new.events.insert(onmousemove_name(), mock_event_handler());
 
         DiffTestCase {
@@ -1846,10 +1869,10 @@ mod tests {
     /// so that we don't accidentally remove events that were for the node that replaced it.
     #[test]
     fn remove_all_tracked_events_if_replaced() {
-        let mut old = VElement::new("div");
+        let mut old = VirtualElement::new("div");
         old.events.insert(oninput_name(), mock_event_handler());
 
-        let new = VElement::new("some-other-element");
+        let new = VirtualElement::new("some-other-element");
 
         DiffTestCase {
             old: VirtualNode::Element(old),
@@ -1858,7 +1881,7 @@ mod tests {
                 Patch::RemoveAllVirtualEventsWithNodeIdx(0),
                 Patch::Replace {
                     old_idx: 0,
-                    new_node: &VirtualNode::Element(VElement::new("some-other-element")),
+                    new_node: &VirtualNode::Element(VirtualElement::new("some-other-element")),
                 },
             ],
         }
@@ -1872,20 +1895,21 @@ mod tests {
     #[test]
     fn removes_tracked_events_if_ancestor_replaced() {
         // node idx 0
-        let mut old = VElement::new("div");
+        let mut old = VirtualElement::new("div");
         // node idx 1
-        old.children.push(VirtualNode::Element(VElement::new("a")));
+        old.children
+            .push(VirtualNode::Element(VirtualElement::new("a")));
         // node idx 2
-        old.children.push(VirtualNode::text("b"));
+        old.children.push(VirtualNode::new_text("b"));
 
         // node idx 3
-        let mut child_of_old = VElement::new("div");
+        let mut child_of_old = VirtualElement::new("div");
         child_of_old
             .events
             .insert(oninput_name(), mock_event_handler());
         old.children.push(VirtualNode::Element(child_of_old));
 
-        let new = VElement::new("some-other-element");
+        let new = VirtualElement::new("some-other-element");
 
         DiffTestCase {
             old: VirtualNode::Element(old),
@@ -1893,7 +1917,7 @@ mod tests {
             expected: vec![
                 Patch::Replace {
                     old_idx: 0,
-                    new_node: &VirtualNode::Element(VElement::new("some-other-element")),
+                    new_node: &VirtualNode::Element(VirtualElement::new("some-other-element")),
                 },
                 Patch::RemoveAllVirtualEventsWithNodeIdx(3),
             ],
@@ -1905,14 +1929,14 @@ mod tests {
     /// of its events from the EventsByNodeIdx
     #[test]
     fn remove_tracked_events_if_truncated() {
-        let mut old = VElement::new("div");
-        let mut child_of_old = VElement::new("div");
+        let mut old = VirtualElement::new("div");
+        let mut child_of_old = VirtualElement::new("div");
         child_of_old
             .events
             .insert(oninput_name(), mock_event_handler());
         old.children.push(VirtualNode::Element(child_of_old));
 
-        let new = VElement::new("div");
+        let new = VirtualElement::new("div");
 
         DiffTestCase {
             old: VirtualNode::Element(old),
@@ -1945,7 +1969,7 @@ mod tests {
             },
             expected: vec![Patch::InsertBefore {
                 anchor_old_node_idx: 1,
-                new_nodes: vec![&VirtualNode::element("span")],
+                new_nodes: vec![&VirtualNode::new_element("span")],
             }],
         }
         .test();
@@ -1999,8 +2023,8 @@ mod tests {
             expected: vec![Patch::InsertBefore {
                 anchor_old_node_idx: 1,
                 new_nodes: vec![
-                    &VirtualNode::element("footer"),
-                    &VirtualNode::element("span"),
+                    &VirtualNode::new_element("footer"),
+                    &VirtualNode::new_element("span"),
                 ],
             }],
         }
@@ -2042,7 +2066,7 @@ mod tests {
                 },
                 Patch::AppendChildren {
                     parent_old_node_idx: 4,
-                    new_nodes: vec![&VirtualNode::element("br")],
+                    new_nodes: vec![&VirtualNode::new_element("br")],
                 },
             ],
         }
@@ -2123,7 +2147,7 @@ mod tests {
             },
             expected: vec![Patch::AppendChildren {
                 parent_old_node_idx: 0,
-                new_nodes: vec![&VirtualNode::element("span")],
+                new_nodes: vec![&VirtualNode::new_element("span")],
             }],
         }
         .test();
@@ -2144,8 +2168,8 @@ mod tests {
             expected: vec![Patch::AppendChildren {
                 parent_old_node_idx: 0,
                 new_nodes: vec![
-                    &VirtualNode::element("span"),
-                    &VirtualNode::element("strong"),
+                    &VirtualNode::new_element("span"),
+                    &VirtualNode::new_element("strong"),
                 ],
             }],
         }
@@ -2172,7 +2196,7 @@ mod tests {
             },
             expected: vec![Patch::InsertBefore {
                 anchor_old_node_idx: 2,
-                new_nodes: vec![&VirtualNode::element("span")],
+                new_nodes: vec![&VirtualNode::new_element("span")],
             }],
         }
         .test();
@@ -2216,7 +2240,10 @@ mod tests {
             },
             expected: vec![Patch::InsertBefore {
                 anchor_old_node_idx: 2,
-                new_nodes: vec![&VirtualNode::element("span"), &VirtualNode::element("div")],
+                new_nodes: vec![
+                    &VirtualNode::new_element("span"),
+                    &VirtualNode::new_element("div"),
+                ],
             }],
         }
         .test();
@@ -2319,7 +2346,10 @@ mod tests {
                 },
                 Patch::InsertBefore {
                     anchor_old_node_idx: 1,
-                    new_nodes: vec![&VirtualNode::element("span"), &VirtualNode::element("div")],
+                    new_nodes: vec![
+                        &VirtualNode::new_element("span"),
+                        &VirtualNode::new_element("div"),
+                    ],
                 },
             ],
         }
@@ -2457,17 +2487,17 @@ mod tests {
             expected: vec![
                 Patch::InsertBefore {
                     anchor_old_node_idx: 4,
-                    new_nodes: vec![&VirtualNode::element("header")],
+                    new_nodes: vec![&VirtualNode::new_element("header")],
                 },
                 Patch::InsertBefore {
                     anchor_old_node_idx: 5,
-                    new_nodes: vec![&VirtualNode::element("strong")],
+                    new_nodes: vec![&VirtualNode::new_element("strong")],
                 },
                 Patch::AppendChildren {
                     parent_old_node_idx: 0,
                     new_nodes: vec![
-                        &VirtualNode::element("header"),
-                        &VirtualNode::element("img"),
+                        &VirtualNode::new_element("header"),
+                        &VirtualNode::new_element("img"),
                     ],
                 },
                 Patch::MoveToEndOfSiblings {
@@ -2609,8 +2639,8 @@ mod tests {
     /// Verify that if two elements have the same key but different tags we replace the element.
     #[test]
     fn same_key_different_tag() {
-        let mut new = VirtualNode::element("span");
-        new.as_velement_mut()
+        let mut new = VirtualNode::new_element("span");
+        new.as_elem_mut()
             .unwrap()
             .attrs
             .insert("key".to_string(), AttributeValue::String("a".to_string()));
@@ -2663,7 +2693,7 @@ mod tests {
             },
             expected: vec![Patch::InsertBefore {
                 anchor_old_node_idx: 1,
-                new_nodes: vec![&VirtualNode::element("br")],
+                new_nodes: vec![&VirtualNode::new_element("br")],
             }],
         }
         .test();
@@ -2683,7 +2713,7 @@ mod tests {
             },
             expected: vec![Patch::InsertBefore {
                 anchor_old_node_idx: 1,
-                new_nodes: vec![&VirtualNode::element("br")],
+                new_nodes: vec![&VirtualNode::new_element("br")],
             }],
         }
         .test();
@@ -2694,11 +2724,11 @@ mod tests {
             (combination.0, combination.1),
             (combination.1, combination.0),
         ] {
-            let old_a = VirtualNode::element(first);
-            let new_a = VirtualNode::element(first);
+            let old_a = VirtualNodeWebSys::new_element(first);
+            let new_a = VirtualNodeWebSys::new_element(first);
 
-            let old_b = VirtualNode::element(second);
-            let new_b = VirtualNode::element(second);
+            let old_b = VirtualNodeWebSys::new_element(second);
+            let new_b = VirtualNodeWebSys::new_element(second);
 
             DiffTestCase {
                 old: html! {
@@ -2717,7 +2747,7 @@ mod tests {
                 expected: vec![
                     Patch::InsertBefore {
                         anchor_old_node_idx: 1,
-                        new_nodes: vec![&VirtualNode::element("br")],
+                        new_nodes: vec![&VirtualNode::new_element("br")],
                     },
                     Patch::MoveNodesBefore {
                         anchor_old_node_idx: 1,
@@ -2860,9 +2890,9 @@ mod tests {
         .test();
     }
 
-    fn node_with_key(tag: &'static str, key: &'static str) -> VirtualNode {
-        let mut node = VirtualNode::element(tag);
-        node.as_velement_mut()
+    fn node_with_key(tag: &'static str, key: &'static str) -> VirtualNode<web_sys::Window> {
+        let mut node = VirtualNode::new_element(tag);
+        node.as_elem_mut()
             .unwrap()
             .attrs
             .insert("key".to_string(), key.into());
@@ -2870,29 +2900,38 @@ mod tests {
         node
     }
 
-    fn node_with_on_remove_element(tag: &'static str, key: &'static str) -> VirtualNode {
+    fn node_with_on_remove_element(
+        tag: &'static str,
+        key: &'static str,
+    ) -> VirtualNode<web_sys::Window> {
         let mut node = node_with_key(tag, key);
         set_on_remove_elem_with_unique_id(&mut node, key);
 
         node
     }
 
-    fn set_on_create_elem_with_unique_id(node: &mut VirtualNode, on_create_elem_id: &'static str) {
-        node.as_velement_mut()
+    fn set_on_create_elem_with_unique_id(
+        node: &mut VirtualNode<web_sys::Window>,
+        on_create_elem_id: &'static str,
+    ) {
+        node.as_elem_mut()
             .unwrap()
             .special_attributes
             .set_on_create_element(on_create_elem_id, |_: web_sys::Element| {});
     }
 
-    fn set_on_remove_elem_with_unique_id(node: &mut VirtualNode, on_remove_elem_id: &'static str) {
-        node.as_velement_mut()
+    fn set_on_remove_elem_with_unique_id(
+        node: &mut VirtualNode<web_sys::Window>,
+        on_remove_elem_id: &'static str,
+    ) {
+        node.as_elem_mut()
             .unwrap()
             .special_attributes
             .set_on_remove_element(on_remove_elem_id, |_: web_sys::Element| {});
     }
 
-    fn set_dangerous_inner_html(node: &mut VirtualNode, html: &str) {
-        node.as_velement_mut()
+    fn set_dangerous_inner_html(node: &mut VirtualNode<web_sys::Window>, html: &str) {
+        node.as_elem_mut()
             .unwrap()
             .special_attributes
             .dangerous_inner_html = Some(html.to_string());
@@ -2905,21 +2944,22 @@ mod tests {
     /// <div>
     ///   <div></div>
     /// </div>
-    fn on_remove_node_with_on_remove_child() -> VirtualNode {
-        let mut child = VirtualNode::element("div");
+    fn on_remove_node_with_on_remove_child() -> VirtualNode<web_sys::Window> {
+        let mut child = VirtualNode::new_element("div");
         set_on_remove_elem_with_unique_id(&mut child, "555");
 
-        let mut node = VirtualNode::element("div");
+        let mut node = VirtualNode::new_element("div");
         set_on_remove_elem_with_unique_id(&mut node, "666");
 
-        node.as_velement_mut().unwrap().children.push(child);
+        node.as_elem_mut().unwrap().children.push(child);
 
         node
     }
 
-    fn mock_event_handler() -> EventHandler {
+    fn mock_event_handler() -> EventHandler<web_sys::Window> {
         let closure = EventAttribFn::new_noop();
-        EventHandler::UnsupportedSignature(closure)
+        let closure = closure.0;
+        EventHandler::Custom(closure)
     }
 
     fn onclick_name() -> EventName {

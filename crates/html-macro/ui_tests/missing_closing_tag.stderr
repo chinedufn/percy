@@ -1,0 +1,23 @@
+error: Missing closing tag.
+ --> ui_tests/missing_closing_tag.rs
+  |
+  |         <div>
+  |          ^^^
+
+error: Missing closing tag.
+ --> ui_tests/missing_closing_tag.rs
+  |
+  |         <strong>
+  |          ^^^^^^
+
+error: Missing closing tag.
+ --> ui_tests/missing_closing_tag.rs
+  |
+  |         <em>
+  |          ^^
+
+error: Missing closing tag.
+ --> ui_tests/missing_closing_tag.rs
+  |
+  |           <footer>
+  |            ^^^^^^

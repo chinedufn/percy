@@ -3,10 +3,10 @@
 
 use std::collections::{HashMap, HashSet};
 
-pub use apply_patches::patch;
-
 use crate::event::{EventHandler, EventName};
-use crate::{AttributeValue, VText, VirtualNode};
+use crate::{AttributeValue, VirtualNode, VirtualText};
+pub use apply_patches::patch;
+use virtual_node::event::RealDom;
 
 mod apply_patches;
 
@@ -54,12 +54,12 @@ type BreadthFirstNodeIdx = u32;
 #[cfg_attr(test, derive(PartialEq))]
 // TODO: Change all of these tuple structs with a `NodeIdx` to instead be `{old_idx: NodeIdx`} so
 //  we can more easily tell which patches use the old node's index vs. the new one's.
-pub enum Patch<'a> {
+pub enum Patch<'a, Handle: RealDom> {
     /// Append a vector of child nodes to a parent node id.
     #[allow(missing_docs)]
     AppendChildren {
         parent_old_node_idx: BreadthFirstNodeIdx,
-        new_nodes: Vec<&'a VirtualNode>,
+        new_nodes: Vec<&'a VirtualNode<Handle>>,
     },
     /// Move the nodes to be the last of their parent's children.
     #[allow(missing_docs)]
@@ -79,14 +79,14 @@ pub enum Patch<'a> {
     #[allow(missing_docs)]
     Replace {
         old_idx: BreadthFirstNodeIdx,
-        new_node: &'a VirtualNode,
+        new_node: &'a VirtualNode<Handle>,
     },
     /// Insert a new element before some other sibling element.
     #[allow(missing_docs)]
     InsertBefore {
         /// The node that isn't moving and is having another node inserted before it.
         anchor_old_node_idx: BreadthFirstNodeIdx,
-        new_nodes: Vec<&'a VirtualNode>,
+        new_nodes: Vec<&'a VirtualNode<Handle>>,
     },
     /// Move nodes to be before some other node.
     #[allow(missing_docs)]
@@ -109,18 +109,21 @@ pub enum Patch<'a> {
     /// Remove attributes that the old node had that the new node doesn't
     RemoveAttributes(BreadthFirstNodeIdx, Vec<&'a str>),
     /// Change the text of a Text node.
-    ChangeText(BreadthFirstNodeIdx, &'a VText),
+    ChangeText(BreadthFirstNodeIdx, &'a VirtualText),
     /// Patches that apply to [`SpecialAttributes`].
-    SpecialAttribute(PatchSpecialAttribute<'a>),
+    SpecialAttribute(PatchSpecialAttribute<'a, Handle>),
     /// Insert events in the EventsByNodeIdx.
     /// If it is a non-delegated event the event will also get added to the DOM node.
     AddEvents(
         BreadthFirstNodeIdx,
-        HashMap<&'a EventName, &'a EventHandler>,
+        HashMap<&'a EventName, &'a EventHandler<Handle>>,
     ),
     /// Remove events from the EventsByNodeIdx.
     /// If it is a non-delegated event the event will also get removed from the DOM node.
-    RemoveEvents(BreadthFirstNodeIdx, Vec<(&'a EventName, &'a EventHandler)>),
+    RemoveEvents(
+        BreadthFirstNodeIdx,
+        Vec<(&'a EventName, &'a EventHandler<Handle>)>,
+    ),
     /// Delete all events in the EventsByNodeIdx for the given index, since the node has been
     /// removed from the DOM.
     RemoveAllVirtualEventsWithNodeIdx(BreadthFirstNodeIdx),
@@ -128,21 +131,21 @@ pub enum Patch<'a> {
 
 /// Patches that apply to [`SpecialAttributes`].
 #[derive(Debug, PartialEq)]
-pub enum PatchSpecialAttribute<'a> {
+pub enum PatchSpecialAttribute<'a, Handle: RealDom> {
     /// Call the [`SpecialAttributes.on_create_elem`] function on the node.
     ///
     /// We only push this patch for existing nodes.
     /// New nodes get their on_create_element called automatically when they are created.
-    CallOnCreateElemOnExistingNode(BreadthFirstNodeIdx, &'a VirtualNode),
+    CallOnCreateElemOnExistingNode(BreadthFirstNodeIdx, &'a VirtualNode<Handle>),
     /// Call the [`SpecialAttributes.on_remove_elem`] function on the node.
-    CallOnRemoveElem(BreadthFirstNodeIdx, &'a VirtualNode),
+    CallOnRemoveElem(BreadthFirstNodeIdx, &'a VirtualNode<Handle>),
     /// Set the node's innerHTML using the [`SpecialAttributes.dangerous_inner_html`].
-    SetDangerousInnerHtml(BreadthFirstNodeIdx, &'a VirtualNode),
+    SetDangerousInnerHtml(BreadthFirstNodeIdx, &'a VirtualNode<Handle>),
     /// Set the node's innerHTML to an empty string.
     RemoveDangerousInnerHtml(BreadthFirstNodeIdx),
 }
 
-impl<'a> Patch<'a> {
+impl<'a, Handle: RealDom> Patch<'a, Handle> {
     /// Every Patch is meant to be applied to a specific node within the DOM. Get the
     /// index of the DOM node that this patch should apply to. DOM nodes are indexed
     /// depth first with the root node in the tree having index 0.

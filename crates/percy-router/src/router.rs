@@ -1,7 +1,7 @@
 //! Powers routing for frontend web applications
 
 use crate::Route;
-use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 use std::any::Any;
 use std::any::TypeId;
 use std::cell::RefCell;
@@ -30,7 +30,7 @@ pub struct Router {
 pub trait RouteHandler {
     fn route(&self) -> &Route;
 
-    fn view(&self, incoming_route: &str) -> VirtualNode;
+    fn view(&self, incoming_route: &str) -> VirtualNodeWebSys;
 
     fn set_provided(&self, provided: ProvidedMap);
 
@@ -82,7 +82,7 @@ impl Router {
     ///
     /// You'll typically call this when trying to render the correct view based on the
     /// page URL or after clicking on an anchor tag.
-    pub fn view(&self, incoming_route: &str) -> Option<VirtualNode> {
+    pub fn view(&self, incoming_route: &str) -> Option<VirtualNodeWebSys> {
         match self.matching_route_handler(incoming_route) {
             Some(route_handler) => Some(route_handler.view(incoming_route)),
             None => None,

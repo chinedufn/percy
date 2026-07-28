@@ -1,3 +1,4 @@
+use crate::event::RealDom;
 use crate::{View, VirtualNode};
 
 /// Used by the html! macro for all braced child nodes so that we can use any type
@@ -6,67 +7,68 @@ use crate::{View, VirtualNode};
 /// html! { <div> { nodes } </div> }
 ///
 /// nodes can be a String .. VirtualNode .. Vec<VirtualNode> ... etc
-pub struct IterableNodes(Vec<VirtualNode>);
+pub struct IterableNodes<Handle: RealDom>(Vec<VirtualNode<Handle>>);
 
-impl IterableNodes {
+impl<Handle: RealDom> IterableNodes<Handle> {
     /// Retrieve the first node mutably
-    pub fn first_mut(&mut self) -> Option<&mut VirtualNode> {
+    pub fn first_mut(&mut self) -> Option<&mut VirtualNode<Handle>> {
         self.0.first_mut()
     }
 
     /// Retrieve the last node mutably
-    pub fn last_mut(&mut self) -> Option<&mut VirtualNode> {
+    pub fn last_mut(&mut self) -> Option<&mut VirtualNode<Handle>> {
         self.0.last_mut()
     }
 }
 
-impl IntoIterator for IterableNodes {
-    type Item = VirtualNode;
+impl<Handle: RealDom> IntoIterator for IterableNodes<Handle> {
+    type Item = VirtualNode<Handle>;
     // TODO: Is this possible with an array [VirtualNode] instead of a vec?
-    type IntoIter = ::std::vec::IntoIter<VirtualNode>;
+    type IntoIter = ::std::vec::IntoIter<VirtualNode<Handle>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()
     }
 }
 
-impl From<VirtualNode> for IterableNodes {
-    fn from(other: VirtualNode) -> Self {
+impl<Handle: RealDom> From<VirtualNode<Handle>> for IterableNodes<Handle> {
+    fn from(other: VirtualNode<Handle>) -> Self {
         IterableNodes(vec![other])
     }
 }
 
-impl From<&str> for IterableNodes {
+impl<Handle: RealDom> From<&str> for IterableNodes<Handle> {
     fn from(other: &str) -> Self {
-        IterableNodes(vec![VirtualNode::text(other)])
+        IterableNodes(vec![VirtualNode::new_text(other)])
     }
 }
 
-impl From<String> for IterableNodes {
+impl<Handle: RealDom> From<String> for IterableNodes<Handle> {
     fn from(other: String) -> Self {
-        IterableNodes(vec![VirtualNode::text(other.as_str())])
+        IterableNodes(vec![VirtualNode::new_text(other.as_str())])
     }
 }
 
-impl From<&String> for IterableNodes {
+impl<Handle: RealDom> From<&String> for IterableNodes<Handle> {
     fn from(other: &String) -> Self {
-        IterableNodes(vec![VirtualNode::text(other.as_str())])
+        IterableNodes(vec![VirtualNode::new_text(other.as_str())])
     }
 }
 
-impl From<Vec<VirtualNode>> for IterableNodes {
-    fn from(other: Vec<VirtualNode>) -> Self {
+impl<Handle: RealDom> From<Vec<VirtualNode<Handle>>> for IterableNodes<Handle> {
+    fn from(other: Vec<VirtualNode<Handle>>) -> Self {
         IterableNodes(other)
     }
 }
 
-impl<V: View> From<V> for IterableNodes {
+#[cfg(feature = "web")]
+impl<V: View<web_sys::Window>> From<V> for IterableNodes<web_sys::Window> {
     fn from(from: V) -> Self {
         IterableNodes(vec![from.render()])
     }
 }
 
-impl<T: Into<IterableNodes>> From<Option<T>> for IterableNodes {
+impl<T: Into<IterableNodes<Handle>>, Handle: RealDom> From<Option<T>> for IterableNodes<Handle> {
     fn from(opt: Option<T>) -> Self {
         if let Some(val) = opt {
             val.into()
@@ -76,19 +78,20 @@ impl<T: Into<IterableNodes>> From<Option<T>> for IterableNodes {
     }
 }
 
-impl<V: View> From<Vec<V>> for IterableNodes {
+#[cfg(feature = "web")]
+impl<V: View<web_sys::Window>> From<Vec<V>> for IterableNodes<web_sys::Window> {
     fn from(other: Vec<V>) -> Self {
         IterableNodes(other.into_iter().map(|it| it.render()).collect())
     }
 }
 
-impl<V: View> From<&Vec<V>> for IterableNodes {
+impl<V: View<Handle>, Handle: RealDom> From<&Vec<V>> for IterableNodes<Handle> {
     fn from(other: &Vec<V>) -> Self {
         IterableNodes(other.iter().map(|it| it.render()).collect())
     }
 }
 
-impl<V: View> From<&[V]> for IterableNodes {
+impl<V: View<Handle>, Handle: RealDom> From<&[V]> for IterableNodes<Handle> {
     fn from(other: &[V]) -> Self {
         IterableNodes(other.iter().map(|it| it.render()).collect())
     }
@@ -99,13 +102,13 @@ impl<V: View> From<&[V]> for IterableNodes {
 //   by using T's Display implementation.
 macro_rules! from_display_impls {
     ($ty:ty) => {
-        impl From<$ty> for IterableNodes {
+        impl<Handle: RealDom> From<$ty> for IterableNodes<Handle> {
             fn from(val: $ty) -> Self {
                 IterableNodes::from(val.to_string())
             }
         }
 
-        impl From<&$ty> for IterableNodes {
+        impl<Handle: RealDom> From<&$ty> for IterableNodes<Handle> {
             fn from(val: &$ty) -> Self {
                 IterableNodes::from(val.to_string())
             }

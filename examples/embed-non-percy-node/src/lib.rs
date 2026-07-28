@@ -1,6 +1,7 @@
-use percy_dom::{event::VirtualEvents, prelude::*, JsCast};
+use percy_dom::{event::VirtualEvents, prelude::*, JsCast, VirtualNodeWebSys};
 use web_sys::{Element, Node};
 
+use percy_dom::event::VirtualEventsWebSys;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -50,7 +51,8 @@ fn create_my_special_paragraph_element() -> Element {
     element
 }
 
-fn setup_percy_dom_with_embedded_element() -> (VirtualNode, Node, VirtualEvents, Element) {
+fn setup_percy_dom_with_embedded_element() -> (VirtualNodeWebSys, Node, VirtualEventsWebSys, Element)
+{
     let my_special_paragraph_element = create_my_special_paragraph_element();
     let my_special_paragraph_element_append = my_special_paragraph_element.clone();
 
@@ -77,9 +79,9 @@ fn setup_percy_dom_with_embedded_element() -> (VirtualNode, Node, VirtualEvents,
 }
 
 fn percy_diff_and_patch_root_node(
-    vdom_root: &VirtualNode,
+    vdom_root: &VirtualNodeWebSys,
     dom_root: &Node,
-    events: &mut VirtualEvents,
+    events: &mut VirtualEventsWebSys,
 ) {
     let new_vdom_root = html! { <div id="root" data-example="New data!" /> };
     let patches = percy_dom::diff(&vdom_root, &new_vdom_root);

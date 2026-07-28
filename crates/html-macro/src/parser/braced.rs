@@ -2,7 +2,6 @@ use crate::parser::HtmlParser;
 use crate::tag::{Tag, TagKind};
 use proc_macro2::Span;
 use quote::quote;
-use syn::spanned::Spanned;
 use syn::Block;
 
 impl HtmlParser {
@@ -12,6 +11,7 @@ impl HtmlParser {
         block: &Box<Block>,
         brace_span: &Span,
         next_tag: Option<&Tag>,
+        real_dom_ty: &syn::Type,
     ) {
         // We'll check to see if there is a space between this block and the previous open
         // tag's closing brace.
@@ -69,14 +69,14 @@ impl HtmlParser {
                 //
                 // html { { some_node }  }
                 let node = quote! {
-                    let node_0: VirtualNode = #stmt.into();
+                    let node_0: VirtualNode::<#real_dom_ty> = #stmt.into();
                 };
                 self.push_tokens(node);
             } else {
-                self.parse_statement(stmt);
+                self.parse_statement(stmt, real_dom_ty);
 
                 if insert_whitespace_before_text {
-                    let node = self.current_virtual_node_ident(stmt.span());
+                    let node = self.current_virtual_node_ident();
 
                     let insert_whitespace = quote! {
                         if let Some(first_node) = #node.first_mut() {
@@ -88,7 +88,7 @@ impl HtmlParser {
                 }
 
                 if insert_whitespace_after_text {
-                    let node = self.current_virtual_node_ident(stmt.span());
+                    let node = self.current_virtual_node_ident();
 
                     let insert_whitespace = quote! {
                         if let Some(last_node) = #node.last_mut() {

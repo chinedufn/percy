@@ -124,12 +124,17 @@ impl App {
         let mut pdom = PercyDom::new_append_to_mount(start_view, &body);
 
         let greetings = "Hello, World!";
+        
+        // You can also use the `virtual-node` crate to create virtual nodes without a macro.
+        let some_span = VirtualNode::new_element("span");
 
         let end_view = html! {
            // Use regular Rust comments within your html
            <div class=["big", "blue"]>
               /* Interpolate values using braces */
               <strong>{ greetings }</strong>
+            
+              {span}
 
               <button
                 class="giant-button"

@@ -29,7 +29,7 @@ fn remove_node() {
     let called_clone = called.clone();
 
     let mut old = html! { <div id=old_elem_id> </div> };
-    old.as_velement_mut()
+    old.as_elem_mut()
         .unwrap()
         .special_attributes
         .set_on_remove_element("foo", move |elem: web_sys::Element| {
@@ -37,7 +37,7 @@ fn remove_node() {
             called_clone.set(true);
         });
 
-    let new = VirtualNode::element("span");
+    let new = VirtualNode::new_element("span");
 
     let mount = create_mount();
     let mut pdom = PercyDom::new_append_to_mount(old, &mount);
@@ -61,7 +61,7 @@ fn on_remove_elem_called_on_children() {
          <em id = child_id></em>
     };
     child
-        .as_velement_mut()
+        .as_elem_mut()
         .unwrap()
         .special_attributes
         .set_on_remove_element("foo", move |elem: web_sys::Element| {
@@ -72,7 +72,7 @@ fn on_remove_elem_called_on_children() {
     let old = html! {
         <div>{ child }</div>
     };
-    let new = VirtualNode::element("span");
+    let new = VirtualNode::new_element("span");
 
     let mount = create_mount();
     let mut pdom = PercyDom::new_append_to_mount(old, &mount);

@@ -347,7 +347,7 @@ fn gen_route_handler_mod(
                     );
                 }
 
-                fn view (&self, incoming_path: &str) -> VirtualNode {
+                fn view (&self, incoming_path: &str) -> VirtualNode<web_sys::Window> {
                     // example:
                     //   let id = self.route().find_route_param(incoming_route, "id").unwrap();
                     #(

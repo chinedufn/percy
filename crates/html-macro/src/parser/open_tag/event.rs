@@ -59,7 +59,7 @@ Documentation:
         quote! {
             let event_callback = #closure;
 
-            #var_name_node.as_velement_mut().unwrap()
+            #var_name_node.as_elem_mut().unwrap()
               .special_attributes.#setter(#key_attr_value.to_string(), event_callback);
 
             #maybe_missing_key_error
@@ -100,7 +100,7 @@ Documentation:
         quote! {
             let event_callback = #closure;
 
-            #var_name_node.as_velement_mut().unwrap()
+            #var_name_node.as_elem_mut().unwrap()
               .special_attributes.#setter(#key_attr_value.to_string(), event_callback);
 
             #maybe_missing_key_error
@@ -108,7 +108,7 @@ Documentation:
     } else if arg_count == 0 {
         quote! {
             let event_callback = #closure;
-            #var_name_node.as_velement_mut().unwrap().events.insert_no_args(
+            #var_name_node.as_elem_mut().unwrap().events.insert_no_args(
                 #event_name.into(),
                 std::rc::Rc::new(
                     std::cell::RefCell::new( event_callback )
@@ -117,7 +117,7 @@ Documentation:
         }
     } else if event_name == "onclick" {
         let tokens = quote! {
-            #var_name_node.as_velement_mut().unwrap().events.insert_mouse_event(
+            #var_name_node.as_elem_mut().unwrap().events.insert_mouse_event(
                 #event_name.into(),
                 std::rc::Rc::new(
                     std::cell::RefCell::new( event_callback )
@@ -133,7 +133,7 @@ Documentation:
         } else {
             let closure = maybe_set_arg_type(
                 closure,
-                quote! { __html_macro_helpers__::event::MouseEvent },
+                quote! { __html_macro_helpers__::event::MouseEventWebSys },
             );
 
             quote! {
@@ -156,7 +156,7 @@ Documentation:
               );
               let closure_rc = std::rc::Rc::new(closure);
 
-              #var_name_node.as_velement_mut().unwrap()
+              #var_name_node.as_elem_mut().unwrap()
                   .events.__insert_unsupported_signature(#event_name.into(), closure_rc);
           }
 

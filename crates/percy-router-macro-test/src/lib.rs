@@ -1,4 +1,5 @@
 use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 use percy_router::prelude::*;
 
 mod book_example;
@@ -9,7 +10,7 @@ mod on_visit;
 // **************************************************
 
 #[route(path = "/")]
-fn no_params() -> VirtualNode {
+fn no_params() -> VirtualNodeWebSys {
     VirtualNode::Text("hello world".into())
 }
 
@@ -28,7 +29,7 @@ fn root_path() {
 // **************************************************
 
 #[route(path = "/:id")]
-fn route_one_param(id: u32) -> VirtualNode {
+fn route_one_param(id: u32) -> VirtualNodeWebSys {
     VirtualNode::Text(format!("{}", id).into())
 }
 
@@ -44,7 +45,7 @@ fn one_param() {
 // **************************************************
 
 #[route(path = "/user/:user_id/buddies/:buddy_id")]
-fn route_two_params(user_id: u64, buddy_id: u32) -> VirtualNode {
+fn route_two_params(user_id: u64, buddy_id: u32) -> VirtualNodeWebSys {
     VirtualNode::Text(format!("User {}. Buddy {}", user_id, buddy_id).into())
 }
 
@@ -67,7 +68,7 @@ struct State {
 }
 
 #[route(path = "/")]
-fn route_provided_data(state: Provided<State>) -> VirtualNode {
+fn route_provided_data(state: Provided<State>) -> VirtualNodeWebSys {
     VirtualNode::Text(format!("Count: {}", state.count).into())
 }
 
@@ -94,7 +95,7 @@ struct Count {
 struct Money(u64);
 
 #[route(path = "/")]
-fn route_provided_two_data(count: Provided<Count>, dollars: Provided<Money>) -> VirtualNode {
+fn route_provided_two_data(count: Provided<Count>, dollars: Provided<Money>) -> VirtualNodeWebSys {
     VirtualNode::Text(format!("Count: {}. Dollars: {}", count.count, dollars.0).into())
 }
 
@@ -120,7 +121,7 @@ struct SomeState {
 }
 
 #[route(path = "/users/:id")]
-fn route_param_and_data(id: u16, state: Provided<SomeState>) -> VirtualNode {
+fn route_param_and_data(id: u16, state: Provided<SomeState>) -> VirtualNodeWebSys {
     VirtualNode::Text(format!("User: {}. Happy: {}", id, state.happy).into())
 }
 
@@ -141,7 +142,7 @@ fn provided_param_and_data() {
 // **************************************************
 
 #[route(path = "/players/:id")]
-fn route_data_and_param(state: Provided<SomeState>, id: u32) -> VirtualNode {
+fn route_data_and_param(state: Provided<SomeState>, id: u32) -> VirtualNodeWebSys {
     VirtualNode::Text(format!("Player: {}. Happy: {}", id, state.happy).into())
 }
 
@@ -164,7 +165,7 @@ mod some_module {
     use super::*;
 
     #[route(path = "/")]
-    pub fn route_in_a_module() -> VirtualNode {
+    pub fn route_in_a_module() -> VirtualNodeWebSys {
         unimplemented!()
     }
 }
@@ -186,7 +187,7 @@ mod test_no_warnings {
     use super::*;
 
     #[route(path = "/")]
-    fn no_warnings() -> VirtualNode {
+    fn no_warnings() -> VirtualNodeWebSys {
         unimplemented!()
     }
 

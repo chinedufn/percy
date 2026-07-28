@@ -22,7 +22,7 @@ use web_sys::Node;
 
 use crate::testing_utilities::create_node_and_events_and_append_to_document;
 use percy_dom::prelude::*;
-use virtual_node::event::{VirtualEvents, ELEMENT_EVENTS_ID_PROP};
+use virtual_node::event::{VirtualEvents, VirtualEventsWebSys, ELEMENT_EVENTS_ID_PROP};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -47,7 +47,7 @@ fn insert_before_patch_inserts_nodes() {
 
     percy_dom::patch(
         node.clone(),
-        &VirtualNode::element("..."),
+        &VirtualNode::new_element("..."),
         &mut events,
         &vec![Patch::InsertBefore {
             anchor_old_node_idx: 2,
@@ -83,7 +83,7 @@ fn multiple_insert_before_patches() {
 
     percy_dom::patch(
         node.clone(),
-        &VirtualNode::element("..."),
+        &VirtualNode::new_element("..."),
         &mut events,
         &vec![
             Patch::InsertBefore {
@@ -123,7 +123,7 @@ fn move_nodes_before_patch_moves_nodes() {
 
     percy_dom::patch(
         node.clone(),
-        &VirtualNode::element("..."),
+        &VirtualNode::new_element("..."),
         &mut events,
         &vec![Patch::MoveNodesBefore {
             anchor_old_node_idx: 2,
@@ -157,7 +157,7 @@ fn multiple_move_nodes_before_patches() {
 
     percy_dom::patch(
         node.clone(),
-        &VirtualNode::element("..."),
+        &VirtualNode::new_element("..."),
         &mut events,
         &vec![
             Patch::MoveNodesBefore {
@@ -197,7 +197,7 @@ fn move_to_end_of_siblings_patch_moves_nodes() {
 
     percy_dom::patch(
         node.clone(),
-        &VirtualNode::element("..."),
+        &VirtualNode::new_element("..."),
         &mut events,
         &vec![Patch::MoveToEndOfSiblings {
             parent_old_node_idx: 0,
@@ -232,7 +232,7 @@ fn multiple_move_to_end_of_siblings_patches() {
 
     percy_dom::patch(
         node.clone(),
-        &VirtualNode::element("..."),
+        &VirtualNode::new_element("..."),
         &mut events,
         &vec![
             Patch::MoveToEndOfSiblings {
@@ -272,7 +272,7 @@ fn remove_children_patch_removes_nodes() {
 
     percy_dom::patch(
         node.clone(),
-        &VirtualNode::element("..."),
+        &VirtualNode::new_element("..."),
         &mut events,
         &vec![Patch::RemoveChildren {
             parent_old_node_idx: 0,
@@ -307,7 +307,7 @@ fn multiple_remove_children_patches() {
 
     percy_dom::patch(
         node.clone(),
-        &VirtualNode::element("..."),
+        &VirtualNode::new_element("..."),
         &mut events,
         &vec![
             Patch::RemoveChildren {
@@ -635,7 +635,7 @@ fn reverse_list_order() {
 /// tags names for the siblings, which makes our tests easier to reason about.
 fn assert_dom_children_and_events_children_match(
     parent_dom_node: &Node,
-    events: &VirtualEvents,
+    events: &VirtualEventsWebSys,
     expected_child_tags: &[&'static str],
 ) {
     let unique: HashSet<&'static str> = expected_child_tags.iter().map(|t| *t).collect();

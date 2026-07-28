@@ -1,8 +1,9 @@
 //! A collection of functions that are useful for unit testing your html! views.
 
+use crate::event::RealDom;
 use crate::VirtualNode;
 
-impl VirtualNode {
+impl<Handle: RealDom> VirtualNode<Handle> {
     /// Get a vector of all of the VirtualNode children / grandchildren / etc of
     /// your virtual_node.
     ///
@@ -25,8 +26,8 @@ impl VirtualNode {
     /// assert_eq!(children[2].tag(), "em");
     /// # }
     /// ```
-    pub fn children_recursive<'a>(&'a self) -> Vec<&'a VirtualNode> {
-        let mut descendants: Vec<&'a VirtualNode> = vec![];
+    pub fn children_recursive<'a>(&'a self) -> Vec<&'a VirtualNode<Handle>> {
+        let mut descendants: Vec<&'a VirtualNode<Handle>> = vec![];
         match self {
             VirtualNode::Text(_) => {}
             VirtualNode::Element(element_node) => {
@@ -40,7 +41,10 @@ impl VirtualNode {
     }
 }
 
-fn get_descendants<'a>(descendants: &mut Vec<&'a VirtualNode>, node: &'a VirtualNode) {
+fn get_descendants<'a, Handle: RealDom>(
+    descendants: &mut Vec<&'a VirtualNode<Handle>>,
+    node: &'a VirtualNode<Handle>,
+) {
     descendants.push(node);
     match node {
         VirtualNode::Text(_) => {}
@@ -55,17 +59,17 @@ fn get_descendants<'a>(descendants: &mut Vec<&'a VirtualNode>, node: &'a Virtual
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::VElement;
+    use crate::VirtualElement;
 
     /// Verify that we can return all of a node's descendants.
     #[test]
     fn children_recursive() {
-        let span = VirtualNode::element("span");
+        let span = VirtualNode::<()>::new_element("span");
 
-        let mut em = VElement::new("em");
+        let mut em = VirtualElement::new("em");
         em.children.push(span);
 
-        let mut html = VElement::new("div");
+        let mut html = VirtualElement::new("div");
         html.children.push(em.into());
 
         let html_node = VirtualNode::Element(html);

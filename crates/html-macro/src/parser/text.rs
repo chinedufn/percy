@@ -11,6 +11,7 @@ impl HtmlParser {
         text_start: Span,
         text_end: Span,
         next_tag: Option<&Tag>,
+        real_dom_ty: &syn::Type,
     ) {
         let mut text = text.to_string();
 
@@ -53,7 +54,7 @@ impl HtmlParser {
         let var_name = Ident::new(format!("node_{}", idx).as_str(), Span::call_site());
 
         let text_node = quote! {
-            let mut #var_name = VirtualNode::text(#text);
+            let mut #var_name = VirtualNode::<#real_dom_ty>::new_text(#text);
         };
 
         tokens.push(text_node);

@@ -3,12 +3,12 @@ use std::borrow::Cow;
 /// A specially supported attributes.
 #[derive(Default, PartialEq)]
 pub struct SpecialAttributes {
-    /// A a function that gets called when the virtual node is first turned into a real node.
+    /// A function that gets called when the virtual node is first turned into a real node.
     ///
     /// See [`SpecialAttributes.set_on_create_element`] for more documentation.
     #[cfg(feature = "web")]
     on_create_element: Option<KeyAndElementFn>,
-    /// A a function that gets called when the virtual node is first turned into a real node.
+    /// A function that gets called when the virtual node is first turned into a real node.
     ///
     /// See [`SpecialAttributes.set_on_remove_element`] for more documentation.
     #[cfg(feature = "web")]
@@ -42,10 +42,10 @@ impl SpecialAttributes {
     /// # Examples
     ///
     /// ```no_run
-    /// # use virtual_node::VirtualNode;
+    /// # use virtual_node::VirtualNodeWebSys;
     /// use wasm_bindgen::JsValue;
     ///
-    /// let mut node = VirtualNode::element("div");
+    /// let mut node = VirtualNodeWebSys::new_element("div");
     ///
     /// // A key can be any `Into<Cow<'static, str>>`.
     /// let key = "some-key";
@@ -55,7 +55,7 @@ impl SpecialAttributes {
     /// };
     ///
     /// node
-    ///     .as_velement_mut()
+    ///     .as_elem_mut()
     ///     .unwrap()
     ///     .special_attributes
     ///     .set_on_create_element(key, on_create_elem);
@@ -124,10 +124,10 @@ impl SpecialAttributes {
     /// # Examples
     ///
     /// ```no_run
-    /// # use virtual_node::VirtualNode;
+    /// # use virtual_node::VirtualNodeWebSys;
     /// use wasm_bindgen::JsValue;
     ///
-    /// let mut node = VirtualNode::element("div");
+    /// let mut node = VirtualNodeWebSys::new_element("div");
     ///
     /// // A key can be any `Into<Cow<'static, str>>`.
     /// let key = "some-key";
@@ -137,7 +137,7 @@ impl SpecialAttributes {
     /// };
     ///
     /// node
-    ///     .as_velement_mut()
+    ///     .as_elem_mut()
     ///     .unwrap()
     ///     .special_attributes
     ///     .set_on_remove_element(key, on_remove_elem);

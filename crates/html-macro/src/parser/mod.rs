@@ -1,9 +1,8 @@
-use crate::tag::TagKind;
 use crate::Tag;
+use crate::tag::TagKind;
 use proc_macro2::Span;
 use quote::{quote, quote_spanned};
 use std::collections::HashMap;
-use syn::spanned::Spanned;
 use syn::{Ident, Stmt};
 
 mod braced;
@@ -68,7 +67,7 @@ impl HtmlParser {
 
     /// Generate the tokens for the incoming Tag and update our parser's heuristics that keep
     /// track of information about what we've parsed.
-    pub fn push_tag(&mut self, tag: &Tag, next_tag: Option<&Tag>) {
+    pub fn push_tag(&mut self, tag: &Tag, next_tag: Option<&Tag>, real_dom_ty: &syn::Type) {
         match tag {
             Tag::Open {
                 name,
@@ -77,7 +76,13 @@ impl HtmlParser {
                 is_self_closing,
                 ..
             } => {
-                self.parse_open_tag(name, closing_bracket_span, attrs, *is_self_closing);
+                self.parse_open_tag(
+                    name,
+                    closing_bracket_span,
+                    attrs,
+                    *is_self_closing,
+                    real_dom_ty,
+                );
                 self.last_tag_kind = Some(TagKind::Open);
             }
             Tag::Close { name, .. } => {
@@ -89,11 +94,17 @@ impl HtmlParser {
                 start_span,
                 end_span,
             } => {
-                self.parse_text(text, start_span.unwrap(), end_span.unwrap(), next_tag);
+                self.parse_text(
+                    text,
+                    start_span.unwrap(),
+                    end_span.unwrap(),
+                    next_tag,
+                    real_dom_ty,
+                );
                 self.last_tag_kind = Some(TagKind::Text);
             }
             Tag::Braced { block, brace_span } => {
-                self.parse_braced(block, brace_span, next_tag);
+                self.parse_braced(block, brace_span, next_tag, real_dom_ty);
                 self.last_tag_kind = Some(TagKind::Braced);
             }
         };
@@ -131,7 +142,7 @@ impl HtmlParser {
                         });
 
                         let push_children = quote! {
-                            if let Some(ref mut element_node) = #parent_name.as_velement_mut() {
+                            if let Some(ref mut element_node) = #parent_name.as_elem_mut() {
                                 element_node.children.extend(#children.into_iter());
                             } else {
                                 #unreachable;
@@ -161,7 +172,7 @@ impl HtmlParser {
         let node = quote! {
             {
                 #(#tokens)*
-                // Root node is always named node_0
+                // The generated `tokens` always produces a root node named `node_0`.
                 node_0
             }
         };
@@ -201,10 +212,10 @@ impl HtmlParser {
 
     /// Create a new identifier for a VirtualNode and increment our node_idx so that next
     /// time we call this our node will get a different name.
-    fn new_virtual_node_ident(&mut self, span: Span) -> Ident {
+    fn new_virtual_node_ident(&mut self) -> Ident {
         let node_name = format!("node_{}", self.current_node_idx);
 
-        let node_ident = Ident::new(node_name.as_str(), span);
+        let node_ident = Ident::new(node_name.as_str(), Span::call_site());
 
         // TODO: Increment before creating the new node, not after.
         // This way the current virtual node ident won't need to do strange subtraction
@@ -215,12 +226,12 @@ impl HtmlParser {
 
     /// Get the Ident for the current (last created) virtual node, without incrementing
     /// the node index.
-    fn current_virtual_node_ident(&self, span: Span) -> Ident {
+    fn current_virtual_node_ident(&self) -> Ident {
         // TODO: Increment before creating the new node, not after.
         // This way the current virtual node ident won't need to do strange subtraction
         let node_name = format!("node_{}", self.current_node_idx - 1);
 
-        Ident::new(node_name.as_str(), span)
+        Ident::new(node_name.as_str(), Span::call_site())
     }
 
     /// Generate virtual node tokens for a statement that came from in between braces
@@ -229,22 +240,22 @@ impl HtmlParser {
     ///
     /// html! { <div> { some_var_in_braces } </div>
     /// html! { <div> { some_other_variable } </div>
-    fn push_iterable_nodes(&mut self, nodes: NodesToPush) {
+    fn push_iterable_nodes(&mut self, nodes: NodesToPush, real_dom_ty: &syn::Type) {
         let node_idx = self.current_node_idx;
 
         match nodes {
             NodesToPush::Stmt(stmt) => {
-                let node_ident = self.new_virtual_node_ident(stmt.span());
+                let node_ident = self.new_virtual_node_ident();
 
                 self.push_tokens(quote! {
-                    let mut #node_ident: IterableNodes = (#stmt).into();
+                    let mut #node_ident: IterableNodes<#real_dom_ty> = (#stmt).into();
                 });
             }
-            NodesToPush::TokenStream(stmt, tokens) => {
-                let node_ident = self.new_virtual_node_ident(stmt.span());
+            NodesToPush::TokenStream(_stmt, tokens) => {
+                let node_ident = self.new_virtual_node_ident();
 
                 self.push_tokens(quote! {
-                    let mut #node_ident: IterableNodes = #tokens.into();
+                    let mut #node_ident: IterableNodes<#real_dom_ty> = #tokens.into();
                 });
             }
         }

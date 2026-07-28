@@ -13,7 +13,7 @@ use web_sys::*;
 use percy_dom::event::VirtualEvents;
 use percy_dom::{Patch, VirtualNode};
 use std::collections::HashMap;
-use virtual_node::{AttributeValue, VElement};
+use virtual_node::{AttributeValue, VirtualElement, VirtualNodeWebSys};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -22,11 +22,11 @@ wasm_bindgen_test_configure!(run_in_browser);
 /// wasm-pack test --chrome --headless crates/percy-dom --test boolean_property -- create_elem_boolean_property_true
 #[wasm_bindgen_test]
 fn create_elem_boolean_property_true() {
-    let mut elem = VElement::new("button");
+    let mut elem = VirtualElement::new("button");
     elem.attrs
         .insert("disabled".to_string(), AttributeValue::Bool(true));
 
-    let node: VirtualNode = elem.into();
+    let node: VirtualNodeWebSys = elem.into();
     let node = node.create_dom_node(&mut VirtualEvents::new()).0;
     assert!(node_as_button(&node).disabled());
 }
@@ -36,11 +36,11 @@ fn create_elem_boolean_property_true() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test boolean_property -- create_elem_boolean_property_false
 #[wasm_bindgen_test]
 fn create_elem_boolean_property_false() {
-    let mut elem = VElement::new("button");
+    let mut elem = VirtualElement::new("button");
     elem.attrs
         .insert("disabled".to_string(), AttributeValue::Bool(false));
 
-    let node: VirtualNode = elem.into();
+    let node: VirtualNodeWebSys = elem.into();
     let node = node.create_dom_node(&mut VirtualEvents::new()).0;
     assert!(!node_as_button(&node).disabled());
 }
@@ -50,7 +50,7 @@ fn create_elem_boolean_property_false() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test boolean_property -- patch_elem_boolean_property_true
 #[wasm_bindgen_test]
 fn patch_elem_boolean_property_true() {
-    let elem: VirtualNode = VElement::new("button").into();
+    let elem: VirtualNodeWebSys = VirtualElement::new("button").into();
 
     let mut events = VirtualEvents::new();
     let (node, events_node) = elem.create_dom_node(&mut events);
@@ -63,7 +63,7 @@ fn patch_elem_boolean_property_true() {
 
     percy_dom::patch(
         node.clone(),
-        &VirtualNode::element("..."),
+        &VirtualNode::new_element("..."),
         &mut events,
         &vec![patch],
     )
@@ -77,7 +77,7 @@ fn patch_elem_boolean_property_true() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test boolean_property -- patch_elem_boolean_property_false
 #[wasm_bindgen_test]
 fn patch_elem_boolean_property_false() {
-    let elem: VirtualNode = VElement::new("button").into();
+    let elem: VirtualNodeWebSys = VirtualElement::new("button").into();
 
     let mut events = VirtualEvents::new();
     let (node, events_node) = elem.create_dom_node(&mut events);
@@ -94,7 +94,7 @@ fn patch_elem_boolean_property_false() {
     let patch = Patch::AddAttributes(0, attributes);
     percy_dom::patch(
         node.clone(),
-        &VirtualNode::element(".."),
+        &VirtualNode::new_element(".."),
         &mut events,
         &vec![patch],
     )

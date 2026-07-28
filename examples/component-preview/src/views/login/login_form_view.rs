@@ -1,9 +1,10 @@
 use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 
 pub struct LoginFormView {}
 
-impl View for LoginFormView {
-    fn render(&self) -> VirtualNode {
+impl View<web_sys::Window> for LoginFormView {
+    fn render(&self) -> VirtualNodeWebSys {
         html! {
             <div>
                This will be a login form

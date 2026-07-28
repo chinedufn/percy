@@ -15,10 +15,10 @@ mod events;
 ///
 /// Also powers event delegation.
 pub struct PercyDom {
-    current_vdom: VirtualNode,
+    current_vdom: VirtualNode<web_sys::Window>,
     /// The closures that are currently attached to elements in the page.
     /// We keep these around so that they don't get dropped,  (and thus stop working).
-    pub events: VirtualEvents,
+    pub events: VirtualEvents<web_sys::Window>,
     root_node: Node,
     // We hold onto these since if we drop the listener it can no longer be called.
     event_delegation_listeners: HashMap<&'static str, Box<dyn AsRef<JsValue>>>,
@@ -28,7 +28,7 @@ impl PercyDom {
     /// Create a new `PercyDom`.
     ///
     /// A root `Node` will be created but not added to your DOM.
-    pub fn new(current_vdom: VirtualNode) -> PercyDom {
+    pub fn new(current_vdom: VirtualNode<web_sys::Window>) -> PercyDom {
         let mut events = VirtualEvents::new();
         let (created_node, events_node) = current_vdom.create_dom_node(&mut events);
         events.set_root(events_node);
@@ -48,7 +48,10 @@ impl PercyDom {
     ///
     /// A root `Node` will be created and append (as a child) to your passed
     /// in mount element.
-    pub fn new_append_to_mount(current_vdom: VirtualNode, mount: &Element) -> PercyDom {
+    pub fn new_append_to_mount(
+        current_vdom: VirtualNode<web_sys::Window>,
+        mount: &Element,
+    ) -> PercyDom {
         let pdom = Self::new(current_vdom);
 
         mount
@@ -62,7 +65,10 @@ impl PercyDom {
     ///
     /// A root `Node` will be created and it will replace your passed in mount
     /// element.
-    pub fn new_replace_mount(current_vdom: VirtualNode, mount: Element) -> PercyDom {
+    pub fn new_replace_mount(
+        current_vdom: VirtualNode<web_sys::Window>,
+        mount: Element,
+    ) -> PercyDom {
         let pdom = Self::new(current_vdom);
 
         mount
@@ -76,7 +82,7 @@ impl PercyDom {
     ///
     /// Then use that diff to patch the real DOM in the user's browser so that they are
     /// seeing the latest state of the application.
-    pub fn update(&mut self, new_vdom: VirtualNode) {
+    pub fn update(&mut self, new_vdom: VirtualNode<web_sys::Window>) {
         let patches = diff(&self.current_vdom, &new_vdom);
 
         patch(

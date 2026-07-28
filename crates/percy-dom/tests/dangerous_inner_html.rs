@@ -12,16 +12,17 @@ use wasm_bindgen_test::*;
 use web_sys::Element;
 
 use percy_dom::prelude::*;
+use virtual_node::VirtualNodeWebSys;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
 /// wasm-pack test --chrome --headless crates/percy-dom --test dangerous_inner_html -- new_elem_inner_html
 #[wasm_bindgen_test]
 fn new_elem_inner_html() {
-    let mut div: VirtualNode = html! {
+    let mut div: VirtualNodeWebSys = html! {
     <div></div>
     };
-    div.as_velement_mut()
+    div.as_elem_mut()
         .unwrap()
         .special_attributes
         .dangerous_inner_html = Some("<span>hi</span>".to_string());
@@ -40,15 +41,15 @@ fn new_elem_inner_html() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test dangerous_inner_html -- inner_html_overwrite
 #[wasm_bindgen_test]
 fn inner_html_overwrite() {
-    let mut start: VirtualNode = VirtualNode::element("div");
+    let mut start: VirtualNodeWebSys = VirtualNode::new_element("div");
     start
-        .as_velement_mut()
+        .as_elem_mut()
         .unwrap()
         .special_attributes
         .dangerous_inner_html = Some("<span>OLD</span>".to_string());
 
-    let mut end: VirtualNode = VirtualNode::element("div");
-    end.as_velement_mut()
+    let mut end: VirtualNodeWebSys = VirtualNode::new_element("div");
+    end.as_elem_mut()
         .unwrap()
         .special_attributes
         .dangerous_inner_html = Some("<span>NEW</span>".to_string());
@@ -70,14 +71,14 @@ fn inner_html_overwrite() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test dangerous_inner_html -- remove_inner_html
 #[wasm_bindgen_test]
 fn remove_inner_html() {
-    let mut start: VirtualNode = VirtualNode::element("div");
+    let mut start: VirtualNodeWebSys = VirtualNode::new_element("div");
     start
-        .as_velement_mut()
+        .as_elem_mut()
         .unwrap()
         .special_attributes
         .dangerous_inner_html = Some("<span>OLD</span>".to_string());
 
-    let end: VirtualNode = VirtualNode::element("div");
+    let end: VirtualNodeWebSys = VirtualNode::new_element("div");
 
     let mut events = VirtualEvents::new();
     let (div, enode) = start.create_dom_node(&mut events);
