@@ -8,4 +8,4 @@ edition = "2018"
 html-macro = {path = "../html-macro"}
 percy-dom = { path = "../percy-dom" }
 virtual-node = {path = "../virtual-node"}
-trybuild = "1.0"
+web-sys = "0.3"

@@ -1,36 +1,45 @@
-use crate::EventAttribFn;
-use std::cell::{Cell, RefCell};
+use crate::event::RealDom;
+use std::cell::RefCell;
 use std::fmt::{Debug, Formatter};
-use std::ops::Deref;
 use std::rc::Rc;
 
 /// Event handlers such as the closure in `onclick = |mouse_event| {}`.
-#[derive(Clone)]
-pub enum EventHandler {
+pub enum EventHandler<Dom: RealDom> {
     /// A callback that does not contain any arguments.
     NoArgs(Rc<RefCell<dyn FnMut()>>),
     /// Handle mouse events such as `onclick` and `oninput`
-    MouseEvent(Rc<RefCell<dyn FnMut(MouseEvent)>>),
+    MouseEvent(Rc<RefCell<dyn FnMut(Dom::MouseEvent)>>),
     /// EventHandler's that we do not have a dedicated type for.
     /// This is useful for custom events.
-    UnsupportedSignature(EventAttribFn),
+    Custom(Dom::EventCallback),
+}
+impl<Dom: RealDom> Clone for EventHandler<Dom> {
+    fn clone(&self) -> Self {
+        match self {
+            Self::NoArgs(func) => Self::NoArgs(func.clone()),
+            Self::MouseEvent(func) => Self::MouseEvent(func.clone()),
+            Self::Custom(func) => Self::Custom(func.clone()),
+        }
+    }
 }
 
 /// A mouse event.
 ///
 /// [MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent)
 #[derive(Clone)]
-pub struct MouseEvent {
+#[cfg(feature = "web")]
+pub struct MouseEventWebSys {
     event: web_sys::MouseEvent,
-    should_propagate: Rc<Cell<bool>>,
+    should_propagate: Rc<std::cell::Cell<bool>>,
 }
 
-impl MouseEvent {
+#[cfg(feature = "web")]
+impl MouseEventWebSys {
     /// Create a new MouseEvent.
     pub fn new(event: web_sys::MouseEvent) -> Self {
-        MouseEvent {
+        MouseEventWebSys {
             event,
-            should_propagate: Rc::new(Cell::new(true)),
+            should_propagate: Rc::new(std::cell::Cell::new(true)),
         }
     }
 
@@ -41,12 +50,13 @@ impl MouseEvent {
     }
 
     /// Whether or not the event should propagate.
-    pub fn should_propagate(&self) -> &Rc<Cell<bool>> {
+    pub fn should_propagate(&self) -> &Rc<std::cell::Cell<bool>> {
         &self.should_propagate
     }
 }
 
-impl Deref for MouseEvent {
+#[cfg(feature = "web")]
+impl std::ops::Deref for MouseEventWebSys {
     type Target = web_sys::MouseEvent;
 
     fn deref(&self) -> &Self::Target {
@@ -58,13 +68,13 @@ impl Deref for MouseEvent {
 // Those PartialEq implementations are used for testing.
 // Maybe we can put some of the event related PartialEq implementations
 // behind a #[cfg(any(test, feature = "__test-utils"))].
-impl PartialEq for EventHandler {
+impl<Dom: RealDom> PartialEq for EventHandler<Dom> {
     fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
 
-impl Debug for EventHandler {
+impl<Dom: RealDom> Debug for EventHandler<Dom> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("event handler")
     }

@@ -8,3 +8,4 @@ edition = "2018"
 percy-router-macro = {path = "../percy-router-macro"}
 percy-dom = {path = "../percy-dom"}
 percy-router = {path = "../percy-router"}
+web-sys = "0.3"

@@ -2,7 +2,7 @@
 //!
 //! cargo test -p html-macro-test -- ui trybuild=missing_closing_tag.rs
 
-extern crate percy_dom;
+use percy_dom::html;
 use percy_dom::prelude::*;
 
 // Open tag that are missing their corresponding closing tags.

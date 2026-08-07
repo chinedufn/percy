@@ -1,9 +1,7 @@
 //! Various helper functions and types for writing tests.
 
-use std::cell::RefCell;
-use std::rc::Rc;
-use virtual_node::event::{ElementEventsId, VirtualEventNode, VirtualEvents};
-use virtual_node::VirtualNode;
+use virtual_node::event::{VirtualEvents, VirtualEventsWebSys};
+use virtual_node::{VirtualNode, VirtualNodeWebSys};
 use wasm_bindgen::JsCast;
 use web_sys::Node;
 
@@ -31,14 +29,16 @@ pub fn create_mount() -> web_sys::Element {
     mount
 }
 
-pub fn create_node_and_events_and_append_to_document(vnode: VirtualNode) -> (Node, VirtualEvents) {
+pub fn create_node_and_events_and_append_to_document(
+    vnode: VirtualNodeWebSys,
+) -> (Node, VirtualEventsWebSys) {
     let node_and_events = create_node_and_events(vnode);
     append_to_document(node_and_events.0.dyn_ref().unwrap());
 
     node_and_events
 }
 
-pub fn create_node_and_events(vnode: VirtualNode) -> (Node, VirtualEvents) {
+pub fn create_node_and_events(vnode: VirtualNodeWebSys) -> (Node, VirtualEventsWebSys) {
     let mut events = VirtualEvents::new();
     let (node, events_node) = vnode.create_dom_node(&mut events);
     events.set_root(events_node);
@@ -50,7 +50,10 @@ pub fn send_click_event(id: &str) {
     let mouse_event = web_sys::MouseEvent::new("click").unwrap();
     mouse_event.init_mouse_event_with_can_bubble_arg("click", true);
 
-    send_event::<web_sys::HtmlElement>(id, &virtual_node::event::MouseEvent::new(mouse_event));
+    send_event::<web_sys::HtmlElement>(
+        id,
+        &virtual_node::event::MouseEventWebSys::new(mouse_event),
+    );
 }
 
 pub fn send_input_event(id: &str) {

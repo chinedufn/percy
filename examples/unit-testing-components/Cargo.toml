@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 percy-dom = { path = "../../crates/percy-dom" }
+web-sys = "0.3"

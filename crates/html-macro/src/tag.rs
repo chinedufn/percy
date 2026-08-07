@@ -35,7 +35,7 @@ pub enum Tag {
         start_span: Option<Span>,
         end_span: Option<Span>,
     },
-    /// let text_var = VirtualNode::text("3");
+    /// let text_var = VirtualNode::new_text("3");
     ///
     /// let iter_nodes =
     ///   vec![

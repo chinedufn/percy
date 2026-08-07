@@ -2,8 +2,8 @@ use percy_dom::prelude::*;
 
 pub struct SideNavView {}
 
-impl View for SideNavView {
-    fn render(&self) -> VirtualNode {
+impl View<web_sys::Window> for SideNavView {
+    fn render(&self) -> VirtualNode<web_sys::Window> {
         html! {
             <div>
                 <div>A side nav with some buttons</div>

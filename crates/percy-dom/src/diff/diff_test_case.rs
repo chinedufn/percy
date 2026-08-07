@@ -7,11 +7,11 @@ use virtual_node::VirtualNode;
 /// Test that we generate the right Vec<Patch> for some start and end virtual dom.
 pub struct DiffTestCase<'a> {
     // ex: html! { <div> </div> }
-    pub old: VirtualNode,
+    pub old: VirtualNode<web_sys::Window>,
     // ex: html! { <strong> </strong> }
-    pub new: VirtualNode,
+    pub new: VirtualNode<web_sys::Window>,
     // ex: vec![Patch::Replace(0, &html! { <strong></strong> })],
-    pub expected: Vec<Patch<'a>>,
+    pub expected: Vec<Patch<'a, web_sys::Window>>,
 }
 
 impl<'a> DiffTestCase<'a> {

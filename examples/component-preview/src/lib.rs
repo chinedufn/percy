@@ -6,7 +6,7 @@
 extern crate sunbeam;
 
 use percy_dom::render::create_render_scheduler;
-use percy_dom::{PercyDom, VElement, VirtualNode};
+use percy_dom::{PercyDom, VirtualElement, VirtualNode};
 use std::sync::{Arc, Mutex};
 
 use crate::routes::render_active_route;
@@ -56,7 +56,7 @@ fn create_percy_dom(dom_selector_of_mount: &str) -> PercyDom {
         .unwrap()
         .unwrap();
 
-    let start_view = VirtualNode::Element(VElement::new("div"));
+    let start_view = VirtualNode::Element(VirtualElement::new("div"));
 
     let dom_updater = PercyDom::new_append_to_mount(start_view, &mount);
 

@@ -2,6 +2,7 @@ use crate::store::Store;
 use crate::views::nav_bar_view::ActivePage;
 use crate::views::nav_bar_view::NavBarView;
 use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -15,13 +16,13 @@ impl ContributorsView {
     }
 }
 
-impl View for ContributorsView {
-    fn render(&self) -> VirtualNode {
+impl View<web_sys::Window> for ContributorsView {
+    fn render(&self) -> VirtualNodeWebSys {
         let nav_bar = NavBarView::new(ActivePage::Contributors).render();
 
         let store = self.store.borrow();
         let contributors = store.contributors().to_owned();
-        let contributors_list: Vec<VirtualNode> = match contributors {
+        let contributors_list: Vec<VirtualNodeWebSys> = match contributors {
             Some(contributors) => contributors
                 .iter()
                 .filter(|c| c.login != "invalid-email-address".to_string())
@@ -38,7 +39,7 @@ impl View for ContributorsView {
                     }
                 })
                 .collect(),
-            None => vec![VirtualNode::text("Loading...")],
+            None => vec![VirtualNode::new_text("Loading...")],
         };
 
         html! {

@@ -13,6 +13,7 @@ use wasm_bindgen_test::*;
 use web_sys::Element;
 
 use percy_dom::prelude::*;
+use virtual_node::VirtualNodeWebSys;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -23,13 +24,13 @@ mod testing_utilities;
 /// wasm-pack test --chrome --headless crates/percy-dom --test on_create_element -- on_create_elem_new_node
 #[wasm_bindgen_test]
 fn on_create_elem_new_node() {
-    let mut div: VirtualNode = html! {
+    let mut div: VirtualNodeWebSys = html! {
     <div>
         <span>This span should get replaced</span>
     </div>
     };
 
-    div.as_velement_mut()
+    div.as_elem_mut()
         .unwrap()
         .special_attributes
         .set_on_create_element("foo", move |elem: web_sys::Element| {
@@ -50,11 +51,11 @@ fn on_create_elem_new_node() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test on_create_element -- on_create_elem_triggered_via_patch
 #[wasm_bindgen_test]
 fn on_create_elem_triggered_via_patch() {
-    let start = VirtualNode::element("div");
+    let start = VirtualNode::new_element("div");
 
     let end_id = random_id();
-    let mut end: VirtualNode = html! { <div id=end_id> </div>};
-    end.as_velement_mut()
+    let mut end: VirtualNodeWebSys = html! { <div id=end_id> </div>};
+    end.as_elem_mut()
         .unwrap()
         .special_attributes
         .set_on_create_element("foo", move |elem: web_sys::Element| {
@@ -82,13 +83,13 @@ fn on_create_elem_triggered_via_patch() {
 fn on_create_elem_not_triggered_via_patch_if_same_id() {
     let mut start = html! {<div id="original"></div>};
     start
-        .as_velement_mut()
+        .as_elem_mut()
         .unwrap()
         .special_attributes
         .set_on_create_element("same-key", |_elem: web_sys::Element| {});
 
-    let mut end: VirtualNode = html! {<div id="new"></div>};
-    end.as_velement_mut()
+    let mut end: VirtualNodeWebSys = html! {<div id="new"></div>};
+    end.as_elem_mut()
         .unwrap()
         .special_attributes
         .set_on_create_element("same-key", move |_elem: web_sys::Element| {

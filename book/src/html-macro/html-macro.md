@@ -8,7 +8,11 @@ Text that will never change can be typed right into your HTML
 use percy_dom::prelude::*;
 
 html!{
-  <div> Text goes here </div>
+  <div>
+    Text goes here
+    <span>{"Quoted text"}</span>
+  </div>
+    
 };
 ```
 
@@ -108,5 +112,39 @@ html! {
     <h2>Header</h2>
     <br />
   </div>
+}
+```
+
+### Customizing the Macro
+
+Instead of using `percy-dom`'s `html!` macro, you can create your own using the `define_html_macro!`
+macro from the `html-macro` crate.
+
+```rust
+use html_macro::define_html_macro;
+
+define_html_macro! {
+    /// Builds a `VirtualNode` from a token stream.
+    ///
+    /// ```
+    /// let div: VirtualNode<_> = my_html! { <div> Hello, world. </div> };
+    /// ```
+    my_html!
+    
+    // Specify the `virtual_node::RealDom` trait implementation to use.
+    // The `virtual-dom` crate implements `RealDom` for `()` and `web_sys::Window`.
+    // You can also `impl RealDom for MyType { ... }` yourself.
+    // Here we indicate that the `my_html!` macro will return a `VirtualNode<web_sys::Window>`.
+    real_dom = web_sys::Window,
+    
+    // Optionally specify the macro that the generated `my_html!` calls under the hood.
+    // By default, it will call the `html_macro` crate's `html_with_config!` macro.
+    calls = html_macro::html_with_config,
+}
+
+fn render() -> VirtualNode<web_sys::Window> {
+    my_html! {
+        <span> Quick brown fox. </span>
+    }
 }
 ```

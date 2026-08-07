@@ -10,7 +10,7 @@ mod my_routes {
         id: u16,
         state: Provided<SomeState>,
         meal: Meal,
-    ) -> VirtualNode {
+    ) -> VirtualNode<web_sys::Window> {
         let id = format!("{}", id);
         let meal = format!("{:#?}", meal);
 

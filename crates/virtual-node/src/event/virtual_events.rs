@@ -1,5 +1,5 @@
 use crate::event::event_name::EventName;
-use crate::event::{EventHandler, EventWrapper};
+use crate::event::{EventHandler, RealDom};
 use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -25,6 +25,10 @@ impl ElementEventsId {
     }
 }
 
+/// A [`VirtualEvents`] that is compatible with [`web_sys`].
+#[cfg(feature = "web")]
+pub type VirtualEventsWebSys = VirtualEvents<web_sys::Window>;
+
 /// When we create a DOM node, we store all of it's closures and all of it's children's closures
 /// in VirtualEvents.
 ///
@@ -42,22 +46,22 @@ impl ElementEventsId {
 ///
 /// VirtualEvents can be cloned cheaply. Clones share the same inner data.
 #[derive(Clone)]
-pub struct VirtualEvents {
-    inner: Rc<RefCell<VirtualEventsInner>>,
+pub struct VirtualEvents<Dom: RealDom> {
+    inner: Rc<RefCell<VirtualEventsInner<Dom>>>,
     // Never changes after creation.
     events_id_props_prefix: f64,
 }
 
-struct VirtualEventsInner {
+struct VirtualEventsInner<Dom: RealDom> {
     root: Rc<RefCell<VirtualEventNode>>,
-    events: HashMap<ElementEventsId, Rc<RefCell<HashMap<EventName, EventHandler>>>>,
+    events: HashMap<ElementEventsId, Rc<RefCell<HashMap<EventName, EventHandler<Dom>>>>>,
     /// For non delegated events an event listener is attached to the DOM element using
     /// .add_event_listener();
     /// That event listener is an `EventWrapper`, which in turn will find and call the
     /// `EventHandler`.
     /// This setup allows us to replace the `EventHandler` after every render without needing
     /// to re-attach event listeners.
-    non_delegated_event_wrappers: HashMap<ElementEventsId, HashMap<EventName, EventWrapper>>,
+    non_delegated_event_wrappers: HashMap<ElementEventsId, HashMap<EventName, Dom::EventCallback>>,
     next_events_id: u32,
 }
 
@@ -89,8 +93,9 @@ struct VirtualEventElementChildren {
     last_child: Rc<RefCell<VirtualEventNode>>,
 }
 
-impl VirtualEvents {
+impl<Dom: RealDom> VirtualEvents<Dom> {
     /// Create a new EventsByNodeIdx.
+    #[cfg(feature = "web")]
     pub fn new() -> Self {
         VirtualEvents {
             inner: Rc::new(RefCell::new(VirtualEventsInner::new())),
@@ -131,8 +136,8 @@ impl VirtualEvents {
         &self,
         events_id: ElementEventsId,
         event_name: EventName,
-        event: EventHandler,
-        wrapper: Option<EventWrapper>,
+        event: EventHandler<Dom>,
+        wrapper: Option<Dom::EventCallback>,
     ) {
         assert_eq!(event_name.is_delegated(), wrapper.is_none());
 
@@ -163,7 +168,7 @@ impl VirtualEvents {
         &self,
         events_id: &ElementEventsId,
         event_name: &EventName,
-        event: EventHandler,
+        event: EventHandler<Dom>,
     ) {
         let mut borrow = self.borrow_mut();
 
@@ -179,7 +184,7 @@ impl VirtualEvents {
         &mut self,
         events_id: &ElementEventsId,
         event_name: &EventName,
-    ) -> EventWrapper {
+    ) -> Dom::EventCallback {
         let mut borrow = self.borrow_mut();
         borrow
             .non_delegated_event_wrappers
@@ -194,7 +199,7 @@ impl VirtualEvents {
         &self,
         events_id: &ElementEventsId,
         event_name: &EventName,
-    ) -> Option<EventHandler> {
+    ) -> Option<EventHandler<Dom>> {
         let borrow = self.borrow();
         let borrow = borrow.events.get(events_id)?;
         let borrow = borrow.borrow();
@@ -206,7 +211,7 @@ impl VirtualEvents {
         &self,
         events_id: &ElementEventsId,
         event_name: &EventName,
-    ) -> Option<EventHandler> {
+    ) -> Option<EventHandler<Dom>> {
         let mut borrow = self.borrow_mut();
 
         let borrow = borrow.events.get_mut(events_id)?;
@@ -251,15 +256,15 @@ impl VirtualEvents {
         ElementEventsId(counter)
     }
 
-    fn borrow(&self) -> Ref<'_, VirtualEventsInner> {
+    fn borrow(&self) -> Ref<'_, VirtualEventsInner<Dom>> {
         self.inner.borrow()
     }
-    fn borrow_mut(&self) -> RefMut<'_, VirtualEventsInner> {
+    fn borrow_mut(&self) -> RefMut<'_, VirtualEventsInner<Dom>> {
         self.inner.borrow_mut()
     }
 }
 
-impl VirtualEventsInner {
+impl<Dom: RealDom> VirtualEventsInner<Dom> {
     fn new() -> Self {
         let root = VirtualEventNode {
             // ::Text will get replaced with an element shortly after creating VirtualEvents.
@@ -422,9 +427,10 @@ impl VirtualEventElement {
     }
 }
 
-pub(crate) fn set_events_id(
+#[cfg(feature = "web")]
+pub(crate) fn set_events_id<Dom: RealDom>(
     node: &wasm_bindgen::JsValue,
-    events: &VirtualEvents,
+    events: &VirtualEvents<Dom>,
     events_id: ElementEventsId,
 ) {
     use js_sys::Reflect;
@@ -544,7 +550,7 @@ mod tests {
     }
 
     fn create_element_nodes(
-        events: &VirtualEvents,
+        events: &VirtualEvents<web_sys::Window>,
         count: usize,
     ) -> Vec<Rc<RefCell<VirtualEventNode>>> {
         (0..count)

@@ -1,5 +1,6 @@
 use crate::routes::RouteDataProvider;
 use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 use percy_router::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -9,7 +10,7 @@ use std::rc::Rc;
 pub(crate) fn render_visualize_component_route(
     provider: Provided<RouteDataProvider>,
     component_name_url_friendly: String,
-) -> VirtualNode {
+) -> VirtualNodeWebSys {
     let route_data = provider.get_visualize_component_route_data(&component_name_url_friendly);
     ComponentView { data: route_data }.render()
 }
@@ -54,7 +55,7 @@ struct ComponentVisualizerRouteData {
 }
 
 struct ActivePreview {
-    render_fn: Rc<RefCell<dyn FnMut() -> VirtualNode>>,
+    render_fn: Rc<RefCell<dyn FnMut() -> VirtualNodeWebSys>>,
     description: Option<String>,
 }
 
@@ -67,8 +68,8 @@ struct ComponentView {
     data: ComponentVisualizerRouteData,
 }
 
-impl View for ComponentView {
-    fn render(&self) -> VirtualNode {
+impl View<web_sys::Window> for ComponentView {
+    fn render(&self) -> VirtualNodeWebSys {
         let preview_list = self.render_preview_list();
         let active_preview = self.render_active_preview();
 
@@ -90,8 +91,8 @@ impl View for ComponentView {
 impl ComponentView {
     /// Render a list of links to component previews.
     /// Clicking on a link will show the relevant component.
-    fn render_preview_list(&self) -> VirtualNode {
-        let preview_list: Vec<VirtualNode> = self
+    fn render_preview_list(&self) -> VirtualNodeWebSys {
+        let preview_list: Vec<VirtualNodeWebSys> = self
             .data
             .preview_list
             .iter()
@@ -122,7 +123,7 @@ impl ComponentView {
     }
 
     /// Render the component that is currently being previewed.
-    fn render_active_preview(&self) -> Option<VirtualNode> {
+    fn render_active_preview(&self) -> Option<VirtualNodeWebSys> {
         let data = &self.data;
 
         let active_preview = data.active_preview.as_ref()?;

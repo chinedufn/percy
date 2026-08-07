@@ -1,9 +1,10 @@
 use crate::routes::RouteDataProvider;
 use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 use percy_router::prelude::*;
 
 #[route(path = "/")]
-pub(crate) fn render_index_route(provider: Provided<RouteDataProvider>) -> VirtualNode {
+pub(crate) fn render_index_route(provider: Provided<RouteDataProvider>) -> VirtualNodeWebSys {
     let route_data = provider.get_index_route_data();
     IndexView { data: route_data }.render()
 }
@@ -38,8 +39,8 @@ struct IndexView {
     data: IndexRouteData,
 }
 
-impl View for IndexView {
-    fn render(&self) -> VirtualNode {
+impl View<web_sys::Window> for IndexView {
+    fn render(&self) -> VirtualNodeWebSys {
         let preview_list = self.render_preview_list();
 
         // TODO: Create a `MainContentView` that renders the main navigation and some content.
@@ -60,8 +61,8 @@ impl View for IndexView {
 impl IndexView {
     /// Render a list of links to component previews.
     /// Clicking on a link will show the relevant component.
-    fn render_preview_list(&self) -> VirtualNode {
-        let preview_list: Vec<VirtualNode> = self
+    fn render_preview_list(&self) -> VirtualNodeWebSys {
+        let preview_list: Vec<VirtualNodeWebSys> = self
             .data
             .preview_list
             .iter()

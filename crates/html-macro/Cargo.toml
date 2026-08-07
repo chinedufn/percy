@@ -17,3 +17,7 @@ proc-macro2 = { version = "1", features = ["span-locations"] }
 quote = "1"
 syn = { version = "2", features = ["full", "extra-traits"] }
 html-validation = { path = "../html-validation", version = "0.1.2" }
+
+[dev-dependencies]
+percy-dom = { path = "../percy-dom" }
+trybuild = "1.0"

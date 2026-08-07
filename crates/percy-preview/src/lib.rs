@@ -5,7 +5,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use virtual_node::VirtualNode;
+use virtual_node::VirtualNodeWebSys;
 
 pub use self::rerender::Rerender;
 
@@ -21,7 +21,7 @@ pub struct Preview {
     /// A url friendly version of the name.
     name_url_friendly: UrlFriendlyString,
     /// Render the preview
-    renderer: Rc<RefCell<dyn FnMut() -> VirtualNode>>,
+    renderer: Rc<RefCell<dyn FnMut() -> VirtualNodeWebSys>>,
 }
 
 /// A string that only contains letters, numbers, hyphens and underscores.
@@ -29,7 +29,10 @@ struct UrlFriendlyString(String);
 
 impl Preview {
     /// Create a new Preview.
-    pub fn new<S: ToString>(name: S, render: Rc<RefCell<dyn FnMut() -> VirtualNode>>) -> Self {
+    pub fn new<S: ToString>(
+        name: S,
+        render: Rc<RefCell<dyn FnMut() -> VirtualNodeWebSys>>,
+    ) -> Self {
         let name_url_friendly = UrlFriendlyString::new(name.to_string());
         Preview {
             name: name.to_string(),
@@ -60,7 +63,7 @@ impl Preview {
     }
 
     /// Returns a function that can be used to render the preview.
-    pub fn renderer(&self) -> &Rc<RefCell<dyn FnMut() -> VirtualNode>> {
+    pub fn renderer(&self) -> &Rc<RefCell<dyn FnMut() -> VirtualNodeWebSys>> {
         &self.renderer
     }
 }

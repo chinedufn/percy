@@ -10,7 +10,7 @@ let mut div: VirtualNode = html! {
 </div>
 };
 
-div.as_velement_mut()
+div.as_elem_mut()
     .unwrap()
     .special_attributes
     .set_on_create_element(

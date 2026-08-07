@@ -3,6 +3,7 @@ pub use crate::store::*;
 use crate::views::*;
 use percy_dom::prelude::*;
 pub use percy_dom::VirtualNode;
+use percy_dom::VirtualNodeWebSys;
 use percy_router::prelude::*;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -57,13 +58,13 @@ impl App {
 }
 
 impl App {
-    pub fn render(&self) -> VirtualNode {
+    pub fn render(&self) -> VirtualNodeWebSys {
         self.router.view(self.store.borrow().path()).unwrap()
     }
 }
 
 #[route(path = "/")]
-fn home_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
+fn home_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNodeWebSys {
     HomeView::new(Rc::clone(&store)).render()
 }
 
@@ -73,7 +74,7 @@ fn home_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
   path = "/contributors",
   on_visit = download_contributors_json
 )]
-fn contributors_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNode {
+fn contributors_route(store: Provided<Rc<RefCell<Store>>>) -> VirtualNodeWebSys {
     ContributorsView::new(Rc::clone(&store)).render()
 }
 

@@ -1,5 +1,6 @@
 use percy_css_macro::css;
 use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 
 pub struct NavBarItemView {
     path: &'static str,
@@ -13,8 +14,8 @@ impl NavBarItemView {
     }
 }
 
-impl View for NavBarItemView {
-    fn render(&self) -> VirtualNode {
+impl View<web_sys::Window> for NavBarItemView {
+    fn render(&self) -> VirtualNodeWebSys {
         html! {
             <a
              href=self.path

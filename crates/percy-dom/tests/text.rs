@@ -55,8 +55,8 @@ fn append_text_node() {
 /// wasm-pack test --chrome --headless crates/percy-dom --test text -- append_sibling_text_nodes
 #[wasm_bindgen_test]
 fn append_sibling_text_nodes() {
-    let text1 = VirtualNode::text("Hello");
-    let text2 = VirtualNode::text("World");
+    let text1 = VirtualNode::new_text("Hello");
+    let text2 = VirtualNode::new_text("World");
 
     DiffPatchTest {
         desc: "Append sibling text nodes",
@@ -126,11 +126,11 @@ fn text_node_siblings() {
     let override_expected =
         Some(r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#);
 
-    let old1 = VirtualNode::text("The button has been clicked: ");
-    let old2 = VirtualNode::text("hello");
+    let old1 = VirtualNode::new_text("The button has been clicked: ");
+    let old2 = VirtualNode::new_text("hello");
 
-    let new1 = VirtualNode::text("The button has been clicked: ");
-    let new2 = VirtualNode::text("world");
+    let new1 = VirtualNode::new_text("The button has been clicked: ");
+    let new2 = VirtualNode::new_text("world");
 
     DiffPatchTest {
         desc: "Diff patch on text node siblings",

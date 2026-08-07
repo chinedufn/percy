@@ -14,7 +14,7 @@ use crate::app::AppConfig;
 pub use crate::config::WebClientConfig;
 use crate::window_messenger::WindowMessenger;
 use percy_dom::single_page_app::{intercept_relative_links, set_onpopstate_handler};
-use percy_dom::{render::create_render_scheduler, PercyDom, VirtualNode};
+use percy_dom::{render::create_render_scheduler, PercyDom, VirtualNode, VirtualNodeWebSys};
 use routes::create_router;
 use wasm_bindgen::prelude::*;
 
@@ -94,7 +94,7 @@ fn setup_single_page_application(window_messenger: WindowMessenger) {
     });
 }
 
-fn create_percy_dom(dom_selector_of_mount: &str, start_view: VirtualNode) -> PercyDom {
+fn create_percy_dom(dom_selector_of_mount: &str, start_view: VirtualNodeWebSys) -> PercyDom {
     let mount = document()
         .query_selector(dom_selector_of_mount)
         .unwrap()

@@ -1,8 +1,9 @@
 use crate::app::World;
 use app_world::AppWorldWrapper;
 use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 
-pub(super) fn render_app(app: &AppWorldWrapper<World>) -> VirtualNode {
+pub(super) fn render_app(app: &AppWorldWrapper<World>) -> VirtualNodeWebSys {
     let path = app.read().active_path.clone();
 
     let view = app.read().resources.router.view(&path);

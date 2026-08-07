@@ -1,4 +1,4 @@
-use crate::VElement;
+use crate::VirtualElement;
 
 use crate::event::{insert_non_delegated_event, set_events_id, ElementEventsId, VirtualEvents};
 use web_sys::Element;
@@ -6,11 +6,11 @@ use web_sys::Element;
 use crate::event::ELEMENT_EVENTS_ID_PROP;
 use js_sys::Reflect;
 
-impl VElement {
+impl VirtualElement<web_sys::Window> {
     pub(super) fn add_events(
         &self,
         element: &Element,
-        events: &VirtualEvents,
+        events: &VirtualEvents<web_sys::Window>,
         events_id: ElementEventsId,
     ) {
         set_events_id(element, events, events_id);

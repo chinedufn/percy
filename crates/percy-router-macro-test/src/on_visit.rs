@@ -1,6 +1,7 @@
 use percy_dom::prelude::VirtualNode;
+use percy_dom::VirtualNodeWebSys;
 use percy_router::prelude::*;
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize};
 
 static mut VISITED: AtomicBool = AtomicBool::new(false);
 
@@ -12,7 +13,7 @@ static mut VISITED: AtomicBool = AtomicBool::new(false);
     path = "/",
     on_visit = set_visited_true
 )]
-fn on_visit_works() -> VirtualNode {
+fn on_visit_works() -> VirtualNodeWebSys {
     VirtualNode::Text("On Visit".into())
 }
 
@@ -24,6 +25,8 @@ fn set_visited_true() {
 
 #[test]
 fn visit() {
+    use std::sync::atomic::Ordering;
+
     let router = Router::new(create_routes![on_visit_works]);
 
     unsafe {
@@ -53,7 +56,7 @@ struct SomeState {
   on_visit = set_id
 )]
 #[allow(unused)]
-fn route_param_and_data(id: u16, state: Provided<SomeState>) -> VirtualNode {
+fn route_param_and_data(id: u16, state: Provided<SomeState>) -> VirtualNodeWebSys {
     VirtualNode::Text("".into())
 }
 
@@ -66,6 +69,8 @@ fn set_id(id: u16, state: Provided<SomeState>) {
 
 #[test]
 fn visit_params_data() {
+    use std::sync::atomic::Ordering;
+
     let mut router = Router::new(create_routes![route_param_and_data]);
     router.provide(SomeState { happy: false });
 

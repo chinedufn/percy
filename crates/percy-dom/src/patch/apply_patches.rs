@@ -4,8 +4,8 @@ use std::collections::HashSet;
 use std::collections::{HashMap, VecDeque};
 use std::rc::Rc;
 
-use virtual_node::event::{insert_non_delegated_event, ElementEventsId, VirtualEventNode};
 use virtual_node::VIRTUAL_NODE_MARKER_PROPERTY;
+use virtual_node::event::{ElementEventsId, VirtualEventNode, insert_non_delegated_event};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{Element, HtmlInputElement, HtmlTextAreaElement, Node, Text};
@@ -21,9 +21,9 @@ use crate::{AttributeValue, PatchSpecialAttribute, VirtualNode};
 // Tested in a browser in `percy-dom/tests`
 pub fn patch<N: Into<Node>>(
     root_dom_node: N,
-    new_vnode: &VirtualNode,
-    virtual_events: &mut VirtualEvents,
-    patches: &[Patch],
+    new_vnode: &VirtualNode<web_sys::Window>,
+    virtual_events: &mut VirtualEvents<web_sys::Window>,
+    patches: &[Patch<web_sys::Window>],
 ) -> Result<(), JsValue> {
     let root_events_node = virtual_events.root();
 
@@ -199,11 +199,11 @@ fn find_nodes(ctx: &mut PatchContext) {
 }
 
 fn overwrite_events(
-    node: &VirtualNode,
+    node: &VirtualNode<web_sys::Window>,
     events_node: Rc<RefCell<VirtualEventNode>>,
-    virtual_events: &mut VirtualEvents,
+    virtual_events: &mut VirtualEvents<web_sys::Window>,
 ) {
-    if let Some(elem) = node.as_velement_ref() {
+    if let Some(elem) = node.as_elem() {
         let events_node = events_node.borrow();
         let events_node = events_node.as_element().unwrap();
         let events_id = events_node.events_id();
@@ -225,8 +225,8 @@ fn overwrite_events(
 fn apply_element_patch(
     node: &Element,
     events_elem_and_parent: &EventsNodeAndParent,
-    patch: &Patch,
-    virtual_events: &mut VirtualEvents,
+    patch: &Patch<web_sys::Window>,
+    virtual_events: &mut VirtualEvents<web_sys::Window>,
     ctx: &PatchContext,
 ) -> Result<(), JsValue> {
     match patch {
@@ -402,7 +402,7 @@ fn apply_element_patch(
         Patch::SpecialAttribute(special) => match special {
             PatchSpecialAttribute::CallOnCreateElemOnExistingNode(_node_idx, new_node) => {
                 new_node
-                    .as_velement_ref()
+                    .as_elem()
                     .unwrap()
                     .special_attributes
                     .maybe_call_on_create_element(&node);
@@ -411,7 +411,7 @@ fn apply_element_patch(
             }
             PatchSpecialAttribute::CallOnRemoveElem(_, old_node) => {
                 old_node
-                    .as_velement_ref()
+                    .as_elem()
                     .unwrap()
                     .special_attributes
                     .maybe_call_on_remove_element(node);
@@ -420,7 +420,7 @@ fn apply_element_patch(
             }
             PatchSpecialAttribute::SetDangerousInnerHtml(_node_idx, new_node) => {
                 let new_inner_html = new_node
-                    .as_velement_ref()
+                    .as_elem()
                     .unwrap()
                     .special_attributes
                     .dangerous_inner_html
@@ -464,7 +464,7 @@ fn apply_element_patch(
                         virtual_events.remove_non_delegated_event_wrapper(events_id, event_name);
                     node.remove_event_listener_with_callback(
                         event_name.without_on_prefix(),
-                        wrapper.as_js_value().unwrap().as_ref().unchecked_ref(),
+                        wrapper.as_ref().as_ref().unchecked_ref(),
                     )
                     .unwrap();
                 }
@@ -484,8 +484,8 @@ fn apply_element_patch(
 
 fn apply_text_patch(
     node: &Text,
-    patch: &Patch,
-    events: &mut VirtualEvents,
+    patch: &Patch<web_sys::Window>,
+    events: &mut VirtualEvents<web_sys::Window>,
     events_elem: &Rc<RefCell<VirtualEventNode>>,
 ) -> Result<(), JsValue> {
     match patch {

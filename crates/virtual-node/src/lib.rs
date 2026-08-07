@@ -1,16 +1,6 @@
 //! The virtual_node module exposes the `VirtualNode` struct and methods that power our
 //! virtual dom.
 
-// TODO: A few of these dependencies (including js_sys) are used to power events.. yet events
-// only work on wasm32 targets. So we should start sprinkling some
-//
-// #[cfg(target_arch = "wasm32")]
-// #[cfg(not(target_arch = "wasm32"))]
-//
-// Around in order to get rid of dependencies that we don't need in non wasm32 targets
-
-use std::fmt;
-
 #[cfg(feature = "web")]
 pub use self::create_element::VIRTUAL_NODE_MARKER_PROPERTY;
 #[cfg(feature = "web")]
@@ -18,8 +8,9 @@ pub use self::event::EventAttribFn;
 pub use self::iterable_nodes::*;
 pub use self::velement::*;
 pub use self::vtext::*;
+use crate::event::{EventHandler, RealDom};
+use std::fmt;
 
-#[cfg(feature = "web")]
 pub mod event;
 pub mod test_utils;
 
@@ -29,6 +20,10 @@ mod create_element;
 mod iterable_nodes;
 mod velement;
 mod vtext;
+
+/// A [`VirtualNode`] whose [`RealDom`] is a [`web_sys::Window`].
+#[cfg(feature = "web")]
+pub type VirtualNodeWebSys = VirtualNode<web_sys::Window>;
 
 /// When building your views you'll typically use the `html!` macro to generate
 /// `VirtualNode`'s.
@@ -42,36 +37,47 @@ mod vtext;
 /// Or on the server side you'll just call `.to_string()` on your root virtual node
 /// in order to recursively render the node and all of its children.
 ///
-/// TODO: Make all of these fields private and create accessor methods
-/// TODO: Create a builder to create instances of VirtualNode::Element with
-/// attrs and children without having to explicitly create a VElement
-#[derive(PartialEq)]
-pub enum VirtualNode {
+/// ## Examples
+/// ```
+/// use virtual_node::VirtualNode;
+/// let div = VirtualNode::<()>::new_element("div");
+/// assert_eq!(div.to_string(), "<div></div>");
+/// ```
+pub enum VirtualNode<Dom: RealDom> {
     /// An element node (node type `ELEMENT_NODE`).
-    Element(VElement),
+    Element(VirtualElement<Dom>),
     /// A text node (node type `TEXT_NODE`).
     ///
     /// Note: This wraps a `VText` instead of a plain `String` in
     /// order to enable custom methods like `create_text_node()` on the
     /// wrapped type.
-    Text(VText),
+    Text(VirtualText),
 }
 
-impl VirtualNode {
+impl<Dom: RealDom> PartialEq for VirtualNode<Dom> {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Element(lhs), Self::Element(rhs)) => lhs == rhs,
+            (Self::Text(lhs), Self::Text(rhs)) => lhs == rhs,
+            _ => false,
+        }
+    }
+}
+
+impl<Dom: RealDom> VirtualNode<Dom> {
     /// Create a new virtual element node with a given tag.
     ///
     /// These get patched into the DOM using `document.createElement`
     ///
     /// ```
     /// # use virtual_node::VirtualNode;
-    /// let _div = VirtualNode::element("div");
+    /// let _div = VirtualNode::<()>::new_element("div");
     /// ```
-    // FIXME: Rename to new_element
-    pub fn element<S>(tag: S) -> Self
+    pub fn new_element<S>(tag: S) -> Self
     where
         S: Into<String>,
     {
-        VirtualNode::Element(VElement::new(tag))
+        VirtualNode::Element(VirtualElement::new(tag))
     }
 
     /// Create a new virtual text node with the given text.
@@ -80,45 +86,42 @@ impl VirtualNode {
     ///
     /// ```
     /// # use virtual_node::VirtualNode;
-    /// let _text = VirtualNode::text("My text node");
+    /// let _text = VirtualNode::<()>::new_text("My text node");
     /// ```
-    // FIXME: Rename to new_text
-    pub fn text<S>(text: S) -> Self
+    pub fn new_text<S>(text: S) -> Self
     where
         S: Into<String>,
     {
-        VirtualNode::Text(VText::new(text.into()))
+        VirtualNode::Text(VirtualText::new(text.into()))
     }
 
-    /// Return a [`VElement`] reference, if this is an [`Element`] variant.
+    /// Return a [`VirtualElement`] reference, if this is an [`Element`] variant.
     ///
-    /// [`VElement`]: struct.VElement.html
+    /// [`VirtualElement`]: struct.VirtualElement.html
     /// [`Element`]: enum.VirtualNode.html#variant.Element
-    // TODO: Rename to .as_velement()
-    pub fn as_velement_ref(&self) -> Option<&VElement> {
+    pub fn as_elem(&self) -> Option<&VirtualElement<Dom>> {
         match self {
             VirtualNode::Element(ref element_node) => Some(element_node),
             _ => None,
         }
     }
 
-    /// Return a mutable [`VElement`] reference, if this is an [`Element`] variant.
+    /// Return a mutable [`VirtualElement`] reference, if this is an [`Element`] variant.
     ///
-    /// [`VElement`]: struct.VElement.html
+    /// [`VirtualElement`]: struct.VirtualElement.html
     /// [`Element`]: enum.VirtualNode.html#variant.Element
-    pub fn as_velement_mut(&mut self) -> Option<&mut VElement> {
+    pub fn as_elem_mut(&mut self) -> Option<&mut VirtualElement<Dom>> {
         match self {
             VirtualNode::Element(ref mut element_node) => Some(element_node),
             _ => None,
         }
     }
 
-    /// Return a [`VText`] reference, if this is an [`Text`] variant.
+    /// Return a [`VirtualText`] reference, if this is an [`Text`] variant.
     ///
-    /// [`VText`]: struct.VText.html
+    /// [`VirtualText`]: struct.VirtualText.html
     /// [`Text`]: enum.VirtualNode.html#variant.Text
-    // TODO: Rename to .as_vtext()
-    pub fn as_vtext_ref(&self) -> Option<&VText> {
+    pub fn as_text(&self) -> Option<&VirtualText> {
         match self {
             VirtualNode::Text(ref text_node) => Some(text_node),
             _ => None,
@@ -129,27 +132,38 @@ impl VirtualNode {
     ///
     /// [`VText`]: struct.VText.html
     /// [`Text`]: enum.VirtualNode.html#variant.Text
-    pub fn as_vtext_mut(&mut self) -> Option<&mut VText> {
+    pub fn as_text_mut(&mut self) -> Option<&mut VirtualText> {
         match self {
             VirtualNode::Text(ref mut text_node) => Some(text_node),
             _ => None,
         }
     }
 
-    /// Create and return a [`web_sys::Node`] along with its events.
-    #[cfg(feature = "web")]
-    pub fn create_dom_node(
-        &self,
-        events: &mut self::event::VirtualEvents,
-    ) -> (web_sys::Node, crate::event::VirtualEventNode) {
+    /// Convert this `VirtualNode<DomA>` into a `VirtualNode<DomB>`.
+    pub fn map_real_dom<New: RealDom>(
+        self,
+        // Used to be `impl Fn`, but switched to `&dyn Fn` after a user got an error:
+        // ```
+        // error: reached the recursion limit while instantiating `VirtualNode::<NewDomType>::map_real_dom::<Window, &&&&&&&&&&&&&&&&&&&...>
+        // ```
+        convert_event: &dyn Fn(EventHandler<Dom>) -> EventHandler<New>,
+    ) -> VirtualNode<New> {
         match self {
-            VirtualNode::Text(text_node) => (
-                text_node.create_text_node().into(),
-                events.create_text_node(),
-            ),
-            VirtualNode::Element(element_node) => {
-                let (elem, events) = element_node.create_element_node(events);
-                (elem.into(), events)
+            VirtualNode::Text(text) => VirtualNode::Text(text),
+            VirtualNode::Element(elem) => {
+                let children: Vec<VirtualNode<New>> = elem
+                    .children
+                    .into_iter()
+                    .map(|old| old.map_real_dom::<New>(convert_event))
+                    .collect();
+
+                VirtualNode::Element(VirtualElement {
+                    tag: elem.tag,
+                    attrs: elem.attrs,
+                    events: elem.events.convert_all(convert_event),
+                    children,
+                    special_attributes: elem.special_attributes,
+                })
             }
         }
     }
@@ -186,62 +200,87 @@ impl VirtualNode {
     }
 }
 
-/// A trait with common functionality for rendering front-end views.
-pub trait View {
-    /// Render a VirtualNode, or any IntoIter<VirtualNode>
-    fn render(&self) -> VirtualNode;
+#[cfg(feature = "web")]
+impl VirtualNode<web_sys::Window> {
+    /// Create and return a [`web_sys::Node`] along with its events.
+    pub fn create_dom_node(
+        &self,
+        events: &mut self::event::VirtualEvents<web_sys::Window>,
+    ) -> (web_sys::Node, crate::event::VirtualEventNode) {
+        match self {
+            VirtualNode::Text(text_node) => (
+                text_node.create_text_node().into(),
+                events.create_text_node(),
+            ),
+            VirtualNode::Element(element_node) => {
+                let (elem, events) = element_node.create_element_node(events);
+                (elem.into(), events)
+            }
+        }
+    }
 }
 
-impl<V> From<&V> for VirtualNode
+// Blocked by `trait aliases` feature https://github.com/rust-lang/rust/issues/41517
+// /// A [`View`] whose returned [`VirtualNode`]s can be rendered to a [`web_sys`] DOM.
+// #[cfg(feature = "web")]
+// pub trait ViewWebSys = View<web_sys::Window>;
+
+/// A trait with common functionality for rendering front-end views.
+pub trait View<Dom: RealDom> {
+    /// Render a VirtualNode, or any IntoIter<VirtualNode>
+    fn render(&self) -> VirtualNode<Dom>;
+}
+
+impl<V, Dom: RealDom> From<&V> for VirtualNode<Dom>
 where
-    V: View,
+    V: View<Dom>,
 {
     fn from(v: &V) -> Self {
         v.render()
     }
 }
 
-impl From<VText> for VirtualNode {
-    fn from(other: VText) -> Self {
+impl<Dom: RealDom> From<VirtualText> for VirtualNode<Dom> {
+    fn from(other: VirtualText) -> Self {
         VirtualNode::Text(other)
     }
 }
 
-impl From<VElement> for VirtualNode {
-    fn from(other: VElement) -> Self {
+impl<Dom: RealDom> From<VirtualElement<Dom>> for VirtualNode<Dom> {
+    fn from(other: VirtualElement<Dom>) -> Self {
         VirtualNode::Element(other)
     }
 }
 
-impl From<&str> for VirtualNode {
+impl<Dom: RealDom> From<&str> for VirtualNode<Dom> {
     fn from(other: &str) -> Self {
-        VirtualNode::text(other)
+        VirtualNode::new_text(other)
     }
 }
 
-impl From<String> for VirtualNode {
+impl<Dom: RealDom> From<String> for VirtualNode<Dom> {
     fn from(other: String) -> Self {
-        VirtualNode::text(other.as_str())
+        VirtualNode::new_text(other.as_str())
     }
 }
 
-impl IntoIterator for VirtualNode {
-    type Item = VirtualNode;
+impl<Dom: RealDom> IntoIterator for VirtualNode<Dom> {
+    type Item = VirtualNode<Dom>;
     // TODO: ::std::iter::Once<VirtualNode> to avoid allocation
-    type IntoIter = ::std::vec::IntoIter<VirtualNode>;
+    type IntoIter = ::std::vec::IntoIter<VirtualNode<Dom>>;
 
     fn into_iter(self) -> Self::IntoIter {
         vec![self].into_iter()
     }
 }
 
-impl Into<::std::vec::IntoIter<VirtualNode>> for VirtualNode {
-    fn into(self) -> ::std::vec::IntoIter<VirtualNode> {
+impl<Dom: RealDom> Into<::std::vec::IntoIter<VirtualNode<Dom>>> for VirtualNode<Dom> {
+    fn into(self) -> ::std::vec::IntoIter<VirtualNode<Dom>> {
         self.into_iter()
     }
 }
 
-impl fmt::Debug for VirtualNode {
+impl<Dom: RealDom> fmt::Debug for VirtualNode<Dom> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             VirtualNode::Element(e) => write!(f, "Node::{:?}", e),
@@ -251,7 +290,7 @@ impl fmt::Debug for VirtualNode {
 }
 
 // Turn a VirtualNode into an HTML string (delegate impl to variants)
-impl fmt::Display for VirtualNode {
+impl<Dom: RealDom> fmt::Display for VirtualNode<Dom> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             VirtualNode::Element(element) => write!(f, "{}", element),
@@ -266,7 +305,7 @@ mod tests {
 
     #[test]
     fn self_closing_tag_to_string() {
-        let node = VirtualNode::element("br");
+        let node = VirtualNode::<()>::new_element("br");
 
         // No </br> since self closing tag
         assert_eq!(&node.to_string(), "<br>");
@@ -274,19 +313,19 @@ mod tests {
 
     #[test]
     fn to_string() {
-        let mut node = VirtualNode::Element(VElement::new("div"));
-        node.as_velement_mut()
+        let mut node = VirtualNode::Element(VirtualElement::<()>::new("div"));
+        node.as_elem_mut()
             .unwrap()
             .attrs
             .insert("id".into(), "some-id".into());
 
-        let mut child = VirtualNode::Element(VElement::new("span"));
+        let mut child = VirtualNode::Element(VirtualElement::new("span"));
 
-        let text = VirtualNode::Text(VText::new("Hello world"));
+        let text = VirtualNode::Text(VirtualText::new("Hello world"));
 
-        child.as_velement_mut().unwrap().children.push(text);
+        child.as_elem_mut().unwrap().children.push(text);
 
-        node.as_velement_mut().unwrap().children.push(child);
+        node.as_elem_mut().unwrap().children.push(child);
 
         let expected = r#"<div id="some-id"><span>Hello world</span></div>"#;
 
@@ -296,7 +335,7 @@ mod tests {
     /// Verify that a boolean attribute is included in the string if true.
     #[test]
     fn boolean_attribute_true_shown() {
-        let mut button = VElement::new("button");
+        let mut button = VirtualElement::<()>::new("button");
         button.attrs.insert("disabled".into(), true.into());
 
         let expected = "<button disabled></button>";
@@ -308,7 +347,7 @@ mod tests {
     /// Verify that a boolean attribute is not included in the string if false.
     #[test]
     fn boolean_attribute_false_ignored() {
-        let mut button = VElement::new("button");
+        let mut button = VirtualElement::<()>::new("button");
         button.attrs.insert("disabled".into(), false.into());
 
         let expected = "<button></button>";
