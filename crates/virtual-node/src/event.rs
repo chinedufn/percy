@@ -15,7 +15,6 @@ use std::collections::HashMap;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
-use wasm_bindgen::JsValue;
 
 mod event_handlers;
 mod event_name;
@@ -146,6 +145,7 @@ impl EventAttribFn {
     /// Currently used by `crates/percy-dom`'s test suite.
     #[doc(hidden)]
     pub fn new_noop() -> EventAttribFn {
+        use wasm_bindgen::JsValue;
         let noop = Rc::new(JsValue::NULL);
         EventAttribFn::new(noop)
     }
