@@ -195,11 +195,11 @@ use virtual_node::VirtualNode;
 /// Test that we generate the right Vec&lt;Patch&gt; for some start and end virtual dom.
 pub struct DiffTestCase&lt;'a&gt; {
     // ex: html! { &lt;div&gt; &lt;/div&gt; }
-    pub old: VirtualNode,
+    pub old: VirtualNode&lt;web_sys::Window&gt;,
     // ex: html! { &lt;strong&gt; &lt;/strong&gt; }
-    pub new: VirtualNode,
+    pub new: VirtualNode&lt;web_sys::Window&gt;,
     // ex: vec![Patch::Replace(0, &amp;html! { &lt;strong&gt;&lt;/strong&gt; })],
-    pub expected: Vec&lt;Patch&lt;'a&gt;&gt;,
+    pub expected: Vec&lt;Patch&lt;'a, web_sys::Window&gt;&gt;,
 }
 
 impl&lt;'a&gt; DiffTestCase&lt;'a&gt; {
@@ -251,6 +251,7 @@ cargo test -p percy-dom --lib diff::tests
 use console_error_panic_hook;
 use percy_dom::event::VirtualEvents;
 use percy_dom::prelude::*;
+use virtual_node::VirtualNodeWebSys;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node};
 
@@ -261,9 +262,9 @@ pub struct DiffPatchTest&lt;'a&gt; {
     ///  copy/pasting another similar test.
     pub desc: &amp;'static str,
     /// The old virtual node.
-    pub old: VirtualNode,
+    pub old: VirtualNodeWebSys,
     /// The new virtual node.
-    pub new: VirtualNode,
+    pub new: VirtualNodeWebSys,
     /// By default we generate the expected based on `new.to_string()`. You can
     /// use this field to override the expected HTML after patching.
     pub override_expected: Option&lt;&amp;'a str&gt;,

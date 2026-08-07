@@ -181,7 +181,7 @@ trusts arbitrary un-escaped HTML strings.</p>
 let mut div: VirtualNode = html! {
 &lt;div&gt;&lt;/div&gt;
 };
-div.as_velement_mut()
+div.as_elem_mut()
     .unwrap()
     .special_attributes
     .dangerous_inner_html = Some(tooltip_contents.to_string());

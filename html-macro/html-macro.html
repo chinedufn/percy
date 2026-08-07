@@ -174,7 +174,11 @@
 </span>use percy_dom::prelude::*;
 
 html!{
-  &lt;div&gt; Text goes here &lt;/div&gt;
+  &lt;div&gt;
+    Text goes here
+    &lt;span&gt;{&quot;Quoted text&quot;}&lt;/span&gt;
+  &lt;/div&gt;
+    
 };
 <span class="boring">}
 </span></code></pre></pre>
@@ -275,6 +279,40 @@ html! {
     &lt;h2&gt;Header&lt;/h2&gt;
     &lt;br /&gt;
   &lt;/div&gt;
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h3 id="customizing-the-macro"><a class="header" href="#customizing-the-macro">Customizing the Macro</a></h3>
+<p>Instead of using <code>percy-dom</code>'s <code>html!</code> macro, you can create your own using the <code>define_html_macro!</code>
+macro from the <code>html-macro</code> crate.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use html_macro::define_html_macro;
+
+define_html_macro! {
+    /// Builds a `VirtualNode` from a token stream.
+    ///
+    /// ```
+    /// let div: VirtualNode&lt;_&gt; = my_html! { &lt;div&gt; Hello, world. &lt;/div&gt; };
+    /// ```
+    my_html!
+    
+    // Specify the `virtual_node::RealDom` trait implementation to use.
+    // The `virtual-dom` crate implements `RealDom` for `()` and `web_sys::Window`.
+    // You can also `impl RealDom for MyType { ... }` yourself.
+    // Here we indicate that the `my_html!` macro will return a `VirtualNode&lt;web_sys::Window&gt;`.
+    real_dom = web_sys::Window,
+    
+    // Optionally specify the macro that the generated `my_html!` calls under the hood.
+    // By default, it will call the `html_macro` crate's `html_with_config!` macro.
+    calls = html_macro::html_with_config,
+}
+
+fn render() -&gt; VirtualNode&lt;web_sys::Window&gt; {
+    my_html! {
+        &lt;span&gt; Quick brown fox. &lt;/span&gt;
+    }
 }
 <span class="boring">}
 </span></code></pre></pre>

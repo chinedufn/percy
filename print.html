@@ -235,7 +235,11 @@ content to a user.</p>
 </span>use percy_dom::prelude::*;
 
 html!{
-  &lt;div&gt; Text goes here &lt;/div&gt;
+  &lt;div&gt;
+    Text goes here
+    &lt;span&gt;{&quot;Quoted text&quot;}&lt;/span&gt;
+  &lt;/div&gt;
+    
 };
 <span class="boring">}
 </span></code></pre></pre>
@@ -336,6 +340,40 @@ html! {
     &lt;h2&gt;Header&lt;/h2&gt;
     &lt;br /&gt;
   &lt;/div&gt;
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h3 id="customizing-the-macro"><a class="header" href="#customizing-the-macro">Customizing the Macro</a></h3>
+<p>Instead of using <code>percy-dom</code>'s <code>html!</code> macro, you can create your own using the <code>define_html_macro!</code>
+macro from the <code>html-macro</code> crate.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use html_macro::define_html_macro;
+
+define_html_macro! {
+    /// Builds a `VirtualNode` from a token stream.
+    ///
+    /// ```
+    /// let div: VirtualNode&lt;_&gt; = my_html! { &lt;div&gt; Hello, world. &lt;/div&gt; };
+    /// ```
+    my_html!
+    
+    // Specify the `virtual_node::RealDom` trait implementation to use.
+    // The `virtual-dom` crate implements `RealDom` for `()` and `web_sys::Window`.
+    // You can also `impl RealDom for MyType { ... }` yourself.
+    // Here we indicate that the `my_html!` macro will return a `VirtualNode&lt;web_sys::Window&gt;`.
+    real_dom = web_sys::Window,
+    
+    // Optionally specify the macro that the generated `my_html!` calls under the hood.
+    // By default, it will call the `html_macro` crate's `html_with_config!` macro.
+    calls = html_macro::html_with_config,
+}
+
+fn render() -&gt; VirtualNode&lt;web_sys::Window&gt; {
+    my_html! {
+        &lt;span&gt; Quick brown fox. &lt;/span&gt;
+    }
 }
 <span class="boring">}
 </span></code></pre></pre>
@@ -459,7 +497,7 @@ trusts arbitrary un-escaped HTML strings.</p>
 let mut div: VirtualNode = html! {
 &lt;div&gt;&lt;/div&gt;
 };
-div.as_velement_mut()
+div.as_elem_mut()
     .unwrap()
     .special_attributes
     .dangerous_inner_html = Some(tooltip_contents.to_string());
@@ -501,7 +539,7 @@ when the element is first created.</p>
 &lt;/div&gt;
 };
 
-div.as_velement_mut()
+div.as_elem_mut()
     .unwrap()
     .special_attributes
     .set_on_create_element(
@@ -543,7 +581,7 @@ when the element is removed from the DOM.</p>
     &lt;div&gt;&lt;/div&gt;
 };
 
-div.as_velement_mut()
+div.as_elem_mut()
     .unwrap()
     .special_attributes
     .set_on_remove_element(
@@ -666,6 +704,7 @@ fn main () {
 <p>Percy's testing story is very much a work in progress, so please give feedback as you write tests!</p>
 <p>Here's an example of unit testing your views. You can find it in the examples directory at <a href="https://github.com/chinedufn/percy/tree/master/examples/unit-testing-views">examples/unit-testing-views</a>.</p>
 <pre><pre class="playground"><code class="language-rust">use percy_dom::prelude::*;
+use percy_dom::VirtualNodeWebSys;
 
 fn main() {
     println!(&quot;To see this example in action:&quot;);
@@ -673,7 +712,7 @@ fn main() {
 }
 
 #[allow(unused)]
-fn full_water_bottle() -&gt; VirtualNode {
+fn full_water_bottle() -&gt; VirtualNodeWebSys {
     html! {
     &lt;div&gt;
         &lt;span id=&quot;full-water&quot;&gt;
@@ -684,12 +723,12 @@ fn full_water_bottle() -&gt; VirtualNode {
 }
 
 #[allow(unused)]
-fn not_full_water_bottle(percent_full: f32) -&gt; VirtualNode {
+fn not_full_water_bottle(percent_full: f32) -&gt; VirtualNodeWebSys {
     let message = format!(
         &quot;Please fill me up :( I am only {} percent full :(&quot;,
         percent_full
     );
-    let message = VirtualNode::text(&amp;*message);
+    let message = VirtualNode::new_text(&amp;*message);
 
     html! {
         &lt;div id=&quot;not-ful-water&quot;&gt;
@@ -699,7 +738,7 @@ fn not_full_water_bottle(percent_full: f32) -&gt; VirtualNode {
 }
 
 #[allow(unused)]
-fn water_bottle_view(percent_full: f32) -&gt; VirtualNode {
+fn water_bottle_view(percent_full: f32) -&gt; VirtualNodeWebSys {
     if percent_full &gt; 0.5 {
         full_water_bottle()
     } else {
@@ -718,7 +757,7 @@ mod tests {
                 .children_recursive()
                 .iter()
                 .filter(|v| {
-                    if let Some(elem) = v.as_velement_ref() {
+                    if let Some(elem) = v.as_elem() {
                         return elem.attrs.get(&quot;id&quot;) == Some(&amp;&quot;full-water&quot;.into());
                     }
 
@@ -732,11 +771,8 @@ mod tests {
         let water_view = water_bottle_view(0.2587);
 
         assert_eq!(
-            water_view
-                .as_velement_ref()
-                .expect(&quot;Not an element node&quot;)
-                .children[0]
-                .as_vtext_ref()
+            water_view.as_elem().expect(&quot;Not an element node&quot;).children[0]
+                .as_text()
                 .expect(&quot;Not a text node&quot;)
                 .text,
             &quot;Please fill me up :( I am only 0.2587 percent full :(&quot;
@@ -983,7 +1019,7 @@ mod my_routes {
         id: u16,
         state: Provided&lt;SomeState&gt;,
         meal: Meal,
-    ) -&gt; VirtualNode {
+    ) -&gt; VirtualNode&lt;web_sys::Window&gt; {
         let id = format!(&quot;{}&quot;, id);
         let meal = format!(&quot;{:#?}&quot;, meal);
 
@@ -1059,7 +1095,7 @@ mod my_routes {
         id: u16,
         state: Provided&lt;SomeState&gt;,
         meal: Meal,
-    ) -&gt; VirtualNode {
+    ) -&gt; VirtualNode&lt;web_sys::Window&gt; {
         let id = format!(&quot;{}&quot;, id);
         let meal = format!(&quot;{:#?}&quot;, meal);
 
@@ -1294,8 +1330,8 @@ use std::collections::HashSet;
 use std::collections::{HashMap, VecDeque};
 use std::rc::Rc;
 
-use virtual_node::event::{insert_non_delegated_event, ElementEventsId, VirtualEventNode};
 use virtual_node::VIRTUAL_NODE_MARKER_PROPERTY;
+use virtual_node::event::{ElementEventsId, VirtualEventNode, insert_non_delegated_event};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{Element, HtmlInputElement, HtmlTextAreaElement, Node, Text};
@@ -1311,9 +1347,9 @@ use crate::{AttributeValue, PatchSpecialAttribute, VirtualNode};
 // Tested in a browser in `percy-dom/tests`
 pub fn patch&lt;N: Into&lt;Node&gt;&gt;(
    root_dom_node: N,
-   new_vnode: &amp;VirtualNode,
-   virtual_events: &amp;mut VirtualEvents,
-   patches: &amp;[Patch],
+   new_vnode: &amp;VirtualNode&lt;web_sys::Window&gt;,
+   virtual_events: &amp;mut VirtualEvents&lt;web_sys::Window&gt;,
+   patches: &amp;[Patch&lt;web_sys::Window&gt;],
 ) -&gt; Result&lt;(), JsValue&gt; {
    let root_events_node = virtual_events.root();
 
@@ -1489,11 +1525,11 @@ fn find_nodes(ctx: &amp;mut PatchContext) {
 }
 
 fn overwrite_events(
-   node: &amp;VirtualNode,
+   node: &amp;VirtualNode&lt;web_sys::Window&gt;,
    events_node: Rc&lt;RefCell&lt;VirtualEventNode&gt;&gt;,
-   virtual_events: &amp;mut VirtualEvents,
+   virtual_events: &amp;mut VirtualEvents&lt;web_sys::Window&gt;,
 ) {
-   if let Some(elem) = node.as_velement_ref() {
+   if let Some(elem) = node.as_elem() {
        let events_node = events_node.borrow();
        let events_node = events_node.as_element().unwrap();
        let events_id = events_node.events_id();
@@ -1515,8 +1551,8 @@ fn overwrite_events(
 fn apply_element_patch(
    node: &amp;Element,
    events_elem_and_parent: &amp;EventsNodeAndParent,
-   patch: &amp;Patch,
-   virtual_events: &amp;mut VirtualEvents,
+   patch: &amp;Patch&lt;web_sys::Window&gt;,
+   virtual_events: &amp;mut VirtualEvents&lt;web_sys::Window&gt;,
    ctx: &amp;PatchContext,
 ) -&gt; Result&lt;(), JsValue&gt; {
    match patch {
@@ -1692,7 +1728,7 @@ fn apply_element_patch(
        Patch::SpecialAttribute(special) =&gt; match special {
            PatchSpecialAttribute::CallOnCreateElemOnExistingNode(_node_idx, new_node) =&gt; {
                new_node
-                   .as_velement_ref()
+                   .as_elem()
                    .unwrap()
                    .special_attributes
                    .maybe_call_on_create_element(&amp;node);
@@ -1701,7 +1737,7 @@ fn apply_element_patch(
            }
            PatchSpecialAttribute::CallOnRemoveElem(_, old_node) =&gt; {
                old_node
-                   .as_velement_ref()
+                   .as_elem()
                    .unwrap()
                    .special_attributes
                    .maybe_call_on_remove_element(node);
@@ -1710,7 +1746,7 @@ fn apply_element_patch(
            }
            PatchSpecialAttribute::SetDangerousInnerHtml(_node_idx, new_node) =&gt; {
                let new_inner_html = new_node
-                   .as_velement_ref()
+                   .as_elem()
                    .unwrap()
                    .special_attributes
                    .dangerous_inner_html
@@ -1754,7 +1790,7 @@ fn apply_element_patch(
                        virtual_events.remove_non_delegated_event_wrapper(events_id, event_name);
                    node.remove_event_listener_with_callback(
                        event_name.without_on_prefix(),
-                       wrapper.as_js_value().unwrap().as_ref().unchecked_ref(),
+                       wrapper.as_ref().as_ref().unchecked_ref(),
                    )
                    .unwrap();
                }
@@ -1774,8 +1810,8 @@ fn apply_element_patch(
 
 fn apply_text_patch(
    node: &amp;Text,
-   patch: &amp;Patch,
-   events: &amp;mut VirtualEvents,
+   patch: &amp;Patch&lt;web_sys::Window&gt;,
+   events: &amp;mut VirtualEvents&lt;web_sys::Window&gt;,
    events_elem: &amp;Rc&lt;RefCell&lt;VirtualEventNode&gt;&gt;,
 ) -&gt; Result&lt;(), JsValue&gt; {
    match patch {
@@ -1867,11 +1903,11 @@ use virtual_node::VirtualNode;
 /// Test that we generate the right Vec&lt;Patch&gt; for some start and end virtual dom.
 pub struct DiffTestCase&lt;'a&gt; {
     // ex: html! { &lt;div&gt; &lt;/div&gt; }
-    pub old: VirtualNode,
+    pub old: VirtualNode&lt;web_sys::Window&gt;,
     // ex: html! { &lt;strong&gt; &lt;/strong&gt; }
-    pub new: VirtualNode,
+    pub new: VirtualNode&lt;web_sys::Window&gt;,
     // ex: vec![Patch::Replace(0, &amp;html! { &lt;strong&gt;&lt;/strong&gt; })],
-    pub expected: Vec&lt;Patch&lt;'a&gt;&gt;,
+    pub expected: Vec&lt;Patch&lt;'a, web_sys::Window&gt;&gt;,
 }
 
 impl&lt;'a&gt; DiffTestCase&lt;'a&gt; {
@@ -1923,6 +1959,7 @@ cargo test -p percy-dom --lib diff::tests
 use console_error_panic_hook;
 use percy_dom::event::VirtualEvents;
 use percy_dom::prelude::*;
+use virtual_node::VirtualNodeWebSys;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node};
 
@@ -1933,9 +1970,9 @@ pub struct DiffPatchTest&lt;'a&gt; {
     ///  copy/pasting another similar test.
     pub desc: &amp;'static str,
     /// The old virtual node.
-    pub old: VirtualNode,
+    pub old: VirtualNodeWebSys,
     /// The new virtual node.
-    pub new: VirtualNode,
+    pub new: VirtualNodeWebSys,
     /// By default we generate the expected based on `new.to_string()`. You can
     /// use this field to override the expected HTML after patching.
     pub override_expected: Option&lt;&amp;'a str&gt;,
@@ -2084,7 +2121,7 @@ mod my_routes {
         id: u16,
         state: Provided&lt;SomeState&gt;,
         meal: Meal,
-    ) -&gt; VirtualNode {
+    ) -&gt; VirtualNode&lt;web_sys::Window&gt; {
         let id = format!(&quot;{}&quot;, id);
         let meal = format!(&quot;{:#?}&quot;, meal);
 
@@ -2165,7 +2202,7 @@ mod my_routes {
         id: u16,
         state: Provided&lt;SomeState&gt;,
         meal: Meal,
-    ) -&gt; VirtualNode {
+    ) -&gt; VirtualNode&lt;web_sys::Window&gt; {
         let id = format!(&quot;{}&quot;, id);
         let meal = format!(&quot;{:#?}&quot;, meal);
 
@@ -2324,125 +2361,54 @@ crate.</p>
 <p>Here are a few examples:</p>
 <h4 id="wrong-closing-tag"><a class="header" href="#wrong-closing-tag">Wrong closing tag</a></h4>
 <p>You've opened with one tag but are attempting to close with another.</p>
-<pre><pre class="playground"><code class="language-rust">extern crate percy_dom;
-use percy_dom::prelude::*;
-
-// Expected a closing div tag, found a closing strong tag
-fn main() {
-    html! {
-        &lt;div&gt; &lt;/strong&gt;
-    };
-}
-</code></pre></pre>
-<pre><code>error: Wrong closing tag. Try changing &quot;strong&quot; into &quot;div&quot;
- --&gt; $DIR/wrong_closing_tag.rs:7:17
-  |
-7 |         &lt;div&gt; &lt;/strong&gt;
-  |                 ^^^^^^
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include ../../../../crates/html-macro-test/src/tests/ui/wrong_closing_tag.rs}}
+<span class="boring">}
+</span></code></pre></pre>
+<pre><code>{{#include ../../../../crates/html-macro-test/src/tests/ui/wrong_closing_tag.stderr}}
 </code></pre>
 <h4 id="should-be-self-closing-tag"><a class="header" href="#should-be-self-closing-tag">Should be self closing tag</a></h4>
 <p>The tag that you are trying to use is a self closing tagl</p>
-<pre><pre class="playground"><code class="language-rust">extern crate percy_dom;
-use percy_dom::prelude::*;
-
-// We are using open and close tags for a tag that should
-// actually be a self closing tag
-fn main() {
-    html! {
-        &lt;br&gt;&lt;/br&gt;
-    };
-}
-</code></pre></pre>
-<pre><code>error: br is a self closing tag. Try &quot;&lt;br&gt;&quot; or &quot;&lt;br /&gt;&quot;
- --&gt; $DIR/should_be_self_closing_tag.rs:8:15
-  |
-8 |         &lt;br&gt;&lt;/br&gt;
-  |               ^^
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include ../../../../crates/html-macro-test/src/tests/ui/should_be_self_closing_tag.rs}}
+<span class="boring">}
+</span></code></pre></pre>
+<pre><code>{{#include ../../../../crates/html-macro-test/src/tests/ui/should_be_self_closing_tag.stderr}}
 </code></pre>
 <h4 id="invalid-html-tag"><a class="header" href="#invalid-html-tag">Invalid HTML tag</a></h4>
 <p>You're trying to use a tag that isn't in the HTML specification.
 This might happen if you've made a typo.</p>
-<pre><pre class="playground"><code class="language-rust">//! # To Run
-//!
-//! cargo test -p html-macro-test --lib ui -- trybuild=invalid_html_tag.rs
-
-extern crate percy_dom;
-use percy_dom::prelude::*;
-
-// Used a tag name that does not exist in the HTML spec
-fn main() {
-    html! {
-        &lt;invalidtagname&gt;&lt;/invalidtagname&gt;
-    };
-}
-</code></pre></pre>
-<pre><code>error: invalidtagname is not a valid HTML tag.
-
-       If you are trying to use a valid HTML tag, perhaps there's a typo?
-
-       If you are trying to use a custom component, please capitalize the component name.
-
-       custom components: https://chinedufn.github.io/percy/html-macro/custom-components/index.html
-  --&gt; src/tests/ui/invalid_html_tag.rs
-   |
-   |         &lt;invalidtagname&gt;&lt;/invalidtagname&gt;
-   |          ^^^^^^^^^^^^^^
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include ../../../../crates/html-macro-test/src/tests/ui/invalid_html_tag.rs}}
+<span class="boring">}
+</span></code></pre></pre>
+<pre><code>{{#include ../../../../crates/html-macro-test/src/tests/ui/invalid_html_tag.stderr}}
 </code></pre>
 <h4 id="on-create-element-without-key"><a class="header" href="#on-create-element-without-key">on create element without key</a></h4>
 <p>You set the <code>on_create_element</code> but did not set a key.</p>
-<pre><pre class="playground"><code class="language-rust">//! # To Run
-//!
-//! cargo test -p html-macro-test --lib ui -- trybuild=on_create_element_without_key.rs
-
-extern crate percy_dom;
-use percy_dom::prelude::*;
-
-// Used the `on_create_element` attribute without providing a key attribute.
-fn main() {
-    html! {
-        &lt;div on_create_element = ||{} &gt;
-        &lt;/div&gt;
-    };
-}
-</code></pre></pre>
-<pre><code>error: Whenever you use the `on_create_element=...` attribute,
-       you must also use must use the `key=&quot;...&quot;` attribute.
-
-       Documentation:
-         -&gt; https://chinedufn.github.io/percy/html-macro/real-elements-and-nodes/on-create-elem/index.html
-
-  --&gt; src/tests/ui/on_create_element_without_key.rs
-   |
-   |         &lt;div on_create_element = ||{} &gt;
-   |              ^^^^^^^^^^^^^^^^^
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include ../../../../crates/html-macro-test/src/tests/ui/on_create_element_without_key.rs}}
+<span class="boring">}
+</span></code></pre></pre>
+<pre><code>{{#include ../../../../crates/html-macro-test/src/tests/ui/on_create_element_without_key.stderr}}
 </code></pre>
 <h4 id="on-remove-element-without-key"><a class="header" href="#on-remove-element-without-key">on remove element without key</a></h4>
 <p>You set the <code>on_remove_element</code> but did not set a key.</p>
-<pre><pre class="playground"><code class="language-rust">//! # To Run
-//!
-//! cargo test -p html-macro-test --lib ui -- trybuild=on_remove_element_without_key.rs
-
-extern crate percy_dom;
-use percy_dom::prelude::*;
-
-// Used the `on_remove_element` attribute without providing a key attribute.
-fn main() {
-    html! {
-        &lt;div on_remove_element = ||{} &gt;
-        &lt;/div&gt;
-    };
-}
-</code></pre></pre>
-<pre><code>error: Whenever you use the `on_remove_element=...` attribute,
-       you must also use must use the `key=&quot;...&quot;` attribute.
-
-       Documentation:
-         -&gt; https://chinedufn.github.io/percy/html-macro/real-elements-and-nodes/on-remove-elem/index.html
-
-  --&gt; src/tests/ui/on_remove_element_without_key.rs
-   |
-   |         &lt;div on_remove_element = ||{} &gt;
-   |              ^^^^^^^^^^^^^^^^^
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>{{#include ../../../../crates/html-macro-test/src/tests/ui/on_remove_element_without_key.rs}}
+<span class="boring">}
+</span></code></pre></pre>
+<pre><code>{{#include ../../../../crates/html-macro-test/src/tests/ui/on_remove_element_without_key.stderr}}
 </code></pre>
 
                     </main>
