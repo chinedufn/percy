@@ -59,8 +59,14 @@ Documentation:
         quote! {
             let event_callback = #closure;
 
-            #var_name_node.as_elem_mut().unwrap()
-              .special_attributes.#setter(#key_attr_value.to_string(), event_callback);
+            {
+                let elem = #var_name_node.as_elem_mut().unwrap();
+                elem.special_attributes.set_key(#key_attr_value.to_string());
+                elem
+                  .special_attributes.#setter(event_callback)
+                  .unwrap();
+            }
+
 
             #maybe_missing_key_error
         }
@@ -100,8 +106,11 @@ Documentation:
         quote! {
             let event_callback = #closure;
 
-            #var_name_node.as_elem_mut().unwrap()
-              .special_attributes.#setter(#key_attr_value.to_string(), event_callback);
+            {
+                let elem = #var_name_node.as_elem_mut().unwrap();
+                elem.special_attributes.set_key(#key_attr_value.to_string());
+                elem.special_attributes.#setter(event_callback).unwrap();
+            };
 
             #maybe_missing_key_error
         }

@@ -147,6 +147,7 @@ impl<Dom: RealDom> VirtualNode<Dom> {
         // error: reached the recursion limit while instantiating `VirtualNode::<NewDomType>::map_real_dom::<Window, &&&&&&&&&&&&&&&&&&&...>
         // ```
         convert_event: &dyn Fn(EventHandler<Dom>) -> EventHandler<New>,
+        convert_lifecycle: &dyn Fn(Box<dyn FnMut(Dom::Element)>) -> Box<dyn FnMut(New::Element)>,
     ) -> VirtualNode<New> {
         match self {
             VirtualNode::Text(text) => VirtualNode::Text(text),
@@ -154,7 +155,7 @@ impl<Dom: RealDom> VirtualNode<Dom> {
                 let children: Vec<VirtualNode<New>> = elem
                     .children
                     .into_iter()
-                    .map(|old| old.map_real_dom::<New>(convert_event))
+                    .map(|old| old.map_real_dom::<New>(convert_event, convert_lifecycle))
                     .collect();
 
                 VirtualNode::Element(VirtualElement {
@@ -162,7 +163,7 @@ impl<Dom: RealDom> VirtualNode<Dom> {
                     attrs: elem.attrs,
                     events: elem.events.convert_all(convert_event),
                     children,
-                    special_attributes: elem.special_attributes,
+                    special_attributes: elem.special_attributes.map_dom(convert_lifecycle),
                 })
             }
         }

@@ -1,7 +1,7 @@
 //! Various helper functions and types for writing tests.
 
+use virtual_node::VirtualNodeWebSys;
 use virtual_node::event::{VirtualEvents, VirtualEventsWebSys};
-use virtual_node::{VirtualNode, VirtualNodeWebSys};
 use wasm_bindgen::JsCast;
 use web_sys::Node;
 

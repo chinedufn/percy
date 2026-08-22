@@ -29,13 +29,15 @@ fn remove_node() {
     let called_clone = called.clone();
 
     let mut old = html! { <div id=old_elem_id> </div> };
-    old.as_elem_mut()
-        .unwrap()
+    let old_elem = old.as_elem_mut().unwrap();
+    old_elem.special_attributes.set_key("foo");
+    old_elem
         .special_attributes
-        .set_on_remove_element("foo", move |elem: web_sys::Element| {
+        .set_on_remove_element(move |elem: web_sys::Element| {
             assert_eq!(elem.id(), old_elem_id);
             called_clone.set(true);
-        });
+        })
+        .unwrap();
 
     let new = VirtualNode::new_element("span");
 
@@ -60,14 +62,15 @@ fn on_remove_elem_called_on_children() {
     let mut child = html! {
          <em id = child_id></em>
     };
-    child
-        .as_elem_mut()
-        .unwrap()
+    let child_elem = child.as_elem_mut().unwrap();
+    child_elem.special_attributes.set_key("foo");
+    child_elem
         .special_attributes
-        .set_on_remove_element("foo", move |elem: web_sys::Element| {
+        .set_on_remove_element(move |elem: web_sys::Element| {
             assert_eq!(elem.id(), child_id);
             called_clone.set(true);
-        });
+        })
+        .unwrap();
 
     let old = html! {
         <div>{ child }</div>

@@ -118,6 +118,10 @@ impl<Dom: RealDom> Events<Dom> {
 ///
 /// [`VirtualNode`]: crate::VirtualNode
 pub trait RealDom {
+    /// The element type. In the web this is [`web_sys::Element`].
+    // `Clone` bound is currently used by ``
+    type Element: Clone;
+
     /// The event type. In the web this is [`web_sys::Event`].
     type Event;
     /// The event type for mouse events. In the web this is [`web_sys::MouseEvent`].
@@ -129,12 +133,16 @@ pub trait RealDom {
 /// An [`RealDom`] implementation that uses [`web_sys`]'s event types.
 #[cfg(feature = "web")]
 impl RealDom for web_sys::Window {
+    type Element = web_sys::Element;
+
     type Event = web_sys::Event;
     type MouseEvent = crate::event::MouseEventWebSys;
     type EventCallback = Rc<dyn AsRef<wasm_bindgen::JsValue>>;
 }
 
 impl RealDom for () {
+    type Element = ();
+
     type Event = ();
     type MouseEvent = ();
     type EventCallback = ();

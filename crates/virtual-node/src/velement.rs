@@ -9,7 +9,7 @@ pub use self::special_attributes::*;
 mod attribute_value;
 mod special_attributes;
 
-pub struct VirtualElement<Handle: RealDom> {
+pub struct VirtualElement<Dom: RealDom> {
     /// The HTML tag, such as "div"
     pub tag: String,
     /// HTML attributes such as id, class, style, etc
@@ -18,15 +18,15 @@ pub struct VirtualElement<Handle: RealDom> {
     ///
     /// Events natively handled in HTML such as onclick, onchange, oninput and others
     /// can be found in [`VElement.known_events`]
-    pub events: Events<Handle>,
+    pub events: Events<Dom>,
     /// The children of this `VirtualNode`. So a <div> <em></em> </div> structure would
     /// have a parent div and one child, em.
-    pub children: Vec<VirtualNode<Handle>>,
+    pub children: Vec<VirtualNode<Dom>>,
     /// See [`SpecialAttributes`]
-    pub special_attributes: SpecialAttributes,
+    pub special_attributes: SpecialAttributes<Dom>,
 }
 
-impl<Handle: RealDom> PartialEq for VirtualElement<Handle> {
+impl<Dom: RealDom> PartialEq for VirtualElement<Dom> {
     fn eq(&self, other: &Self) -> bool {
         let VirtualElement {
             tag: lhs_tag,
@@ -51,8 +51,8 @@ impl<Handle: RealDom> PartialEq for VirtualElement<Handle> {
     }
 }
 
-impl<Handle: RealDom> VirtualElement<Handle> {
-    pub fn new(tag: impl Into<String>) -> VirtualElement<Handle> {
+impl<Dom: RealDom> VirtualElement<Dom> {
+    pub fn new(tag: impl Into<String>) -> VirtualElement<Dom> {
         VirtualElement {
             tag: tag.into(),
             attrs: HashMap::new(),
@@ -63,7 +63,7 @@ impl<Handle: RealDom> VirtualElement<Handle> {
     }
 }
 
-impl<Handle: RealDom> fmt::Debug for VirtualElement<Handle> {
+impl<Dom: RealDom> fmt::Debug for VirtualElement<Dom> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -73,7 +73,7 @@ impl<Handle: RealDom> fmt::Debug for VirtualElement<Handle> {
     }
 }
 
-impl<Handle: RealDom> fmt::Display for VirtualElement<Handle> {
+impl<Dom: RealDom> fmt::Display for VirtualElement<Dom> {
     // Turn a VElement and all of it's children (recursively) into an HTML string
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "<{}", self.tag).unwrap();
