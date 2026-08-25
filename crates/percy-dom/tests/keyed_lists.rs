@@ -22,7 +22,7 @@ use web_sys::Node;
 
 use crate::testing_utilities::create_node_and_events_and_append_to_document;
 use percy_dom::prelude::*;
-use virtual_node::event::{VirtualEvents, VirtualEventsWebSys, ELEMENT_EVENTS_ID_PROP};
+use virtual_node::event::{ELEMENT_EVENTS_ID_PROP, VirtualEventsWebSys};
 
 wasm_bindgen_test_configure!(run_in_browser);
 

@@ -2,7 +2,6 @@
 
 use console_error_panic_hook;
 use percy_dom::event::VirtualEvents;
-use percy_dom::prelude::*;
 use virtual_node::VirtualNodeWebSys;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, Node};

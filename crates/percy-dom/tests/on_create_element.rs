@@ -30,12 +30,13 @@ fn on_create_elem_new_node() {
     </div>
     };
 
-    div.as_elem_mut()
-        .unwrap()
-        .special_attributes
-        .set_on_create_element("foo", move |elem: web_sys::Element| {
+    let elem = div.as_elem_mut().unwrap();
+    elem.special_attributes.set_key("foo");
+    elem.special_attributes
+        .set_on_create_element(move |elem: web_sys::Element| {
             elem.set_inner_html("Hello world");
-        });
+        })
+        .unwrap();
 
     let div: Element = div
         .create_dom_node(&mut VirtualEvents::new())
@@ -55,13 +56,15 @@ fn on_create_elem_triggered_via_patch() {
 
     let end_id = random_id();
     let mut end: VirtualNodeWebSys = html! { <div id=end_id> </div>};
-    end.as_elem_mut()
-        .unwrap()
+    let end_elem = end.as_elem_mut().unwrap();
+    end_elem.special_attributes.set_key("foo");
+    end_elem
         .special_attributes
-        .set_on_create_element("foo", move |elem: web_sys::Element| {
+        .set_on_create_element(move |elem: web_sys::Element| {
             assert_eq!(elem.id(), end_id);
             elem.set_inner_html("Hello world");
-        });
+        })
+        .unwrap();
 
     let mut events = VirtualEvents::new();
     let (div, enode) = start.create_dom_node(&mut events);
@@ -82,19 +85,22 @@ fn on_create_elem_triggered_via_patch() {
 #[wasm_bindgen_test]
 fn on_create_elem_not_triggered_via_patch_if_same_id() {
     let mut start = html! {<div id="original"></div>};
-    start
-        .as_elem_mut()
-        .unwrap()
+    let start_elem = start.as_elem_mut().unwrap();
+    start_elem.special_attributes.set_key("same-key");
+    start_elem
         .special_attributes
-        .set_on_create_element("same-key", |_elem: web_sys::Element| {});
+        .set_on_create_element(|_elem: web_sys::Element| {})
+        .unwrap();
 
     let mut end: VirtualNodeWebSys = html! {<div id="new"></div>};
-    end.as_elem_mut()
-        .unwrap()
+    let end_elem = end.as_elem_mut().unwrap();
+    end_elem.special_attributes.set_key("same-key");
+    end_elem
         .special_attributes
-        .set_on_create_element("same-key", move |_elem: web_sys::Element| {
+        .set_on_create_element(move |_elem: web_sys::Element| {
             panic!("On create element function should not have gotten called.");
-        });
+        })
+        .unwrap();
 
     let mut events = VirtualEvents::new();
     let (div, enode) = start.create_dom_node(&mut events);

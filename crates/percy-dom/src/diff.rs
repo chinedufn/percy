@@ -2914,20 +2914,24 @@ mod tests {
         node: &mut VirtualNode<web_sys::Window>,
         on_create_elem_id: &'static str,
     ) {
-        node.as_elem_mut()
-            .unwrap()
-            .special_attributes
-            .set_on_create_element(on_create_elem_id, |_: web_sys::Element| {});
+        let elem = node.as_elem_mut().unwrap();
+        let special = &mut elem.special_attributes;
+        special.set_key(on_create_elem_id);
+        special
+            .set_on_create_element(|_: web_sys::Element| {})
+            .unwrap();
     }
 
     fn set_on_remove_elem_with_unique_id(
         node: &mut VirtualNode<web_sys::Window>,
         on_remove_elem_id: &'static str,
     ) {
-        node.as_elem_mut()
-            .unwrap()
-            .special_attributes
-            .set_on_remove_element(on_remove_elem_id, |_: web_sys::Element| {});
+        let elem = node.as_elem_mut().unwrap();
+        let special = &mut elem.special_attributes;
+        special.set_key(on_remove_elem_id);
+        special
+            .set_on_remove_element(|_: web_sys::Element| {})
+            .unwrap();
     }
 
     fn set_dangerous_inner_html(node: &mut VirtualNode<web_sys::Window>, html: &str) {
