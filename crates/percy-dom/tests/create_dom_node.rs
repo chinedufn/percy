@@ -2,7 +2,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test create_dom_node
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test create_dom_node
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
@@ -15,7 +15,7 @@ use percy_dom::prelude::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
-/// wasm-pack test --chrome --headless crates/percy-dom --test create_dom_node -- nested_divs
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test create_dom_node -- nested_divs
 #[wasm_bindgen_test]
 fn nested_divs() {
     let vdiv = html! { <div> <div> <div></div> </div> </div> };
@@ -27,7 +27,7 @@ fn nested_divs() {
     assert_eq!(&div.inner_html(), "<div><div></div></div>");
 }
 
-// wasm-pack test --chrome --headless crates/percy-dom --test create_dom_node -- svg_element
+// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test create_dom_node -- svg_element
 #[wasm_bindgen_test]
 fn svg_element() {
     let vdiv = html! { <div><svg xmlns="http://www.w3.org/2000/svg">
@@ -38,13 +38,21 @@ fn svg_element() {
         .0
         .unchecked_into();
 
+    let svg = div.first_element_child().unwrap();
+    assert_eq!(svg.namespace_uri().unwrap(), "http://www.w3.org/2000/svg");
+
+    let circle = svg.first_element_child().unwrap();
     assert_eq!(
-        &div.inner_html(),
-        r#"<svg xmlns="http://www.w3.org/2000/svg"><circle cy="60" r="70" cx="50"></circle></svg>"#
+        circle.namespace_uri().unwrap(),
+        "http://www.w3.org/2000/svg"
     );
+    assert_eq!(circle.tag_name(), "circle");
+    assert_eq!(circle.get_attribute("cx").unwrap(), "50");
+    assert_eq!(circle.get_attribute("cy").unwrap(), "60");
+    assert_eq!(circle.get_attribute("r").unwrap(), "70");
 }
 
-/// wasm-pack test --chrome --headless crates/percy-dom --test create_dom_node -- div_with_attributes
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test create_dom_node -- div_with_attributes
 #[wasm_bindgen_test]
 fn div_with_attributes() {
     let vdiv = html! { <div id="id-here" class="two classes"></div> };

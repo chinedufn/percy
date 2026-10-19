@@ -67,10 +67,11 @@ impl<Dom: RealDom> SpecialAttributes<Dom> {
     ///
     /// The [`SpecialAttributes::key`] is used when one virtual-node is being patched over another.
     ///
-    /// If the new node's key is different from the old node's key, the on create element function
-    /// gets called.
+    /// If the new node's key is different from the old node's key, the old element gets replaced,
+    /// so the on create element function gets called when the new element is created.
     ///
-    /// If the keys are the same, the function does not get called.
+    /// If the keys are the same, the function only gets called if the old node did not have an on
+    /// create element function.
     ///
     /// # Examples
     ///
@@ -144,10 +145,11 @@ impl<Dom: RealDom> SpecialAttributes<Dom> {
     ///
     /// The key is used when one virtual-node is being patched over another.
     ///
-    /// If the old node's key is different from the new node's key, the on remove element function
-    /// gets called for the old element.
+    /// If the old node's key is different from the new node's key, the old element gets replaced,
+    /// so the on remove element function gets called for the old element.
     ///
-    /// If the keys are the same, the function does not get called.
+    /// If the keys are the same, the function only gets called if the new node does not have an on
+    /// remove element function.
     ///
     /// # Examples
     ///

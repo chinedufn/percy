@@ -10,7 +10,7 @@
 //! To run all tests in this file:
 //!
 //! ```sh
-//! wasm-pack test --chrome --headless crates/percy-dom --test checked_property
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test checked_property
 //! ```
 
 use wasm_bindgen_test::*;

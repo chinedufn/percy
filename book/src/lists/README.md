@@ -32,3 +32,6 @@ let node = html! {
   </div>
 }
 ```
+
+Keys should be stable, since a key that changes on every render
+will cause the element to be recreated on every render.

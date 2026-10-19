@@ -86,13 +86,13 @@ A patch test case looks like this:
 
 ```
 # Run just your new diff patch test
-wasm-pack test --chrome --headless crates/percy-dom --test diff_patch -- my_test_name_here
+CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test diff_patch -- my_test_name_here
 
 # Run all diff patch tests that contain the word replace
-wasm-pack test --chrome --headless crates/percy-dom --test diff_patch -- replace
+CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test diff_patch -- replace
 
 # Run all diff patch tests
-wasm-pack test --chrome --headless crates/percy-dom --test diff_patch
+CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test diff_patch
 ```
 
 Create your new test case and run it to see if things fail.

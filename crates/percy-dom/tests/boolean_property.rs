@@ -3,7 +3,7 @@
 //! return the new value.
 //!
 //! To run all tests in this file:
-//! wasm-pack test --chrome --headless crates/percy-dom --test boolean_property
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test boolean_property
 
 use wasm_bindgen_test::*;
 
@@ -19,7 +19,7 @@ wasm_bindgen_test_configure!(run_in_browser);
 
 /// Verify that we create a node with the attribute if the boolean property is true.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test boolean_property -- create_elem_boolean_property_true
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test boolean_property -- create_elem_boolean_property_true
 #[wasm_bindgen_test]
 fn create_elem_boolean_property_true() {
     let mut elem = VirtualElement::new("button");
@@ -33,7 +33,7 @@ fn create_elem_boolean_property_true() {
 
 /// Verify that we do not create a node with an attribute if the boolean property is false.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test boolean_property -- create_elem_boolean_property_false
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test boolean_property -- create_elem_boolean_property_false
 #[wasm_bindgen_test]
 fn create_elem_boolean_property_false() {
     let mut elem = VirtualElement::new("button");
@@ -47,7 +47,7 @@ fn create_elem_boolean_property_false() {
 
 /// Verify that if we patch a node's boolean attribute to true it gets added.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test boolean_property -- patch_elem_boolean_property_true
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test boolean_property -- patch_elem_boolean_property_true
 #[wasm_bindgen_test]
 fn patch_elem_boolean_property_true() {
     let elem: VirtualNodeWebSys = VirtualElement::new("button").into();
@@ -74,7 +74,7 @@ fn patch_elem_boolean_property_true() {
 
 /// Verify that if we patch a node's boolean attribute to false it gets removed.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test boolean_property -- patch_elem_boolean_property_false
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test boolean_property -- patch_elem_boolean_property_false
 #[wasm_bindgen_test]
 fn patch_elem_boolean_property_false() {
     let elem: VirtualNodeWebSys = VirtualElement::new("button").into();

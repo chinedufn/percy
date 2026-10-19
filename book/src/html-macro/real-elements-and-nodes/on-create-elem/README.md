@@ -10,15 +10,13 @@ let mut div: VirtualNode = html! {
 </div>
 };
 
-div.as_elem_mut()
-    .unwrap()
-    .special_attributes
-    .set_on_create_element(
-        "some-key",
-        move |elem: web_sys::Element| {
-            elem.set_inner_html("Hello world");
-        },
-    ));
+let special_attributes = &mut div.as_elem_mut().unwrap().special_attributes;
+special_attributes.set_key("some-key");
+special_attributes
+    .set_on_create_element(move |elem: web_sys::Element| {
+        elem.set_inner_html("Hello world");
+    })
+    .unwrap();
 
 let div: Element = div.create_dom_node().node.unchecked_into();
 

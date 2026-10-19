@@ -89,18 +89,17 @@ fn three_nodes_deep() {
     .test()
 }
 
-// TODO: Requires proc macro APIs that are currently unstable - https://github.com/rust-lang/rust/issues/54725
-// #[test]
-// fn sibling_text_nodes() {
-//     let mut expected = VElement::new("div");
-//     expected.children = vec![VirtualNode::new_text("This is a text node")];
-//
-//     HtmlMacroTest {
-//         generated: html! { <div>This is a text node</div> },
-//         expected: expected.into(),
-//     }
-//         .test();
-// }
+#[test]
+fn sibling_text_nodes() {
+    let mut expected = VirtualElement::new("div");
+    expected.children = vec![VirtualNode::new_text("This is a text node")];
+
+    HtmlMacroTest {
+        generated: html! { <div>This is a text node</div> },
+        expected: expected.into(),
+    }
+    .test();
+}
 
 #[test]
 fn nested_macro() {
@@ -140,43 +139,41 @@ fn block_root() {
     .test();
 }
 
-// TODO: Requires proc macro APIs that are currently unstable - https://github.com/rust-lang/rust/issues/54725
-// /// Text followed by a block
-// #[test]
-// fn text_next_to_block() {
-//     let child = html! { <ul></ul> };
-//
-//     let mut expected = VElement::new("div");
-//     expected.children = vec![
-//         VirtualNode::new_text(" A bit of text "),
-//         VirtualNode::new_element("ul"),
-//     ];
-//
-//     HtmlMacroTest {
-//         generated: html! {
-//           <div>
-//             A bit of text
-//             { child }
-//           </div>
-//         },
-//         expected: expected.into(),
-//     }
-//         .test();
-// }
+/// Text followed by a block
+#[test]
+fn text_next_to_block() {
+    let child = html! { <ul></ul> };
 
-// TODO: Requires proc macro APIs that are currently unstable - https://github.com/rust-lang/rust/issues/54725
-// /// Ensure that we maintain the correct spacing around punctuation tokens, since
-// /// they resolve into a separate TokenStream during parsing.
-// #[test]
-// fn punctuation_token() {
-//     let text = "Hello, World";
-//
-//     HtmlMacroTest {
-//         generated: html! { Hello, World },
-//         expected: VirtualNode::new_text(text),
-//     }
-//         .test()
-// }
+    let mut expected = VirtualElement::new("div");
+    expected.children = vec![
+        VirtualNode::new_text(" A bit of text "),
+        VirtualNode::new_element("ul"),
+    ];
+
+    HtmlMacroTest {
+        generated: html! {
+          <div>
+            A bit of text
+            { child }
+          </div>
+        },
+        expected: expected.into(),
+    }
+    .test();
+}
+
+/// Ensure that we maintain the correct spacing around punctuation tokens, since
+/// they resolve into a separate TokenStream during parsing.
+#[test]
+fn punctuation_token() {
+    let text = "Hello, World";
+
+    HtmlMacroTest {
+        generated: html! { Hello, World },
+        expected: VirtualNode::new_text(text),
+    }
+    .test()
+}
 
 #[test]
 fn vec_of_nodes() {
@@ -352,7 +349,7 @@ fn custom_component_props() {
     let mut expected = VirtualElement::new("div");
     let mut child = VirtualElement::new("span");
     child.children = vec![
-        VirtualNode::new_text("Counter="),
+        VirtualNode::new_text("Counter = "),
         VirtualNode::new_text("1"),
     ];
     expected.children = vec![child.into()];

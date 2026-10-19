@@ -2,7 +2,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test dangerous_inner_html
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test dangerous_inner_html
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
@@ -16,7 +16,7 @@ use virtual_node::VirtualNodeWebSys;
 
 wasm_bindgen_test_configure!(run_in_browser);
 
-/// wasm-pack test --chrome --headless crates/percy-dom --test dangerous_inner_html -- new_elem_inner_html
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test dangerous_inner_html -- new_elem_inner_html
 #[wasm_bindgen_test]
 fn new_elem_inner_html() {
     let mut div: VirtualNodeWebSys = html! {
@@ -38,7 +38,7 @@ fn new_elem_inner_html() {
 /// Verify that if we patch a node with dangerous_inner_html over another node that has
 /// dangerous_inner_html we overwrite the innerHTML.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test dangerous_inner_html -- inner_html_overwrite
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test dangerous_inner_html -- inner_html_overwrite
 #[wasm_bindgen_test]
 fn inner_html_overwrite() {
     let mut start: VirtualNodeWebSys = VirtualNode::new_element("div");
@@ -68,7 +68,7 @@ fn inner_html_overwrite() {
 /// Verify that if the old node has dangerous_inner_html but the new node does not, the
 /// dangerous_inner_html is removed.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test dangerous_inner_html -- remove_inner_html
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test dangerous_inner_html -- remove_inner_html
 #[wasm_bindgen_test]
 fn remove_inner_html() {
     let mut start: VirtualNodeWebSys = VirtualNode::new_element("div");

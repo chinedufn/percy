@@ -333,6 +333,18 @@ mod tests {
         assert_eq!(node.to_string(), expected);
     }
 
+    /// Verify that the key is not included in the string.
+    #[test]
+    fn key_not_shown() {
+        let mut div = VirtualElement::<()>::new("div");
+        div.special_attributes.set_key("some-key");
+        div.attrs.insert("id".into(), "some-id".into());
+
+        let expected = r#"<div id="some-id"></div>"#;
+
+        assert_eq!(VirtualNode::Element(div).to_string(), expected);
+    }
+
     /// Verify that a boolean attribute is included in the string if true.
     #[test]
     fn boolean_attribute_true_shown() {

@@ -26,9 +26,7 @@ fn not_full_water_bottle(percent_full: f32) -> VirtualNodeWebSys {
     let message = VirtualNode::new_text(&*message);
 
     html! {
-        <div id="not-ful-water">
-         { message }
-        </div>
+        <div id="not-ful-water">{ message }</div>
     }
 }
 

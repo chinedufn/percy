@@ -10,6 +10,7 @@ impl HtmlParser {
         &mut self,
         block: &Box<Block>,
         brace_span: &Span,
+        close_brace_span: &Span,
         next_tag: Option<&Tag>,
         real_dom_ty: &syn::Type,
     ) {
@@ -53,11 +54,11 @@ impl HtmlParser {
             Some(Tag::Close {
                 first_angle_bracket_span,
                 ..
-            }) => self.separated_by_whitespace(brace_span, &first_angle_bracket_span),
+            }) => self.separated_by_whitespace(close_brace_span, &first_angle_bracket_span),
             Some(Tag::Braced {
                 brace_span: next_brace_span,
                 ..
-            }) => self.separated_by_whitespace(brace_span, &next_brace_span),
+            }) => self.separated_by_whitespace(close_brace_span, &next_brace_span),
             _ => false,
         };
 
@@ -101,6 +102,6 @@ impl HtmlParser {
             }
         });
 
-        self.set_most_recent_block_start(brace_span.clone());
+        self.set_most_recent_block_end(close_brace_span.clone());
     }
 }

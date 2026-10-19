@@ -2,7 +2,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test on_remove_element
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test on_remove_element
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
@@ -20,7 +20,7 @@ wasm_bindgen_test_configure!(run_in_browser);
 
 /// Verify that when we remove an element by patching over it we call it's on_remove_elem function.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test on_remove_element -- remove_node
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test on_remove_element -- remove_node
 #[wasm_bindgen_test]
 fn remove_node() {
     let old_elem_id = random_id();
@@ -51,7 +51,7 @@ fn remove_node() {
 /// Verify that if an element is removed and it's children have on remove element callbacks,
 /// they get called.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test on_remove_element -- on_remove_elem_called_on_children
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test on_remove_element -- on_remove_elem_called_on_children
 #[wasm_bindgen_test]
 fn on_remove_elem_called_on_children() {
     let child_id = random_id();

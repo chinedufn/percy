@@ -3,7 +3,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test pdom
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test pdom
 
 use console_error_panic_hook;
 use percy_dom::prelude::*;
@@ -25,7 +25,7 @@ wasm_bindgen_test_configure!(run_in_browser);
 /// We test a simple case here, since diff_patch.rs is responsible for testing more complex
 /// diffing and patching.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test pdom -- patches_dom
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test pdom -- patches_dom
 #[wasm_bindgen_test]
 fn patches_dom() {
     console_error_panic_hook::set_once();
@@ -49,7 +49,7 @@ fn patches_dom() {
 
 /// Verify that closures work for elements appended to the DOM.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test pdom -- append_element_with_closure
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test pdom -- append_element_with_closure
 #[wasm_bindgen_test]
 fn append_element_with_closure() {
     console_error_panic_hook::set_once();
@@ -106,7 +106,7 @@ fn append_element_with_closure() {
 /// from the new DOM node are stored by the PercyDom otherwise they'll get dropped and
 /// won't work.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test pdom -- updates_active_closure_on_replace
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test pdom -- updates_active_closure_on_replace
 #[wasm_bindgen_test]
 fn updates_active_closure_on_replace() {
     console_error_panic_hook::set_once();
