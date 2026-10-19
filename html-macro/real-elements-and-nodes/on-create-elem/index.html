@@ -177,15 +177,13 @@ when the element is first created.</p>
 &lt;/div&gt;
 };
 
-div.as_elem_mut()
-    .unwrap()
-    .special_attributes
-    .set_on_create_element(
-        &quot;some-key&quot;,
-        move |elem: web_sys::Element| {
-            elem.set_inner_html(&quot;Hello world&quot;);
-        },
-    ));
+let special_attributes = &amp;mut div.as_elem_mut().unwrap().special_attributes;
+special_attributes.set_key(&quot;some-key&quot;);
+special_attributes
+    .set_on_create_element(move |elem: web_sys::Element| {
+        elem.set_inner_html(&quot;Hello world&quot;);
+    })
+    .unwrap();
 
 let div: Element = div.create_dom_node().node.unchecked_into();
 

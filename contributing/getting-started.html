@@ -168,19 +168,22 @@
                         <h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
 <ol>
 <li>
-<p>Rust Nightly.</p>
-<pre><code class="language-sh">rustup default nightly
+<p>Rust stable, with the <code>wasm32-unknown-unknown</code> target.</p>
+<pre><code class="language-sh">rustup default stable
 rustup target add wasm32-unknown-unknown
 </code></pre>
 </li>
 <li>
-<p><a href="https://github.com/mozilla/geckodriver/releases">Install Geckodriver</a> since some of our tests are meant to run in a browser.
-Put it somewhere in your path, i.e. you might move it to <code>/usr/local/bin/geckdriver</code>.</p>
+<p><a href="https://developer.chrome.com/docs/chromedriver/downloads">Install chromedriver</a> since some of our tests are meant to run in a browser.
+Put it somewhere in your path, i.e. you might move it to <code>/usr/local/bin/chromedriver</code>.</p>
+<p>To run the browser tests in Firefox or Safari instead, install geckodriver or safaridriver and
+set <code>GECKODRIVER=geckodriver</code> or <code>SAFARIDRIVER=safaridriver</code> when running <code>./test.sh</code>.</p>
 </li>
 <li>
-<p>Download the project and make sure that you can run the test suite</p>
+<p>Download the project, install <code>wasm-bindgen-cli</code>, and make sure that you can run the test suite</p>
 <pre><code class="language-sh">git clone https://github.com/chinedufn/percy
 cd percy
+cargo install wasm-bindgen-cli
 ./test.sh
 </code></pre>
 </li>
