@@ -6,6 +6,7 @@ use std::collections::{HashMap, HashSet};
 use crate::event::{EventHandler, EventName};
 use crate::{AttributeValue, VirtualNode, VirtualText};
 pub use apply_patches::patch;
+pub(crate) use apply_patches::patch_and_get_replaced_root;
 use virtual_node::event::RealDom;
 
 mod apply_patches;

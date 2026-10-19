@@ -2,7 +2,7 @@
 
 use crate::diff::diff;
 use crate::event::VirtualEvents;
-use crate::patch::patch;
+use crate::patch::patch_and_get_replaced_root;
 use std::collections::HashMap;
 use virtual_node::VirtualNode;
 use wasm_bindgen::JsValue;
@@ -85,13 +85,19 @@ impl PercyDom {
     pub fn update(&mut self, new_vdom: VirtualNode<web_sys::Window>) {
         let patches = diff(&self.current_vdom, &new_vdom);
 
-        patch(
+        let replaced_root = patch_and_get_replaced_root(
             self.root_node.clone(),
             &new_vdom,
             &mut self.events,
             &patches,
         )
         .unwrap();
+
+        // If the root node was replaced, the old root node is no longer in the DOM, so future
+        // patches need to be applied to the new root node.
+        if let Some(new_root) = replaced_root {
+            self.root_node = new_root;
+        }
 
         self.current_vdom = new_vdom;
     }
