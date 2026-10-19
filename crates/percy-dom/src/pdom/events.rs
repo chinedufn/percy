@@ -18,6 +18,24 @@ impl PercyDom {
         self.attach_onclick_listener();
     }
 
+    /// Move the event delegation listeners from the root node to a new root node.
+    ///
+    /// Called when the root node gets replaced. Events from the new root node and its descendants
+    /// do not bubble up to the old root node, so the listeners need to be on the new root node.
+    pub(super) fn move_event_delegation_listeners(&self, new_root: &web_sys::Node) {
+        for (event, listener) in &self.event_delegation_listeners {
+            let listener: &JsValue = (**listener).as_ref();
+            let listener = listener.unchecked_ref();
+
+            self.root_node
+                .remove_event_listener_with_callback(event, listener)
+                .unwrap();
+            new_root
+                .add_event_listener_with_callback(event, listener)
+                .unwrap();
+        }
+    }
+
     fn attach_onclick_listener(&mut self) {
         let event = "click";
         debug_assert!(EventName::new(format!("on{}", event).into()).is_delegated());

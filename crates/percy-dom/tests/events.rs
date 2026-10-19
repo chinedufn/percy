@@ -189,6 +189,37 @@ fn replaced_element_with_element_events_work() {
     assert_text_appended(&text, APPEND_TEXT_TWO);
 }
 
+/// Verify that delegated events, such as onclick, still work after the root element is replaced.
+///
+/// Delegated events are handled by event listeners on the root element, so the event listeners need
+/// to be moved to the new root element.
+///
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- delegated_events_work_after_root_replaced
+#[wasm_bindgen_test]
+fn delegated_events_work_after_root_replaced() {
+    let old_node: VirtualNodeWebSys = html! {
+        <div key="a"></div>
+    };
+
+    let text = start_text();
+    let text_clone = text.clone();
+
+    let id = random_id();
+    let new_node = html! {
+        <div key="b">
+            <em id=id onclick=move ||{ *text_clone.borrow_mut() += APPEND_TEXT_TWO; }></em>
+        </div>
+    };
+
+    let mount = create_mount();
+    let mut pdom = PercyDom::new_replace_mount(old_node, mount);
+    pdom.update(new_node);
+
+    assert_text_unmodified(&text);
+    send_click_event(id);
+    assert_text_appended(&text, APPEND_TEXT_TWO);
+}
+
 /// Verify that when if we replace a text node with an element that element's events work.
 ///
 /// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- replaced_text_with_elem_events_work

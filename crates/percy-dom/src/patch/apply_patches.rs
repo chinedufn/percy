@@ -25,6 +25,21 @@ pub fn patch<N: Into<Node>>(
     virtual_events: &mut VirtualEvents<web_sys::Window>,
     patches: &[Patch<web_sys::Window>],
 ) -> Result<(), JsValue> {
+    patch_and_get_replaced_root(root_dom_node, new_vnode, virtual_events, patches)?;
+    Ok(())
+}
+
+/// The same as [`patch`], but if the root node gets replaced, returns the node that replaced it.
+///
+/// Callers that hold onto the root node, such as [`crate::PercyDom`], need to hold onto the new
+/// root node instead, since the old root node is no longer in the DOM.
+pub(crate) fn patch_and_get_replaced_root<N: Into<Node>>(
+    root_dom_node: N,
+    new_vnode: &VirtualNode<web_sys::Window>,
+    virtual_events: &mut VirtualEvents<web_sys::Window>,
+    patches: &[Patch<web_sys::Window>],
+) -> Result<Option<Node>, JsValue> {
+    let mut replaced_root = None;
     let root_events_node = virtual_events.root();
 
     let mut nodes_to_find = HashSet::new();
@@ -57,14 +72,29 @@ pub fn patch<N: Into<Node>>(
         let patch_node_idx = patch.old_node_idx();
 
         if let Some((_node, elem_or_text, events_elem)) = ctx.found_nodes.get(&patch_node_idx) {
+            let mut replaced_with = None;
             match elem_or_text {
-                ElementOrText::Element(element) => {
-                    apply_element_patch(&element, events_elem, &patch, virtual_events, &ctx)?
-                }
+                ElementOrText::Element(element) => apply_element_patch(
+                    &element,
+                    events_elem,
+                    &patch,
+                    virtual_events,
+                    &ctx,
+                    &mut replaced_with,
+                )?,
                 ElementOrText::Text(text_node) => {
-                    apply_text_patch(&text_node, &patch, virtual_events, &events_elem.events_node)?;
+                    apply_text_patch(
+                        &text_node,
+                        &patch,
+                        virtual_events,
+                        &events_elem.events_node,
+                        &mut replaced_with,
+                    )?;
                 }
             };
+            if patch_node_idx == 0 && replaced_with.is_some() {
+                replaced_root = replaced_with;
+            }
         } else {
             // Right now this can happen if something outside of Percy goes into the DOM and
             //  deletes an element that is managed by Percy.
@@ -77,7 +107,7 @@ pub fn patch<N: Into<Node>>(
 
     overwrite_events(new_vnode, root_events_node, virtual_events);
 
-    Ok(())
+    Ok(replaced_root)
 }
 
 struct PatchContext {
@@ -228,6 +258,7 @@ fn apply_element_patch(
     patch: &Patch<web_sys::Window>,
     virtual_events: &mut VirtualEvents<web_sys::Window>,
     ctx: &PatchContext,
+    replaced_with: &mut Option<Node>,
 ) -> Result<(), JsValue> {
     match patch {
         Patch::AddAttributes(_node_idx, attributes) => {
@@ -272,6 +303,7 @@ fn apply_element_patch(
             let (created_node, events) = new_node.create_dom_node(virtual_events);
 
             node.replace_with_with_node_1(&created_node)?;
+            *replaced_with = Some(created_node);
 
             let mut events_elem = events_elem_and_parent.events_node.borrow_mut();
             events_elem.replace_with_node(events);
@@ -487,6 +519,7 @@ fn apply_text_patch(
     patch: &Patch<web_sys::Window>,
     events: &mut VirtualEvents<web_sys::Window>,
     events_elem: &Rc<RefCell<VirtualEventNode>>,
+    replaced_with: &mut Option<Node>,
 ) -> Result<(), JsValue> {
     match patch {
         Patch::ChangeText(_node_idx, new_node) => {
@@ -498,6 +531,7 @@ fn apply_text_patch(
         } => {
             let (elem, enode) = new_node.create_dom_node(events);
             node.replace_with_with_node_1(&elem)?;
+            *replaced_with = Some(elem);
 
             events_elem.borrow_mut().replace_with_node(enode);
         }
