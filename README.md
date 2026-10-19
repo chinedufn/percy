@@ -12,25 +12,6 @@ This README gives a light introduction to Percy. Check out [The Percy Book] for 
 
 [The Percy Book]: https://chinedufn.github.io/percy/
 
-## Stable Rust
-
-Percy compiles on stable Rust with one caveat:
-
-On nightly Rust you can create text nodes without quotes.
-
-```rust
-// Nightly Rust does not require quotes around text nodes.
-html! { <div>My text nodes here </div> };
-```
-
-On stable Rust, quotation marks are required.
-
-```rust
-// Stable Rust requires quotes around text nodes.
-html! { <div>{ "My text nodes here " }</div> };
-```
-
-This difference will go away once span locations are stabilized in the Rust compiler - [Rust tracking issue](https://github.com/rust-lang/rust/issues/54725).
 
 ## Getting Started
 
@@ -142,7 +123,7 @@ impl App {
                    web_sys::console::log_1(&"Button Clicked!".into());
                 }
               >
-                // No need to wrap text in quotation marks (:
+                // No need to wrap text in quotation marks
                 Click me and check your console
               </button>
            </div>

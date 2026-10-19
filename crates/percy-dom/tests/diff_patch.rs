@@ -2,7 +2,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test diff_patch
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test diff_patch
 //!
 //! TODO: Move the tests in this file to more focused files.
 //!  For example, we might move the replace tests to a `replace.rs` file.
@@ -77,7 +77,7 @@ fn append_children() {
     .test();
 }
 
-/// wasm-pack test --chrome --headless crates/percy-dom --test diff_patch -- replace_with_children
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test diff_patch -- replace_with_children
 #[wasm_bindgen_test]
 fn replace_with_children() {
     DiffPatchTest {

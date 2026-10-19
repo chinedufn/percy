@@ -130,12 +130,16 @@ fn process_diff_job<'a, Handle: RealDom>(
 
     let node_variants_different = mem::discriminant(old) != mem::discriminant(new);
     let mut element_tags_different = false;
+    let mut explicit_keys_different = false;
 
     if let (VirtualNode::Element(old_element), VirtualNode::Element(new_element)) = (old, new) {
         element_tags_different = old_element.tag != new_element.tag;
+        explicit_keys_different =
+            old_element.special_attributes.key() != new_element.special_attributes.key();
     }
 
-    let should_fully_replace_node = node_variants_different || element_tags_different;
+    let should_fully_replace_node =
+        node_variants_different || element_tags_different || explicit_keys_different;
 
     if should_fully_replace_node {
         replace_node(diff_job, ctx);
@@ -288,10 +292,6 @@ fn find_attributes_to_add<'a, Handle: RealDom>(
     ctx: &mut DiffContext<'a, Handle>,
 ) {
     for (new_attr_name, new_attr_val) in new_element.attrs.iter() {
-        if new_attr_name == "key" {
-            continue;
-        }
-
         match old_element.attrs.get(new_attr_name) {
             Some(ref old_attr_val) => {
                 if old_attr_val != &new_attr_val {
@@ -317,10 +317,6 @@ fn find_attributes_to_remove<'a, Handle: RealDom>(
     new_element: &VirtualElement<Handle>,
 ) {
     for (old_attr_name, old_attr_val) in old_element.attrs.iter() {
-        if old_attr_name == "key" {
-            continue;
-        }
-
         if attributes_to_add.get(&old_attr_name[..]).is_some() {
             continue;
         };
@@ -409,24 +405,20 @@ fn maybe_push_on_create_element_patch<'a, Handle: RealDom>(
     old_node_idx: u32,
     ctx: &mut DiffContext<'a, Handle>,
 ) {
-    match (
-        old_element.special_attributes.on_create_element_key(),
-        new_element.special_attributes.on_create_element_key(),
-    ) {
-        (None, Some(_)) => {
-            ctx.push_patch(Patch::SpecialAttribute(
-                PatchSpecialAttribute::CallOnCreateElemOnExistingNode(old_node_idx, new),
-            ));
-        }
-        (Some(old_id), Some(new_id)) => {
-            if new_id != old_id {
-                ctx.push_patch(Patch::SpecialAttribute(
-                    PatchSpecialAttribute::CallOnCreateElemOnExistingNode(old_node_idx, new),
-                ));
-            }
-        }
-        (Some(_), None) | (None, None) => {}
-    };
+    let old_has_on_create = old_element
+        .special_attributes
+        .on_create_element_key()
+        .is_some();
+    let new_has_on_create = new_element
+        .special_attributes
+        .on_create_element_key()
+        .is_some();
+
+    if !old_has_on_create && new_has_on_create {
+        ctx.push_patch(Patch::SpecialAttribute(
+            PatchSpecialAttribute::CallOnCreateElemOnExistingNode(old_node_idx, new),
+        ));
+    }
 }
 
 fn maybe_push_on_remove_element_patch<'a, Handle: RealDom>(
@@ -436,17 +428,16 @@ fn maybe_push_on_remove_element_patch<'a, Handle: RealDom>(
     old_node_idx: u32,
     ctx: &mut DiffContext<'a, Handle>,
 ) {
-    let old_on_remove_elem_key = old_element.special_attributes.on_remove_element_key();
+    let old_has_on_remove = old_element
+        .special_attributes
+        .on_remove_element_key()
+        .is_some();
+    let new_has_on_remove = new_element
+        .special_attributes
+        .on_remove_element_key()
+        .is_some();
 
-    let should_call_on_remove_elem = match (
-        old_on_remove_elem_key,
-        new_element.special_attributes.on_remove_element_key(),
-    ) {
-        (Some(_), None) => true,
-        (Some(old_id), Some(new_id)) => old_id != new_id,
-        _ => false,
-    };
-    if should_call_on_remove_elem {
+    if old_has_on_remove && !new_has_on_remove {
         ctx.push_patch(Patch::SpecialAttribute(
             PatchSpecialAttribute::CallOnRemoveElem(old_node_idx, old),
         ));
@@ -740,11 +731,7 @@ fn node_key<'a, Handle: RealDom>(
 ) -> Option<ElementKey<'a>> {
     let elem = node.as_elem()?;
 
-    let explicit_key = elem
-        .attrs
-        .get("key")
-        .and_then(|k| k.as_string().map(String::as_str))
-        .map(ElementKey::Explicit);
+    let explicit_key = elem.special_attributes.key().map(ElementKey::Explicit);
 
     if explicit_key.is_some() {
         return explicit_key;
@@ -792,7 +779,7 @@ impl<'a> TrackedImplicitlyKeyableIndices<'a> {
     ) -> Option<ElementKeyImplicit<'a>> {
         let elem = node.as_elem()?;
 
-        if elem.attrs.get("key").is_some() {
+        if elem.special_attributes.key().is_some() {
             return None;
         }
 
@@ -1300,10 +1287,10 @@ mod tests {
     }
 
     /// Verify that we push an on create elem patch if the new node has the special attribute
-    /// and the old node does not.
+    /// and the old node, which has the same key, does not.
     #[test]
     fn on_create_elem() {
-        let old = VirtualNode::new_element("div");
+        let old = node_with_key("div", "150");
 
         let mut new = VirtualNode::new_element("div");
         set_on_create_elem_with_unique_id(&mut new, "150");
@@ -1321,8 +1308,9 @@ mod tests {
         .test();
     }
 
-    /// Verify that if we have nested elements that need their on create element handler called we
-    /// push patches for all of them.
+    /// Verify that if unkeyed elements are patched by keyed elements that have an on create
+    /// element handler, the unkeyed elements get replaced, so the handlers get called when the new
+    /// elements are created.
     #[test]
     fn nested_on_create_element() {
         DiffTestCase {
@@ -1353,31 +1341,24 @@ mod tests {
               </div>
             },
             expected: vec![
-                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnCreateElemOnExistingNode(
-                    1,
-                    &html! {
+                Patch::Replace {
+                    old_idx: 1,
+                    new_node: &html! {
                     <span key="150" on_create_element=|_: web_sys::Element|{} >
                       <div></div>
                     </span>
                     },
-                )),
-                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnCreateElemOnExistingNode(
-                    3,
-                    &html! {
+                },
+                Patch::Replace {
+                    old_idx: 3,
+                    new_node: &html! {
                     <em key="200" on_create_element=|_: web_sys::Element|{} >
                       <br />
                       <div key="250" on_create_element=|_: web_sys::Element|{} >
                       </div>
                     </em>
                     },
-                )),
-                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnCreateElemOnExistingNode(
-                    6,
-                    &html! {
-                    <div key="250" on_create_element=|_: web_sys::Element|{} >
-                    </div>
-                    },
-                )),
+                },
             ],
         }
         .test();
@@ -1401,8 +1382,8 @@ mod tests {
         .test();
     }
 
-    /// Verify that if two different nodes have different on_create_elem unique identifiers we push
-    /// a patch to call the new on_create_elem.
+    /// Verify that if two nodes have different keys the node gets replaced.
+    /// The new node's on_create_elem will get called when the new node is created.
     #[test]
     fn different_on_create_elem_id() {
         let mut old = VirtualNode::new_element("div");
@@ -1417,9 +1398,10 @@ mod tests {
         DiffTestCase {
             old,
             new,
-            expected: vec![Patch::SpecialAttribute(
-                PatchSpecialAttribute::CallOnCreateElemOnExistingNode(0, &expected),
-            )],
+            expected: vec![Patch::Replace {
+                old_idx: 0,
+                new_node: &expected,
+            }],
         }
         .test();
     }
@@ -1571,7 +1553,7 @@ mod tests {
     }
 
     /// Verify that when patching attributes, if the old has an on remove element callback but the
-    /// new node does not, we call the on remove element callback.
+    /// new node, which has the same key, does not, we call the on remove element callback.
     ///
     /// But only for that element, since the element's below it might not get removed from the
     /// DOM.
@@ -1598,11 +1580,15 @@ mod tests {
         };
 
         let new_child = on_remove_node_with_on_remove_child();
-        let new = html! {
+        let mut new = html! {
             <div>
                 {new_child}
             </div>
         };
+        new.as_elem_mut()
+            .unwrap()
+            .special_attributes
+            .set_key("some-key");
 
         DiffTestCase {
             old,
@@ -1614,11 +1600,9 @@ mod tests {
         .test();
     }
 
-    /// Verify that when patching attributes, if the old and new node are of the same tag type but
-    /// have different on remove element ID, a patch is pushed.
-    ///
-    /// But only for that element, since the element's below it might not get removed from the
-    /// DOM.
+    /// Verify that if the old and new node are of the same tag type but have different keys, the
+    /// node gets replaced, so the on remove element callbacks of the node and its descendants get
+    /// called.
     #[test]
     fn different_on_remove_elem_id() {
         let old_child = on_remove_node_with_on_remove_child();
@@ -1649,12 +1633,38 @@ mod tests {
         };
         set_on_remove_elem_with_unique_id(&mut new, "end");
 
+        let expected_new = {
+            let new_child = on_remove_node_with_on_remove_child();
+            let mut new = html! {
+                <div>
+                    {new_child}
+                </div>
+            };
+            set_on_remove_elem_with_unique_id(&mut new, "end");
+
+            new
+        };
+        let expected_child = on_remove_node_with_on_remove_child();
+        let expected_grandchild = &expected_child.as_elem().unwrap().children[0];
+
         DiffTestCase {
             old,
             new,
-            expected: vec![Patch::SpecialAttribute(
-                PatchSpecialAttribute::CallOnRemoveElem(0, &expected),
-            )],
+            expected: vec![
+                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnRemoveElem(0, &expected)),
+                Patch::Replace {
+                    old_idx: 0,
+                    new_node: &expected_new,
+                },
+                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnRemoveElem(
+                    1,
+                    &expected_child,
+                )),
+                Patch::SpecialAttribute(PatchSpecialAttribute::CallOnRemoveElem(
+                    2,
+                    expected_grandchild,
+                )),
+            ],
         }
         .test();
     }
@@ -2598,7 +2608,7 @@ mod tests {
         .test();
     }
 
-    /// Verify that if two elements have the same tag but different keys we do not replace the
+    /// Verify that if two elements have the same tag but different explicit keys we replace the
     /// element.
     #[test]
     fn same_tag_different_key() {
@@ -2613,7 +2623,10 @@ mod tests {
                 <span key="b"></span>
               </div>
             },
-            expected: vec![],
+            expected: vec![Patch::Replace {
+                old_idx: 1,
+                new_node: &node_with_key("span", "b"),
+            }],
         }
         .test();
 
@@ -2628,10 +2641,49 @@ mod tests {
                 <span key="b" id="222"></span>
               </div>
             },
-            expected: vec![Patch::AddAttributes(
-                1,
-                vec![("id", &"222".into())].into_iter().collect(),
-            )],
+            expected: vec![Patch::Replace {
+                old_idx: 1,
+                new_node: &html! { <span key="b" id="222"></span> },
+            }],
+        }
+        .test();
+    }
+
+    /// Verify that if a root element's explicit key changes we replace the element.
+    #[test]
+    fn root_different_key() {
+        DiffTestCase {
+            old: html! { <div key="a"></div> },
+            new: html! { <div key="b"></div> },
+            expected: vec![Patch::Replace {
+                old_idx: 0,
+                new_node: &node_with_key("div", "b"),
+            }],
+        }
+        .test();
+    }
+
+    /// Verify that adding or removing a key replaces the element, since we consider unkeyed elements
+    /// and keyed elements to be different.
+    #[test]
+    fn adding_or_removing_key_replaces() {
+        DiffTestCase {
+            old: html! { <div><span></span></div> },
+            new: html! { <div><span key="a"></span></div> },
+            expected: vec![Patch::Replace {
+                old_idx: 1,
+                new_node: &node_with_key("span", "a"),
+            }],
+        }
+        .test();
+
+        DiffTestCase {
+            old: html! { <div><span key="a"></span></div> },
+            new: html! { <div><span></span></div> },
+            expected: vec![Patch::Replace {
+                old_idx: 1,
+                new_node: &VirtualNode::new_element("span"),
+            }],
         }
         .test();
     }
@@ -2639,11 +2691,7 @@ mod tests {
     /// Verify that if two elements have the same key but different tags we replace the element.
     #[test]
     fn same_key_different_tag() {
-        let mut new = VirtualNode::new_element("span");
-        new.as_elem_mut()
-            .unwrap()
-            .attrs
-            .insert("key".to_string(), AttributeValue::String("a".to_string()));
+        let new = node_with_key("span", "a");
 
         DiffTestCase {
             old: html! {
@@ -2892,10 +2940,7 @@ mod tests {
 
     fn node_with_key(tag: &'static str, key: &'static str) -> VirtualNode<web_sys::Window> {
         let mut node = VirtualNode::new_element(tag);
-        node.as_elem_mut()
-            .unwrap()
-            .attrs
-            .insert("key".to_string(), key.into());
+        node.as_elem_mut().unwrap().special_attributes.set_key(key);
 
         node
     }

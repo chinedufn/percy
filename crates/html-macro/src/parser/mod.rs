@@ -103,8 +103,12 @@ impl HtmlParser {
                 );
                 self.last_tag_kind = Some(TagKind::Text);
             }
-            Tag::Braced { block, brace_span } => {
-                self.parse_braced(block, brace_span, next_tag, real_dom_ty);
+            Tag::Braced {
+                block,
+                brace_span,
+                close_brace_span,
+            } => {
+                self.parse_braced(block, brace_span, close_brace_span, next_tag, real_dom_ty);
                 self.last_tag_kind = Some(TagKind::Braced);
             }
         };
@@ -189,9 +193,9 @@ impl HtmlParser {
         self.recent_span_locations.most_recent_open_tag_end = Some(span);
     }
 
-    /// Set the location of the most recent start tag's ending LineColumn
-    fn set_most_recent_block_start(&mut self, span: Span) {
-        self.recent_span_locations.most_recent_block_start = Some(span);
+    /// Set the location of the most recent block's closing brace
+    fn set_most_recent_block_end(&mut self, span: Span) {
+        self.recent_span_locations.most_recent_block_end = Some(span);
     }
 
     /// Determine whether or not there is any space between the end of the first
@@ -282,7 +286,7 @@ impl HtmlParser {
 #[derive(Default)]
 struct RecentSpanLocations {
     most_recent_open_tag_end: Option<Span>,
-    most_recent_block_start: Option<Span>,
+    most_recent_block_end: Option<Span>,
 }
 
 fn is_self_closing(tag: &str) -> bool {

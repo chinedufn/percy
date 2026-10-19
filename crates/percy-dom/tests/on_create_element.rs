@@ -2,7 +2,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test on_create_element
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test on_create_element
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
@@ -21,7 +21,7 @@ mod testing_utilities;
 
 /// Verify that when we create a new element we call it's on_create_elem function.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test on_create_element -- on_create_elem_new_node
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test on_create_element -- on_create_elem_new_node
 #[wasm_bindgen_test]
 fn on_create_elem_new_node() {
     let mut div: VirtualNodeWebSys = html! {
@@ -46,13 +46,18 @@ fn on_create_elem_new_node() {
     assert_eq!(div.inner_html(), "Hello world");
 }
 
-/// Verify that if we are patching over an old element that does not have an on_create_elem,
-/// attribute we call the new node's on_create_elem.
+/// Verify that if we are patching over an old element that has the same key but does not have an
+/// on_create_elem attribute, we call the new node's on_create_elem.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test on_create_element -- on_create_elem_triggered_via_patch
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test on_create_element -- on_create_elem_triggered_via_patch
 #[wasm_bindgen_test]
 fn on_create_elem_triggered_via_patch() {
-    let start = VirtualNode::new_element("div");
+    let mut start = VirtualNode::new_element("div");
+    start
+        .as_elem_mut()
+        .unwrap()
+        .special_attributes
+        .set_key("foo");
 
     let end_id = random_id();
     let mut end: VirtualNodeWebSys = html! { <div id=end_id> </div>};
@@ -81,7 +86,7 @@ fn on_create_elem_triggered_via_patch() {
 /// (i.e., we're probably patching over the same virtual-node that's been slightly changed..)
 /// we do not call the new node's on_create_elem.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test on_create_element -- on_create_elem_not_triggered_via_patch_if_same_id
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test on_create_element -- on_create_elem_not_triggered_via_patch_if_same_id
 #[wasm_bindgen_test]
 fn on_create_elem_not_triggered_via_patch_if_same_id() {
     let mut start = html! {<div id="original"></div>};

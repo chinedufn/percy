@@ -10,4 +10,9 @@ cargo test --all
 # Ensure that `crates/virtual-dom` can compile without web-sys/js-sys/wasm-bindgen.
 cargo check -p virtual-node --no-default-features
 
-wasm-pack test --firefox --headless crates/percy-dom
+# Run the browser tests using `wasm-bindgen-test-runner` (see `.cargo/config.toml`).
+# Defaults to Chrome. Set `GECKODRIVER` or `SAFARIDRIVER` to use Firefox or Safari instead.
+if [ -z "${CHROMEDRIVER}${GECKODRIVER}${SAFARIDRIVER}" ]; then
+  export CHROMEDRIVER=chromedriver
+fi
+cargo test -p percy-dom --target wasm32-unknown-unknown

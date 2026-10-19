@@ -2,7 +2,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test events
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events
 
 use crate::testing_utilities::{
     create_mount, document, get_element_by_id, random_id, send_click_event, send_input_event,
@@ -24,7 +24,7 @@ mod testing_utilities;
 
 /// Verify that the oninput event works.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- input_event_works
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- input_event_works
 #[wasm_bindgen_test]
 fn input_event_works() {
     let id = random_id();
@@ -43,7 +43,7 @@ fn input_event_works() {
 
 /// Verify that the onclick event works.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- click_event_works
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- click_event_works
 #[wasm_bindgen_test]
 fn click_event_works() {
     let id = random_id();
@@ -65,7 +65,7 @@ fn click_event_works() {
 /// This ensures that we're always using the latest closures for an element, which is important for
 /// closures that capture values since these values can be different across different renders.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- updated_non_delegated_event_handler
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- updated_non_delegated_event_handler
 #[wasm_bindgen_test]
 fn updated_non_delegated_event_handler() {
     let event = EventName::ONINPUT;
@@ -94,7 +94,7 @@ fn updated_non_delegated_event_handler() {
 /// Verify that if we patch over an element with a non-delegated event the new callback is properly
 /// called.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- updated_delegated_event_handler
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- updated_delegated_event_handler
 #[wasm_bindgen_test]
 fn updated_delegated_event_handler() {
     let event = EventName::ONCLICK;
@@ -122,7 +122,7 @@ fn updated_delegated_event_handler() {
 
 /// Verify that we properly set the `__events_id__` on newly created elements and their children.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- sets_events_id_on_created_elements
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- sets_events_id_on_created_elements
 #[wasm_bindgen_test]
 fn sets_events_id_on_created_elements() {
     let vnode: VirtualNodeWebSys = html! {
@@ -160,7 +160,7 @@ fn sets_events_id_on_created_elements() {
 
 /// Verify that if we replace an element with a new element we can call that new element's events.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- replaced_element_with_element_events_work
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- replaced_element_with_element_events_work
 #[wasm_bindgen_test]
 fn replaced_element_with_element_events_work() {
     let old_node: VirtualNodeWebSys = html! {
@@ -191,7 +191,7 @@ fn replaced_element_with_element_events_work() {
 
 /// Verify that when if we replace a text node with an element that element's events work.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- replaced_text_with_elem_events_work
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- replaced_text_with_elem_events_work
 #[wasm_bindgen_test]
 fn replaced_text_with_elem_events_work() {
     let old_node: VirtualNodeWebSys = html! {
@@ -222,7 +222,7 @@ fn replaced_text_with_elem_events_work() {
 /// Verify that if we patch over an element that has no events with an element that has a
 /// non-delegated event the event works.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- patch_add_non_delegated_event_listener
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- patch_add_non_delegated_event_listener
 #[wasm_bindgen_test]
 fn patch_add_non_delegated_event_listener() {
     let event = EventName::ONINPUT;
@@ -248,7 +248,7 @@ fn patch_add_non_delegated_event_listener() {
 /// Verify that if we patch over an element that has a non-delegated event with an element that has no
 /// events, we remove that event from the events store.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- patch_remove_non_delegated_event_listener
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- patch_remove_non_delegated_event_listener
 #[wasm_bindgen_test]
 fn patch_remove_non_delegated_event_listener() {
     let event = EventName::ONINPUT;
@@ -276,7 +276,7 @@ fn patch_remove_non_delegated_event_listener() {
 /// Verify that if we patch over an element that has no events with an element that has a
 /// delegated event the event works.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- patch_add_delegated_event_listener
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- patch_add_delegated_event_listener
 #[wasm_bindgen_test]
 fn patch_add_delegated_event_listener() {
     let event = EventName::ONCLICK;
@@ -302,7 +302,7 @@ fn patch_add_delegated_event_listener() {
 /// Verify that if we patch over an element that has a delegated event with an element that has no
 /// events, we remove that event from the events store.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- patch_remove_delegated_event_listener
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- patch_remove_delegated_event_listener
 #[wasm_bindgen_test]
 fn patch_remove_delegated_event_listener() {
     let event = EventName::ONCLICK;
@@ -329,7 +329,7 @@ fn patch_remove_delegated_event_listener() {
 
 /// Verify that our patch for removing all events at a given node idx works.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- patch_remove_all_events_with_node_idx
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- patch_remove_all_events_with_node_idx
 #[wasm_bindgen_test]
 fn patch_remove_all_events_with_node_idx() {
     let mut events = VirtualEvents::new();
@@ -364,7 +364,7 @@ fn patch_remove_all_events_with_node_idx() {
 /// This helps ensure a DOM element's events still work after it's node idx within the virtual dom
 /// changes.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- add_node_before_node_with_events
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- add_node_before_node_with_events
 #[wasm_bindgen_test]
 fn add_node_before_node_with_events() {
     let event = EventName::ONINPUT;
@@ -409,7 +409,7 @@ fn add_node_before_node_with_events() {
 ///
 /// This helps ensures that our TruncateChildren patch truncates from the `VirtualEventNode`.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- truncate_children_then_append_child_with_events
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- truncate_children_then_append_child_with_events
 #[wasm_bindgen_test]
 fn truncate_children_then_append_child_with_events() {
     let event = EventName::ONINPUT;
@@ -449,7 +449,7 @@ fn truncate_children_then_append_child_with_events() {
 
 /// Verify that we can create a closure that does not have any arguments.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- closure_with_no_arguments
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- closure_with_no_arguments
 #[wasm_bindgen_test]
 fn closure_with_no_arguments() {
     let _ = html! {
@@ -459,7 +459,7 @@ fn closure_with_no_arguments() {
 
 /// Verify that we can call an event with it's event argument.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- closure_with_no_arguments
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- closure_with_no_arguments
 #[wasm_bindgen_test]
 fn closure_with_arguments() {
     let called = Rc::new(Cell::new(false));
@@ -489,7 +489,7 @@ fn closure_with_arguments() {
 /// We do this by clicking on a child element and verifying that the parent element's onclick
 /// handler is triggered.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- delegated_child_events_propagates_to_parent
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- delegated_child_events_propagates_to_parent
 #[wasm_bindgen_test]
 fn delegated_child_events_propagates_to_parent() {
     assert!(EventName::ONCLICK.is_delegated());
@@ -520,7 +520,7 @@ fn delegated_child_events_propagates_to_parent() {
 
 /// Verify that stop propagation works on delegated events.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test events -- stop_propagation_on_delegated_event
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test events -- stop_propagation_on_delegated_event
 #[wasm_bindgen_test]
 fn stop_propagation_on_delegated_event() {
     assert!(EventName::ONCLICK.is_delegated());

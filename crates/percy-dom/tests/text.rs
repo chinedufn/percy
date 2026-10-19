@@ -2,7 +2,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test text
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test text
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
@@ -21,7 +21,7 @@ use self::diff_patch_test_case::DiffPatchTest;
 
 /// Verify that we can replace a single text node with another text node.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test text -- replace_text_node_with_text_node
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test text -- replace_text_node_with_text_node
 #[wasm_bindgen_test]
 fn replace_text_node_with_text_node() {
     DiffPatchTest {
@@ -40,7 +40,7 @@ fn replace_text_node_with_text_node() {
     .test();
 }
 
-/// wasm-pack test --chrome --headless crates/percy-dom --test text -- append_text_node
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test text -- append_text_node
 #[wasm_bindgen_test]
 fn append_text_node() {
     DiffPatchTest {
@@ -52,7 +52,7 @@ fn append_text_node() {
     .test();
 }
 
-/// wasm-pack test --chrome --headless crates/percy-dom --test text -- append_sibling_text_nodes
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test text -- append_sibling_text_nodes
 #[wasm_bindgen_test]
 fn append_sibling_text_nodes() {
     let text1 = VirtualNode::new_text("Hello");
@@ -69,7 +69,7 @@ fn append_sibling_text_nodes() {
 
 /// https://github.com/chinedufn/percy/issues/62
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test text -- replace_element_with_text_node
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test text -- replace_element_with_text_node
 #[wasm_bindgen_test]
 fn replace_element_with_text_node() {
     DiffPatchTest {
@@ -83,7 +83,7 @@ fn replace_element_with_text_node() {
 
 /// https://github.com/chinedufn/percy/issues/68
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test text -- text_root_node
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test text -- text_root_node
 #[wasm_bindgen_test]
 fn text_root_node() {
     DiffPatchTest {
@@ -95,7 +95,7 @@ fn text_root_node() {
     .test();
 }
 
-/// wasm-pack test --chrome --headless crates/percy-dom --test text -- replace_text_with_element
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test text -- replace_text_with_element
 #[wasm_bindgen_test]
 fn replace_text_with_element() {
     DiffPatchTest {
@@ -107,24 +107,17 @@ fn replace_text_with_element() {
     .test();
 }
 
-/// wasm-pack test --chrome --headless crates/percy-dom --test text -- text_node_siblings
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test text -- text_node_siblings
 #[wasm_bindgen_test]
 fn text_node_siblings() {
-    // TODO: Requires proc macro APIs that are currently unstable - https://github.com/rust-lang/rust/issues/54725
-    // // NOTE: Since there are two text nodes next to eachother we expect a `<!--ptns-->` separator in
-    // // between them.
-    // // @see virtual_node/mod.rs -> create_dom_node() for more information
-    // // TODO: A little more spacing than there should be in between the text nodes ... but doesn't
-    // //  impact the user experience so we can look into that later..
-    // let override_expected = Some(
-    //     r#"<div id="after"><span> The button has been clicked:  <!--ptns--> world </span></div>"#,
-    // );
-
-    // TODO: After the proc macro span APIs stabilize remove this in favor of the above commented out
-    //  code.
-    //   https://github.com/rust-lang/rust/issues/54725
-    let override_expected =
-        Some(r#"<div id="after"><span>The button has been clicked: <!--ptns-->world</span></div>"#);
+    // NOTE: Since there are two text nodes next to eachother we expect a `<!--ptns-->` separator in
+    // between them.
+    // @see virtual_node/mod.rs -> create_dom_node() for more information
+    // TODO: A little more spacing than there should be in between the text nodes ... but doesn't
+    //  impact the user experience so we can look into that later..
+    let override_expected = Some(
+        r#"<div id="after"><span> The button has been clicked:  <!--ptns--> world </span></div>"#,
+    );
 
     let old1 = VirtualNode::new_text("The button has been clicked: ");
     let old2 = VirtualNode::new_text("hello");

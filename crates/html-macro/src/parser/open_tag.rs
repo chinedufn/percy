@@ -104,6 +104,14 @@ fn create_valid_node(
                 let add_closure = insert_closure_tokens(var_name_node, attr, &closure, key_attr);
                 tokens.push(add_closure);
             }
+            _ if key == "key" => {
+                let set_key = quote! {
+                    #var_name_node.as_elem_mut().expect("Not an element")
+                        .special_attributes.set_key(#value.to_string());
+                };
+
+                tokens.push(set_key);
+            }
             _ => {
                 // NOTE: The `AttributeValue`'s documentation mentions that contributors can search
                 //  for `#value.into()` to find where the `AttributeValue`'s `From` implementation

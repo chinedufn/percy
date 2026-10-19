@@ -8,7 +8,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
@@ -33,7 +33,7 @@ mod testing_utilities;
 ///
 /// _InsertBefore is one of the patches used for some keyed lists._
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- insert_before_patch_inserts_nodes
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- insert_before_patch_inserts_nodes
 #[wasm_bindgen_test]
 fn insert_before_patch_inserts_nodes() {
     let vnode = html! {
@@ -69,7 +69,7 @@ fn insert_before_patch_inserts_nodes() {
 /// This test helps check that our patching algorithm will continue to insert before the same node
 /// even as if its index amongst its siblings changes between patches.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- multiple_insert_before_patches
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- multiple_insert_before_patches
 #[wasm_bindgen_test]
 fn multiple_insert_before_patches() {
     let vnode = html! {
@@ -106,7 +106,7 @@ fn multiple_insert_before_patches() {
 ///
 /// _MoveNodesBefore is one of the patches used for some keyed lists._
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- move_nodes_before_patch_moves_nodes
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- move_nodes_before_patch_moves_nodes
 #[wasm_bindgen_test]
 fn move_nodes_before_patch_moves_nodes() {
     let vnode = html! {
@@ -141,7 +141,7 @@ fn move_nodes_before_patch_moves_nodes() {
 /// This test helps check that our patching algorithm will continue to move the correct node
 /// even as if its index amongst its siblings changes between patches.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- multiple_move_nodes_before_patches
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- multiple_move_nodes_before_patches
 #[wasm_bindgen_test]
 fn multiple_move_nodes_before_patches() {
     let vnode = html! {
@@ -180,7 +180,7 @@ fn multiple_move_nodes_before_patches() {
 ///
 /// _MoveToEndOfSiblings is one of the patches that gets used for some keyed lists._
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- move_to_end_of_siblings_patch_moves_nodes
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- move_to_end_of_siblings_patch_moves_nodes
 #[wasm_bindgen_test]
 fn move_to_end_of_siblings_patch_moves_nodes() {
     let vnode = html! {
@@ -215,7 +215,7 @@ fn move_to_end_of_siblings_patch_moves_nodes() {
 /// This test helps check that our patching algorithm will continue to move the correct nodes even
 /// as the nodes indices amongst their siblings change.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- multiple_move_to_end_of_siblings_patches
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- multiple_move_to_end_of_siblings_patches
 #[wasm_bindgen_test]
 fn multiple_move_to_end_of_siblings_patches() {
     let vnode = html! {
@@ -255,7 +255,7 @@ fn multiple_move_to_end_of_siblings_patches() {
 ///
 /// _RemoveChildren is used to remove elements in the middle of keyed lists._
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- remove_children_patch_removes_nodes
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- remove_children_patch_removes_nodes
 #[wasm_bindgen_test]
 fn remove_children_patch_removes_nodes() {
     let vnode = html! {
@@ -290,7 +290,7 @@ fn remove_children_patch_removes_nodes() {
 /// This test helps check that our patching algorithm will continue to remove the correct node
 /// even as if its index amongst its siblings changes between patches.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- multiple_remove_children_patches
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- multiple_remove_children_patches
 #[wasm_bindgen_test]
 fn multiple_remove_children_patches() {
     let vnode = html! {
@@ -328,7 +328,7 @@ fn multiple_remove_children_patches() {
 
 /// Verify that we can properly patch a list with one keyed element that has not changed.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- one_keyed_element_unchanged_key
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- one_keyed_element_unchanged_key
 #[wasm_bindgen_test]
 fn one_keyed_element_unchanged_key() {
     DiffPatchTest {
@@ -351,7 +351,7 @@ fn one_keyed_element_unchanged_key() {
 /// Verify that we can properly patch a list with one element where the old and new key are
 /// different.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- one_keyed_element_changed_key
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- one_keyed_element_changed_key
 #[wasm_bindgen_test]
 fn one_keyed_element_changed_key() {
     DiffPatchTest {
@@ -366,8 +366,7 @@ fn one_keyed_element_changed_key() {
           <em key="new-key"></em>
         </div>
         },
-        // TODO: Don't add `key` attributes to the DOM element
-        override_expected: Some("<div><em key=\"old-key\"></em></div>"),
+        override_expected: None,
     }
     .test();
 }
@@ -375,7 +374,7 @@ fn one_keyed_element_changed_key() {
 /// Verify that we can properly patch a list with one element where the element has the same key
 /// but a different tag.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- same_key_different_tag
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- same_key_different_tag
 #[wasm_bindgen_test]
 fn same_key_different_tag() {
     DiffPatchTest {
@@ -397,7 +396,7 @@ fn same_key_different_tag() {
 
 /// Verify that we can properly patch a list with two keyed element that have not changed.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- two_keyed_elements_unchanged_keys
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- two_keyed_elements_unchanged_keys
 #[wasm_bindgen_test]
 fn two_keyed_elements_unchanged_keys() {
     DiffPatchTest {
@@ -421,7 +420,7 @@ fn two_keyed_elements_unchanged_keys() {
 
 /// Verify that we can properly patch a list with two keyed element have swapped placed.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- two_keyed_elements_swapped
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- two_keyed_elements_swapped
 #[wasm_bindgen_test]
 fn two_keyed_elements_swapped() {
     DiffPatchTest {
@@ -445,7 +444,7 @@ fn two_keyed_elements_swapped() {
 
 /// Verify that we can properly patch a list that has one new keyed element prepended to the list.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- new_keyed_element_prepended
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- new_keyed_element_prepended
 #[wasm_bindgen_test]
 fn new_keyed_element_prepended() {
     DiffPatchTest {
@@ -469,7 +468,7 @@ fn new_keyed_element_prepended() {
 /// Verify that we can properly patch a list that has one new non-keyed element prepended to the
 /// list.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- new_non_keyed_element_prepended
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- new_non_keyed_element_prepended
 #[wasm_bindgen_test]
 fn new_non_keyed_element_prepended() {
     DiffPatchTest {
@@ -492,7 +491,7 @@ fn new_non_keyed_element_prepended() {
 
 /// Verify that we can properly patch a list that has one new keyed element appended to the list.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- new_keyed_element_appended
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- new_keyed_element_appended
 #[wasm_bindgen_test]
 fn new_keyed_element_appended() {
     DiffPatchTest {
@@ -516,7 +515,7 @@ fn new_keyed_element_appended() {
 /// Verify that we can properly patch a list that has one new non-keyed element appended to the
 /// list.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- new_non_keyed_element_appended
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- new_non_keyed_element_appended
 #[wasm_bindgen_test]
 fn new_non_keyed_element_appended() {
     DiffPatchTest {
@@ -540,7 +539,7 @@ fn new_non_keyed_element_appended() {
 /// Verify that we can properly patch a list that has one new element inserted into the middle of
 /// the list.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- new_keyed_element_inserted_in_middle
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- new_keyed_element_inserted_in_middle
 #[wasm_bindgen_test]
 fn new_keyed_element_inserted_in_middle() {
     DiffPatchTest {
@@ -566,7 +565,7 @@ fn new_keyed_element_inserted_in_middle() {
 /// Verify that we can properly patch a list that has one new element inserted into the middle of
 /// the list.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- new_non_keyed_element_inserted_in_middle
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- new_non_keyed_element_inserted_in_middle
 #[wasm_bindgen_test]
 fn new_non_keyed_element_inserted_in_middle() {
     DiffPatchTest {
@@ -595,7 +594,7 @@ fn new_non_keyed_element_inserted_in_middle() {
 /// indexed such that as we apply those patches we don't start thing that the "elem Y" in our
 /// example is something else.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test keyed_lists -- reverse_list_order
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test keyed_lists -- reverse_list_order
 #[wasm_bindgen_test]
 fn reverse_list_order() {
     DiffPatchTest {

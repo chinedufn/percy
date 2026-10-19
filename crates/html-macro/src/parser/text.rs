@@ -80,10 +80,10 @@ impl HtmlParser {
     /// between this text and that tag. If so we insert some space before this text.
     fn should_insert_space_before_text(&self, text_start: &Span) -> bool {
         if self.last_tag_kind == Some(TagKind::Braced) {
-            let most_recent_block_start = self.recent_span_locations.most_recent_block_start;
-            let most_recent_block_start = most_recent_block_start.as_ref().unwrap();
+            let most_recent_block_end = self.recent_span_locations.most_recent_block_end;
+            let most_recent_block_end = most_recent_block_end.as_ref().unwrap();
 
-            self.separated_by_whitespace(most_recent_block_start, text_start)
+            self.separated_by_whitespace(most_recent_block_end, text_start)
         } else if self.last_tag_kind == Some(TagKind::Open) {
             let most_recent_open_tag_end =
                 self.recent_span_locations.most_recent_open_tag_end.as_ref();

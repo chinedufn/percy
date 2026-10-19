@@ -4,7 +4,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test value_attribute
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test value_attribute
 
 use wasm_bindgen_test::*;
 
@@ -22,7 +22,7 @@ wasm_bindgen_test_configure!(run_in_browser);
 /// sure that the value in the virtual dom overwrites anything that might have been typed into the
 /// real DOM.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test value_attribute -- set_input_elem_value_property
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test value_attribute -- set_input_elem_value_property
 #[wasm_bindgen_test]
 fn set_input_elem_value_property() {
     for (start, end) in vec![("BOTH EQUAL", "BOTH EQUAL"), ("NOT", "EQUAL")] {
@@ -56,7 +56,7 @@ fn set_input_elem_value_property() {
 /// sure that the value in the virtual dom overwrites anything that might have been typed into the
 /// real DOM.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test value_attribute -- set_textarea_elem_value_property
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test value_attribute -- set_textarea_elem_value_property
 #[wasm_bindgen_test]
 fn set_textarea_elem_value_property() {
     for (start, end) in vec![("BOTH EQUAL", "BOTH EQUAL"), ("NOT", "EQUAL")] {

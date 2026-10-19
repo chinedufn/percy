@@ -51,7 +51,13 @@ pub enum Tag {
     ///     { html! { <div> </div> }
     ///   </div>
     /// }
-    Braced { block: Box<Block>, brace_span: Span },
+    Braced {
+        block: Box<Block>,
+        /// The span of the block's opening brace.
+        brace_span: Span,
+        /// The span of the block's closing brace.
+        close_brace_span: Span,
+    },
 }
 
 /// The different kinds of tokens that we parse.
@@ -296,6 +302,7 @@ fn parse_block(input: &mut ParseStream) -> Result<Tag> {
     let brace_token = braced!(content in input);
 
     let brace_span = brace_token.span.open();
+    let close_brace_span = brace_token.span.close();
 
     let block_expr = content.call(Block::parse_within)?;
 
@@ -304,7 +311,11 @@ fn parse_block(input: &mut ParseStream) -> Result<Tag> {
         stmts: block_expr,
     });
 
-    Ok(Tag::Braced { block, brace_span })
+    Ok(Tag::Braced {
+        block,
+        brace_span,
+        close_brace_span,
+    })
 }
 
 /// Parse a sequence of tokens until we run into a closing tag

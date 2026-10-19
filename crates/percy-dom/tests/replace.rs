@@ -2,7 +2,7 @@
 //!
 //! To run all tests in this file:
 //!
-//! wasm-pack test --chrome --headless crates/percy-dom --test replace
+//! CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test replace
 
 extern crate wasm_bindgen_test;
 extern crate web_sys;
@@ -17,7 +17,7 @@ use self::diff_patch_test_case::DiffPatchTest;
 
 /// Verify that we can replace the first sibling in a list of siblings.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test replace -- replace_first_sibling_node
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test replace -- replace_first_sibling_node
 #[wasm_bindgen_test]
 fn replace_first_sibling_node() {
     DiffPatchTest {
@@ -41,7 +41,7 @@ fn replace_first_sibling_node() {
 
 /// Verify that we can replace the first sibling text in a list of siblings.
 ///
-/// wasm-pack test --chrome --headless crates/percy-dom --test replace -- replace_first_sibling_text
+/// CHROMEDRIVER=chromedriver cargo test -p percy-dom --target wasm32-unknown-unknown --test replace -- replace_first_sibling_text
 #[wasm_bindgen_test]
 fn replace_first_sibling_text() {
     DiffPatchTest {
