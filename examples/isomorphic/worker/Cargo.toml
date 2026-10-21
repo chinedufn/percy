@@ -1,0 +1,15 @@
+[package]
+name = "isomorphic-worker"
+version = "0.1.0"
+authors = ["Chinedu Francis Nwafili <frankie.nwafili@gmail.com>"]
+publish = false
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+console_error_panic_hook = "0.1"
+isomorphic-app = { path = "../app" }
+url = "2"
+worker = "0.8.5"

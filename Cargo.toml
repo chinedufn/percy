@@ -29,6 +29,7 @@ members = [
   "examples/isomorphic/app",
   "examples/isomorphic/client",
   "examples/isomorphic/server",
+  "examples/isomorphic/worker",
   "examples/unit-testing-components",
   "tests/test-css-rs",
   "tests/test-css-rs-fixture",

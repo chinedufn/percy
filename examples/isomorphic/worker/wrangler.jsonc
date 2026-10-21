@@ -1,0 +1,10 @@
+{
+  "name": "percy-isomorphic-demo",
+  "main": "./build/worker/shim.mjs",
+  "compatibility_date": "2026-06-15",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  }
+}
